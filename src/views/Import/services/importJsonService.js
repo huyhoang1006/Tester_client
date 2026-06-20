@@ -80,11 +80,27 @@ const regenJobDtoIds = (jobDto, newAssetId, uuid) => {
         }
     }
 
+    // 2b. procedureAsset — regen mrid (giữ procedure_id = seed định nghĩa procedure)
+    if (Array.isArray(dto.procedureAsset)) {
+        for (const pa of dto.procedureAsset) {
+            pa.mrid = uuid.newUuid()
+            pa.asset_id = newAssetId
+            // procedure_id GIỮ NGUYÊN (trỏ định nghĩa procedure dùng chung)
+        }
+    }
+
     // 3. từng test trong testList
     for (const test of (dto.testList || [])) {
+        // 3.0 mrid của CHÍNH test (work_task) — BẮT BUỘC regen, nếu không link tới
+        // work_task cũ → không xóa được job mới (dùng chung record với job gốc).
+        test.mrid = uuid.newUuid()
+        // testTypeId / test_type_id GIỮ NGUYÊN (= procedure định nghĩa, dùng chung)
+
         // 3a. testCondition
         if (test.testCondition) {
             test.testCondition.mrid = uuid.newUuid()
+            // work_task của testCondition trỏ test mới
+            if (test.testCondition.work_task_id !== undefined) test.testCondition.work_task_id = test.mrid
             const cond = test.testCondition.condition || {}
             for (const k of Object.keys(cond)) {
                 if (cond[k] && typeof cond[k] === 'object') cond[k].mrid = uuid.newUuid()
@@ -297,16 +313,135 @@ const branchMrid = (branch) => {
 // Xóa/đặt mrid của node (dùng khi NEW: ép tạo mới bằng cách bỏ mrid).
 // Mỗi type set vào đúng chỗ — nhưng các hàm import có sẵn tự regen khi thiếu mrid,
 // nên chỉ cần xóa mrid ở vị trí chính là đủ để chúng coi như node mới.
-const clearBranchMrid = (branch) => {
+// ---------------------------------------------------------------------------
+// REGEN TOÀN BỘ ID cho "Create new" (giống deepImportService của Word/Excel).
+// Không chỉ đổi mrid chính — phải regen MỌI id phụ (locationId, psrTypeId,
+// organisationPsrId, lifecycleDateId, assetInfoId, các mrid nested...) để tạo
+// bản sao ĐỘC LẬP hoàn toàn, tránh đụng record cũ. Đồng thời set liên kết cha
+// theo NHÁNH đích (psrId/organisationId/substationId... = parent.mrid mới).
+//
+// Field KHÔNG đụng: userId, userName, *_unit, value, name, aliasName...
+// ---------------------------------------------------------------------------
+// Field *_id/*Id là DỮ LIỆU người dùng hoặc SEED dùng chung — KHÔNG regen.
+//  - apparatus_id: mã thiết bị người dùng nhập ("Asset ID" trên form)
+//  - measurement_id / test_type_id / testTypeId / procedure_id: trỏ ĐỊNH NGHĨA dùng chung
+//  - userId / userName / userIdentifiedObjectId: của người dùng
+const ID_KEEP = new Set([
+    'userId', 'userName', 'userIdentifiedObjectId',
+    'apparatus_id',
+    'measurement_id', 'test_type_id', 'testTypeId', 'procedure_id',
+])
+
+// regen id với REMAP tham chiếu chéo (2 lượt).
+// Vấn đề: DTO có liên kết nội bộ bằng id — vd impedances.prim_sec[].mrid được
+// shortCircuitTestTransformerEndInfo[].short_circuit_test_id trỏ tới. Nếu đổi mrid
+// nguồn mà không đổi tham chiếu → đứt link → MẤT dữ liệu (shortCircuitImpedance...).
+// → Lượt 1: đổi mọi 'mrid', ghi map old→new. Lượt 2: thay mọi '*_id'/'*Id' bằng
+//   new nếu old nằm trong map (tham chiếu nội bộ); nếu không có trong map → regen
+//   (link ra ngoài, vẫn cần id mới để độc lập).
+const regenIdsDeep = (root, uuid) => {
+    const idMap = {}   // old mrid → new mrid
+
+    // ── Lượt 1: đổi mọi 'mrid', ghi map ──
+    const pass1 = (obj) => {
+        if (!obj || typeof obj !== 'object') return
+        if (Array.isArray(obj)) { for (const it of obj) pass1(it); return }
+        const keys = Object.keys(obj)
+        const hasOtherData = keys.some(k => {
+            if (k === 'mrid') return false
+            const v = obj[k]
+            return v !== null && v !== undefined && v !== '' && typeof v !== 'object'
+        })
+        for (const k of keys) {
+            const v = obj[k]
+            if (k === 'mrid' && !ID_KEEP.has(k)) {
+                if ((v !== null && v !== undefined && v !== '') || hasOtherData) {
+                    const nm = uuid.newUuid()
+                    if (v !== null && v !== undefined && v !== '') idMap[v] = nm
+                    obj[k] = nm
+                }
+            } else if (v && typeof v === 'object') {
+                pass1(v)
+            }
+        }
+    }
+
+    // ── Lượt 2: thay mọi field tham chiếu (*_id / *Id) ──
+    const pass2 = (obj) => {
+        if (!obj || typeof obj !== 'object') return
+        if (Array.isArray(obj)) { for (const it of obj) pass2(it); return }
+        for (const k of Object.keys(obj)) {
+            const v = obj[k]
+            if (k === 'mrid') continue   // đã xử lý lượt 1
+            const isRef = (k.endsWith('_id') || k.endsWith('Id') || k.endsWith('mrid'))
+            if (isRef && !ID_KEEP.has(k) && typeof v === 'string' && v) {
+                if (idMap[v]) obj[k] = idMap[v]        // tham chiếu nội bộ → trỏ id mới
+                else obj[k] = uuid.newUuid()           // link ngoài → id mới độc lập
+            } else if (v && typeof v === 'object') {
+                pass2(v)
+            }
+        }
+    }
+
+    pass1(root)
+    pass2(root)
+}
+
+// "Create new": regen toàn bộ id + set lại liên kết cha theo nhánh đích.
+const regenBranchIds = (branch, parentNode, uuid) => {
     const d = branch.data
-    if (!d) return
+    if (!d || !uuid || !uuid.newUuid) return
+    const pmrid = parentNode && parentNode.mrid
+
+    // 1) regen sâu mọi id trong DTO
+    regenIdsDeep(d, uuid)
+
+    // 2) đảm bảo mrid CHÍNH có giá trị mới (một số field đặc thù không khớp 'Id')
     switch (branch.type) {
-        case 'job':          if (d.properties) d.properties.mrid = ''; break
-        case 'organisation': d.organisationId = ''; if (d.organisation) d.organisation.mrid = ''; break
-        case 'substation':   d.subsId = ''; if (d.substation) d.substation.mrid = ''; break
-        case 'voltageLevel': if (d.voltageLevel) d.voltageLevel.mrid = ''; d.voltageLevelId = ''; break
-        case 'bay':          if (d.bay) d.bay.mrid = ''; d.bayId = ''; d.mrid = ''; break
-        default:             if (d.properties) d.properties.mrid = ''; d.mrid = ''   // asset
+        case 'organisation':
+            if (!d.organisationId) d.organisationId = uuid.newUuid()
+            if (d.organisation) d.organisation.mrid = d.organisationId
+            // cha là org → set parentId
+            if (parentNode && parentNode.mode === 'organisation') {
+                d.parentId = pmrid
+                if (d.organisation) d.organisation.parent_organisation = pmrid
+            }
+            break
+        case 'substation':
+            if (!d.subsId) d.subsId = uuid.newUuid()
+            if (d.substation) d.substation.mrid = d.subsId
+            // gắn vào org cha (qua organisation_psr): organisationId = parent.mrid
+            d.organisationId = pmrid
+            if (!d.organisationPsrId) d.organisationPsrId = uuid.newUuid()
+            break
+        case 'voltageLevel':
+            if (!d.voltageLevelId) d.voltageLevelId = uuid.newUuid()
+            if (d.voltageLevel) d.voltageLevel.mrid = d.voltageLevelId
+            d.mrid = d.voltageLevelId
+            d.substationId = pmrid
+            break
+        case 'bay': {
+            const m = uuid.newUuid()
+            d.mrid = m; d.bayId = m
+            if (d.bay) d.bay.mrid = m
+            // cha có thể là voltageLevel hoặc substation
+            if (parentNode && parentNode.mode === 'voltageLevel') {
+                d.voltage_level = pmrid; d.substation = null
+            } else {
+                d.substation = pmrid; d.voltage_level = null
+            }
+            break
+        }
+        case 'job':
+            if (d.properties && !d.properties.mrid) d.properties.mrid = uuid.newUuid()
+            break
+        default: // asset
+            if (d.properties && !d.properties.mrid) d.properties.mrid = uuid.newUuid()
+            if (!d.assetInfoId) d.assetInfoId = uuid.newUuid()
+            if (!d.assetPsrId) d.assetPsrId = uuid.newUuid()
+            if (!d.productAssetModelId) d.productAssetModelId = uuid.newUuid()
+            if (!d.lifecycleDateId) d.lifecycleDateId = uuid.newUuid()
+            d.psrId = pmrid   // asset gắn vào bay/sub cha theo nhánh
     }
 }
 
@@ -325,6 +460,14 @@ const importBranch = async (branch, parentNode, deps, decisions) => {
     const action = decisions && mrid ? decisions[mrid] : undefined
     console.log(`%c[BRANCH] type=${branch && branch.type} mrid=${mrid} action=${action || 'NONE'} parent=${parentNode && parentNode.mrid}`, 'color:#9C27B0;font-weight:bold')
 
+    // Báo tiến trình: đang import node nào (tên + loại).
+    if (deps.onProgress) {
+        const nm = nodeDisplayName(branch)
+        deps.onProgress({ name: nm, type: branch && branch.type })
+        // nhả luồng 1 nhịp để Vue cập nhật thanh % trước khi insert (insert chặn lâu).
+        await new Promise(r => setTimeout(r, 0))
+    }
+
     let newNode = null
     let recurseChildren = true
 
@@ -338,7 +481,7 @@ const importBranch = async (branch, parentNode, deps, decisions) => {
 
     } else {
         if (action === CONFLICT_ACTION.NEW) {
-            clearBranchMrid(branch)
+            regenBranchIds(branch, parentNode, deps.uuid)
         }
         if (branch.type === 'job') {
             newNode = await importJobNode(branch, parentNode, deps)
@@ -370,6 +513,80 @@ const nodeModeOf = (type) => {
     if (ASSET_TYPES_SET.has(type)) return 'asset'
     return type   // organisation/substation/voltageLevel/bay
 }
+
+// Tên hiển thị của 1 branch (cho thanh tiến trình).
+const nodeDisplayName = (branch) => {
+    const d = (branch && branch.data) || {}
+    return d.name
+        || (d.properties && (d.properties.name || d.properties.serial_no))
+        || (d.voltageLevel && d.voltageLevel.name)
+        || (d.substation && d.substation.name)
+        || (d.organisation && d.organisation.name)
+        || branch.asset
+        || (branch && branch.type)
+        || 'node'
+}
+
+// Đếm tổng số node trong các nhánh (để tính %).
+const countTreeNodes = (branches) => {
+    let n = 0
+    const walk = (b) => {
+        if (!b) return
+        n++
+        for (const c of (b.children || [])) walk(c)
+    }
+    for (const b of (branches || [])) walk(b)
+    return n
+}
+
+// ---------------------------------------------------------------------------
+// THỨ BẬC CÂY — để ghép đúng cấp (Cách A).
+// node đích loại X → chỉ nhận con TRỰC TIẾP cấp kế (X+1) từ file, bỏ cấp cao hơn.
+// ---------------------------------------------------------------------------
+const HIERARCHY = ['organisation', 'substation', 'voltageLevel', 'bay', 'asset', 'job']
+// org lồng org: organisation cũng nhận con organisation (xử lý riêng bên dưới).
+
+const levelOf = (mode) => {
+    const m = (mode === 'job') ? 'job' : (ASSET_TYPES_SET.has(mode) ? 'asset' : mode)
+    return HIERARCHY.indexOf(m)
+}
+
+// Gom mọi branch ở đúng CẤP CON kế tiếp của targetMode, duyệt khắp file.
+// vd targetMode='substation' (level 1) → gom mọi node level 2 (voltageLevel).
+// Trả { grafts:[branch...], skipped:{ [mode]: count } } để báo người dùng.
+const collectGraftBranches = (roots, targetMode) => {
+    const targetLevel = levelOf(targetMode)
+    const childLevel = targetLevel + 1
+    const grafts = []
+    const skipped = {}
+
+    const walk = (branch) => {
+        if (!branch || !branch.type) return
+        const lv = levelOf(nodeModeOf(branch.type))
+
+        if (lv === childLevel) {
+            // đúng cấp con cần ghép → lấy nguyên subtree này
+            grafts.push(branch)
+            return   // không duyệt sâu hơn (subtree đi theo)
+        }
+        if (lv < childLevel) {
+            // cấp cao hơn con cần ghép → bỏ qua node này, duyệt tiếp con
+            const mode = nodeModeOf(branch.type)
+            skipped[mode] = (skipped[mode] || 0) + 1
+            for (const c of (branch.children || [])) walk(c)
+        }
+        // lv > childLevel: node quá sâu (không xảy ra nếu cây chuẩn) → bỏ
+    }
+
+    for (const r of (roots || [])) walk(r)
+    return { grafts, skipped, childLevel }
+}
+
+// org lồng org: nếu đích là organisation và root file cũng organisation,
+// thì KHÔNG bỏ org — org thành con của org đích (giữ nguyên root).
+const isOrgIntoOrg = (roots, targetMode) =>
+    targetMode === 'organisation'
+    && (roots || []).some(r => nodeModeOf(r.type) === 'organisation')
 
 // ---------------------------------------------------------------------------
 // ENTRY: import file JSON vào node đích
@@ -406,13 +623,38 @@ export const importBranchFromJSON = async (fileContent, targetNode, deps, decisi
         return
     }
 
+    // ── GHÉP ĐÚNG CẤP (Cách A) ──────────────────────────────────────────────
+    // node đích loại X → chỉ nhận con cấp kế (X+1) từ file, bỏ cấp cao hơn.
+    // Ngoại lệ: org vào org (org lồng org) → giữ nguyên root organisation.
+    const targetMode = targetNode.mode
+    let branchesToImport = roots
+    if (!isLegacyFlat) {
+        if (isOrgIntoOrg(roots, targetMode)) {
+            // org → org: import nguyên root (org thành con của org đích)
+            branchesToImport = roots
+        } else {
+            const { grafts } = collectGraftBranches(roots, targetMode)
+            if (grafts.length === 0) {
+                messageHandler && messageHandler.warning(
+                    'No matching nodes to graft into the selected target. Check the hierarchy level.')
+                return
+            }
+            branchesToImport = grafts
+        }
+    }
+    console.log(`[SERVICE] target=${targetMode} → ghép ${branchesToImport.length} nhánh (từ ${roots.length} root)`)
+
     let closeLoading = null
     if (loadingHandler && loadingHandler.start) closeLoading = loadingHandler.start()
 
+    // Tổng số node để tính %.
+    const totalNodes = countTreeNodes(branchesToImport)
+    if (deps.onProgressInit) deps.onProgressInit(totalNodes)
+
     let ok = 0, fail = 0
     try {
-        console.log(`%c[SERVICE] importBranchFromJSON: ${roots.length} root(s), target=${targetNode.mrid}`, 'color:#3F51B5;font-weight:bold')
-        for (const root of roots) {
+        console.log(`%c[SERVICE] importBranchFromJSON: ${branchesToImport.length} branch(es), target=${targetNode.mrid}`, 'color:#3F51B5;font-weight:bold')
+        for (const root of branchesToImport) {
             try {
                 await importBranch(root, targetNode, deps, decisions)
                 ok++
@@ -438,4 +680,4 @@ export const importBranchFromJSON = async (fileContent, targetNode, deps, decisi
 }
 
 // Xuất các helper để test/độc lập nếu cần
-export { regenJobDtoIds, regenStandardTree, branchMrid }
+export { regenJobDtoIds, regenStandardTree, branchMrid, collectGraftBranches, isOrgIntoOrg, levelOf, nodeModeOf }

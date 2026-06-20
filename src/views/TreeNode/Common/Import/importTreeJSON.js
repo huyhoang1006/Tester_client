@@ -11,7 +11,7 @@
  * + gọi electronAPI.insert<Asset>Job. insert*Entity là upsert (ON CONFLICT UPDATE).
  * ----------------------------------------------------------------------------
  */
-import { importBranchFromJSON } from '@/views/Import/services/importJsonService'
+import { importBranchFromJSON, collectGraftBranches, isOrgIntoOrg, nodeModeOf } from '@/views/Import/services/importJsonService'
 import { scanTreeConflicts } from '@/views/TreeNode/Common/Import/mridConflictScan'
 
 // ==== DTO→Entity mappers cho node thường + asset (chiều xuôi import) ====
@@ -49,6 +49,13 @@ export default {
             conflictDialogVisible: false,
             pendingConflicts: [],
             pendingImportContext: null,
+            graftDialogVisible: false,
+            graftInfo: null,
+            progressVisible: false,
+            progressDone: 0,
+            progressTotal: 0,
+            progressName: '',
+            progressType: '',
         }
     },
     methods: {
@@ -110,9 +117,81 @@ export default {
                     return
                 }
 
+                // ── BƯỚC 1: kiểm tra GHÉP ĐÚNG CẤP (Cách A) ─────────────────────
+                // Nếu cây file bắt đầu cao hơn node đích → cần bỏ cấp → hỏi xác nhận.
+                const graftInfo = this._computeGraftInfo(roots, targetNode)
+                if (graftInfo && graftInfo.needConfirm) {
+                    console.log('[IMPORT] cần ghép cấp → mở graft dialog', graftInfo)
+                    this.pendingImportContext = { fileContent: content, targetNode }
+                    this.graftInfo = graftInfo
+                    this.graftDialogVisible = true
+                    return   // chờ người dùng confirm → _proceedAfterGraft
+                }
+                if (graftInfo && graftInfo.noMatch) {
+                    this.$message.warning('No matching nodes to import into the selected target.')
+                    return
+                }
+
+                // Cấp khớp sẵn → tiếp tục scan conflict + import
+                await this._proceedImport(content, targetNode, roots)
+            } catch (err) {
+                console.error('[IMPORT] Error opening/reading file:', err)
+                this.$message.error('An error occurred while importing JSON')
+            }
+        },
+
+        // Tính thông tin ghép cấp để hiển thị dialog (dùng helper từ service).
+        _computeGraftInfo(roots, targetNode) {
+            const targetMode = targetNode.mode
+            // org vào org → không bỏ cấp
+            if (isOrgIntoOrg(roots, targetMode)) return { needConfirm: false }
+
+            const { grafts, skipped } = collectGraftBranches(roots, targetMode)
+            if (!grafts || grafts.length === 0) return { noMatch: true }
+
+            const skippedList = Object.keys(skipped).map(mode => ({ mode, count: skipped[mode] }))
+            const needConfirm = skippedList.length > 0   // có bỏ cấp → cần xác nhận
+            return {
+                needConfirm,
+                targetMode,
+                targetName: targetNode.name || '',
+                graftMode: nodeModeOf(grafts[0].type),
+                graftCount: grafts.length,
+                skippedList,
+            }
+        },
+
+        // Sau khi confirm graft dialog → tiếp tục import.
+        async handleGraftConfirm() {
+            this.graftDialogVisible = false
+            const ctx = this.pendingImportContext
+            if (!ctx) return
+            const roots = Array.isArray(ctx.fileContent) ? ctx.fileContent : (ctx.fileContent && ctx.fileContent.roots)
+            await this._proceedImport(ctx.fileContent, ctx.targetNode, roots)
+        },
+
+        handleGraftCancel() {
+            this.graftDialogVisible = false
+            this.pendingImportContext = null
+            this.graftInfo = null
+        },
+
+        // Scan conflict mrid → dialog conflict hoặc import thẳng.
+        async _proceedImport(content, targetNode, roots) {
+            try {
+                // Chỉ scan trùng trên các nhánh THỰC SỰ sẽ import (đã ghép cấp),
+                // bỏ qua org/sub cấp cao đã loại — nếu không Resolve mRID Conflicts
+                // sẽ hiện cả những node đã bị graft bỏ.
+                let branchesToScan = roots
+                if (!isOrgIntoOrg(roots, targetNode.mode)) {
+                    const { grafts } = collectGraftBranches(roots, targetNode.mode)
+                    if (grafts && grafts.length > 0) branchesToScan = grafts
+                }
+                console.log('[IMPORT] scan trên', branchesToScan.length, 'nhánh đã ghép (roots gốc:', roots.length, ')')
+
                 let conflicts = []
                 try {
-                    const scan = await scanTreeConflicts(roots, { electronAPI: window.electronAPI, opts: { resolvePath: true } })
+                    const scan = await scanTreeConflicts(branchesToScan, { electronAPI: window.electronAPI, opts: { resolvePath: true } })
                     conflicts = (scan && scan.conflicts) || []
                     console.log('[IMPORT] scan conflicts:', conflicts.length, conflicts)
                 } catch (e) {
@@ -130,7 +209,7 @@ export default {
                     await this.importTreeFromJSON(content, targetNode, null)
                 }
             } catch (err) {
-                console.error('[IMPORT] Error opening/reading file:', err)
+                console.error('[IMPORT] _proceedImport error:', err)
                 this.$message.error('An error occurred while importing JSON')
             }
         },
@@ -162,12 +241,12 @@ export default {
                 transformer:        { map: tfDtoToEntity, ins: (o, e) => api.insertTransformerEntity(o, e) },
                 breaker:            { map: cbDtoToEntity, ins: (o, e) => api.insertBreakerEntity(o, e) },
                 surgeArrester:      { map: saDtoToEntity, ins: (o, e) => api.insertSurgeArresterEntity(o, e) },
-                disconnector:       { map: dcDtoToEntity, ins: (o, e) => api.insertDisconnectorEntity(o, e) },
+                disconnector:       { map: dcDtoToEntity, ins: (o, e) => api.insertDisconnectorEntity(e) },
                 powerCable:         { map: pcDtoToEntity, ins: (o, e) => api.insertPowerCableEntity(o, e) },
-                rotatingMachine:    { map: rmDtoToEntity, ins: (o, e) => api.insertRotatingMachineEntity(o, e) },
+                rotatingMachine:    { map: rmDtoToEntity, ins: (o, e) => api.insertRotatingMachineEntity(e) },
                 capacitor:          { map: capDtoToEntity, ins: (o, e) => api.insertCapacitorEntity(o, e) },
                 reactor:            { map: reDtoToEntity, ins: (o, e) => api.insertReactorEntity(o, e) },
-                bushing:            { map: buDtoToEntity, ins: (o, e) => api.insertBushingEntity(o, e) },
+                bushing:            { map: buDtoToEntity, ins: (o, e) => api.insertBushingEntity(e) },
             }
             const out = {}
             for (const key of Object.keys(A)) {
@@ -178,6 +257,17 @@ export default {
                     let entity, oldEntity, rs
                     try {
                         entity = def.map(dto)
+                        // CRITICAL: asset CRUD gọi JSON.parse(entity.attachment.path) rồi
+                        // syncFilesWithDeletion(srcList) để đồng bộ FILE đính kèm. Khi import
+                        // sang nhánh/máy mới, file cũ KHÔNG tồn tại → sync fail → insert trả
+                        // success:false ("fail"). Tạo mới không kèm file → ÉP path='[]'.
+                        if (!entity.attachment) entity.attachment = {}
+                        entity.attachment.path = '[]'
+                        // Đảm bảo mọi object con (sẽ insert vào identified_object) có mrid.
+                        // Một số sub-object trong entity (voltage/baseVoltage/winding...) có
+                        // mrid=null → insert vi phạm NOT NULL: identified_object.mrid. Sinh mrid
+                        // mới cho object có dữ liệu mà mrid đang null.
+                        self._fillNullMrids(entity)
                         // old_entity: insert*Entity so sánh old vs new để biết cái gì cần xóa.
                         // Khi import tạo mới → old rỗng. Tạo old từ entity nhưng rỗng hóa mọi MẢNG
                         // (giữ cấu trúc object để .map không vỡ). KHÔNG dùng def.map({}) vì mapper
@@ -203,6 +293,27 @@ export default {
         // Tạo "old entity" cho insert*Entity: clone cấu trúc nhưng mọi MẢNG → rỗng.
         // insert*Entity dùng old để so sánh "cái gì cần xóa"; import tạo mới → old phải rỗng.
         // Giữ object lồng (để .resistance.map... không vỡ), chỉ rỗng hóa các Array.
+        // Sinh mrid mới cho mọi object con CÓ DỮ LIỆU nhưng mrid null/rỗng
+        // (tránh NOT NULL constraint: identified_object.mrid khi insert).
+        _fillNullMrids(obj) {
+            if (!obj || typeof obj !== 'object') return
+            if (Array.isArray(obj)) { for (const it of obj) this._fillNullMrids(it); return }
+            const keys = Object.keys(obj)
+            const hasData = keys.some(k => {
+                if (k === 'mrid') return false
+                const v = obj[k]
+                return v !== null && v !== undefined && v !== '' && typeof v !== 'object'
+            })
+            if (Object.prototype.hasOwnProperty.call(obj, 'mrid')) {
+                if ((obj.mrid === null || obj.mrid === undefined || obj.mrid === '') && hasData) {
+                    obj.mrid = this.generateUuid()
+                }
+            }
+            for (const k of keys) {
+                const v = obj[k]
+                if (v && typeof v === 'object') this._fillNullMrids(v)
+            }
+        },
         _emptyArraysClone(obj) {
             if (Array.isArray(obj)) return []
             if (obj && typeof obj === 'object') {
@@ -256,14 +367,20 @@ export default {
                     },
                     substation: async (dto, parent) => {
                         dto.organisationId = parent.mrid
-                        console.log('%c[INS sub] DTO (parent org=' + parent.mrid + '):', 'color:#4CAF50', JSON.parse(JSON.stringify(dto)))
                         const entity = subDtoToEntity(dto)
-                        console.log('[INS sub] entity.substation:', entity && entity.substation)
+                        // QUAN TRỌNG: substation gắn org QUA bảng organisation_psr.
+                        // Đảm bảo organisationPsr trỏ đúng org mới (parent đã chọn).
+                        if (entity && entity.organisationPsr) {
+                            entity.organisationPsr.organisation_id = parent.mrid
+                            entity.organisationPsr.psr_id = entity.substation && entity.substation.mrid
+                            // nếu chưa có mrid bản ghi psr → tạo mới để upsert đúng
+                            if (!entity.organisationPsr.mrid) entity.organisationPsr.mrid = self.generateUuid()
+                        }
+                        console.log('[INS sub] organisationPsr:', JSON.stringify(entity && entity.organisationPsr), '| parent=', parent.mrid)
                         const rs = await api.insertSubstationEntity(entity)
-                        console.log('[INS sub] insert result:', rs)
+                        console.log('[INS sub] insert result:', rs && rs.success, rs && rs.message)
                         const newMrid = (rs && rs.data && rs.data.substation && rs.data.substation.mrid)
                             || (entity.substation && entity.substation.mrid) || dto.subsId
-                        console.log('[INS sub] → success:', !!(rs && rs.success), '| newMrid:', newMrid)
                         return { success: !!(rs && rs.success), mrid: newMrid, mode: 'substation', message: rs && (rs.message || (rs.error && rs.error.message)) }
                     },
                     voltageLevel: async (dto, parent) => {
@@ -292,17 +409,17 @@ export default {
                 },
 
                 jobImporters: {
-                    'Voltage transformer': { jobDtoToEntity: VTJob.jobDtoToEntity, insert: (a, o, e) => a.insertVoltageTransformerJob(o, e), update: (a, e) => a.insertVoltageTransformerJob(e, e) },
-                    'Current transformer': { jobDtoToEntity: CTJob.jobDtoToEntity, insert: (a, o, e) => a.insertCurrentTransformerJob(o, e), update: (a, e) => a.insertCurrentTransformerJob(e, e) },
-                    'Transformer':         { jobDtoToEntity: TFJob.jobDtoToEntity, insert: (a, o, e) => a.insertTransformerJob(o, e),         update: (a, e) => a.insertTransformerJob(e, e) },
-                    'Circuit breaker':     { jobDtoToEntity: CBJob.jobDtoToEntity, insert: (a, o, e) => a.insertCircuitBreakerJob(o, e),      update: (a, e) => a.insertCircuitBreakerJob(e, e) },
-                    'Surge arrester':      { jobDtoToEntity: SAJob.jobDtoToEntity, insert: (a, o, e) => a.insertSurgeArresterJob(o, e),       update: (a, e) => a.insertSurgeArresterJob(e, e) },
-                    'Disconnector':        { jobDtoToEntity: DCJob.jobDtoToEntity, insert: (a, o, e) => a.insertDisconnectorJob(o, e),        update: (a, e) => a.insertDisconnectorJob(e, e) },
-                    'Power cable':         { jobDtoToEntity: PCJob.jobDtoToEntity, insert: (a, o, e) => a.insertPowerCableJob(o, e),          update: (a, e) => a.insertPowerCableJob(e, e) },
-                    'Rotating machine':    { jobDtoToEntity: RMJob.jobDtoToEntity, insert: (a, o, e) => a.insertRotatingMachineJob(o, e),     update: (a, e) => a.insertRotatingMachineJob(e, e) },
-                    'Capacitor':           { jobDtoToEntity: CAPJob.jobDtoToEntity, insert: (a, o, e) => a.insertCapacitorJob(o, e),           update: (a, e) => a.insertCapacitorJob(e, e) },
-                    'Reactor':             { jobDtoToEntity: REJob.jobDtoToEntity, insert: (a, o, e) => a.insertReactorJob(o, e),             update: (a, e) => a.insertReactorJob(e, e) },
-                    'Bushing':             { jobDtoToEntity: BUJob.jobDtoToEntity, insert: (a, o, e) => a.insertBushingJob(o, e),             update: (a, e) => a.insertBushingJob(e, e) },
+                    'Voltage transformer': { jobDtoToEntity: VTJob.jobDtoToEntity, insert: (a, o, e) => a.insertVoltageTransformerJob(self._emptyArraysClone(e), e), update: (a, e) => a.insertVoltageTransformerJob(e, e) },
+                    'Current transformer': { jobDtoToEntity: CTJob.jobDtoToEntity, insert: (a, o, e) => a.insertCurrentTransformerJob(self._emptyArraysClone(e), e), update: (a, e) => a.insertCurrentTransformerJob(e, e) },
+                    'Transformer':         { jobDtoToEntity: TFJob.jobDtoToEntity, insert: (a, o, e) => a.insertTransformerJob(self._emptyArraysClone(e), e),         update: (a, e) => a.insertTransformerJob(e, e) },
+                    'Circuit breaker':     { jobDtoToEntity: CBJob.jobDtoToEntity, insert: (a, o, e) => a.insertCircuitBreakerJob(self._emptyArraysClone(e), e),      update: (a, e) => a.insertCircuitBreakerJob(e, e) },
+                    'Surge arrester':      { jobDtoToEntity: SAJob.jobDtoToEntity, insert: (a, o, e) => a.insertSurgeArresterJob(self._emptyArraysClone(e), e),       update: (a, e) => a.insertSurgeArresterJob(e, e) },
+                    'Disconnector':        { jobDtoToEntity: DCJob.jobDtoToEntity, insert: (a, o, e) => a.insertDisconnectorJob(self._emptyArraysClone(e), e),        update: (a, e) => a.insertDisconnectorJob(e, e) },
+                    'Power cable':         { jobDtoToEntity: PCJob.jobDtoToEntity, insert: (a, o, e) => a.insertPowerCableJob(self._emptyArraysClone(e), e),          update: (a, e) => a.insertPowerCableJob(e, e) },
+                    'Rotating machine':    { jobDtoToEntity: RMJob.jobDtoToEntity, insert: (a, o, e) => a.insertRotatingMachineJob(self._emptyArraysClone(e), e),     update: (a, e) => a.insertRotatingMachineJob(e, e) },
+                    'Capacitor':           { jobDtoToEntity: CAPJob.jobDtoToEntity, insert: (a, o, e) => a.insertCapacitorJob(self._emptyArraysClone(e), e),           update: (a, e) => a.insertCapacitorJob(e, e) },
+                    'Reactor':             { jobDtoToEntity: REJob.jobDtoToEntity, insert: (a, o, e) => a.insertReactorJob(self._emptyArraysClone(e), e),             update: (a, e) => a.insertReactorJob(e, e) },
+                    'Bushing':             { jobDtoToEntity: BUJob.jobDtoToEntity, insert: (a, o, e) => a.insertBushingJob(self._emptyArraysClone(e), e),             update: (a, e) => a.insertBushingJob(e, e) },
                 },
 
                 messageHandler: {
@@ -311,10 +428,24 @@ export default {
                     error: (m) => this.$message.error(m),
                 },
                 loadingHandler: {
-                    start: (text) => {
-                        const l = this.$loading({ lock: true, text: text || 'Importing...' })
-                        return () => l.close()
+                    start: () => {
+                        // Mở dialog tiến trình (modal, chặn tương tác, không làm mờ toàn app).
+                        this.progressVisible = true
+                        this.progressDone = 0
+                        this.progressTotal = 0
+                        this.progressName = ''
+                        this.progressType = ''
+                        return () => { this.progressVisible = false }
                     },
+                },
+                onProgressInit: (total) => {
+                    this.progressTotal = total
+                    this.progressDone = 0
+                },
+                onProgress: ({ name, type }) => {
+                    this.progressName = name || ''
+                    this.progressType = type || ''
+                    this.progressDone = Math.min(this.progressTotal, this.progressDone + 1)
                 },
             }
             await importBranchFromJSON(fileContent, targetNode, deps, decisions)

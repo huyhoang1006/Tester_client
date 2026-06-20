@@ -24,14 +24,6 @@ const STANDARD_TO_SERVER = {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const num = (val) => (val !== null && val !== undefined && val !== '')
-    ? parseFloat(val)
-    : null
-
-const str = (val) => (val !== null && val !== undefined && val !== '')
-    ? String(val)
-    : null
-
 // flat number + unit → DTO object {mrid, value, unit}
 const mapFlat = (value, unit, mrid) => ({
     mrid:  mrid || uuid.newUuid(),
@@ -367,11 +359,13 @@ export const mapDtoToServer = (dto) => {
                                 kssc:               str(ftCR.kssc),
                                 ktd:                str(ftCR.ktd),
                                 duty:               ftCR.duty  || null,
-                                vb: {
-                                    mrid:  null,
-                                    value: ftCR.vb ?? null,  // vb DTO là string binding trực tiếp
-                                    unit:  null,
-                                },
+                                vb: (() => {
+                                    const v = ftCR.vb
+                                    if (v && typeof v === 'object') {
+                                        return { mrid: v.mrid || null, value: num(v.value), unit: v.unit || null }
+                                    }
+                                    return { mrid: null, value: num(v), unit: null }
+                                })(),
                                 alf:                str(ftCR.alf),
                                 ts:                 str(ftCR.ts),
                                 ek:                 str(ftCR.ek),
@@ -425,4 +419,18 @@ export const mapDtoToServer = (dto) => {
             attachmentId:        dto.attachmentId        || null,
         },
     }
+}
+
+const isBlank = (v) => v === null || v === undefined || v === ''
+    || v === 'null' || v === 'undefined' || v === 'NaN'
+ 
+const num = (val) => {
+    if (isBlank(val)) return null
+    const n = parseFloat(val)
+    return Number.isNaN(n) ? null : n
+}
+ 
+const str = (val) => {
+    if (isBlank(val)) return null
+    return String(val)
 }

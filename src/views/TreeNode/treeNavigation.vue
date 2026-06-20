@@ -363,13 +363,27 @@
         <ImportConflictDialog :visible="conflictDialogVisible" @update:visible="conflictDialogVisible = $event" :conflicts="pendingConflicts"
             @cancel="handleConflictCancel"
             @confirm="handleConflictConfirm" />
+
+        <ImportGraftDialog :visible="graftDialogVisible" :target-mode="graftInfo ? graftInfo.targetMode : ''" :target-name="graftInfo ? graftInfo.targetName : ''"
+            :graft-mode="graftInfo ? graftInfo.graftMode : ''"
+            :graft-count="graftInfo ? graftInfo.graftCount : 0"
+            :skipped-list="graftInfo ? graftInfo.skippedList : []"
+            @update:visible="graftDialogVisible = $event"
+            @cancel="handleGraftCancel"
+            @confirm="handleGraftConfirm" />
+        
+        <ImportProgressDialog
+            :visible="progressVisible"
+            :current-name="progressName"
+            :current-type="progressType"
+            :done="progressDone"
+            :total="progressTotal" />
     </div>
 </template>
 <script>
 /* eslint-disable */
 import LogBar from '@/components/LogBar'
 import TreeNode from '@/views/Common/TreeNode.vue'
-import Vue from 'vue'
 import pageAlign from '@/views/PageAlign/pageAlign.vue'
 import spinner from '@/views/Common/Spinner.vue'
 import Tabs from '@/views/Common/Tabs.vue'
@@ -443,7 +457,9 @@ import {
     MoveDialog,
     DownloadDialog,
     ZeroDiagramDialog,
-    ImportConflictDialog
+    ImportConflictDialog,
+    ImportGraftDialog,
+    ImportProgressDialog
 } from './dialogs'
 
 
@@ -521,7 +537,9 @@ export default {
         MoveDialog,
         DownloadDialog,
         ZeroDiagramDialog,
-        ImportConflictDialog
+        ImportConflictDialog,
+        ImportGraftDialog,
+        ImportProgressDialog
     },
     data() {
         return {
