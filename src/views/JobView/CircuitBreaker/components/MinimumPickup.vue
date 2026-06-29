@@ -51,10 +51,12 @@
                         </el-select>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.trip_coil_no.value"></el-input>
+                        <el-input size="mini" type="text" number="positive"
+                            v-model="item.trip_coil_no.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.close_coil_no.value"></el-input>
+                        <el-input size="mini" type="text" number="positive"
+                            v-model="item.close_coil_no.value"></el-input>
                     </td>
                     <td>
                         <el-input size="mini" type="text" number="positive" v-model="item.v_pickup.value"></el-input>
@@ -110,17 +112,41 @@
                 <tbody>
                     <tr>
                         <td>Close</td>
-                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.pickup_voltage.abs.min_pickup_voltage_close.v_min.value"/></td>
-                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.pickup_voltage.abs.min_pickup_voltage_close.v_max.value"/></td>
-                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.pickup_voltage.rel.min_pickup_voltage_close.v_ref.value"/></td>
-                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.pickup_voltage.rel.min_pickup_voltage_close.v_dev.value"/></td>
+                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'">
+                            <el-input size="mini" type="text" number="positive"
+                                v-model="assetData.assessmentLimits.pickup_voltage.abs.min_pickup_voltage_close.v_min.value" />
+                        </td>
+                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'">
+                            <el-input size="mini" type="text" number="positive"
+                                v-model="assetData.assessmentLimits.pickup_voltage.abs.min_pickup_voltage_close.v_max.value" />
+                        </td>
+                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'">
+                            <el-input size="mini" type="text" number="positive"
+                                v-model="assetData.assessmentLimits.pickup_voltage.rel.min_pickup_voltage_close.v_ref.value" />
+                        </td>
+                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'">
+                            <el-input size="mini" type="text" number="positive"
+                                v-model="assetData.assessmentLimits.pickup_voltage.rel.min_pickup_voltage_close.v_dev.value" />
+                        </td>
                     </tr>
                     <tr>
                         <td>Trip</td>
-                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.pickup_voltage.abs.min_pickup_voltage_trip.v_min.value"/></td>
-                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.pickup_voltage.abs.min_pickup_voltage_trip.v_max.value"/></td>
-                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.pickup_voltage.rel.min_pickup_voltage_trip.v_ref.value"/></td>
-                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.pickup_voltage.rel.min_pickup_voltage_trip.v_dev.value"/></td>
+                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'">
+                            <el-input size="mini" type="text" number="positive"
+                                v-model="assetData.assessmentLimits.pickup_voltage.abs.min_pickup_voltage_trip.v_min.value" />
+                        </td>
+                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'">
+                            <el-input size="mini" type="text" number="positive"
+                                v-model="assetData.assessmentLimits.pickup_voltage.abs.min_pickup_voltage_trip.v_max.value" />
+                        </td>
+                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'">
+                            <el-input size="mini" type="text" number="positive"
+                                v-model="assetData.assessmentLimits.pickup_voltage.rel.min_pickup_voltage_trip.v_ref.value" />
+                        </td>
+                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'">
+                            <el-input size="mini" type="text" number="positive"
+                                v-model="assetData.assessmentLimits.pickup_voltage.rel.min_pickup_voltage_trip.v_dev.value" />
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -640,13 +666,13 @@ export default {
         calculator() {
             var limits = this.assetData && this.assetData.assessmentLimits ? this.assetData.assessmentLimits : null
             if (!limits) { this.$message.error('Assessment limits not configured'); return }
-            var pv   = limits.pickup_voltage
+            var pv = limits.pickup_voltage
             var mode = limits.limits
-            this.testData.table.table1.forEach(function(item) {
-                var value     = item.v_pickup ? item.v_pickup.value : ''
+            this.testData.table.table1.forEach(function (item) {
+                var value = item.v_pickup ? item.v_pickup.value : ''
                 var operation = item.operation ? item.operation.value : ''
                 var limitKey
-                if (operation === 'Close')     limitKey = 'min_pickup_voltage_close'
+                if (operation === 'Close') limitKey = 'min_pickup_voltage_close'
                 else if (operation === 'Trip') limitKey = 'min_pickup_voltage_trip'
                 else { item.assessment.value = ''; return }
                 var result

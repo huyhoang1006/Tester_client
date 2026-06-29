@@ -52,7 +52,8 @@
                             <el-input size="mini" type="text" number="positive" v-model="item.i_test.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" number="positive" v-model="item.contact_resistance.value"></el-input>
+                            <el-input size="mini" type="text" number="positive"
+                                v-model="item.contact_resistance.value"></el-input>
                         </td>
                         <td>
                             <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -160,12 +161,24 @@
             </el-radio-group>
             <el-form size="small" label-position="left" label-width="120px">
                 <template v-if="assetData.assessmentLimits.limits === 'Absolute'">
-                    <el-form-item label="R min (μΩ)"><el-input v-model="assetData.assessmentLimits.contact_resistance.abs.r_min.value"/></el-form-item>
-                    <el-form-item label="R max (μΩ)"><el-input v-model="assetData.assessmentLimits.contact_resistance.abs.r_max.value"/></el-form-item>
+                    <el-form-item label="R min (μΩ)">
+                        <el-input type="text" number="positive"
+                            v-model="assetData.assessmentLimits.contact_resistance.abs.r_min.value" />
+                    </el-form-item>
+                    <el-form-item label="R max (μΩ)">
+                        <el-input type="text" number="positive"
+                            v-model="assetData.assessmentLimits.contact_resistance.abs.r_max.value" />
+                    </el-form-item>
                 </template>
                 <template v-else>
-                    <el-form-item label="R ref (μΩ)"><el-input v-model="assetData.assessmentLimits.contact_resistance.rel.r_ref.value"/></el-form-item>
-                    <el-form-item label="R dev (μΩ)"><el-input v-model="assetData.assessmentLimits.contact_resistance.rel.r_dev.value"/></el-form-item>
+                    <el-form-item label="R ref (μΩ)">
+                        <el-input type="text" number="positive"
+                            v-model="assetData.assessmentLimits.contact_resistance.rel.r_ref.value" />
+                    </el-form-item>
+                    <el-form-item label="R dev (μΩ)">
+                        <el-input type="text" number="positive"
+                            v-model="assetData.assessmentLimits.contact_resistance.rel.r_dev.value" />
+                    </el-form-item>
                 </template>
             </el-form>
             <template v-slot:footer>
@@ -356,9 +369,9 @@ export default {
         calculator() {
             var limits = this.assetData && this.assetData.assessmentLimits ? this.assetData.assessmentLimits : null
             if (!limits) { this.$message.error('Assessment limits not configured'); return }
-            var cr   = limits.contact_resistance
+            var cr = limits.contact_resistance
             var mode = limits.limits
-            this.testData.table.table1.forEach(function(item) {
+            this.testData.table.table1.forEach(function (item) {
                 var value = item.contact_resistance ? item.contact_resistance.value : ''
                 var result
                 if (mode === 'Absolute') {
@@ -370,13 +383,14 @@ export default {
             }.bind(this))
             this.$message.success('Calculating successfully')
         },
-
         clear() {
-            this.testData.table.forEach((element) => {
-                Object.keys(element).forEach((key) => {
-                    if (key !== "mrid" && key !== "phase" && key !== "interrupter") {
-                        element[key].value = ''
-                    }
+            Object.keys(this.testData.table).forEach((tableKey) => {
+                this.testData.table[tableKey].forEach((ele) => {
+                    Object.keys(ele).forEach((key) => {
+                        if (ele[key] && typeof ele[key] === 'object' && ele[key].value !== undefined) {
+                            ele[key].value = ''
+                        }
+                    })
                 })
             })
         },

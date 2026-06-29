@@ -89,13 +89,28 @@
             </el-radio-group>
             <el-form size="small" label-position="left" label-width="140px">
                 <template v-if="assetData.assessmentLimits.limits === 'Absolute'">
-                    <el-form-item label="Minimum (Ω)"><el-input v-model="assetData.assessmentLimits.coil_characteristics.abs.close_coil_resistance.min.value"/></el-form-item>
-                    <el-form-item label="Maximum (Ω)"><el-input v-model="assetData.assessmentLimits.coil_characteristics.abs.close_coil_resistance.max.value"/></el-form-item>
+                    <el-form-item label="Minimum (Ω)">
+                        <el-input type="text" number="positive"
+                            v-model="assetData.assessmentLimits.coil_characteristics.abs.close_coil_resistance.min.value" />
+                    </el-form-item>
+                    <el-form-item label="Maximum (Ω)">
+                        <el-input type="text" number="positive"
+                            v-model="assetData.assessmentLimits.coil_characteristics.abs.close_coil_resistance.max.value" />
+                    </el-form-item>
                 </template>
                 <template v-else>
-                    <el-form-item label="Reference (Ω)"><el-input v-model="assetData.assessmentLimits.coil_characteristics.rel.close_coil_resistance.ref.value"/></el-form-item>
-                    <el-form-item label="- Deviation (Ω)"><el-input v-model="assetData.assessmentLimits.coil_characteristics.rel.close_coil_resistance.minus_dev.value"/></el-form-item>
-                    <el-form-item label="+ Deviation (Ω)"><el-input v-model="assetData.assessmentLimits.coil_characteristics.rel.close_coil_resistance.plus_dev.value"/></el-form-item>
+                    <el-form-item label="Reference (Ω)">
+                        <el-input type="text" number="positive"
+                            v-model="assetData.assessmentLimits.coil_characteristics.rel.close_coil_resistance.ref.value" />
+                    </el-form-item>
+                    <el-form-item label="- Deviation (Ω)">
+                        <el-input type="text" number="positive"
+                            v-model="assetData.assessmentLimits.coil_characteristics.rel.close_coil_resistance.minus_dev.value" />
+                    </el-form-item>
+                    <el-form-item label="+ Deviation (Ω)">
+                        <el-input type="text" number="positive"
+                            v-model="assetData.assessmentLimits.coil_characteristics.rel.close_coil_resistance.plus_dev.value" />
+                    </el-form-item>
                 </template>
             </el-form>
             <template v-slot:footer>
@@ -363,9 +378,9 @@ export default {
         calculator() {
             var limits = this.assetData && this.assetData.assessmentLimits ? this.assetData.assessmentLimits : null
             if (!limits) { this.$message.error('Assessment limits not configured'); return }
-            var cc   = limits.coil_characteristics
+            var cc = limits.coil_characteristics
             var mode = limits.limits
-            this.testData.table.table1.forEach(function(item) {
+            this.testData.table.table1.forEach(function (item) {
                 var value = item.r_meas ? item.r_meas.value : ''
                 var result
                 if (mode === 'Absolute') {

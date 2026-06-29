@@ -41,10 +41,10 @@
             <tbody>
                 <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.name.value"></el-input>
+                        <el-input size="mini" type="text" v-model="item.name.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.i_knee.value"
+                        <el-input size="mini" type="text" number="positive" v-model="item.i_knee.value"
                             @blur="validateIKnee(item, index)">
                         </el-input>
                     </td>

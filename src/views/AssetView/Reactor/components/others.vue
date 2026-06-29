@@ -5,14 +5,13 @@
             <el-divider></el-divider>
             <el-form-item label="Insulation type">
                 <el-input v-model="otherData.insulation_type">
-                    <template slot="append">kV</template>
                 </el-input>
             </el-form-item>
             <el-form-item label="Weight">
-                <el-input type="number" number="positive" v-model="otherData.weight.value">                                                                                            
+                <el-input type="number" number="positive" v-model="otherData.weight.value">
                     <template slot="append">kg</template>
                 </el-input>
-            </el-form-item>   
+            </el-form-item>
         </el-form>
     </div>
 </template>
@@ -44,6 +43,7 @@ export default {
 ::v-deep .el-select .el-input__inner {
     font-size: 12px !important;
 }
+
 ::v-deep(.el-form-item__label) {
     font-size: 12px !important;
 }

@@ -46,7 +46,8 @@
                             <tr v-if="conditions.ambient_temp">
                                 <td class="condition-head">Ambient temperature</td>
                                 <td>
-                                    <el-input size="mini" type="text" number v-model="conditions.ambient_temp.value">
+                                    <el-input size="mini" type="text" number="positive"
+                                        v-model="conditions.ambient_temp.value">
                                         <template slot="append">°C</template>
                                     </el-input>
                                 </td>

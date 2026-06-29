@@ -78,7 +78,9 @@
         </table>
 
         <el-dialog append-to-body title="Assessment settings" :visible.sync="openAssessmentDialog" width="400px">
-            <el-alert type="warning" title="Insulation resistance assessment limits have not been configured in the asset view yet." :closable="false"/>
+            <el-alert type="warning"
+                title="Insulation resistance assessment limits have not been configured in the asset view yet."
+                :closable="false" />
             <template v-slot:footer>
                 <span style="position:absolute;right:10px;bottom:10px;">
                     <el-button @click="openAssessmentDialog = false">Close</el-button>
@@ -324,7 +326,7 @@ export default {
             this.testData.table.table1.splice(index + 1, 0, data)
         },
         calculator() {
-            this.testData.table.table1.forEach(function(item) { item.assessment.value = '' })
+            this.testData.table.table1.forEach(function (item) { item.assessment.value = '' })
             this.$message.warning('Assessment limits for insulation resistance not yet configured in asset')
         },
         clear() {

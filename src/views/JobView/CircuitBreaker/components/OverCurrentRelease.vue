@@ -44,11 +44,12 @@
                         {{ index + 1 }}
                     </td>
                     <td>
-                        <el-input size="mini" style="width: 100px;" type="text"
+                        <el-input size="mini" style="width: 100px;" type="text" number="positive"
                             v-model="item.trip_coil_no.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.trip_current.value"></el-input>
+                        <el-input size="mini" type="text" number="positive"
+                            v-model="item.trip_current.value"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -90,12 +91,24 @@
             </el-radio-group>
             <el-form size="small" label-position="left" label-width="160px">
                 <template v-if="assetData.assessmentLimits.limits === 'Absolute'">
-                    <el-form-item label="Min trip current (A)"><el-input v-model="assetData.assessmentLimits.overcurrent_release.abs.oc_replay_trip_current.min.value"/></el-form-item>
-                    <el-form-item label="Max trip current (A)"><el-input v-model="assetData.assessmentLimits.overcurrent_release.abs.oc_replay_trip_current.max.value"/></el-form-item>
+                    <el-form-item label="Min trip current (A)">
+                        <el-input type="text" number="positive"
+                            v-model="assetData.assessmentLimits.overcurrent_release.abs.oc_replay_trip_current.min.value" />
+                    </el-form-item>
+                    <el-form-item label="Max trip current (A)">
+                        <el-input type="text" number="positive"
+                            v-model="assetData.assessmentLimits.overcurrent_release.abs.oc_replay_trip_current.max.value" />
+                    </el-form-item>
                 </template>
                 <template v-else>
-                    <el-form-item label="Ref trip current (A)"><el-input v-model="assetData.assessmentLimits.overcurrent_release.rel.oc_replay_trip_current.ref.value"/></el-form-item>
-                    <el-form-item label="Dev trip current (A)"><el-input v-model="assetData.assessmentLimits.overcurrent_release.rel.oc_replay_trip_current.dev.value"/></el-form-item>
+                    <el-form-item label="Ref trip current (A)">
+                        <el-input type="text" number="positive"
+                            v-model="assetData.assessmentLimits.overcurrent_release.rel.oc_replay_trip_current.ref.value" />
+                    </el-form-item>
+                    <el-form-item label="Dev trip current (A)">
+                        <el-input type="text" number="positive"
+                            v-model="assetData.assessmentLimits.overcurrent_release.rel.oc_replay_trip_current.dev.value" />
+                    </el-form-item>
                 </template>
             </el-form>
             <template v-slot:footer>
@@ -130,7 +143,7 @@ export default {
         },
         asset: {
             type: Object,
-            default: function() { return {} }
+            default: function () { return {} }
         }
     },
     computed: {
@@ -173,9 +186,9 @@ export default {
         calculator() {
             var limits = this.assetData && this.assetData.assessmentLimits ? this.assetData.assessmentLimits : null
             if (!limits) { this.$message.error('Assessment limits not configured'); return }
-            var ocr  = limits.overcurrent_release
+            var ocr = limits.overcurrent_release
             var mode = limits.limits
-            this.testData.table.table1.forEach(function(item) {
+            this.testData.table.table1.forEach(function (item) {
                 var value = item.trip_current ? item.trip_current.value : ''
                 var result
                 if (mode === 'Absolute') {

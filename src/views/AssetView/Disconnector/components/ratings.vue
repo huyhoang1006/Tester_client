@@ -65,7 +65,7 @@
                             <el-col :span="24" class="pdr-0">
                                 <el-input type="text" number="positive"
                                     v-model="ratingsData.power_freq_withstand_voltage_earth_poles.value">
-                                    <template slot="append">Kv</template>
+                                    <template slot="append">kV</template>
                                 </el-input>
                             </el-col>
                         </el-form-item>
@@ -73,7 +73,7 @@
                             <el-col :span="24" class="pdr-0">
                                 <el-input type="text" number="positive"
                                     v-model="ratingsData.power_freq_withstand_voltage_isolating_distance.value">
-                                    <template slot="append">Hz</template>
+                                    <template slot="append">kV</template>
                                 </el-input>
                             </el-col>
                         </el-form-item>

@@ -46,10 +46,10 @@
                         <el-input size="mini" type="text" v-model="item.name.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.r_meas.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.r_meas.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.r_ref.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.r_ref.value"></el-input>
                     </td>
                     <td>
                         <el-input size="mini" type="text" v-model="item.r_corr.value"></el-input>
