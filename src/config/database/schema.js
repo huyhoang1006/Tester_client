@@ -1532,20 +1532,18 @@ CREATE TABLE IF NOT EXISTS "organisation" (
 	FOREIGN KEY("postal_address") REFERENCES "street_address"("mrid")
 );
 CREATE TABLE IF NOT EXISTS "organisation_location" (
-	"mrid"	TEXT NOT NULL,
 	"organisation_id"	TEXT,
 	"location_id"	TEXT,
-	PRIMARY KEY("mrid"),
-	FOREIGN KEY("organisation_id") REFERENCES "organisation"("mrid") ON DELETE CASCADE,
-	FOREIGN KEY("location_id") REFERENCES "location"("mrid") ON DELETE CASCADE
+	PRIMARY KEY("organisation_id","location_id"),
+	FOREIGN KEY("location_id") REFERENCES "location"("mrid") ON DELETE CASCADE,
+	FOREIGN KEY("organisation_id") REFERENCES "organisation"("mrid") ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS "organisation_person" (
-	"mrid"	TEXT NOT NULL,
 	"person_id"	TEXT,
 	"organisation_id"	TEXT,
-	FOREIGN KEY("person_id") REFERENCES "person"("mrid") ON DELETE CASCADE,
+	PRIMARY KEY("person_id","organisation_id"),
 	FOREIGN KEY("organisation_id") REFERENCES "organisation"("mrid") ON DELETE CASCADE,
-	PRIMARY KEY("mrid")
+	FOREIGN KEY("person_id") REFERENCES "person"("mrid") ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS "organisation_psr" (
 	"mrid"	TEXT NOT NULL,
@@ -2670,4 +2668,5 @@ CREATE TABLE IF NOT EXISTS "zero_sequence_impedance_table" (
 	FOREIGN KEY("transformer_end_id") REFERENCES "transformer_end_info"("mrid") ON DELETE CASCADE,
 	FOREIGN KEY("zero_sequence_impedance") REFERENCES "zero_sequence_impedance"("mrid") ON DELETE CASCADE,
 	PRIMARY KEY("mrid")
-);`;
+);
+`;
