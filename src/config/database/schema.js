@@ -2670,9 +2670,4 @@ CREATE TABLE IF NOT EXISTS "zero_sequence_impedance_table" (
 	FOREIGN KEY("transformer_end_id") REFERENCES "transformer_end_info"("mrid") ON DELETE CASCADE,
 	FOREIGN KEY("zero_sequence_impedance") REFERENCES "zero_sequence_impedance"("mrid") ON DELETE CASCADE,
 	PRIMARY KEY("mrid")
-);
-CREATE INDEX idx_mp_measurement_id ON measurement_procedure(measurement_id);
-CREATE INDEX idx_mp_procedure_id ON measurement_procedure(procedure_id);
-CREATE UNIQUE INDEX idx_org_loc_unique ON organisation_location (organisation_id, location_id);
-CREATE UNIQUE INDEX idx_org_ps_unique ON organisation_person (organisation_id, person_id);
-`;
+);`;
