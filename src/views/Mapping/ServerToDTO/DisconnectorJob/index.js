@@ -284,3 +284,103 @@ export const mapDtoToServer = (dto) => {
         attachmentId: dto.attachmentId || null,
     }
 }
+
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Mapper: server JSON (download) → DTO Job
+// Chiều NGƯỢC của mapDtoToServer. Nhận JSON server trả khi tải job/test → DTO JobView.
+//   - server cell có 'measurement_id'(snake)+'mrid'(đã lưu) → DTO giữ nguyên
+//   - server 'job'(camel) → DTO 'properties'(snake)
+//   - unit 'kV'(gộp) → DTO 'k|V'(tách) cho form sửa được
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const splitUnitD = (u) => {
+    if (!u || u === 'null') return null
+    const m = u.match(/^(k|M|G|m|µ|u|n|p)(.+)$/)
+    return m ? `${m[1]}|${m[2]}` : u
+}
+const unmapCellD = (cell) => {
+    if (!cell || typeof cell !== 'object') return cell
+    return {
+        mrid:           cell.mrid || null,
+        type:           cell.type || null,
+        value:          cell.value ?? null,
+        unit:           splitUnitD(cell.unit),
+        measurement_id: cell.measurement_id || cell.measurementId || null,
+    }
+}
+const unmapRowD = (row) => {
+    const out = { mrid: row.mrid || null }
+    for (const k of Object.keys(row)) {
+        if (k === 'mrid' || k.startsWith('_')) continue
+        const v = row[k]
+        out[k] = (v && typeof v === 'object' && 'type' in v) ? unmapCellD(v) : v
+    }
+    return out
+}
+const unmapDataTableD = (data) => {
+    const tables = (data && data.table) || data || {}
+    const out = {}
+    for (const tname of Object.keys(tables)) {
+        const rows = tables[tname]
+        if (!Array.isArray(rows)) continue
+        out[tname] = rows.map(unmapRowD)
+    }
+    return { table: out }
+}
+const unmapConditionD = (condition) => {
+    const out = {}
+    for (const k of Object.keys(condition || {})) {
+        const v = condition[k]
+        out[k] = (v && typeof v === 'object' && 'type' in v) ? unmapCellD(v) : v
+    }
+    return out
+}
+
+export const mapServerToDto = (server) => {
+    if (!server) return null
+    const p = server.properties || server.job || {}
+    return {
+        properties: {
+            mrid:           p.mrid || p.mRID || null,
+            name:           p.name || null,
+            type:           p.type || null,
+            creation_date:  p.creation_date || p.creationDate || null,
+            execution_date: p.execution_date || p.executionDate || null,
+            tested_by:      p.tested_by || p.testedBy || null,
+            approved_by:    p.approved_by || p.approvedBy || null,
+            approval_date:  p.approval_date || p.approvalDate || null,
+            test_method:    p.test_method || p.testMethod || null,
+            ref_standard:   p.ref_standard || p.refStandard || null,
+            summary:        p.summary || null,
+            asset_id:       p.asset_id || p.assetId || null,
+        },
+        testList: (server.testList || []).map(t => ({
+            mrid:         t.mrid || null,
+            name:         t.name || t.testTypeName || null,
+            testTypeId:   t.testTypeId || null,
+            testTypeCode: t.testTypeCode || null,
+            testTypeName: t.testTypeName || null,
+            created_on:   t.created_on || t.createdOn || null,
+            testCondition: t.testCondition ? {
+                mrid:      t.testCondition.mrid || null,
+                comment:   t.testCondition.comment || null,
+                condition: unmapConditionD(t.testCondition.condition),
+            } : null,
+            data: unmapDataTableD(t.data),
+            testAssessment: t.testAssessment || null,
+        })),
+        testingEquipmentData: (server.testingEquipmentData || server.testingEquipmentList || []).map(e => ({
+            mrid:             e.mrid || null,
+            model:            e.model || null,
+            serial_number:    e.serial_number || e.serialNumber || null,
+            calibration_date: e.calibration_date || e.calibrationDate || null,
+            work_id:          e.work_id || null,
+        })),
+        disconnectorTestingEquipmentTestType: server.disconnectorTestingEquipmentTestType || [],
+        procedureAsset: server.procedureAsset || [],
+        attachmentId:   server.attachmentId || null,
+        attachment:     server.attachment || null,
+    }
+}

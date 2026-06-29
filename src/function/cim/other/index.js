@@ -87,30 +87,31 @@ export const insertOther = async (other) => {
 export const insertOtherTransaction = async (other, dbsql) => {
     return new Promise(async (resolve, reject) => {
         try {
-            // Ensure table has PRIMARY KEY on mrid
-            dbsql.run(`CREATE TABLE IF NOT EXISTS other(
-                mrid TEXT PRIMARY KEY,
-                category TEXT,
-                insulation_medium TEXT,
-                insulation_weight TEXT,
-                insulation_volume TEXT,
-                power_transformer_info_id TEXT,
-                insulation_key TEXT,
-                tank_type TEXT
-            )`, [], function(err) {
-                if (err && !err.message.includes('already exists')) {
-                    console.warn('Create table warning:', err.message);
-                }
-            });
-
             const identifiedObjectResult = await IdentifiedObjectFunc.insertIdentifiedObjectTransaction(other, dbsql)
             if (!identifiedObjectResult.success) {
                 return reject({ success: false, message: 'Insert identifiedObject failed', err: identifiedObjectResult.err })
             }
 
             dbsql.run(
-                `INSERT OR REPLACE INTO other(mrid, category, insulation_medium, insulation_weight, insulation_volume, power_transformer_info_id, insulation_key, tank_type)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                `INSERT INTO other(
+                    mrid,
+                    category,
+                    insulation_medium,
+                    insulation_weight,
+                    insulation_volume,
+                    power_transformer_info_id,
+                    insulation_key,
+                    tank_type
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(mrid) DO UPDATE SET
+                    category = excluded.category,
+                    insulation_medium = excluded.insulation_medium,
+                    insulation_weight = excluded.insulation_weight,
+                    insulation_volume = excluded.insulation_volume,
+                    power_transformer_info_id = excluded.power_transformer_info_id,
+                    insulation_key = excluded.insulation_key,
+                    tank_type = excluded.tank_type`,
                 [
                     other.mrid,
                     other.category || null,

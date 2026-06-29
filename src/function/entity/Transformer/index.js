@@ -107,6 +107,7 @@ export const insertTransformerEntity = async (old_entity, entity) => {
                 }
             }
             await insertOldPowerTransformerInfoTransaction(entity.oldPowerTransformerInfo, db);
+            console.log(entity.other)
             await insertOtherTransaction(entity.other, db);
             await insertLifecycleDateTransaction(entity.lifecycleDate, db);
             await insertProductAssetModelTransaction(entity.productAssetModel, db);

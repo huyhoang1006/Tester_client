@@ -31,6 +31,30 @@ const discreteToValue = (measurementId, value) => {
     return Number.isNaN(n) ? value : n      // đã là số
 }
 
+// Map col.code → mrid (cột discrete) — dùng khi cell thiếu measurement_id.
+// Vài component (COCOTiming/OCOCOTiming) từng tạo cell thiếu measurement_id;
+// data cũ đã lưu vẫn null → tra lại từ config theo tên cột để convert chữ→số.
+const CB_DISCRETE_MRID_BY_CODE = (() => {
+    const map = {}
+    const collect = (cfg) => {
+        for (const testCode in cfg) {
+            for (const col of (cfg[testCode]?.columns || [])) {
+                if (col.type === 'discrete' && col.code && col.mrid) map[col.code] = col.mrid
+            }
+        }
+    }
+    collect(circuitBreakerTestMap)
+    collect(circuitBreakerConditionMap)
+    return map
+})()
+
+// Chuẩn hóa tên bảng: data cũ của OCTiming/COTiming lưu key số '0','1','2'
+// thay vì 'table1','table2'. Đổi về tableN cho nhất quán toàn payload.
+const normalizeTableName = (name) => {
+    if (/^\d+$/.test(String(name))) return 'table' + (parseInt(name, 10) + 1)
+    return name
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // Mapper: DTO Job (Circuit Breaker) → server JSON (upload)
 //
@@ -56,19 +80,24 @@ const joinUnit = (u) => {
     if (!u || u === 'null' || u === 'undefined') return null
     return u.includes('|') ? u.replace('|', '') : u
 }
-// 1 ô đo {mrid,type,unit,value,measurement_id} → server cell
-const mapCell = (cell) => {
+// 1 ô đo {mrid,type,unit,value,measurement_id} → server cell.
+// fieldKey = tên cột; dùng tra measurement_id từ config nếu cell thiếu (cột discrete).
+const mapCell = (cell, fieldKey) => {
     if (!cell) return null
+    let measurementId = cell.measurement_id || null
+    if (!measurementId && fieldKey && CB_DISCRETE_MRID_BY_CODE[fieldKey]) {
+        measurementId = CB_DISCRETE_MRID_BY_CODE[fieldKey]
+    }
     let value
     if (cell.type === 'analog')        value = num(cell.value)
-    else if (cell.type === 'discrete') value = discreteToValue(cell.measurement_id, cell.value)  // chữ → số
+    else if (cell.type === 'discrete') value = discreteToValue(measurementId, cell.value)  // chữ → số
     else                                value = cell.value ?? null  // string
     return {
         // KHÔNG gửi mrid cell — id PK độc lập, server tự sinh khi lưu
         type:          cell.type || null,            // analog | string | discrete
         value,
         unit:          joinUnit(cell.unit),
-        measurementId: cell.measurement_id || null,  // = column.mrid (khớp config seed) — GIỮ
+        measurementId: measurementId || null,        // = column.mrid (khớp config seed) — GIỮ
     }
 }
 
@@ -77,7 +106,7 @@ const mapCondition = (condition) => {
     if (!condition) return {}
     const out = {}
     for (const fieldKey of Object.keys(condition)) {
-        const cell = mapCell(condition[fieldKey])
+        const cell = mapCell(condition[fieldKey], fieldKey)
         if (cell) out[fieldKey] = cell
     }
     return out
@@ -99,12 +128,13 @@ const mapDataTable = (data) => {
     for (const tableName of Object.keys(tables)) {
         const rows = tables[tableName]
         if (!Array.isArray(rows)) continue   // phòng cấu trúc lạ
-        out[tableName] = rows.map(row => {
+        const outName = normalizeTableName(tableName)   // '0' → 'table1'
+        out[outName] = rows.map(row => {
             const mapped = {}   // KHÔNG gửi mrid row — server tự sinh
             for (const fieldKey of Object.keys(row)) {
                 if (fieldKey === 'mrid') continue
                 const cell = row[fieldKey]
-                if (isCell(cell)) mapped[fieldKey] = mapCell(cell)
+                if (isCell(cell)) mapped[fieldKey] = mapCell(cell, fieldKey)
             }
             return mapped
         })
@@ -282,5 +312,143 @@ export const mapDtoToServer = (dto) => {
         // Khi có API upload file: gửi thêm list file (attachmentData) tương tự.
         // Attachment trong từng test/condition cũng sẽ theo cùng format này.
         attachmentId: dto.attachmentId || null,
+    }
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Mapper: server JSON (download) → DTO Job (Circuit Breaker)
+//
+// Chiều NGƯỢC của mapDtoToServer. Nhận JSON server trả về khi tải job/test
+// (xem mockData download), dựng lại DTO mà JobView dùng.
+//
+// Khác upload:
+//   - server cell có 'measurement_id' (snake) + 'mrid' (đã lưu) → DTO giữ nguyên 2 field
+//   - server 'job' (camel) → DTO 'properties' (snake)
+//   - discrete value: server lưu SỐ → đổi lại CHỮ (alias) cho UI hiển thị
+//   - unit 'kV' (gộp) → DTO 'k|V' (tách pipe) để form chỉnh sửa được
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// số server (number) → giữ; null → null
+const numD = (v) => (v !== null && v !== undefined && v !== '') ? v : null
+// unit server 'kV' → DTO 'k|V' (tách multiplier khỏi đơn vị cơ bản nếu nhận ra)
+const splitUnit = (u) => {
+    if (!u || u === 'null') return null
+    // các multiplier SI thường gặp đứng trước đơn vị
+    const m = u.match(/^(k|M|G|m|µ|u|n|p)(.+)$/)
+    return m ? `${m[1]}|${m[2]}` : u
+}
+// discrete số → chữ (alias) theo config, để UI hiển thị; nếu ko tra được giữ nguyên
+const discreteToAlias = (measurementId, value) => {
+    if (value === null || value === undefined || value === '') return null
+    const m = measurementId && CB_DISCRETE_ALIAS_TO_VALUE[measurementId]
+    if (m) {
+        for (const alias in m) if (m[alias] === value || String(m[alias]) === String(value)) return alias
+    }
+    return value
+}
+
+// 1 server cell {type,value,unit,measurement_id,mrid} → DTO cell
+const unmapCell = (cell) => {
+    if (!cell || typeof cell !== 'object') return cell
+    const measurementId = cell.measurement_id || cell.measurementId || null
+    let value
+    if (cell.type === 'discrete') value = discreteToAlias(measurementId, cell.value)  // số → chữ
+    else                          value = cell.value ?? null
+    return {
+        mrid:           cell.mrid || null,           // server đã lưu → giữ để update đúng record
+        type:           cell.type || null,
+        value,
+        unit:           splitUnit(cell.unit),
+        measurement_id: measurementId,               // snake — JobView đọc field này
+    }
+}
+
+// 1 row server {mrid, <col>:cell} → DTO row (giữ mrid procedure_dataset + unmap mỗi cell)
+const unmapRow = (row) => {
+    const out = { mrid: row.mrid || null }
+    for (const k of Object.keys(row)) {
+        if (k === 'mrid' || k.startsWith('_')) continue
+        const v = row[k]
+        out[k] = (v && typeof v === 'object' && 'type' in v) ? unmapCell(v) : v
+    }
+    return out
+}
+
+// data.table server {table1:[...],table2:[...]} → DTO data {table:{...}}
+const unmapDataTable = (data) => {
+    const tables = (data && data.table) || data || {}
+    const out = {}
+    for (const tname of Object.keys(tables)) {
+        const rows = tables[tname]
+        if (!Array.isArray(rows)) continue
+        out[normalizeTableName(tname)] = rows.map(unmapRow)
+    }
+    return { table: out }
+}
+
+// condition server {<col>:cell} → DTO condition
+const unmapCondition = (condition) => {
+    const out = {}
+    for (const k of Object.keys(condition || {})) {
+        const v = condition[k]
+        out[k] = (v && typeof v === 'object' && 'type' in v) ? unmapCell(v) : v
+    }
+    return out
+}
+
+export const mapServerToDto = (server) => {
+    if (!server) return null
+    const p = server.properties || server.job || {}
+
+    return {
+        properties: {
+            mrid:           p.mrid || p.mRID || null,
+            name:           p.name || null,
+            type:           p.type || null,
+            creation_date:  p.creation_date || p.creationDate || null,
+            execution_date: p.execution_date || p.executionDate || null,
+            tested_by:      p.tested_by || p.testedBy || null,
+            approved_by:    p.approved_by || p.approvedBy || null,
+            approval_date:  p.approval_date || p.approvalDate || null,
+            test_method:    p.test_method || p.testMethod || null,
+            ref_standard:   p.ref_standard || p.refStandard || null,
+            summary:        p.summary || null,
+            asset_id:       p.asset_id || p.assetId || null,
+        },
+
+        testList: (server.testList || []).map(t => ({
+            mrid:         t.mrid || null,             // work_task — giữ để update
+            name:         t.name || t.testTypeName || null,
+            testTypeId:   t.testTypeId || null,
+            testTypeCode: t.testTypeCode || null,
+            testTypeName: t.testTypeName || null,
+            created_on:   t.created_on || t.createdOn || null,
+
+            testCondition: t.testCondition ? {
+                mrid:      t.testCondition.mrid || null,
+                comment:   t.testCondition.comment || null,
+                condition: unmapCondition(t.testCondition.condition),
+            } : null,
+
+            data: unmapDataTable(t.data),
+
+            testAssessment: t.testAssessment || null,
+        })),
+
+        testingEquipmentData: (server.testingEquipmentData || server.testingEquipmentList || []).map(e => ({
+            mrid:             e.mrid || null,
+            model:            e.model || null,
+            serial_number:    e.serial_number || e.serialNumber || null,
+            calibration_date: e.calibration_date || e.calibrationDate || null,
+            work_id:          e.work_id || null,
+        })),
+
+        // bảng nối thiết bị↔test (server trả mảng riêng)
+        circuitBreakerTestingEquipmentTestType: server.circuitBreakerTestingEquipmentTestType || [],
+
+        procedureAsset: server.procedureAsset || [],
+        attachmentId:   server.attachmentId || null,
+        attachment:     server.attachment || null,
     }
 }

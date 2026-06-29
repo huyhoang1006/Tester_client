@@ -528,6 +528,7 @@ export const transformerDtoToEntity = (dto) => {
     //Others
     entity.other.category = dto.others.category || null;
     entity.other.mrid = dto.others.mrid || null;
+    console.log(entity.other.mrid)
     entity.asset.in_use_state = dto.others.status || null;
     entity.other.insulation_medium = dto.others.insulation_medium || null;
     entity.other.insulation_key = dto.others.insulation.key || null;
@@ -1133,6 +1134,7 @@ export const transformerEntityToDto = (entity) => {
         }
     }
 
+    dto.others.mrid = entity.other.mrid || ''
     dto.others.category = entity.other.category || ''
     dto.others.tank_type = entity.other.tank_type || ''
     dto.others.status = entity.asset.in_use_state || ''

@@ -60,6 +60,57 @@ const BUSHING_INSUL_MAP = {
     'COMPOSITE_DRY_TYPE':      'compositeDryType',
 }
 
+const TERT_ACCESSIBILITY_MAP = {
+    'ACCESSIBLE4': '4 Accessible',
+    'ACCESSIBLE3': '3 Accessible',
+    'ACCESSIBLE2': '2 Accessible',
+    'ACCESSIBLE1': '1 Accessible',
+    'BURIED': 'Buried',
+    'BURIED_WITH_GROUNDING': 'Buried /w grounding'
+}
+
+const OTHERS_STATUS_MAP = {
+    'IN_OPERATION': 'In operation',
+    'SPARE': 'Spare',
+    'REPAIR': 'Repair',
+    'OUT_OF_OPERATION': 'Out of operation',
+    'SCRAP': 'Scrap',
+}
+
+const OTHERS_CATEGORY_MAP = {
+    'DISTRIBUTION': 'Distribution',
+    'GENERATION': 'Generation',
+    'HVDC_TRANSFORMER': 'HVDC transformer',
+    'POWER': 'Power',
+    'TRANSMISSION': 'Transmission',
+    'WIN_GEN_TRANS': 'Win gen. trans.',
+    'OTHER': 'Other',
+}
+
+const OTHERS_TANK_TYPE_MAP = {
+    FREE_BREATHING: "Free breathing",
+    NITROGEN_BLANKETED: "Nitrogen blanketed",
+    SEALED: "Sealed",
+    SEALED_CONSERVATOR: "Sealed conservator",
+    OTHER: "Other"
+}
+
+const OTHERS_INSULATION_MEDIUM_MAP = {
+    ASKAREL: "Askarel",
+    DRY_TYPE: "Dry type",
+    GAS: "Gas",
+    NATURAL_ESTER: "Natural ester",
+    MINERAL_OIL: "Mineral oil",
+    SILICONE: "Silicone",
+    LFH: "LFH",
+    OTHER: "Other"
+}
+
+const OTHERS_INSULATION_KEY_MAP = {
+    WEIGHT : "weight",
+    VOLUME : "volume",
+}
+
 // "kV" → "k|V", "pF" → "p|F", giữ nguyên nếu không có multiplier
 const splitUnit = (raw, defaultUnit) => {
     const u = raw || defaultUnit
@@ -100,9 +151,14 @@ const extractYear = (dateStr) => {
     return match ? match[1] : ''
 }
 
+const reversed = (obj) => Object.fromEntries(
+  Object.entries(obj).map(([key, value]) => [value, key])
+);
+
 // ─── Mapper ──────────────────────────────────────────────────────────────────
 
 export const mapServerToDto = (serverData) => {
+    console.log('mapServerToDto: serverData', serverData)
     const dto = new TransformerDataDto();
     if (!serverData) return dto;
 
@@ -113,6 +169,7 @@ export const mapServerToDto = (serverData) => {
     const shortCircuitImpedances = serverData.shortCircuitImpedances || [];
     const tapChanger           = serverData.tapChanger             || {};
     const tapChangerVoltage    = serverData.tapChangerVoltage      || [];
+    const others               = serverData.others                  || {};
 
     // ─── 1. IDs ───────────────────────────────────────────────────────────────
     dto.oldPowerTransformerInfoId = uuid.newUuid()
@@ -125,12 +182,12 @@ export const mapServerToDto = (serverData) => {
     dto.properties.kind              = 'Transformer'
     dto.properties.type              = ASSET_TYPE_MAP[tr.assetType] || tr.assetType || ''
     dto.properties.serial_no         = assetInfo.serialNo          || ''
-    dto.properties.manufacturer      = assetInfo.manufacturerName  || ''
+    dto.properties.manufacturer      = assetInfo.manufacturer  || ''
     dto.properties.manufacturer_type = assetInfo.manufacturerType || ''
     dto.properties.manufacturer_year = assetInfo.manufacturingYear
         ? String(assetInfo.manufacturingYear)
         : ''
-    dto.properties.country_of_origin = assetInfo.countryName  || ''
+    dto.properties.country_of_origin = assetInfo.country  || ''
     dto.properties.apparatus_id      = assetInfo.apparatusId  || ''
     dto.properties.comment           = assetInfo.description  || ''
 
@@ -148,7 +205,7 @@ export const mapServerToDto = (serverData) => {
         dto.winding_configuration.vector_group.sec.value   = str(tr.vectorGroupSecVal)
         dto.winding_configuration.vector_group.tert.i      = tr.vectorGroupTertiary    || ''
         dto.winding_configuration.vector_group.tert.value  = str(tr.vectorGroupTertiaryVal)
-        dto.winding_configuration.vector_group.tert.accessible = tr.vectorGroupTertiaryAccessibility || ''
+        dto.winding_configuration.vector_group.tert.accessible = TERT_ACCESSIBILITY_MAP[tr.vectorGroupTertiaryAccessibility] || ''
         // vector_group_data = string đầy đủ để View biết đây là dạng parsed (type null)
         dto.winding_configuration.vector_group_data = tr.vectorGroup || ''
     } else if (tr.vectorGroup) {
@@ -227,7 +284,11 @@ export const mapServerToDto = (serverData) => {
         },
         tert: {
             mrid: uuid.newUuid(),
-            data: { mrid: uuid.newUuid(), value: '', unit: 'A' },
+            data: { 
+                mrid: uuid.newUuid(), 
+                value: str(pr.currentRatingTert), 
+                unit: pr.currentRatingTertUnit || 'A' 
+            },
         },
     }))
 
@@ -355,8 +416,20 @@ export const mapServerToDto = (serverData) => {
         }))
     }
 
+    console.log('mapServerToDto: dto', others)
     // ─── 7. Others — server không trả về → giữ default ───────────────────────
-    dto.others.mrid = uuid.newUuid()
+    dto.others.mrid = others.mrid || uuid.newUuid()
+    dto.others.category = OTHERS_CATEGORY_MAP[others.category] || ''
+    dto.others.status = OTHERS_STATUS_MAP[others.status] || ''
+    dto.others.tank_type = OTHERS_TANK_TYPE_MAP[others.tankType] || ''
+    dto.others.insulation_medium = OTHERS_INSULATION_MEDIUM_MAP[others.insulationMedium] || ''
+    dto.others.insulation.key = OTHERS_INSULATION_KEY_MAP[others.insulationKey] || ''
+    dto.others.insulation.weight.mrid = others.insulationWeightId || uuid.newUuid()
+    dto.others.insulation.weight.value = others.insulationWeight || ''
+    dto.others.insulation.weight.unit = others.insulationWeightUnit || 'kg'
+    dto.others.insulation.volume.mrid = others.insulationVolumeId || uuid.newUuid()
+    dto.others.insulation.volume.value = others.insulationVolume || ''
+    dto.others.insulation.volume.unit = others.insulationVolumeUnit || 'l'
 
     // ─── 8. Bushing data ──────────────────────────────────────────────────────
     // Server trả serverData.bushings = [{ winding, position, assetType, serialNo,
@@ -504,7 +577,7 @@ export const mapDtoToServer = (dto, ownerType) => {
         vectorGroupSecVal:                intT(vg.sec?.value),
         vectorGroupTertiary:              vg.tert?.i || null,
         vectorGroupTertiaryVal:           intT(vg.tert?.value),
-        vectorGroupTertiaryAccessibility: vg.tert?.accessible || null,
+        vectorGroupTertiaryAccessibility: reversed(TERT_ACCESSIBILITY_MAP)[vg.tert?.accessible] || null,
 
         // tần số: nếu Custom thì dùng custom_value
         ratedFrequency:     numT(rt.rated_frequency?.value === 'Custom'

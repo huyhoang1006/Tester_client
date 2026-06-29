@@ -63,10 +63,11 @@ export const mapServerToDto = (serverData) => {
     dto.properties.type              = ASSET_TYPE_MAP[core.assetType] || core.assetType || '';
     dto.properties.kind              = 'Voltage transformer';
     dto.properties.serial_no         = info.serialNo         || '';
-    dto.properties.manufacturer      = info.manufacturerName || '';
-    dto.properties.country_of_origin = info.countryName      || '';
+    dto.properties.manufacturer      = info.manufacturer || '';
+    dto.properties.country_of_origin = info.country      || '';
     dto.properties.apparatus_id      = info.apparatusId      || '';
     dto.properties.comment           = info.description      || '';
+    dto.properties.manufacturer_type = info.manufacturerType  || '';
     dto.properties.manufacturing_year = info.manufacturingYear
         ? String(info.manufacturingYear)
         : '';
