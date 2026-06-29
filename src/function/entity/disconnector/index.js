@@ -193,14 +193,14 @@ export const getDisconnectorEntityById = async (id, psrId) => {
                         const v2 = await getVoltageById(info.withstand_voltage_earth_poles);
                         if (v2.success && v2.data) entity.voltage.push(v2.data);
                     }
+                    if (info.power_frequency_isolating_distance) {
+                        const v3 = await getVoltageById(info.power_frequency_isolating_distance);
+                        if (v3.success && v3.data) entity.voltage.push(v3.data);
+                    }
                     // Frequency-based ratings
                     if (info.rated_frequency) {
                         const f = await getFrequencyById(info.rated_frequency);
                         if (f.success && f.data) entity.frequency.push(f.data);
-                    }
-                    if (info.power_frequency_isolating_distance) {
-                        const f2 = await getFrequencyById(info.power_frequency_isolating_distance);
-                        if (f2.success && f2.data) entity.frequency.push(f2.data);
                     }
                     // Current-based ratings
                     if (info.rated_current) {
