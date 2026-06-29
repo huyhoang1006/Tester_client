@@ -771,7 +771,7 @@ CREATE TABLE IF NOT EXISTS "disconnector_info" (
 	FOREIGN KEY("withstand_voltage_earth_poles") REFERENCES "voltage"("mrid"),
 	FOREIGN KEY("mrid") REFERENCES "old_switch_info"("mrid") on delete cascade,
 	FOREIGN KEY("rated_duration_short_circuit") REFERENCES "seconds"("mrid"),
-	FOREIGN KEY("power_frequency_isolating_distance") REFERENCES "frequency"("mrid"),
+	FOREIGN KEY("power_frequency_isolating_distance") REFERENCES "voltage"("mrid"),
 	PRIMARY KEY("mrid")
 );
 CREATE TABLE IF NOT EXISTS "disconnector_testing_equipment_test_type" (
