@@ -83,13 +83,15 @@
                                                     </td>
                                                     <td style="width : 60px;">{{ item.fullTap.table.name }}</td>
                                                     <td style="width : 250px;">
-                                                        <el-input size="mini" v-model="item.fullTap.table.ipn.value">
+                                                        <el-input size="mini" type="text" number="positive"
+                                                            v-model="item.fullTap.table.ipn.value">
                                                             <template slot="append">A</template>
                                                         </el-input>
                                                     </td>
                                                     <td style="width : 10px;">:</td>
                                                     <td style="width : 250px;">
-                                                        <el-input size="mini" v-model="item.fullTap.table.isn.value">
+                                                        <el-input size="mini" type="text" number="positive"
+                                                            v-model="item.fullTap.table.isn.value">
                                                             <template slot="append">A</template>
                                                         </el-input>
                                                     </td>
@@ -164,7 +166,8 @@
                                                         <el-form-item
                                                             v-if="['PX', 'TPS', 'TPX', 'TPY', 'TPZ', 'X'].includes(item.fullTap.classRating.class) || protectionData.PR.includes(item.fullTap.classRating.class)"
                                                             label="Winding resistance">
-                                                            <el-input class="width-half" size="mini"
+                                                            <el-input class="width-half" size="mini" type="text"
+                                                                number="positive"
                                                                 v-model="item.fullTap.classRating.wr.value">
                                                                 <template slot="append">Ω</template>
                                                             </el-input>
@@ -178,7 +181,8 @@
                                                         <el-form-item
                                                             v-if="['X'].includes(item.fullTap.classRating.class)"
                                                             label="RE(20*lsn)">
-                                                            <el-input class="width-half" size="mini"
+                                                            <el-input class="width-half" size="mini" type="text"
+                                                                number="positive"
                                                                 v-model="item.fullTap.classRating.re20lsn">
                                                                 <template slot="append">%</template>
                                                             </el-input>
@@ -217,8 +221,8 @@
                                                         <el-form-item
                                                             v-if="['C', 'K', 'T'].includes(item.fullTap.classRating.class)"
                                                             label="Vb">
-                                                            <el-input class="width-half" size="mini"
-                                                                v-model="item.fullTap.classRating.vb">
+                                                            <el-input class="width-half" size="mini" type="text"
+                                                                number="positive" v-model="item.fullTap.classRating.vb">
                                                                 <template slot="append">V</template>
                                                             </el-input>
                                                         </el-form-item>
@@ -429,7 +433,8 @@
                                                     <el-form :inline-message="true" label-width="150px" size="mini"
                                                         label-position="left" style="width: 100%;">
                                                         <el-form-item label="Rated burden">
-                                                            <el-input type="text" number="positive" class="width-half" size="mini"
+                                                            <el-input type="text" number="positive" class="width-half"
+                                                                size="mini"
                                                                 v-model="item.fullTap.classRating.rated_burden.value">
                                                                 <template slot="append">VA</template>
                                                             </el-input>
@@ -455,7 +460,8 @@
                                                     <el-form :inline-message="true" label-width="150px" size="mini"
                                                         label-position="left" style="width: 100%;">
                                                         <el-form-item label="Burden">
-                                                            <el-input class="width-half" size="mini"
+                                                            <el-input class="width-half" size="mini" type="text"
+                                                                number="positive"
                                                                 v-model="item.fullTap.classRating.burden.value">
                                                                 <template slot="append">VA</template>
                                                             </el-input>
@@ -469,7 +475,8 @@
                                                     <el-form :inline-message="true" label-width="150px" size="mini"
                                                         label-position="left" style="width: 100%;">
                                                         <el-form-item label="cos φ">
-                                                            <el-input type="text" number="positive" class="width-half" size="mini"
+                                                            <el-input type="text" number="positive" class="width-half"
+                                                                size="mini"
                                                                 v-model="item.fullTap.classRating.burdenCos"></el-input>
                                                         </el-form-item>
                                                     </el-form>
@@ -480,7 +487,8 @@
                                                     <el-form :inline-message="true" label-width="150px" size="mini"
                                                         label-position="left" style="width: 100%;">
                                                         <el-form-item label="Operating burden">
-                                                            <el-input type="text" number="positive" class="width-half" size="mini"
+                                                            <el-input type="text" number="positive" class="width-half"
+                                                                size="mini"
                                                                 v-model="item.fullTap.classRating.operatingBurden.value">
                                                                 <template slot="append">VA</template>
                                                             </el-input>
@@ -494,7 +502,8 @@
                                                     <el-form :inline-message="true" label-width="150px" size="mini"
                                                         label-position="left" style="width: 100%;">
                                                         <el-form-item label="cos φ">
-                                                            <el-input type="text" number="positive" class="width-half" size="mini"
+                                                            <el-input type="text" number="positive" class="width-half"
+                                                                size="mini"
                                                                 v-model="item.fullTap.classRating.operatingBurdenCos"></el-input>
                                                         </el-form-item>
                                                     </el-form>
@@ -505,8 +514,7 @@
                                 </el-col>
                             </el-row>
 
-                            <el-row v-if="item.taps > 2 && item.commonTap != ''"
-                                style="margin-top: 10px; width: 100%;">
+                            <el-row v-if="item.taps > 2 && item.commonTap != ''" style="margin-top: 10px; width: 100%;">
                                 <el-col style="width: 100%;">
                                     <div class="bolder">Main tap</div>
                                     <el-divider></el-divider>
@@ -533,14 +541,14 @@
                                                         <td style="width : 60px;">{{
                                                             item.mainTap.data[element - 1].table.name }}</td>
                                                         <td style="width : 250px;">
-                                                            <el-input size="mini"
+                                                            <el-input size="mini" type="text" number="positive"
                                                                 v-model="item.mainTap.data[element - 1].table.ipn.value">
                                                                 <template slot="append">A</template>
                                                             </el-input>
                                                         </td>
                                                         <td style="width : 10px;">:</td>
                                                         <td style="width : 250px;">
-                                                            <el-input size="mini"
+                                                            <el-input size="mini" type="text" number="positive"
                                                                 v-model="item.mainTap.data[element - 1].table.isn.value">
                                                                 <template slot="append">A</template>
                                                             </el-input>
@@ -559,7 +567,8 @@
                                                         <el-form :inline-message="true" label-width="150px" size="mini"
                                                             label-position="left" style="width: 100%;">
                                                             <el-form-item label="Rated burden">
-                                                                <el-input type="text" number="positive" class="width-half" size="mini"
+                                                                <el-input type="text" number="positive"
+                                                                    class="width-half" size="mini"
                                                                     v-model="item.mainTap.data[element - 1].classRating.rated_burden.value">
                                                                     <template slot="append">VA</template>
                                                                 </el-input>
@@ -585,7 +594,8 @@
                                                         <el-form :inline-message="true" label-width="150px" size="mini"
                                                             label-position="left" style="width: 100%;">
                                                             <el-form-item label="Burden">
-                                                                <el-input class="width-half" size="mini"
+                                                                <el-input class="width-half" size="mini" type="text"
+                                                                    number="positive"
                                                                     v-model="item.mainTap.data[element - 1].classRating.burden.value">
                                                                     <template slot="append">VA</template>
                                                                 </el-input>
@@ -599,7 +609,8 @@
                                                         <el-form :inline-message="true" label-width="150px" size="mini"
                                                             label-position="left" style="width: 100%;">
                                                             <el-form-item label="cos φ">
-                                                                <el-input type="text" number="positive" class="width-half" size="mini"
+                                                                <el-input type="text" number="positive"
+                                                                    class="width-half" size="mini"
                                                                     v-model="item.mainTap.data[element - 1].classRating.burdenCos"></el-input>
                                                             </el-form-item>
                                                         </el-form>
@@ -610,7 +621,8 @@
                                                         <el-form :inline-message="true" label-width="150px" size="mini"
                                                             label-position="left" style="width: 100%;">
                                                             <el-form-item label="Operating burden">
-                                                                <el-input type="text" number="positive" class="width-half" size="mini"
+                                                                <el-input type="text" number="positive"
+                                                                    class="width-half" size="mini"
                                                                     v-model="item.mainTap.data[element - 1].classRating.operatingBurden.value">
                                                                     <template slot="append">VA</template>
                                                                 </el-input>
@@ -624,7 +636,8 @@
                                                         <el-form :inline-message="true" label-width="150px" size="mini"
                                                             label-position="left" style="width: 100%;">
                                                             <el-form-item label="cos φ">
-                                                                <el-input type="text" number="positive" class="width-half" size="mini"
+                                                                <el-input type="text" number="positive"
+                                                                    class="width-half" size="mini"
                                                                     v-model="item.mainTap.data[element - 1].classRating.operatingBurdenCos"></el-input>
                                                             </el-form-item>
                                                         </el-form>
@@ -635,8 +648,7 @@
                                     </div>
                                 </el-col>
                             </el-row>
-                            <el-row v-if="item.taps > 2 && item.commonTap != ''"
-                                style="margin-top: 10px; width: 100%;">
+                            <el-row v-if="item.taps > 2 && item.commonTap != ''" style="margin-top: 10px; width: 100%;">
                                 <el-col :span="24">
                                     <div class="bolder">Inter taps</div>
                                     <el-divider></el-divider>
@@ -663,14 +675,14 @@
                                                         <td style="width : 60px;">{{ item.interTap.data[i].table.name }}
                                                         </td>
                                                         <td style="width : 250px;">
-                                                            <el-input size="mini"
+                                                            <el-input size="mini" type="text" number="positive"
                                                                 v-model="item.interTap.data[i].table.ipn.value">
                                                                 <template slot="append">A</template>
                                                             </el-input>
                                                         </td>
                                                         <td style="width : 10px;">:</td>
                                                         <td style="width : 250px;">
-                                                            <el-input size="mini"
+                                                            <el-input size="mini" type="text" number="positive"
                                                                 v-model="item.interTap.data[i].table.isn.value">
                                                                 <template slot="append">A</template>
                                                             </el-input>
@@ -689,7 +701,8 @@
                                                         <el-form :inline-message="true" label-width="150px" size="mini"
                                                             label-position="left" style="width: 100%;">
                                                             <el-form-item label="Rated burden">
-                                                                <el-input type="text" number="positive" class="width-half" size="mini"
+                                                                <el-input type="text" number="positive"
+                                                                    class="width-half" size="mini"
                                                                     v-model="item.interTap.data[i].classRating.rated_burden.value">
                                                                     <template slot="append">VA</template>
                                                                 </el-input>
@@ -715,7 +728,8 @@
                                                         <el-form :inline-message="true" label-width="150px" size="mini"
                                                             label-position="left" style="width: 100%;">
                                                             <el-form-item label="Burden">
-                                                                <el-input class="width-half" size="mini"
+                                                                <el-input class="width-half" size="mini" type="text"
+                                                                    number="positive"
                                                                     v-model="item.interTap.data[i].classRating.burden.value">
                                                                     <template slot="append">VA</template>
                                                                 </el-input>
@@ -729,7 +743,8 @@
                                                         <el-form :inline-message="true" label-width="150px" size="mini"
                                                             label-position="left" style="width: 100%;">
                                                             <el-form-item label="cos φ">
-                                                                <el-input type="text" number="positive" class="width-half" size="mini"
+                                                                <el-input type="text" number="positive"
+                                                                    class="width-half" size="mini"
                                                                     v-model="item.interTap.data[i].classRating.burdenCos"></el-input>
                                                             </el-form-item>
                                                         </el-form>
@@ -740,7 +755,8 @@
                                                         <el-form :inline-message="true" label-width="150px" size="mini"
                                                             label-position="left" style="width: 100%;">
                                                             <el-form-item label="Operating burden">
-                                                                <el-input type="text" number="positive" class="width-half" size="mini"
+                                                                <el-input type="text" number="positive"
+                                                                    class="width-half" size="mini"
                                                                     v-model="item.interTap.data[i].classRating.operatingBurden.value">
                                                                     <template slot="append">VA</template>
                                                                 </el-input>
@@ -754,7 +770,8 @@
                                                         <el-form :inline-message="true" label-width="150px" size="mini"
                                                             label-position="left" style="width: 100%;">
                                                             <el-form-item label="cos φ">
-                                                                <el-input type="text" number="positive" class="width-half" size="mini"
+                                                                <el-input type="text" number="positive"
+                                                                    class="width-half" size="mini"
                                                                     v-model="item.interTap.data[i].classRating.operatingBurdenCos"></el-input>
                                                             </el-form-item>
                                                         </el-form>
@@ -1210,12 +1227,12 @@ export default {
             let dataArr = []
             for (let i = 2; i <= parseInt(data); i++) {
                 for (let j = i + 1; j <= data; j++) {
-                    const name = (index == 0 && this.configsData.cores == 1) 
+                    const name = (index == 0 && this.configsData.cores == 1)
                         ? "S" + `${i}` + " - " + "S" + `${j}`
                         : `${index + 1}` + "S" + `${i}` + " - " + `${index + 1}` + "S" + `${j}`;
-                    
+
                     const existingItem = oldDataMap[name];
-                    
+
                     dataArr.push({
                         table: {
                             mrid: existingItem ? existingItem.table.mrid : '',
@@ -1291,7 +1308,7 @@ export default {
                 for (let i in this.configsData.dataCT[index].interTap.data) {
                     this.configsData.dataCT[index].interTap.data[i].table.inUse = false
                 }
-            this.configsData.dataCT[index].interTap.data[elementIndex].table.inUse = true
+                this.configsData.dataCT[index].interTap.data[elementIndex].table.inUse = true
             }
         }
     }

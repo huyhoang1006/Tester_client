@@ -41,16 +41,19 @@
             <tbody>
                 <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.inrush_current.value"></el-input>
+                        <el-input size="mini" type="text" number="positive"
+                            v-model="item.inrush_current.value"></el-input>
                     </td>
                     <td>
                         <el-input size="mini" type="text" number="positive" v-model="item.charging.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.charging_current.value"></el-input>
+                        <el-input size="mini" type="text" number="positive"
+                            v-model="item.charging_current.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.mini_voltage.value"></el-input>
+                        <el-input size="mini" type="text" number="positive"
+                            v-model="item.mini_voltage.value"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -103,31 +106,79 @@
                 <tbody>
                     <tr>
                         <td>Inrush current</td>
-                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.abs.inrush_current.min.value"/></td>
-                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.abs.inrush_current.max.value"/></td>
-                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.rel.inrush_current.ref.value"/></td>
-                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.rel.inrush_current.dev.value"/></td>
+                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" type="text"
+                                number="positive"
+                                v-model="assetData.assessmentLimits.motor_characteristics.abs.inrush_current.min.value" />
+                        </td>
+                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" type="text"
+                                number="positive"
+                                v-model="assetData.assessmentLimits.motor_characteristics.abs.inrush_current.max.value" />
+                        </td>
+                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" type="text"
+                                number="positive"
+                                v-model="assetData.assessmentLimits.motor_characteristics.rel.inrush_current.ref.value" />
+                        </td>
+                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" type="text"
+                                number="positive"
+                                v-model="assetData.assessmentLimits.motor_characteristics.rel.inrush_current.dev.value" />
+                        </td>
                     </tr>
                     <tr>
                         <td>Charging time</td>
-                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.abs.charging_time.min.value"/></td>
-                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.abs.charging_time.max.value"/></td>
-                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.rel.charging_time.ref.value"/></td>
-                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.rel.charging_time.dev.value"/></td>
+                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" type="text"
+                                number="positive"
+                                v-model="assetData.assessmentLimits.motor_characteristics.abs.charging_time.min.value" />
+                        </td>
+                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" type="text"
+                                number="positive"
+                                v-model="assetData.assessmentLimits.motor_characteristics.abs.charging_time.max.value" />
+                        </td>
+                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" type="text"
+                                number="positive"
+                                v-model="assetData.assessmentLimits.motor_characteristics.rel.charging_time.ref.value" />
+                        </td>
+                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" type="text"
+                                number="positive"
+                                v-model="assetData.assessmentLimits.motor_characteristics.rel.charging_time.dev.value" />
+                        </td>
                     </tr>
                     <tr>
                         <td>Charging current</td>
-                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.abs.charging_current.min.value"/></td>
-                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.abs.charging_current.max.value"/></td>
-                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.rel.charging_current.ref.value"/></td>
-                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.rel.charging_current.dev.value"/></td>
+                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" type="text"
+                                number="positive"
+                                v-model="assetData.assessmentLimits.motor_characteristics.abs.charging_current.min.value" />
+                        </td>
+                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" type="text"
+                                number="positive"
+                                v-model="assetData.assessmentLimits.motor_characteristics.abs.charging_current.max.value" />
+                        </td>
+                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" type="text"
+                                number="positive"
+                                v-model="assetData.assessmentLimits.motor_characteristics.rel.charging_current.ref.value" />
+                        </td>
+                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" type="text"
+                                number="positive"
+                                v-model="assetData.assessmentLimits.motor_characteristics.rel.charging_current.dev.value" />
+                        </td>
                     </tr>
                     <tr>
                         <td>Minimum voltage</td>
-                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.abs.minimum_voltage.min.value"/></td>
-                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.abs.minimum_voltage.max.value"/></td>
-                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.rel.minimum_voltage.ref.value"/></td>
-                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" v-model="assetData.assessmentLimits.motor_characteristics.rel.minimum_voltage.dev.value"/></td>
+                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" type="text"
+                                number="positive"
+                                v-model="assetData.assessmentLimits.motor_characteristics.abs.minimum_voltage.min.value" />
+                        </td>
+                        <td v-if="assetData.assessmentLimits.limits === 'Absolute'"><el-input size="mini" type="text"
+                                number="positive"
+                                v-model="assetData.assessmentLimits.motor_characteristics.abs.minimum_voltage.max.value" />
+                        </td>
+                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" type="text"
+                                number="positive"
+                                v-model="assetData.assessmentLimits.motor_characteristics.rel.minimum_voltage.ref.value" />
+                        </td>
+                        <td v-if="assetData.assessmentLimits.limits !== 'Absolute'"><el-input size="mini" type="text"
+                                number="positive"
+                                v-model="assetData.assessmentLimits.motor_characteristics.rel.minimum_voltage.dev.value" />
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -212,16 +263,16 @@ export default {
         calculator() {
             var limits = this.assetData && this.assetData.assessmentLimits ? this.assetData.assessmentLimits : null
             if (!limits) { this.$message.error('Assessment limits not configured'); return }
-            var mc   = limits.motor_characteristics
+            var mc = limits.motor_characteristics
             var mode = limits.limits
             var fieldMap = [
-                { field: 'inrush_current',   key: 'inrush_current'  },
-                { field: 'charging',         key: 'charging_time'   },
+                { field: 'inrush_current', key: 'inrush_current' },
+                { field: 'charging', key: 'charging_time' },
                 { field: 'charging_current', key: 'charging_current' },
-                { field: 'mini_voltage',     key: 'minimum_voltage' },
+                { field: 'mini_voltage', key: 'minimum_voltage' },
             ]
-            this.testData.table.table1.forEach(function(item) {
-                var results = fieldMap.map(function(f) {
+            this.testData.table.table1.forEach(function (item) {
+                var results = fieldMap.map(function (f) {
                     var value = item[f.field] ? item[f.field].value : ''
                     if (mode === 'Absolute') {
                         return this.assessAbsolute(value, mc.abs[f.key].min, mc.abs[f.key].max)

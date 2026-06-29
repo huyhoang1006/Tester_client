@@ -44,10 +44,12 @@
                             {{ index + 1 }}
                         </td>
                         <td>
-                            <el-input size="mini" type="text" v-model="item.trip_coil_no.value"></el-input>
+                            <el-input size="mini" type="text" number="positive"
+                                v-model="item.trip_coil_no.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" number="positive" v-model="item.trip_voltage.value"></el-input>
+                            <el-input size="mini" type="text" number="positive"
+                                v-model="item.trip_voltage.value"></el-input>
                         </td>
                         <td>
                             <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -90,12 +92,24 @@
             </el-radio-group>
             <el-form size="small" label-position="left" label-width="160px">
                 <template v-if="assetData.assessmentLimits.limits === 'Absolute'">
-                    <el-form-item label="Min trip voltage (V)"><el-input v-model="assetData.assessmentLimits.under_voltage_release.abs.uv_coil_trip_voltage.min.value"/></el-form-item>
-                    <el-form-item label="Max trip voltage (V)"><el-input v-model="assetData.assessmentLimits.under_voltage_release.abs.uv_coil_trip_voltage.max.value"/></el-form-item>
+                    <el-form-item label="Min trip voltage (V)">
+                        <el-input type="text" number="positive"
+                            v-model="assetData.assessmentLimits.under_voltage_release.abs.uv_coil_trip_voltage.min.value" />
+                    </el-form-item>
+                    <el-form-item label="Max trip voltage (V)">
+                        <el-input type="text" number="positive"
+                            v-model="assetData.assessmentLimits.under_voltage_release.abs.uv_coil_trip_voltage.max.value" />
+                    </el-form-item>
                 </template>
                 <template v-else>
-                    <el-form-item label="Ref trip voltage (V)"><el-input v-model="assetData.assessmentLimits.under_voltage_release.rel.uv_coil_trip_voltage.ref.value"/></el-form-item>
-                    <el-form-item label="Dev trip voltage (V)"><el-input v-model="assetData.assessmentLimits.under_voltage_release.rel.uv_coil_trip_voltage.dev.value"/></el-form-item>
+                    <el-form-item label="Ref trip voltage (V)">
+                        <el-input type="text" number="positive"
+                            v-model="assetData.assessmentLimits.under_voltage_release.rel.uv_coil_trip_voltage.ref.value" />
+                    </el-form-item>
+                    <el-form-item label="Dev trip voltage (V)">
+                        <el-input type="text" number="positive"
+                            v-model="assetData.assessmentLimits.under_voltage_release.rel.uv_coil_trip_voltage.dev.value" />
+                    </el-form-item>
                 </template>
             </el-form>
             <template v-slot:footer>
@@ -130,7 +144,7 @@ export default {
         },
         asset: {
             type: Object,
-            default: function() { return {} }
+            default: function () { return {} }
         }
     },
     computed: {
@@ -173,9 +187,9 @@ export default {
         calculator() {
             var limits = this.assetData && this.assetData.assessmentLimits ? this.assetData.assessmentLimits : null
             if (!limits) { this.$message.error('Assessment limits not configured'); return }
-            var uvr  = limits.under_voltage_release
+            var uvr = limits.under_voltage_release
             var mode = limits.limits
-            this.testData.table.table1.forEach(function(item) {
+            this.testData.table.table1.forEach(function (item) {
                 var value = item.trip_voltage ? item.trip_voltage.value : ''
                 var result
                 if (mode === 'Absolute') {

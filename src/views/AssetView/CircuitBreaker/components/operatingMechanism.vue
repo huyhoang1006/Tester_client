@@ -24,7 +24,7 @@
                             <el-input v-model="operatingData.manufacturer"></el-input>
                         </el-form-item>
                         <el-form-item label="Manufacturing year">
-                            <el-input v-model="operatingData.manufacturer_year"></el-input>
+                            <el-input type="text" number="year" v-model="operatingData.manufacturer_year"></el-input>
                         </el-form-item>
                         <el-form-item label="Manufacturer type">
                             <el-input v-model="operatingData.manufacturer_type"></el-input>
@@ -78,12 +78,14 @@
                                     <tr v-for="(item, index) in operatingData.trip_coil_component" :key="index">
                                         <td>{{ item.component }}</td>
                                         <td>
-                                            <el-input size="mini" v-model="item.rated_voltage.value">
+                                            <el-input size="mini" type="text" number="positive"
+                                                v-model="item.rated_voltage.value">
                                                 <template slot="append">V</template>
                                             </el-input>
                                         </td>
                                         <td>
-                                            <el-input size="mini" v-model="item.rated_current.value">
+                                            <el-input size="mini" type="text" number="positive"
+                                                v-model="item.rated_current.value">
                                                 <template slot="append">A</template>
                                             </el-input>
                                         </td>
@@ -98,7 +100,8 @@
                                             </el-radio-group>
                                         </td>
                                         <td>
-                                            <el-input size="mini" v-model="item.frequency.value">
+                                            <el-input size="mini" type="text" number="positive"
+                                                v-model="item.frequency.value">
                                                 <template slot="append">Hz</template>
                                             </el-input>
                                         </td>
@@ -106,12 +109,14 @@
                                     <tr v-for="(item, index) in operatingData.close_coil_component" :key="index + 'A'">
                                         <td>{{ item.component }}</td>
                                         <td>
-                                            <el-input size="mini" v-model="item.rated_voltage.value">
+                                            <el-input size="mini" type="text" number="positive"
+                                                v-model="item.rated_voltage.value">
                                                 <template slot="append">V</template>
                                             </el-input>
                                         </td>
                                         <td>
-                                            <el-input size="mini" v-model="item.rated_current.value">
+                                            <el-input size="mini" type="text" number="positive"
+                                                v-model="item.rated_current.value">
                                                 <template slot="append">A</template>
                                             </el-input>
                                         </td>
@@ -126,7 +131,8 @@
                                             </el-radio-group>
                                         </td>
                                         <td>
-                                            <el-input size="mini" v-model="item.frequency.value">
+                                            <el-input size="mini" type="text" number="positive"
+                                                v-model="item.frequency.value">
                                                 <template slot="append">Hz</template>
                                             </el-input>
                                         </td>
@@ -134,13 +140,13 @@
                                     <tr>
                                         <td>{{ operatingData.auxiliary_circuits.component }}</td>
                                         <td>
-                                            <el-input size="mini"
+                                            <el-input size="mini" type="text" number="positive"
                                                 v-model="operatingData.auxiliary_circuits.rated_voltage.value">
                                                 <template slot="append">V</template>
                                             </el-input>
                                         </td>
                                         <td>
-                                            <el-input size="mini"
+                                            <el-input size="mini" type="text" number="positive"
                                                 v-model="operatingData.auxiliary_circuits.rated_current.value">
                                                 <template slot="append">A</template>
                                             </el-input>
@@ -156,7 +162,7 @@
                                             </el-radio-group>
                                         </td>
                                         <td>
-                                            <el-input size="mini"
+                                            <el-input size="mini" type="text" number="positive"
                                                 v-model="operatingData.auxiliary_circuits.frequency.value">
                                                 <template slot="append">Hz</template>
                                             </el-input>
@@ -166,12 +172,14 @@
                                         <tr v-if="operatingData.type !== 'magnetic'">
                                             <td>{{ operatingData.motor.component }}</td>
                                             <td>
-                                                <el-input size="mini" v-model="operatingData.motor.rated_voltage.value">
+                                                <el-input size="mini" type="text" number="positive"
+                                                    v-model="operatingData.motor.rated_voltage.value">
                                                     <template slot="append">V</template>
                                                 </el-input>
                                             </td>
                                             <td>
-                                                <el-input size="mini" v-model="operatingData.motor.rated_current.value">
+                                                <el-input size="mini" type="text" number="positive"
+                                                    v-model="operatingData.motor.rated_current.value">
                                                     <template slot="append">A</template>
                                                 </el-input>
                                             </td>
@@ -186,7 +194,8 @@
                                                 </el-radio-group>
                                             </td>
                                             <td>
-                                                <el-input size="mini" v-model="operatingData.motor.frequency.value">
+                                                <el-input size="mini" type="text" number="positive"
+                                                    v-model="operatingData.motor.frequency.value">
                                                     <template slot="append">Hz</template>
                                                 </el-input>
                                             </td>
@@ -204,7 +213,8 @@
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Rated operating pressure">
                             <el-col style="width: 45%;">
-                                <el-input v-model="operatingData.rated_operating_pressure.value">
+                                <el-input type="text" number="positive"
+                                    v-model="operatingData.rated_operating_pressure.value">
                                     <template slot="append">Pa</template>
                                 </el-input>
                             </el-col>
@@ -212,7 +222,8 @@
                                 <div>@</div>
                             </el-col>
                             <el-col style="width: 45%;">
-                                <el-input v-model="operatingData.rated_operating_pressure_temperature.value">
+                                <el-input type="text" number="positive"
+                                    v-model="operatingData.rated_operating_pressure_temperature.value">
                                     <template slot="append">°C</template>
                                 </el-input>
                             </el-col>

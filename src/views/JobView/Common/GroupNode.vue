@@ -14,7 +14,7 @@
         <div class="condition-row">
           <span class="condition-label" v-html="c.label"></span>
           <span class="condition-operator">{{ c.operator }}</span>
-          <el-input v-model="c.threshold" size="mini" style="width: 80px" />
+          <el-input v-model="c.threshold" size="mini" type="text" number="positive" style="width: 80px"/>
         </div>
       </div>
 

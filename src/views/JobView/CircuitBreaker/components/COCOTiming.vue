@@ -27,9 +27,11 @@
 
         <div v-if="testData && testData.table && Object.keys(testData.table).length > 0">
             <div v-for="(tableData, tableKey) in testData.table" :key="tableKey" style="margin-top: 2%">
-                <div v-if="Object.keys(testData.table).length > 1" style="font-weight: bold; font-size: 12px;">Close coil no. {{ tableKey.replace('table', '') }}</div>
+                <div v-if="Object.keys(testData.table).length > 1" style="font-weight: bold; font-size: 12px;">Close
+                    coil no. {{ tableKey.replace('table', '') }}</div>
                 <br v-if="Object.keys(testData.table).length > 1" />
-                <table v-if="tableData && Array.isArray(tableData)" class="table-strip-input-data" style="width: 100%; font-size: 12px;">
+                <table v-if="tableData && Array.isArray(tableData)" class="table-strip-input-data"
+                    style="width: 100%; font-size: 12px;">
                     <thead>
                         <th>Phase</th>
                         <th>Trip coil</th>
@@ -44,7 +46,9 @@
                             <td>
                                 <div style="display: flex; width: 100%;">
                                     <el-input size="mini" v-model="item.phase.value"></el-input>
-                                    <div :class="{ colorTableRed: item.phase.value == 'A', colorTableYellow: item.phase.value == 'B', colorTableBlue: item.phase.value == 'C' }"></div>
+                                    <div
+                                        :class="{ colorTableRed: item.phase.value == 'A', colorTableYellow: item.phase.value == 'B', colorTableBlue: item.phase.value == 'C' }">
+                                    </div>
                                 </div>
                             </td>
                             <td>
@@ -54,21 +58,27 @@
                                 <el-input size="mini" type="text" v-model="item.interrupter.value"></el-input>
                             </td>
                             <td>
-                                <el-input size="mini" type="text" number="positive" v-model="item.opening_time.value"></el-input>
+                                <el-input size="mini" type="text" number="positive"
+                                    v-model="item.opening_time.value"></el-input>
                             </td>
                             <td>
-                                <el-input size="mini" type="text" number="positive" v-model="item.opening_sync_between_phase.value"></el-input>
+                                <el-input size="mini" type="text" number="positive"
+                                    v-model="item.opening_sync_between_phase.value"></el-input>
                             </td>
                             <td>
                                 <el-select class="assessment" size="mini" v-model="item.assessment.value">
-                                    <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
+                                    <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i>
+                                        Pass</el-option>
                                     <el-option value="Fail"><i class="fa-solid fa-xmark fail"></i> Fail</el-option>
                                 </el-select>
-                                <span v-if="item.assessment.value === 'Pass'" class="fa-solid fa-square-check pass icon-status"></span>
-                                <span v-else-if="item.assessment.value === 'Fail'" class="fa-solid fa-xmark fail icon-status"></span>
+                                <span v-if="item.assessment.value === 'Pass'"
+                                    class="fa-solid fa-square-check pass icon-status"></span>
+                                <span v-else-if="item.assessment.value === 'Fail'"
+                                    class="fa-solid fa-xmark fail icon-status"></span>
                             </td>
                             <td>
-                                <el-select :class="nameColor(item.condition_indicator.value)" size="mini" v-model="item.condition_indicator.value">
+                                <el-select :class="nameColor(item.condition_indicator.value)" size="mini"
+                                    v-model="item.condition_indicator.value">
                                     <el-option value="Good">Good</el-option>
                                     <el-option value="Fair">Fair</el-option>
                                     <el-option value="Poor">Poor</el-option>
@@ -82,13 +92,14 @@
         </div>
 
         <!-- Assessment settings -->
-        <el-dialog append-to-body class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog" width="75%">
+        <el-dialog append-to-body class="dialog_assess" title="Assessment settings" :visible.sync="openAssessmentDialog"
+            width="75%">
             <el-radio-group v-model="testData.limits" style="margin-bottom: 20px">
                 <el-radio label="Absolute" value="Absolute"></el-radio>
                 <el-radio label="Relative" value="Relative"></el-radio>
             </el-radio-group>
 
-        <!-- opening_times -->
+            <!-- opening_times -->
             <transition>
                 <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
                     <thead>
@@ -102,51 +113,56 @@
                         <tr v-for="(item, index) in opening_times" :key="index">
                             <td>{{ item }}</td>
                             <td>
-                                <el-input size="mini" v-model="asset_.openTime.abs[index].tmin">
+                                <el-input size="mini" type="text" number="positive"
+                                    v-model="asset_.openTime.abs[index].tmin">
                                     <template slot="append">ms</template>
-</el-input>
-</td>
-<td>
-    <el-input size="mini" v-model="asset_.openTime.abs[index].tmax">
-        <template slot="append">ms</template>
-    </el-input>
-</td>
-</tr>
-</tbody>
-</table>
-<table class="table-strip-input-data" v-if="testData.limits === 'Relative'">
-    <thead>
-        <tr>
-            <th></th>
-            <th>t ref</th>
-            <th>- t dev</th>
-            <th>+ t dev</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr v-for="(item, index) in opening_times" :key="index">
-            <td>{{ item }}</td>
-            <td>
-                <el-input size="mini" v-model="asset_.openTime.rel[index].rref">
-                    <template slot="append">ms</template>
-                </el-input>
-            </td>
-            <td>
-                <el-input size="mini" v-model="asset_.openTime.rel[index].tdevZ">
-                    <template slot="append">ms</template>
-                </el-input>
-            </td>
-            <td>
-                <el-input size="mini" v-model="asset_.openTime.rel[index].tdevN">
-                    <template slot="append">ms</template>
-                </el-input>
-            </td>
-        </tr>
-    </tbody>
-</table>
+                                </el-input>
+                            </td>
+                            <td>
+                                <el-input size="mini" type="text" number="positive"
+                                    v-model="asset_.openTime.abs[index].tmax">
+                                    <template slot="append">ms</template>
+                                </el-input>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="table-strip-input-data" v-if="testData.limits === 'Relative'">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>t ref</th>
+                            <th>- t dev</th>
+                            <th>+ t dev</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(item, index) in opening_times" :key="index">
+                            <td>{{ item }}</td>
+                            <td>
+                                <el-input size="mini" type="text" number="positive"
+                                    v-model="asset_.openTime.rel[index].rref">
+                                    <template slot="append">ms</template>
+                                </el-input>
+                            </td>
+                            <td>
+                                <el-input size="mini" type="text" number="positive"
+                                    v-model="asset_.openTime.rel[index].tdevZ">
+                                    <template slot="append">ms</template>
+                                </el-input>
+                            </td>
+                            <td>
+                                <el-input size="mini" type="text" number="positive"
+                                    v-model="asset_.openTime.rel[index].tdevN">
+                                    <template slot="append">ms</template>
+                                </el-input>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </transition>
 
-        <!-- Auxiliary_contact -->
+            <!-- Auxiliary_contact -->
             <transition>
                 <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
                     <thead>
@@ -168,12 +184,14 @@
                                 <sub v-if="index === 5">w</sub>
                             </td>
                             <td>
-                                <el-input size="mini" v-model="asset_.auxContact.abs.trip[index].tmin">
+                                <el-input size="mini" type="text" number="positive"
+                                    v-model="asset_.auxContact.abs.trip[index].tmin">
                                     <template slot="append">ms</template>
                                 </el-input>
                             </td>
                             <td>
-                                <el-input size="mini" v-model="asset_.auxContact.abs.trip[index].tmax">
+                                <el-input size="mini" type="text" number="positive"
+                                    v-model="asset_.auxContact.abs.trip[index].tmax">
                                     <template slot="append">ms</template>
                                 </el-input>
                             </td>
@@ -200,12 +218,14 @@
                                 <sub v-if="index === 5">w</sub>
                             </td>
                             <td>
-                                <el-input size="mini" v-model="asset_.auxContact.rel.trip[index].tref">
+                                <el-input size="mini" type="text" number="positive"
+                                    v-model="asset_.auxContact.rel.trip[index].tref">
                                     <template slot="append">ms</template>
                                 </el-input>
                             </td>
                             <td>
-                                <el-input size="mini" v-model="asset_.auxContact.rel.trip[index].tdef">
+                                <el-input size="mini" type="text" number="positive"
+                                    v-model="asset_.auxContact.rel.trip[index].tdef">
                                     <template slot="append">ms</template>
                                 </el-input>
                             </td>
@@ -214,7 +234,7 @@
                 </table>
             </transition>
 
-        <!-- //miscellaneous -->
+            <!-- //miscellaneous -->
             <transition>
                 <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
                     <thead>
@@ -228,14 +248,20 @@
                         <tr v-for="(item, index) in miscellaneous" :key="index">
                             <td>{{ item }}</td>
                             <td>
-                                <el-input v-if="index === 1" size="mini" v-model="asset_.miscell.abs[index].min"> </el-input>
-                                <el-input v-else size="mini" v-model="asset_.miscell.abs[index].min">
+                                <el-input v-if="index === 1" size="mini" type="text" number="positive"
+                                    v-model="asset_.miscell.abs[index].min">
+                                </el-input>
+                                <el-input v-else size="mini" type="text" number="positive"
+                                    v-model="asset_.miscell.abs[index].min">
                                     <template slot="append">ms</template>
                                 </el-input>
                             </td>
                             <td>
-                                <el-input v-if="index === 1" size="mini" v-model="asset_.miscell.abs[index].max"> </el-input>
-                                <el-input v-else size="mini" v-model="asset_.miscell.abs[index].max">
+                                <el-input v-if="index === 1" size="mini" type="text" number="positive"
+                                    v-model="asset_.miscell.abs[index].max">
+                                </el-input>
+                                <el-input v-else size="mini" type="text" number="positive"
+                                    v-model="asset_.miscell.abs[index].max">
                                     <template slot="append">ms</template>
                                 </el-input>
                             </td>
@@ -254,14 +280,20 @@
                         <tr v-for="(item, index) in miscellaneous" :key="index">
                             <td>{{ item }}</td>
                             <td>
-                                <el-input v-if="index === 1" size="mini" v-model="asset_.miscell.rel[index].ref"> </el-input>
-                                <el-input v-else size="mini" v-model="asset_.miscell.rel[index].ref">
+                                <el-input v-if="index === 1" size="mini" type="text" number="positive"
+                                    v-model="asset_.miscell.rel[index].ref">
+                                </el-input>
+                                <el-input v-else size="mini" type="text" number="positive"
+                                    v-model="asset_.miscell.rel[index].ref">
                                     <template v-if="item !== 1" slot="append">ms</template>
                                 </el-input>
                             </td>
                             <td>
-                                <el-input v-if="index === 1" size="mini" v-model="asset_.miscell.rel[index].dev"> </el-input>
-                                <el-input v-else size="mini" v-model="asset_.miscell.rel[index].dev">
+                                <el-input v-if="index === 1" size="mini" type="text" number="positive"
+                                    v-model="asset_.miscell.rel[index].dev">
+                                </el-input>
+                                <el-input v-else size="mini" type="text" number="positive"
+                                    v-model="asset_.miscell.rel[index].dev">
                                     <template v-if="item !== 1" slot="append">ms</template>
                                 </el-input>
                             </td>
@@ -270,7 +302,7 @@
                 </table>
             </transition>
 
-        <!-- //coilCharacteristics -->
+            <!-- //coilCharacteristics -->
             <transition>
                 <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
                     <thead>
@@ -284,14 +316,16 @@
                         <tr v-for="(item, index) in coilCharacteristics" :key="index">
                             <td>{{ item }}</td>
                             <td>
-                                <el-input size="mini" v-model="asset_.coilCharacter.abs[index].min">
+                                <el-input size="mini" type="text" number="positive"
+                                    v-model="asset_.coilCharacter.abs[index].min">
                                     <template v-if="index <= 3" slot="append">A</template>
                                     <template v-else-if="3 < index && index <= 5" slot="append">V</template>
                                     <template v-else slot="append">&#8486;</template>
                                 </el-input>
                             </td>
                             <td>
-                                <el-input size="mini" v-model="asset_.coilCharacter.abs[index].max">
+                                <el-input size="mini" type="text" number="positive"
+                                    v-model="asset_.coilCharacter.abs[index].max">
                                     <template v-if="index <= 3" slot="append">A</template>
                                     <template v-else-if="3 < index && index <= 5" slot="append">V</template>
                                     <template v-else slot="append">&#8486;</template>
@@ -312,20 +346,23 @@
                     <tbody>
                         <tr v-for="(item, index) in coilCharacteristics" :key="index">
                             <td>{{ item }}</td>
-                            <el-input size="mini" v-model="asset_.coilCharacter.rel[index].ref">
+                            <el-input size="mini" type="text" number="positive"
+                                v-model="asset_.coilCharacter.rel[index].ref">
                                 <template v-if="index <= 3" slot="append">A</template>
                                 <template v-else-if="3 < index && index <= 5" slot="append">V</template>
                                 <template v-else slot="append">&#8486;</template>
                             </el-input>
                             <td>
-                                <el-input size="mini" v-model="asset_.coilCharacter.rel[index].devZ">
+                                <el-input size="mini" type="text" number="positive"
+                                    v-model="asset_.coilCharacter.rel[index].devZ">
                                     <template v-if="index <= 3" slot="append">A</template>
                                     <template v-else-if="3 < index && index <= 5" slot="append">V</template>
                                     <template v-else slot="append">&#8486;</template>
                                 </el-input>
                             </td>
                             <td>
-                                <el-input size="mini" v-model="asset_.coilCharacter.rel[index].devN">
+                                <el-input size="mini" type="text" number="positive"
+                                    v-model="asset_.coilCharacter.rel[index].devN">
                                     <template v-if="index <= 3" slot="append">A</template>
                                     <template v-else-if="3 < index && index <= 5" slot="append">V</template>
                                     <template v-else slot="append">&#8486;</template>
@@ -337,7 +374,8 @@
             </transition>
             <br />
             <template #footer>
-                <span style="margin-top: 20px; width: 100%; position: absolute; right: 10px; bottom: 10px" class="dialog-footer">
+                <span style="margin-top: 20px; width: 100%; position: absolute; right: 10px; bottom: 10px"
+                    class="dialog-footer">
                     <el-button @click="resetAssessment">Cancel</el-button>
                     <el-button type="primary" @click="updateAssessment"> Confirm </el-button>
                 </span>
@@ -465,8 +503,8 @@ export default {
         },
         numberOfCloseCoils() {
             if (this.assetData && this.assetData.operating) {
-                const value = this.assetData.operating.numberCloseCoil || 
-                             this.assetData.operating.number_of_close_coil
+                const value = this.assetData.operating.numberCloseCoil ||
+                    this.assetData.operating.number_of_close_coil
                 const parsed = parseInt(value)
                 if (!isNaN(parsed) && parsed > 0) {
                     return parsed
@@ -561,9 +599,9 @@ export default {
     methods: {
         getInterruptersPerPhase() {
             if (this.assetData && this.assetData.circuitBreaker) {
-                const value = this.assetData.circuitBreaker.interruptersPerPhase || 
-                             this.assetData.circuitBreaker.numberOfInterruptPhase || 
-                             this.assetData.circuitBreaker.number_of_interrupt_phase
+                const value = this.assetData.circuitBreaker.interruptersPerPhase ||
+                    this.assetData.circuitBreaker.numberOfInterruptPhase ||
+                    this.assetData.circuitBreaker.number_of_interrupt_phase
                 // Parse to number and check if valid
                 const parsed = parseInt(value)
                 if (!isNaN(parsed) && parsed > 0) {
@@ -575,9 +613,9 @@ export default {
         },
         getNumberOfPhases() {
             if (this.assetData && this.assetData.circuitBreaker) {
-                const value = this.assetData.circuitBreaker.numberOfPhases || 
-                             this.assetData.circuitBreaker.numberOfPhase || 
-                             this.assetData.circuitBreaker.number_of_phases
+                const value = this.assetData.circuitBreaker.numberOfPhases ||
+                    this.assetData.circuitBreaker.numberOfPhase ||
+                    this.assetData.circuitBreaker.number_of_phases
                 // Parse to number and check if valid
                 const parsed = parseInt(value)
                 if (!isNaN(parsed) && parsed > 0) {
@@ -984,7 +1022,7 @@ export default {
 
         getCircuitBreakerConfig() {
             var iPerPhase = 1
-            var nPhases   = 3
+            var nPhases = 3
             try {
                 if (this.assetData && this.assetData.operating) {
                     var p = parseInt(this.assetData.operating.numberOfInterruptPhase || this.assetData.operating.number_of_interrupt_phase || 1)
@@ -992,20 +1030,20 @@ export default {
                     var n = parseInt(this.assetData.operating.numberOfPhase || this.assetData.operating.number_of_phases || 3)
                     if (!isNaN(n) && n > 0) nPhases = n
                 }
-            } catch(e) { /* ignore */ }
+            } catch (e) { /* ignore */ }
             return { interruptersPerPhase: iPerPhase, numberOfPhases: nPhases }
         },
 
         calculator() {
             var entries = this.getTableEntries()
             var cb = this.getCircuitBreakerConfig()
-            var iPerPhase  = cb.interruptersPerPhase
-            var nPhases    = cb.numberOfPhases
+            var iPerPhase = cb.interruptersPerPhase
+            var nPhases = cb.numberOfPhases
 
-            entries.forEach(function(entry) {
+            entries.forEach(function (entry) {
                 var tableKey = entry.key
-                var rows     = entry.rows
-                rows.forEach(function(e, index) {
+                var rows = entry.rows
+                rows.forEach(function (e, index) {
                     var result = 'Pass'
                     if (index % (iPerPhase * nPhases) === 0) {
                         var r1 = this.assessTiming(e.opening_sync_between_phase ? e.opening_sync_between_phase.value : '', 2)
@@ -1024,9 +1062,9 @@ export default {
         },
 
         clear() {
-            this.getTableEntries().forEach(function(entry) {
-                entry.rows.forEach(function(ele) {
-                    Object.keys(ele).forEach(function(key) {
+            this.getTableEntries().forEach(function (entry) {
+                entry.rows.forEach(function (ele) {
+                    Object.keys(ele).forEach(function (key) {
                         if (ele[key] && typeof ele[key] === 'object' && ele[key].value !== undefined) {
                             ele[key].value = ''
                         }

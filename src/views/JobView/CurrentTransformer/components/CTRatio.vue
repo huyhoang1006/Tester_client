@@ -47,16 +47,16 @@
                         <el-input size="mini" type="text" v-model="item.name.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.ipr.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.ipr.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.isr.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.isr.value"></el-input>
                     </td>
                     <td>
                         <el-input size="mini" type="text" number="positive" v-model="item.ratio_meas.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.ratio_dev.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.ratio_dev.value"></el-input>
                     </td>
                     <td>
                         <el-select size="mini" v-model="item.polarity.value">
