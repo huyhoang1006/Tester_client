@@ -156,9 +156,9 @@ export const disconnectorDtoToEntity = (dto) => {
                 dto.ratings.power_freq_withstand_voltage_isolating_distance.mrid = uuid.newUuid()
             }
             entity.disconnectorInfo.power_frequency_isolating_distance = dto.ratings.power_freq_withstand_voltage_isolating_distance.mrid
-            const isoFreq = new Frequency()
+            const isoFreq = new Voltage()
             mappingUnit(isoFreq, dto.ratings.power_freq_withstand_voltage_isolating_distance)
-            entity.frequency.push(isoFreq)
+            entity.voltage.push(isoFreq)
         }
 
     }
@@ -228,7 +228,9 @@ export const disconnectorEntityToDto = (entity) => {
         dto.ratings.rated_frequency.unit = ratedFrequency.unit || ''
     }
 
-    const powerFreqIsoDistance = pickUnit(entity.frequency, info.power_frequency_isolating_distance)
+
+    //voltage
+    const powerFreqIsoDistance = pickUnit(entity.voltage, info.power_frequency_isolating_distance)
     if (powerFreqIsoDistance) {
         dto.ratings.power_freq_withstand_voltage_isolating_distance.mrid = powerFreqIsoDistance.mrid || ''
         dto.ratings.power_freq_withstand_voltage_isolating_distance.value = powerFreqIsoDistance.value || ''
