@@ -268,6 +268,11 @@ export default {
                         // mrid=null → insert vi phạm NOT NULL: identified_object.mrid. Sinh mrid
                         // mới cho object có dữ liệu mà mrid đang null.
                         self._fillNullMrids(entity)
+                        // FK rỗng '' → null: nhiều assetInfo có FK (c1/c2/rated_frequency/
+                        // rated_voltage...) = '' khi giá trị chưa nhập. SQLite coi '' là giá trị
+                        // → tìm record mrid='' không có → FOREIGN KEY constraint failed.
+                        // Đổi '' → null để FK được bỏ qua (nullable).
+                        self._nullifyEmptyFKs(entity)
                         // old_entity: insert*Entity so sánh old vs new để biết cái gì cần xóa.
                         // Khi import tạo mới → old rỗng. Tạo old từ entity nhưng rỗng hóa mọi MẢNG
                         // (giữ cấu trúc object để .map không vỡ). KHÔNG dùng def.map({}) vì mapper
@@ -295,12 +300,38 @@ export default {
         // Giữ object lồng (để .resistance.map... không vỡ), chỉ rỗng hóa các Array.
         // Sinh mrid mới cho mọi object con CÓ DỮ LIỆU nhưng mrid null/rỗng
         // (tránh NOT NULL constraint: identified_object.mrid khi insert).
+        // Đổi FK rỗng '' → null (tránh FOREIGN KEY constraint failed).
+        // Áp cho field tham chiếu: kết thúc _id/Id, hoặc tên FK đã biết của assetInfo
+        // (c1, c2, rated_frequency, rated_voltage, rated_power, base_voltage...).
+        _nullifyEmptyFKs(obj) {
+            if (!obj || typeof obj !== 'object') return
+            if (Array.isArray(obj)) { for (const it of obj) this._nullifyEmptyFKs(it); return }
+            const FK_NAMES = new Set([
+                'c1', 'c2', 'rated_frequency', 'rated_voltage', 'rated_power',
+                'rated_current', 'rated_burden', 'base_voltage', 'nominal_voltage',
+            ])
+            for (const k of Object.keys(obj)) {
+                const v = obj[k]
+                if (typeof v === 'string' && v === '') {
+                    if (k.endsWith('_id') || k.endsWith('Id') || FK_NAMES.has(k)) {
+                        obj[k] = null
+                    }
+                } else if (v && typeof v === 'object') {
+                    this._nullifyEmptyFKs(v)
+                }
+            }
+        },
         _fillNullMrids(obj) {
             if (!obj || typeof obj !== 'object') return
             if (Array.isArray(obj)) { for (const it of obj) this._fillNullMrids(it); return }
             const keys = Object.keys(obj)
+            // "có data" = có field primitive không rỗng NGOÀI mrid/unit/type.
+            // Object value-cell rỗng ({mrid:'', value:'', unit:'p|F'}) KHÔNG tính là có data
+            // (chỉ unit là placeholder) → không cấp mrid → không insert record value rỗng
+            // → tránh FK rỗng trỏ tới record không tồn tại.
+            const IGNORE = new Set(['mrid', 'unit', 'type'])
             const hasData = keys.some(k => {
-                if (k === 'mrid') return false
+                if (IGNORE.has(k)) return false
                 const v = obj[k]
                 return v !== null && v !== undefined && v !== '' && typeof v !== 'object'
             })
