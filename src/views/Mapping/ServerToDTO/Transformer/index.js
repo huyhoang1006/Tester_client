@@ -22,6 +22,16 @@ const WINDING_MAP = {
     TERT: 'Tert'
 }
 
+// Server gửi connection kind ở các field tách (vectorGroupPrim/Sec/Tert) viết HOA
+// cho hậu tố neutral: 'YN'/'ZN'. Client dùng enum WindingConnection 'Yn'/'Zn'.
+// Không chuẩn hoá ⇒ changeDataBushing/bushingPosReturn không nhận ra winding có neutral
+// ⇒ cắt mất bushing trung tính (N/n1/n2). (Chuỗi vectorGroup gộp server đã đúng 'Yn'.)
+const WINDING_CONN_MAP = {
+    YN: 'Yn',
+    ZN: 'Zn'
+}
+const mapConn = (v) => WINDING_CONN_MAP[v] || v || ''
+
 const TAP_TYPE_MAP = {
     OLTC: 'oltc',
     DETC: 'detc'
@@ -161,7 +171,8 @@ const reversed = (obj) => Object.fromEntries(Object.entries(obj).map(([key, valu
 // ─── Mapper ──────────────────────────────────────────────────────────────────
 
 export const mapServerToDto = (serverData) => {
-    console.log('mapServerToDto: serverData', serverData)
+    console.log(serverData)
+
     const dto = new TransformerDataDto()
     if (!serverData) return dto
 
@@ -201,10 +212,10 @@ export const mapServerToDto = (serverData) => {
     const hasSplitVG = tr.vectorGroupPrim || tr.vectorGroupSec || tr.vectorGroupTertiary
     if (hasSplitVG) {
         // Server đã tách sẵn các thành phần → build vector_group object + vector_group_data
-        dto.winding_configuration.vector_group.prim = tr.vectorGroupPrim || ''
-        dto.winding_configuration.vector_group.sec.i = tr.vectorGroupSec || ''
+        dto.winding_configuration.vector_group.prim = mapConn(tr.vectorGroupPrim)
+        dto.winding_configuration.vector_group.sec.i = mapConn(tr.vectorGroupSec)
         dto.winding_configuration.vector_group.sec.value = str(tr.vectorGroupSecVal)
-        dto.winding_configuration.vector_group.tert.i = tr.vectorGroupTertiary || ''
+        dto.winding_configuration.vector_group.tert.i = mapConn(tr.vectorGroupTertiary)
         dto.winding_configuration.vector_group.tert.value = str(tr.vectorGroupTertiaryVal)
         dto.winding_configuration.vector_group.tert.accessible = TERT_ACCESSIBILITY_MAP[tr.vectorGroupTertiaryAccessibility] || ''
         // vector_group_data = string đầy đủ để View biết đây là dạng parsed (type null)
@@ -415,7 +426,6 @@ export const mapServerToDto = (serverData) => {
         }))
     }
 
-    console.log('mapServerToDto: dto', others)
     // ─── 7. Others — server không trả về → giữ default ───────────────────────
     dto.others.mrid = others.mrid || uuid.newUuid()
     dto.others.category = OTHERS_CATEGORY_MAP[others.category] || ''
@@ -437,7 +447,7 @@ export const mapServerToDto = (serverData) => {
     dto.others.insulation.volume.unit = others.insulationVolumeUnit || 'l'
 
     // ─── 8. Bushing data ──────────────────────────────────────────────────────
-    // Server trả serverData.bushings = [{ winding, position, assetType, serialNo,
+    // Server trả serverData.bushings = [{ winding, pos, assetType, serialNo,
     //   manufacturerName, manufacturerType, manufacturingYear, insulLevelLL(+Unit),
     //   voltageLGround(+Unit), maxSystemVoltage(+Unit), ratedCurrent(+Unit),
     //   dfC1(+Unit), capC1(+Unit), dfC2(+Unit), capC2(+Unit), insulType }, ...]
@@ -447,7 +457,7 @@ export const mapServerToDto = (serverData) => {
         assetInfoId: uuid.newUuid(),
         productAssetModelId: uuid.newUuid(),
         lifecycleDateId: uuid.newUuid(),
-        pos: b.position || '',
+        pos: b.pos || b.position || '',
         asset_type: BUSHING_TYPE_MAP[b.assetType] || b.assetType || '',
         serial_no: b.serialNo || '',
         manufacturer: b.manufacturer || '',
