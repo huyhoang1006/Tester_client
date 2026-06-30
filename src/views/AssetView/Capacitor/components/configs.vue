@@ -17,9 +17,13 @@
                 </el-col>
               </el-row>
             </el-form-item>
-            <el-form-item v-if="internalConfigsData.phase === '1'" label="Phase name">
-              <el-input v-model="internalConfigsData.phase_name" size="mini" style="width: 100%"
-                @blur="handlePhaseNameChange" />
+            <el-form-item v-if="internalConfigsData.phase === '1'" label="Phase">
+              <el-select v-model="internalConfigsData.phase_name" size="mini" style="width: 100%"
+                @change="handlePhaseNameChange" placeholder="Select phase">
+                <el-option label="A" value="A"></el-option>
+                <el-option label="B" value="B"></el-option>
+                <el-option label="C" value="C"></el-option>
+              </el-select>
             </el-form-item>
           </el-form>
         </el-col>
@@ -164,12 +168,8 @@ export default {
   watch: {
     configs: {
       handler(newVal) {
-        console.log('Configs props changed:', JSON.stringify(newVal, null, 2));
-        console.log('Current internalConfigsData.phase_name:', this.internalConfigsData.phase_name);
-
         // Update phase nếu thay đổi
         if (newVal.phase && newVal.phase !== this.internalConfigsData.phase) {
-          console.log('Phase changed from', this.internalConfigsData.phase, 'to', newVal.phase);
           this.internalConfigsData.phase = newVal.phase;
           // Chỉ clear phase_name khi chuyển sang phase 3
           if (newVal.phase === '3') {
@@ -180,12 +180,9 @@ export default {
         // Update phase_name khi có giá trị mới từ props (load from DB hoặc restore)
         if (newVal.phase_name !== undefined && newVal.phase === '1') {
           if (this.internalConfigsData.phase_name !== newVal.phase_name) {
-            console.log('Updating phase_name from', this.internalConfigsData.phase_name, 'to', newVal.phase_name);
             this.internalConfigsData.phase_name = newVal.phase_name;
           }
         }
-
-        console.log('After update, internalConfigsData.phase_name:', this.internalConfigsData.phase_name);
       },
       deep: true,
       immediate: true
@@ -211,9 +208,6 @@ export default {
   },
   methods: {
     handlePhaseChange(value) {
-      console.log('handlePhaseChange: switching to phase', value);
-      console.log('Current internalConfigsData.phase_name:', this.internalConfigsData.phase_name);
-
       // KHÔNG clear phase_name khi chuyển phase - để parent logic xử lý
       // Chỉ update phase
       this.internalConfigsData.phase = value;
@@ -222,12 +216,8 @@ export default {
       this.$emit("update-configs", this.internalConfigsData);
     },
     handlePhaseNameChange() {
-      // Emit phase_name khi blur
-      console.log('handlePhaseNameChange called, phase_name:', this.internalConfigsData.phase_name);
-      console.log('Emitting configs:', JSON.stringify(this.internalConfigsData, null, 2));
-      console.log('Calling $emit update-configs');
+      // Emit phase_name khi thay đổi
       this.$emit("update-configs", this.internalConfigsData);
-      console.log('$emit update-configs completed');
     },
     updateField(type, field, value) {
       let target;

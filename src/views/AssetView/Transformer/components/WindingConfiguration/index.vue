@@ -13,11 +13,18 @@
             <el-row :gutter="20" class="content">
                 <el-col :xs="24" :sm="24" :md="12" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
-                        <el-form-item label="Phases" class="inline-phases">
+                        <el-form-item label="Number of Phase" class="inline-phases">
                             <el-radio-group @change="onChangePhase" v-model="windingConfigurationData.phases">
                                 <el-radio type="number" label="1">1</el-radio>
                                 <el-radio type="number" label="3">3</el-radio>
                             </el-radio-group>
+                        </el-form-item>
+                        <el-form-item v-if="windingConfigurationData.phases === '1'" label="Phase">
+                            <el-select style="width: 100%" v-model="windingConfigurationData.phase" placeholder="Select phase">
+                                <el-option label="A" value="A"></el-option>
+                                <el-option label="B" value="B"></el-option>
+                                <el-option label="C" value="C"></el-option>
+                            </el-select>
                         </el-form-item>
                         <el-form-item label="Vector group">
                             <div v-if="vectorGroup !== null && vectorGroup !== '' && vectorGroup !== undefined"
@@ -211,6 +218,9 @@ export default {
     },
     methods: {
         onChangePhase() {
+            if (this.windingConfigurationData.phases === '3') {
+                this.windingConfigurationData.phase = ''
+            }
             this.windingConfigurationData.vector_group = {
                 prim: '',
                 sec: {

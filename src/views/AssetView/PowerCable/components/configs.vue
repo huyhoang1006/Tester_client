@@ -695,7 +695,6 @@ export default {
             this.autoLayerTicked = true;
         },
         onChangePhase() {
-            console.log(this.configs.phases.value)
         },
         changeRadio(data) {
             console.log(this.layersData.conductor)
