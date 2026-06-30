@@ -3,6 +3,7 @@ class WindingConfigurationDto {
         this.vector_group_custom = '';
         this.unsupported_vector_group = '';
         this.phases = ''
+        this.phase = ''
         this.vector_group = {
             prim: '',
             sec: {
