@@ -19,7 +19,8 @@ class PowerCableDTO {
     this.attachmentId = ''
 
     this.configsData = {
-      phases: { mrid: '', value: '', unit: 'string' }, // 1 | 3
+      number_of_phase: '', // 1 | 3
+      phase: '', // A | B | C | AB | BC | CA
       cores: { mrid: '', value: '', unit: 'string' },  // Single | Multiple
     };
 

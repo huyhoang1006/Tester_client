@@ -3,6 +3,7 @@
         <div style="display: flex; flex-direction: column;">
             <div style="flex: 1; display: flex; flex-direction: column;">
                 <disconnectTransProperty :properties.sync="disconnector.properties"></disconnectTransProperty>
+                <configuration :config.sync="disconnector.config"></configuration>
                 <ratings :ratings.sync="disconnector.ratings"></ratings>
             </div>
         </div>
@@ -13,12 +14,14 @@
 import mixin from '../Disconnector/mixin'
 import disconnectTransProperty from '../Disconnector/components/properties.vue'
 import ratings from '../Disconnector/components/ratings.vue'
+import configuration from '../Disconnector/components/configuration.vue'
 
 export default {
     name: 'disconnector',
     components: {
         disconnectTransProperty,
         ratings,
+        configuration
     },
     data() {
         return {

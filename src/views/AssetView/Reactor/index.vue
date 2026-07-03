@@ -1,6 +1,7 @@
 <template>
     <div>
         <PropertiesReactor :data="reactor.properties" @update-attachment="updateAttachment" :attachment.sync="this.attachmentData"></PropertiesReactor>
+        <reactorConfiguration :config="reactor.config"></reactorConfiguration>
         <el-row :gutter="20" class="content">
             <el-col :xs="24" :md="12" class="col-content mgt-20">    
                 <RatingsReactor :data="reactor.reactorRating"></RatingsReactor>
@@ -13,6 +14,7 @@
 </template>
 <script>
 import PropertiesReactor from './components/properties.vue'
+import reactorConfiguration from './components/configuration.vue'
 import OthersReactor from './components/others.vue'
 import RatingsReactor from './components/ratings.vue'
 import mixin from './mixin'
@@ -20,6 +22,7 @@ export default {
     name: 'Reactor',
     components: {
         PropertiesReactor,
+        reactorConfiguration,
         OthersReactor,
         RatingsReactor
     },

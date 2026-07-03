@@ -158,8 +158,8 @@ export const insertAsset = async (asset) => {
                             mrid, acceptance_test, critical, electronic_address, initial_condition, initial_loss_of_life,
                             in_use_date, in_use_state, kind, lifecycle_date, lifecycle_state, lot_number, position,
                             retired_reason, serial_number, status, type, utc_number, asset_info, product_asset_model,
-                            location, country_of_origin, manufacturer_type
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            location, country_of_origin, manufacturer_type, number_of_phase, phase, phase
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         ON CONFLICT(mrid) DO UPDATE SET
                             acceptance_test = excluded.acceptance_test,
                             critical = excluded.critical,
@@ -182,7 +182,9 @@ export const insertAsset = async (asset) => {
                             product_asset_model = excluded.product_asset_model,
                             location = excluded.location,
                             country_of_origin = excluded.country_of_origin,
-                            manufacturer_type = excluded.manufacturer_type
+                            manufacturer_type = excluded.manufacturer_type,
+                            number_of_phase = excluded.number_of_phase,
+                            phase = excluded.phase
                         `,
                         [
                             asset.mrid,
@@ -207,7 +209,9 @@ export const insertAsset = async (asset) => {
                             asset.product_asset_model,
                             asset.location,
                             asset.country_of_origin,
-                            asset.manufacturer_type
+                            asset.manufacturer_type,
+                            asset.number_of_phase,
+                            asset.phase
                         ],
                         function (err) {
                             if (err) {
@@ -261,6 +265,8 @@ export const updateAsset = async (mrid, asset) => {
                             product_asset_model = ?,
                             location = ?,
                             country_of_origin = ?
+                            number_of_phase = ?,
+                            phase = ?
                         WHERE mrid = ?`,
                         [
                             asset.acceptance_test,
@@ -284,6 +290,8 @@ export const updateAsset = async (mrid, asset) => {
                             asset.product_asset_model,
                             asset.location,
                             asset.country_of_origin,
+                            asset.number_of_phase,
+                            asset.phase,
                             mrid
                         ],
                         function (err) {
@@ -332,8 +340,8 @@ export const insertAssetTransaction = (asset, dbsql) => {
                     mrid, acceptance_test, critical, electronic_address, initial_condition, initial_loss_of_life,
                     in_use_date, in_use_state, kind, lifecycle_date, lifecycle_state, lot_number, position,
                     retired_reason, serial_number, status, type, utc_number, asset_info, product_asset_model,
-                    location, country_of_origin
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    location, country_of_origin, number_of_phase, phase
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(mrid) DO UPDATE SET
                     acceptance_test = excluded.acceptance_test,
                     critical = excluded.critical,
@@ -355,7 +363,9 @@ export const insertAssetTransaction = (asset, dbsql) => {
                     asset_info = excluded.asset_info,
                     product_asset_model = excluded.product_asset_model,
                     location = excluded.location,
-                    country_of_origin = excluded.country_of_origin
+                    country_of_origin = excluded.country_of_origin,
+                    number_of_phase = excluded.number_of_phase,
+                    phase = excluded.phase
                 `,
                 [
                     asset.mrid,
@@ -379,7 +389,9 @@ export const insertAssetTransaction = (asset, dbsql) => {
                     asset.asset_info,
                     asset.product_asset_model,
                     asset.location,
-                    asset.country_of_origin
+                    asset.country_of_origin,
+                    asset.number_of_phase,
+                    asset.phase
                 ],
                 function (err) {
                     if (err) {
@@ -426,6 +438,8 @@ export const updateAssetTransaction = (mrid, asset, dbsql) => {
                     product_asset_model = ?,
                     location = ?,
                     country_of_origin = ?
+                    number_of_phase = ?,
+                    phase = ?
                 WHERE mrid = ?`,
                 [
                     asset.acceptance_test,
@@ -449,6 +463,8 @@ export const updateAssetTransaction = (mrid, asset, dbsql) => {
                     asset.product_asset_model,
                     asset.location,
                     asset.country_of_origin,
+                    asset.number_of_phase,
+                    asset.phase,
                     mrid
                 ],
                 function (err) {

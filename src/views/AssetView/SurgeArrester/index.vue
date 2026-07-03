@@ -2,6 +2,7 @@
     <div id="asset">
         <div>
             <property :data="this.surge_arrester_data.properties" @update-attachment="updateAttachment" :attachment.sync="this.attachmentData"></property>
+            <configuration :config="this.surge_arrester_data.config"></configuration>
             <ratings :data="this.surge_arrester_data.ratings"></ratings>
         </div>
     </div>
@@ -12,13 +13,16 @@
 import mixin from './mixin'
 import property from './components/property/index.vue'
 import ratings from './components/ratings/index.vue'
+import configuration from './components/configuration/index.vue'
 
 export default {
     name: 'surgeArrester',
     components: {
         property,
         ratings,
+        configuration,
     },
+
     props: {
         parent : {
             type: Object,

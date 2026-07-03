@@ -44,6 +44,9 @@ export const transformerDtoToEntity = (dto) => {
     entity.asset.description = dto.properties.comment || null;
     entity.asset.location = dto.locationId || null;
 
+    entity.asset.number_of_phase = dto.winding_configuration.phases || null;
+    entity.asset.phase = dto.winding_configuration.phase || null;
+
     //lifecycleDate
     entity.lifecycleDate.manufactured_date = dto.properties.manufacturer_year || null;
     entity.lifecycleDate.mrid = dto.lifecycleDateId || null;
@@ -750,6 +753,9 @@ export const transformerEntityToDto = (entity) => {
     dto.psrId = entity.assetPsr.psr_id || ''
     dto.attachmentId = entity.attachment.id || '';
     dto.attachment = entity.attachment;
+
+    dto.winding_configuration.phases = entity.asset.number_of_phase || ''
+    dto.winding_configuration.phase = entity.asset.phase || ''
 
     dto.oldPowerTransformerInfoId = entity.oldPowerTransformerInfo.mrid || ''
     dto.winding_configuration.phases = entity.oldPowerTransformerInfo.phases || ''

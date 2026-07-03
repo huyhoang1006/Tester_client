@@ -45,6 +45,9 @@ export const disconnectorDtoToEntity = (dto) => {
     entity.asset.product_asset_model = dto.productAssetModelId || null
     entity.asset.asset_info = dto.assetInfoId
 
+    entity.asset.number_of_phase = dto.config.number_of_phase || null
+    entity.asset.phase = dto.config.phase || null
+
     /** ================== attachment ================== */
     // entity.attachment.id = dto.attachmentId || null
     // entity.attachment.data = dto.attachment || null // giữ object raw nếu cần
@@ -162,7 +165,6 @@ export const disconnectorDtoToEntity = (dto) => {
         }
 
     }
-    console.log('entity', entity)
     return entity
 }
 
@@ -188,6 +190,9 @@ export const disconnectorEntityToDto = (entity) => {
     // lifecycle date
     dto.lifecycleDateId = entity.asset.lifecycle_date || '';
     dto.properties.manufacturing_year = entity.lifecycleDate.manufactured_date || '';
+
+    dto.config.number_of_phase = entity.asset.number_of_phase || '';
+    dto.config.phase = entity.asset.phase || '';
 
     //assetPsr
     dto.assetPsrId = entity.assetPsr.mrid || '';

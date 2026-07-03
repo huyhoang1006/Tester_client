@@ -17,6 +17,13 @@
                                 <el-radio :label="3">3</el-radio>
                             </el-radio-group>
                         </el-form-item>
+                        <el-form-item v-if="circuitBreakerData.numberOfPhases == '1'" label="Phase">
+                            <el-select style="width: 100%" v-model="circuitBreakerData.phase" placeholder="Select phase">
+                                <el-option label="A" value="A"></el-option>
+                                <el-option label="B" value="B"></el-option>
+                                <el-option label="C" value="C"></el-option>
+                            </el-select>
+                        </el-form-item>
                         <el-form-item label="Number of interrupters per phase">
                             <el-select style="width: 100%;" v-model="circuitBreakerData.interruptersPerPhase">
                                 <el-option v-for="item in 16" :key="item" :label="item" :value="item"> </el-option>

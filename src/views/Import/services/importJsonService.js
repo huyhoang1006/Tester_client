@@ -211,6 +211,7 @@ const importJobNode = async (branch, parentNode, deps) => {
             return { mode: 'job', mrid: newJobDto.properties.mrid, parentId: parentNode.mrid, asset: assetName }
         }
         console.error(`[importJson] insert job FAILED:`, res && res.message, res)
+        deps._lastError = (res && res.message) || 'Insert job failed'
         return null
     } catch (err) {
         console.error(`[importJson] Error importing job:`, err)
@@ -248,6 +249,7 @@ const importNormalNode = async (branch, parentNode, deps) => {
         const res = await inserter(branch.data, parentNode, deps)
         if (res && res.mrid && res.success !== false) return { mode: res.mode || nodeModeOf(branch.type), mrid: res.mrid, parentId: parentNode.mrid, asset: branch.asset }
         console.warn(`[importJson] insert FAILED type=${branch.type} mrid=${branchMrid(branch)} parent=${parentNode.mrid} message=`, res && res.message, '| result=', res)
+        deps._lastError = (res && res.message) || 'Insert failed'
         return null
     } catch (err) {
         console.error(`[importJson] Error importing node ${branch.type}:`, err)
@@ -455,10 +457,17 @@ const regenBranchIds = (branch, parentNode, uuid) => {
 //  - NEW           → tạo mới (regen mrid);     con xử lý tiếp.
 //  - USE_EXISTING  → KHÔNG đụng node DB (dùng làm parent); con xử lý tiếp.
 // ---------------------------------------------------------------------------
-const importBranch = async (branch, parentNode, deps, decisions) => {
+const importBranch = async (branch, parentNode, deps, decisions, forceNew = false) => {
     const mrid = branchMrid(branch)
-    const action = decisions && mrid ? decisions[mrid] : undefined
-    console.log(`%c[BRANCH] type=${branch && branch.type} mrid=${mrid} action=${action || 'NONE'} parent=${parentNode && parentNode.mrid}`, 'color:#9C27B0;font-weight:bold')
+    let action = decisions && mrid ? decisions[mrid] : undefined
+
+    // FORCE NEW (an toàn kiểu "copy = mới toàn bộ" như các app lớn):
+    // Khi CHA đã "create new" (mrid mới), mọi con cháu PHẢI new theo — nếu để con
+    // Overwrite/Use existing (giữ mrid cũ) thì insert sẽ RE-PARENT node thật trong DB
+    // sang bản copy → node biến mất khỏi vị trí cũ. Vì vậy bỏ qua decision của con,
+    // ép NEW cho toàn bộ subtree.
+    if (forceNew) action = CONFLICT_ACTION.NEW
+    console.log(`%c[BRANCH] type=${branch && branch.type} mrid=${mrid} action=${action || 'NONE'}${forceNew ? ' (forced)' : ''} parent=${parentNode && parentNode.mrid}`, 'color:#9C27B0;font-weight:bold')
 
     // Báo tiến trình: đang import node nào (tên + loại).
     if (deps.onProgress) {
@@ -470,6 +479,7 @@ const importBranch = async (branch, parentNode, deps, decisions) => {
 
     let newNode = null
     let recurseChildren = true
+    let childForceNew = forceNew
 
     if (action === CONFLICT_ACTION.OVERWRITE) {
         newNode = await overwriteNode(branch, parentNode, deps)
@@ -482,6 +492,7 @@ const importBranch = async (branch, parentNode, deps, decisions) => {
     } else {
         if (action === CONFLICT_ACTION.NEW) {
             regenBranchIds(branch, parentNode, deps.uuid)
+            childForceNew = true   // cha mrid mới → con cháu buộc phải new
         }
         if (branch.type === 'job') {
             newNode = await importJobNode(branch, parentNode, deps)
@@ -494,13 +505,24 @@ const importBranch = async (branch, parentNode, deps, decisions) => {
 
     if (!newNode) {
         console.warn(`%c[BRANCH] ✗ FAILED — skipping subtree: type=${branch && branch.type}`, 'color:#F44336;font-weight:bold')
+        // Ghi nhận node fail để BÁO NGƯỜI DÙNG cuối phiên import (không chỉ console).
+        if (deps._failures) {
+            deps._failures.push({
+                mrid,
+                type: branch && branch.type,
+                asset: branch && branch.asset,
+                name: nodeDisplayName(branch),
+                message: deps._lastError || 'Insert failed',
+            })
+            deps._lastError = null
+        }
         return
     }
     console.log(`%c[BRANCH] ✓ OK type=${branch.type} → newNode.mrid=${newNode.mrid} (recurseChildren=${recurseChildren}, ${(branch.children || []).length} children)`, 'color:#009688')
 
     if (recurseChildren) {
         for (const child of (branch.children || [])) {
-            await importBranch(child, newNode, deps, decisions)
+            await importBranch(child, newNode, deps, decisions, childForceNew)
         }
     }
 }
@@ -652,6 +674,8 @@ export const importBranchFromJSON = async (fileContent, targetNode, deps, decisi
     if (deps.onProgressInit) deps.onProgressInit(totalNodes)
 
     let ok = 0, fail = 0
+    deps._failures = []          // node fail (mọi cấp, không chỉ root) — để báo người dùng
+    deps._lastError = null
     try {
         console.log(`%c[SERVICE] importBranchFromJSON: ${branchesToImport.length} branch(es), target=${targetNode.mrid}`, 'color:#3F51B5;font-weight:bold')
         for (const root of branchesToImport) {
@@ -661,14 +685,24 @@ export const importBranchFromJSON = async (fileContent, targetNode, deps, decisi
             } catch (err) {
                 console.error('[SERVICE] Error importing one root:', err)
                 fail++
+                deps._failures.push({
+                    mrid: branchMrid(root), type: root && root.type, asset: root && root.asset,
+                    name: nodeDisplayName(root), message: (err && err.message) || 'Unexpected error',
+                })
             }
         }
-        console.log(`%c[SERVICE] DONE: ok=${ok} fail=${fail}`, 'color:#3F51B5;font-weight:bold')
-        if (fail === 0) {
+        const failures = deps._failures
+        const failedNodes = failures.length
+        console.log(`%c[SERVICE] DONE: rootOk=${ok} rootFail=${fail} | failedNodes=${failedNodes}`, 'color:#3F51B5;font-weight:bold')
+        if (failedNodes > 0) console.table(failures)
+
+        if (failedNodes === 0) {
             messageHandler && messageHandler.success(
                 isLegacyFlat ? `Imported ${ok} item(s) successfully` : `Imported ${ok} branch(es) successfully`)
         } else {
-            messageHandler && messageHandler.warning(`Import done: ${ok} succeeded, ${fail} failed`)
+            // báo chi tiết node fail cho UI (dialog/notification) — không chỉ đếm root
+            messageHandler && messageHandler.warning(`Import finished: ${failedNodes} item(s) failed`)
+            if (deps.onImportFailures) deps.onImportFailures(failures)
         }
     } catch (err) {
         console.error('[SERVICE] Import error:', err)

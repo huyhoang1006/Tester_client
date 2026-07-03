@@ -63,6 +63,8 @@ export function mapDtoToEntity(dto) {
     entity.attachment = dto.attachment || null;
 
     entity.oldBreakerInfo.phase_number = dto.circuitBreaker.numberOfPhases || null
+    entity.asset.number_of_phase = dto.circuitBreaker.numberOfPhases || null
+    entity.asset.phase = dto.circuitBreaker.phase || null
     entity.oldBreakerInfo.number_of_interrupters_per_phase = dto.circuitBreaker.interruptersPerPhase || null
     entity.oldBreakerInfo.pole_operation = dto.circuitBreaker.poleOperation || null
     entity.oldBreakerInfo.pir = dto.circuitBreaker.hasPIR || null
@@ -630,6 +632,8 @@ export function mapEntityToDto(entity) {
     dto.properties.comment = entity.asset?.description || ''
     dto.locationId = entity.asset?.location || ''
     dto.circuitBreaker.numberOfPhases = entity.oldBreakerInfo?.phase_number || ''
+    dto.circuitBreaker.numberOfPhases = entity.asset?.number_of_phase || ''
+    dto.circuitBreaker.phase = entity.asset?.phase || ''
     dto.circuitBreaker.interruptersPerPhase = entity.oldBreakerInfo?.number_of_interrupters_per_phase || ''
     dto.circuitBreaker.poleOperation = entity.oldBreakerInfo?.pole_operation || ''
     dto.assetPsrId = entity.assetPsr?.mrid || ''

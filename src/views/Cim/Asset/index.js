@@ -23,6 +23,8 @@ class Asset extends IdentifiedObject {
         this.product_asset_model = null; // Description of the asset
         this.location = null; // Associated location of the asset
         this.country_of_origin = null; // Associated country of origin of the asset
+        this.number_of_phase = null; // Number of phases in the asset
+        this.phase = null; // Phase of the asset
     }
 }
 

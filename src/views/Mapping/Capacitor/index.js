@@ -46,6 +46,9 @@ export function mapDtoToEntity(dto) {
     entity.asset.description = dto.properties.comment || null;
     entity.asset.location = dto.locationId || null;
 
+    entity.asset.number_of_phase = dto.configsData.number_of_phase || null;
+    entity.asset.phase = dto.configsData.phase || null;
+
     /** ---------- Lifecycle ---------- */
     entity.lifecycleDate.mrid = dto.lifecycleDateId || null;
     entity.lifecycleDate.manufactured_date = dto.properties.manufacturing_year || null;
@@ -61,21 +64,14 @@ export function mapDtoToEntity(dto) {
     entity.attachment = dto.attachment || null;
 
     /** ---------- configsData ---------- */
-    entity.capacitor.phase_number = dto.configsData.phase ? parseInt(dto.configsData.phase) : null;
+    entity.capacitor.phase_number = dto.configsData.number_of_phase ? parseInt(dto.configsData.number_of_phase) : null;
     // Chỉ lưu phase_name nếu phase = 1 (single phase)
-    console.log('=== Mapping ConfigsData ===');
-    console.log('dto.configsData:', JSON.stringify(dto.configsData, null, 2));
-    console.log('phase:', dto.configsData.phase);
-    console.log('phase_name in DTO:', dto.configsData.phase_name);
 
-    if (dto.configsData.phase === '1') {
+    if (dto.configsData.number_of_phase === '1') {
         entity.capacitor.phase_name = dto.configsData.phase_name || null;
-        console.log('Setting phase_name to:', entity.capacitor.phase_name);
     } else {
         entity.capacitor.phase_name = null;
-        console.log('Phase is 3, setting phase_name to null');
     }
-    console.log('Final entity.capacitor.phase_name:', entity.capacitor.phase_name);
 
     /** ---------- Rated values ---------- */
     entity.capacitor.rated_voltage = dto.ratings.rated_voltage.mrid || null;
@@ -99,7 +95,7 @@ export function mapDtoToEntity(dto) {
     entity.reactivePower.push(ratedPower);
 
     /** ---------- Capacitance (Phase-based) ---------- */
-    if (dto.configsData.phase == '1') {
+    if (dto.configsData.number_of_phase == '1') {
         // Chỉ lưu nếu có giá trị
         if (dto.capacitance.capacitance && dto.capacitance.capacitance.value && dto.capacitance.capacitance.value.value) {
             const capacitanceCapacitorInfo = new CapacitanceCapacitorInfo();
@@ -136,7 +132,7 @@ export function mapDtoToEntity(dto) {
     // Note: dissipationFactorCapacitorInfo is an array, not a single object
 
 
-    if (dto.configsData.phase == '1') {
+    if (dto.configsData.number_of_phase == '1') {
         // Chỉ lưu nếu có giá trị
         const phase1Value = dto.dissipationFactor.dissipation_factor?.value?.value || '';
         const phase1ValueStr = String(phase1Value || '');
@@ -188,6 +184,7 @@ export function mapDtoToEntity(dto) {
 
 export function mapEntityToDto(entity) {
     const dto = new CapacitorsDTO();
+    console.log('Mapping entity to DTO:', entity);
 
     /** ---------- Properties ---------- */
     dto.properties.mrid = entity.asset.mrid || null;
@@ -205,6 +202,9 @@ export function mapEntityToDto(entity) {
     dto.properties.comment = entity.asset.description || null;
     dto.locationId = entity.asset.locationId || null;
 
+    dto.configsData.number_of_phase = String(entity.asset.number_of_phase) || null;
+    dto.configsData.phase = entity.asset.phase || null;
+
     /** ---------- Lifecycle ---------- */
     dto.lifecycleDateId = entity.lifecycleDate.mrid || null;
     dto.properties.manufacturing_year = entity.lifecycleDate.manufactured_date || null;
@@ -219,13 +219,8 @@ export function mapEntityToDto(entity) {
     dto.attachment = entity.attachment || null;
 
     /** ---------- configsData ---------- */
-    dto.configsData.phase = entity.capacitor.phase_number > 0 ? String(entity.capacitor.phase_number) : '';
+    dto.configsData.number_of_phase = entity.capacitor.phase_number > 0 ? String(entity.capacitor.phase_number) : '';
     dto.configsData.phase_name = entity.capacitor.phase_name || null;
-
-    console.log('=== Mapping Entity to DTO (ConfigsData) ===');
-    console.log('entity.capacitor.phase_number:', entity.capacitor.phase_number);
-    console.log('entity.capacitor.phase_name:', entity.capacitor.phase_name);
-    console.log('Mapped to dto.configsData:', JSON.stringify(dto.configsData, null, 2));
 
     /** ---------- Rated values ---------- */
     if (entity.voltage.length > 0) {
@@ -300,7 +295,6 @@ export function mapEntityToDto(entity) {
         dto.othersData.weight.value = w.value;
         dto.othersData.weight.unit = w.multiplier ? `${w.multiplier}|${w.unit}` : w.unit;
     }
-
     return dto;
 }
 

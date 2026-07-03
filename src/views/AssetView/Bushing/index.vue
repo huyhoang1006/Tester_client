@@ -1,7 +1,7 @@
 <template>
     <div style="flex: 1; margin-top: 20px;">
         <properties :data="this.bushing_data.properties" @update-attachment="updateAttachment" :attachment.sync="this.attachmentData"></properties>
-        <bushing :data="this.bushing_data.bushing"></bushing>
+        <bushing :data="this.bushing_data.bushing" :config="this.bushing_data.configuration"></bushing>
     </div>
 </template>
 

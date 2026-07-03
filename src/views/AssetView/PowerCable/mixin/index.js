@@ -17,7 +17,6 @@ export default {
                     const data = JSON.parse(JSON.stringify(this.powerCable));
                     const result = await this.checkPowerCableData(data);
                     const resultEntity = powerCableMapping.mapDtoToEntity(result);
-                    console.log(resultEntity)
                     const oldResultEntity = powerCableMapping.mapDtoToEntity(this.powerCableOld);
                     let rs = await window.electronAPI.insertPowerCableEntity(oldResultEntity, resultEntity)
                     if (rs.success) {

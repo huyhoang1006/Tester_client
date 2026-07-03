@@ -130,17 +130,19 @@ CREATE TABLE IF NOT EXISTS "asset" (
 	"location"	TEXT,
 	"country_of_origin"	TEXT,
 	"in_use_state"	TEXT,
+	"number_of_phase"	INTEGER,
+	"phase"	TEXT,
 	PRIMARY KEY("mrid"),
-	FOREIGN KEY("asset_info") REFERENCES "asset_info"("mrid"),
-	FOREIGN KEY("mrid") REFERENCES "identified_object"("mrid") ON DELETE CASCADE,
-	FOREIGN KEY("status") REFERENCES "status"("mrid"),
 	FOREIGN KEY("acceptance_test") REFERENCES "acceptance_test"("mrid"),
-	FOREIGN KEY("lifecycle_date") REFERENCES "lifecycle_date"("mrid"),
+	FOREIGN KEY("asset_info") REFERENCES "asset_info"("mrid"),
 	FOREIGN KEY("electronic_address") REFERENCES "electronic_address"("mrid"),
+	FOREIGN KEY("in_use_date") REFERENCES "in_use_date"("mrid"),
 	FOREIGN KEY("initial_loss_of_life") REFERENCES "percent"("mrid"),
+	FOREIGN KEY("lifecycle_date") REFERENCES "lifecycle_date"("mrid"),
 	FOREIGN KEY("location") REFERENCES "location"("mrid"),
+	FOREIGN KEY("mrid") REFERENCES "identified_object"("mrid") ON DELETE CASCADE,
 	FOREIGN KEY("product_asset_model") REFERENCES "product_asset_model"("mrid"),
-	FOREIGN KEY("in_use_date") REFERENCES "in_use_date"("mrid")
+	FOREIGN KEY("status") REFERENCES "status"("mrid")
 );
 CREATE TABLE IF NOT EXISTS "asset_analog" (
 	"mrid"	TEXT NOT NULL,
@@ -768,11 +770,11 @@ CREATE TABLE IF NOT EXISTS "disconnector_info" (
 	"rated_duration_short_circuit"	TEXT,
 	"withstand_voltage_earth_poles"	TEXT,
 	"power_frequency_isolating_distance"	TEXT,
-	FOREIGN KEY("withstand_voltage_earth_poles") REFERENCES "voltage"("mrid"),
+	PRIMARY KEY("mrid"),
 	FOREIGN KEY("mrid") REFERENCES "old_switch_info"("mrid") on delete cascade,
-	FOREIGN KEY("rated_duration_short_circuit") REFERENCES "seconds"("mrid"),
 	FOREIGN KEY("power_frequency_isolating_distance") REFERENCES "voltage"("mrid"),
-	PRIMARY KEY("mrid")
+	FOREIGN KEY("rated_duration_short_circuit") REFERENCES "seconds"("mrid"),
+	FOREIGN KEY("withstand_voltage_earth_poles") REFERENCES "voltage"("mrid")
 );
 CREATE TABLE IF NOT EXISTS "disconnector_testing_equipment_test_type" (
 	"mrid"	TEXT NOT NULL,

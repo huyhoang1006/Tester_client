@@ -35,7 +35,7 @@ const nodeMrid = (node) => {
 
 export const collectTreeMrids = (roots) => {
     const out = []
-    const walk = (node) => {
+    const walk = (node, parentMrid) => {
         if (!node) return
         const mrid = nodeMrid(node)
         if (mrid) {
@@ -44,12 +44,13 @@ export const collectTreeMrids = (roots) => {
                 type: node.type,
                 asset: node.asset || null,
                 name: pickName(node),
+                parentMrid: parentMrid || null,   // cha TRONG FILE (null = gốc nhánh ghép)
                 _ref: node,            // giữ tham chiếu để gắn quyết định sau
             })
         }
-        for (const c of (node.children || [])) walk(c)
+        for (const c of (node.children || [])) walk(c, mrid || parentMrid)
     }
-    for (const r of (roots || [])) walk(r)
+    for (const r of (roots || [])) walk(r, null)
     return out
 }
 
@@ -82,36 +83,83 @@ export const scanTreeConflicts = async (roots, deps) => {
     for (const e of existingList) existingMap[e.mrid] = e
     console.log('[SCAN] existingMap (số trùng):', Object.keys(existingMap).length, existingMap)
 
-    // 2) với mỗi mrid trùng → lấy path để hiển thị
+    // 2) với mỗi mrid trùng → lấy path để hiển thị + xác định CHA hiện tại trong DB
+    const targetMrid = opts.targetMrid || null   // node đích (cha của gốc nhánh ghép)
     const conflicts = []
     for (const it of items) {
         const ex = existingMap[it.mrid]
         if (!ex) continue
         let pathText = ex.name || ''
-        // resolveMridPath là TÙY CHỌN — chỉ để hiện "đang ở đâu".
-        // Tắt mặc định vì resolveMridPath (main process) có thể lỗi SQL với 1 số mode
-        // và làm crash app (handler thiếu try-catch). Bật lại khi function đã ổn.
+        let dbParentMrid = null   // cha TRỰC TIẾP của node cũ trong DB
         if (opts && opts.resolvePath) {
             try {
                 const pr = await electronAPI.resolveMridPath(it.mrid, ex.mode)
                 const pathArr = (pr && (pr.data || pr.path)) || []
                 if (pr && pr.success && pathArr.length) {
                     pathText = pathArr.map(p => p.name || p.mode).join(' / ')
+                    // path = [gốc, ..., cha, chính node] → cha = kế cuối
+                    if (pathArr.length >= 2) dbParentMrid = pathArr[pathArr.length - 2].mrid || null
                 }
             } catch (e) { /* path lỗi không chặn flow */ }
         }
+
+        // Cha DỰ KIẾN sau import: cha trong file, hoặc targetMrid nếu là gốc nhánh ghép.
+        const intendedParent = it.parentMrid || targetMrid
+
+        // mode kỳ vọng từ type trong file (để phát hiện trùng mrid nhưng KHÁC LOẠI)
+        const expectMode = (t) => {
+            if (t === 'job') return 'job'
+            if (['organisation', 'substation', 'voltageLevel', 'bay'].includes(t)) return t
+            return 'asset'
+        }
+
+        // TRÙNG NHƯNG Ở NHÁNH KHÁC → auto "create new", không cần hỏi.
+        // Chỉ auto khi biết CHẮC cả 2 cha và chúng KHÁC nhau; thiếu thông tin → hỏi (an toàn).
+        let autoNew = !!(intendedParent && dbParentMrid && intendedParent !== dbParentMrid)
+
+        // TRÙNG mrid nhưng KHÁC LOẠI (file: asset, DB: bay...) → overwrite sẽ phá record
+        // khác loại. Coi là danh tính khác → auto new (app lớn: id trùng khác kind = new).
+        if (ex.mode && ex.mode !== expectMode(it.type)) autoNew = true
+
+        // JOB: import luôn regen id (importJobNode) — Overwrite/Use existing không được
+        // hỗ trợ thật cho job → đưa vào dialog chỉ gây hiểu lầm. Auto new luôn.
+        if (it.type === 'job') autoNew = true
 
         conflicts.push({
             mrid: it.mrid,
             type: it.type,
             asset: it.asset,
             nameInFile: it.name,
-            existsAt: { mode: ex.mode, name: ex.name, pathText },
+            existsAt: { mode: ex.mode, name: ex.name, pathText, parentMrid: dbParentMrid },
+            intendedParent,
+            autoNew,
             node: it._ref,        // node trong cây để gắn action
         })
     }
 
-    return { conflicts, items }
+    // CASCADE: cha auto-new (mrid mới) ⇒ con trùng cũng chắc chắn khác nhánh
+    // (cha mới chưa từng tồn tại) → auto-new theo. items đi theo thứ tự cây
+    // (cha trước con) nên duyệt xuôi + set là đủ.
+    const autoSet = new Set(conflicts.filter(c => c.autoNew).map(c => c.mrid))
+    for (const c of conflicts) {
+        if (!c.autoNew && c.intendedParent && autoSet.has(c.intendedParent)) {
+            c.autoNew = true
+            autoSet.add(c.mrid)
+        }
+    }
+
+    // DEDUPE: cùng mrid xuất hiện nhiều lần trong file (file gộp/export lặp)
+    // → chỉ giữ 1 entry cho dialog; quyết định áp chung theo mrid.
+    // Nếu BẤT KỲ instance nào autoNew → coi cả mrid là autoNew (an toàn: new không phá gì).
+    const byMrid = new Map()
+    for (const c of conflicts) {
+        const prev = byMrid.get(c.mrid)
+        if (!prev) byMrid.set(c.mrid, c)
+        else if (c.autoNew && !prev.autoNew) prev.autoNew = true
+    }
+    const dedupedConflicts = Array.from(byMrid.values())
+
+    return { conflicts: dedupedConflicts, items }
 }
 
 /**

@@ -1,24 +1,20 @@
 <template>
   <div id="configs">
-    <!-- Phase -->
+    <!-- Configuration -->
     <div>
       <el-row :gutter="20" class="content mgt-20">
         <el-col :xs="24" :md="12" class="col-content">
           <el-form :label-width="'120px'" size="mini" label-position="left">
-            <span class="bolder">Phase</span>
+            <span class="bolder">Configuration</span>
             <el-divider></el-divider>
-            <el-form-item :label-width="'0px'" class="inline-radios">
-              <el-row>
-                <el-col :span="12">
-                  <el-radio-group v-model="internalConfigsData.phase" @change="handlePhaseChange">
-                    <el-radio label="1">1</el-radio>
-                    <el-radio label="3">3</el-radio>
-                  </el-radio-group>
-                </el-col>
-              </el-row>
+            <el-form-item label="Number of phase" class="inline-radios">
+                <el-radio-group v-model="internalConfigsData.number_of_phase" @change="handlePhaseChange">
+                  <el-radio label="1">1</el-radio>
+                  <el-radio label="3">3</el-radio>
+                </el-radio-group>
             </el-form-item>
-            <el-form-item v-if="internalConfigsData.phase === '1'" label="Phase">
-              <el-select v-model="internalConfigsData.phase_name" size="mini" style="width: 100%"
+            <el-form-item v-if="internalConfigsData.number_of_phase === '1'" label="Phase">
+              <el-select v-model="internalConfigsData.phase" size="mini" style="width: 100%"
                 @change="handlePhaseNameChange" placeholder="Select phase">
                 <el-option label="A" value="A"></el-option>
                 <el-option label="B" value="B"></el-option>
@@ -66,7 +62,7 @@
           </el-form-item>
 
           <!-- Phase 1 -->
-          <template v-if="configsData.phase === '1'">
+          <template v-if="configsData.number_of_phase === '1' || configsData.number_of_phase === '' || configsData.number_of_phase === null">
             <el-form-item label="Capacitance">
               <el-input type="number" number="positive" v-model="capacitanceData.capacitance.value.value"
                 @input="updateField('capacitance', 'capacitance', $event.target ? $event.target.value : $event)">
@@ -169,18 +165,18 @@ export default {
     configs: {
       handler(newVal) {
         // Update phase nếu thay đổi
-        if (newVal.phase && newVal.phase !== this.internalConfigsData.phase) {
-          this.internalConfigsData.phase = newVal.phase;
+        if (newVal.number_of_phase && newVal.number_of_phase !== this.internalConfigsData.number_of_phase) {
+          this.internalConfigsData.number_of_phase = newVal.number_of_phase;
           // Chỉ clear phase_name khi chuyển sang phase 3
-          if (newVal.phase === '3') {
-            this.internalConfigsData.phase_name = "";
+          if (newVal.number_of_phase === '3') {
+            this.internalConfigsData.phase = "";
           }
         }
 
         // Update phase_name khi có giá trị mới từ props (load from DB hoặc restore)
-        if (newVal.phase_name !== undefined && newVal.phase === '1') {
-          if (this.internalConfigsData.phase_name !== newVal.phase_name) {
-            this.internalConfigsData.phase_name = newVal.phase_name;
+        if (newVal.number_of_phase !== undefined && newVal.number_of_phase === '1') {
+          if (this.internalConfigsData.phase !== newVal.phase) {
+            this.internalConfigsData.phase = newVal.phase;
           }
         }
       },
@@ -210,7 +206,7 @@ export default {
     handlePhaseChange(value) {
       // KHÔNG clear phase_name khi chuyển phase - để parent logic xử lý
       // Chỉ update phase
-      this.internalConfigsData.phase = value;
+      this.internalConfigsData.number_of_phase = value;
 
       // Emit để trigger update ở parent
       this.$emit("update-configs", this.internalConfigsData);

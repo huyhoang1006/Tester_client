@@ -23,7 +23,10 @@ export function mapDtoToEntity(dto) {
     entity.productAssetModel.mrid = dto.productAssetModelId || null;
     entity.bushing.location = dto.locationId || null;
     entity.bushing.product_asset_model = dto.productAssetModelId || null;
-    entity.oldBushingInfo.product_asset_model = dto.productAssetModelId || null;    
+    entity.oldBushingInfo.product_asset_model = dto.productAssetModelId || null;
+    
+    entity.bushing.number_of_phase = dto.configuration.number_of_phase || null;
+    entity.bushing.phase = dto.configuration.phase || null;
 
     // lifecycle date
     entity.lifecycleDate.manufactured_date = dto.properties.manufacturer_year || null;
@@ -141,9 +144,7 @@ export function mapDtoToEntity(dto) {
 }
 
 export function mapEntityToDto(entity) {
-    console.log(entity)
     const dto = new BushingDto();
-    console.log(dto)
     //properties
     dto.properties.mrid = entity.bushing.mrid || '';
     dto.properties.kind = entity.bushing.kind || '';
@@ -158,6 +159,9 @@ export function mapEntityToDto(entity) {
     dto.properties.comment = entity.bushing.description || '';
     dto.locationId = entity.bushing.location || '';
     dto.productAssetModelId = entity.bushing.product_asset_model || '';
+
+    dto.configuration.number_of_phase = String(entity.bushing.number_of_phase || '');
+    dto.configuration.phase = entity.bushing.phase || '';
 
     // lifecycle date
     dto.lifecycleDateId = entity.bushing.lifecycle_date || '';

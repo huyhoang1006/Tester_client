@@ -21,7 +21,6 @@ const mappingUnit = (map, unitDto) => {
 
 export function mapDtoToEntity(dto) {
     const entity = new PowerCableEntity();
-    console.log('Mapping DTO to Entity with DTO:', dto);
 
     /** ================== properties ================== */
     entity.asset.mrid = dto.properties.mrid || null;
@@ -63,7 +62,9 @@ export function mapDtoToEntity(dto) {
     entity.assetPsr.psr_id = dto.psrId || null;
 
     /** ================== phases ================== */
-    entity.oldCableInfo.phase_count = dto.configsData.phases.value || null;
+    entity.oldCableInfo.phase_count = dto.configsData.number_of_phase || null;
+    entity.asset.number_of_phase = dto.configsData.number_of_phase || null;
+    entity.asset.phase = dto.configsData.phase || null;
     entity.oldCableInfo.core_count = dto.configsData.cores.value || null;
 
     /** ================== ratingsData ================== */
@@ -439,7 +440,9 @@ export function mapEntityToDto(entity) {
 
 
     // ================== phases ==================
-    dto.configsData.phases.value = entity.oldCableInfo.phase_count != null ? Number(entity.oldCableInfo.phase_count) : null;
+    dto.configsData.number_of_phase = entity.asset.number_of_phase || null;
+    dto.configsData.phase = entity.asset.phase || null;
+
     dto.configsData.cores.value = entity.oldCableInfo.core_count != null ? String(entity.oldCableInfo.core_count) : null;
 
 

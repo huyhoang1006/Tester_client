@@ -1,6 +1,7 @@
 class circuitBreakerDto {
     constructor() {
         this.numberOfPhases = '';
+        this.phase = '';
         this.interruptersPerPhase = '';
         this.poleOperation = '';
         this.hasPIR = '';

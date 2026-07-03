@@ -1,69 +1,92 @@
 <template>
-    <el-row :gutter="20" class="mgt-20 property">
-        <el-col :xs="24" :md="12" class="col-content">
-            <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
-                <span class="bolder">Ratings</span>
-                <el-divider></el-divider>
-                <el-form-item label="Rated frequency">
-                    <el-input type="text" number="positive" style="width: 100%" v-model="bushingData.rated_frequency.value">
-                        <template #append>{{ unitSymbol.Hz }}</template>
-                    </el-input>
-                </el-form-item>
-                <el-form-item label="Insul. level LL (BIL)">
-                    <el-input type="text" number="positive" style="width: 100%" v-model="bushingData.insulation_level.value">
-                        <template #append>{{ bushingData.insulation_level.label }}</template>
-                    </el-input>
-                </el-form-item>
-                <el-form-item label="Voltage L-ground">
-                    <el-input type="text" number="positive" v-model="bushingData.voltage_l_ground.value">
-                        <template #append>{{ bushingData.voltage_l_ground.label }}</template>
-                    </el-input>
-                </el-form-item>
-                <el-form-item label="Max. system voltage">
-                    <el-input type="text" number="positive" style="width: 100%;" filterable v-model="bushingData.max_system_voltage.value">
-                        <template #append>{{ bushingData.max_system_voltage.label }}</template>
-                    </el-input>
-                </el-form-item>
-                <el-form-item label="Rated current">
-                    <el-input type="text" number="positive" v-model="bushingData.rated_current.value">
-                        <template #append>{{ bushingData.rated_current.label }}</template>
-                    </el-input>
-                </el-form-item>
-            </el-form>
-        </el-col>
-        <el-col :xs="24" :md="12" class="col-content">
-            <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
-                <span class="bolder">Nominal values</span>
-                <el-divider></el-divider>
-                <el-form-item label="DF (C1)">
-                    <el-input type="text" number="positive" style="width: 100%" v-model="bushingData.df_c1.value">
-                        <template #append>{{ bushingData.df_c1.label }}</template>
-                    </el-input>
-                </el-form-item>
-                <el-form-item label="Cap. (C1)">
-                    <el-input type="text" number="positive" style="width: 100%" v-model="bushingData.cap_c1.value">
-                        <template #append>{{ bushingData.cap_c1.label }}</template>
-                    </el-input>
-                </el-form-item>
-                <el-form-item label="DF (C2)">
-                    <el-input type="text" number="positive" v-model="bushingData.df_c2.value">
-                        <template #append>{{ bushingData.df_c2.label }}</template>
-                    </el-input>
-                </el-form-item>
-                <el-form-item label="Cap. (C2)">
-                    <el-input type="text" number="positive" style="width: 100%;" v-model="bushingData.cap_c2.value">
-                        <template #append>{{ bushingData.cap_c2.label }}</template>
-                    </el-input>
-                </el-form-item>
-                <el-form-item label="Insul. type">
-                    <el-select v-model="bushingData.insulation_type" style="width: 100%;">
-                        <el-option v-for="(item, index) in insulationKindList" :key="index" :label="item.label"
-                            :value="item.value"></el-option>
-                    </el-select>
-                </el-form-item>
-            </el-form>
-        </el-col>
-    </el-row>
+    <div>
+        <el-row :gutter="20" class="mgt-20 property">
+            <el-col :xs="24" :md="12" class="col-content">
+                <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
+                    <span class="bolder">Configuration</span>
+                    <el-divider></el-divider>
+                    <el-form-item label="Number of Phase" class="inline-phases">
+                        <el-radio-group v-model="configurationData.number_of_phase" @change="onChangeNumberOfPhase">
+                            <el-radio label="1">1</el-radio>
+                            <el-radio label="3">3</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <el-form-item v-if="configurationData.number_of_phase === '1'" label="Phase">
+                        <el-select style="width: 100%" v-model="configurationData.phase" placeholder="Select phase">
+                            <el-option label="A" value="A"></el-option>
+                            <el-option label="B" value="B"></el-option>
+                            <el-option label="C" value="C"></el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-form>
+            </el-col>
+        </el-row>
+        <el-row :gutter="20" class="mgt-20 property">
+            <el-col :xs="24" :md="12" class="col-content">
+                <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
+                    <span class="bolder">Ratings</span>
+                    <el-divider></el-divider>
+                    <el-form-item label="Rated frequency">
+                        <el-input type="text" number="positive" style="width: 100%" v-model="bushingData.rated_frequency.value">
+                            <template #append>{{ unitSymbol.Hz }}</template>
+                        </el-input>
+                    </el-form-item>
+                    <el-form-item label="Insul. level LL (BIL)">
+                        <el-input type="text" number="positive" style="width: 100%" v-model="bushingData.insulation_level.value">
+                            <template #append>{{ bushingData.insulation_level.label }}</template>
+                        </el-input>
+                    </el-form-item>
+                    <el-form-item label="Voltage L-ground">
+                        <el-input type="text" number="positive" v-model="bushingData.voltage_l_ground.value">
+                            <template #append>{{ bushingData.voltage_l_ground.label }}</template>
+                        </el-input>
+                    </el-form-item>
+                    <el-form-item label="Max. system voltage">
+                        <el-input type="text" number="positive" style="width: 100%;" filterable v-model="bushingData.max_system_voltage.value">
+                            <template #append>{{ bushingData.max_system_voltage.label }}</template>
+                        </el-input>
+                    </el-form-item>
+                    <el-form-item label="Rated current">
+                        <el-input type="text" number="positive" v-model="bushingData.rated_current.value">
+                            <template #append>{{ bushingData.rated_current.label }}</template>
+                        </el-input>
+                    </el-form-item>
+                </el-form>
+            </el-col>
+            <el-col :xs="24" :md="12" class="col-content">
+                <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
+                    <span class="bolder">Nominal values</span>
+                    <el-divider></el-divider>
+                    <el-form-item label="DF (C1)">
+                        <el-input type="text" number="positive" style="width: 100%" v-model="bushingData.df_c1.value">
+                            <template #append>{{ bushingData.df_c1.label }}</template>
+                        </el-input>
+                    </el-form-item>
+                    <el-form-item label="Cap. (C1)">
+                        <el-input type="text" number="positive" style="width: 100%" v-model="bushingData.cap_c1.value">
+                            <template #append>{{ bushingData.cap_c1.label }}</template>
+                        </el-input>
+                    </el-form-item>
+                    <el-form-item label="DF (C2)">
+                        <el-input type="text" number="positive" v-model="bushingData.df_c2.value">
+                            <template #append>{{ bushingData.df_c2.label }}</template>
+                        </el-input>
+                    </el-form-item>
+                    <el-form-item label="Cap. (C2)">
+                        <el-input type="text" number="positive" style="width: 100%;" v-model="bushingData.cap_c2.value">
+                            <template #append>{{ bushingData.cap_c2.label }}</template>
+                        </el-input>
+                    </el-form-item>
+                    <el-form-item label="Insul. type">
+                        <el-select v-model="bushingData.insulation_type" style="width: 100%;">
+                            <el-option v-for="(item, index) in insulationKindList" :key="index" :label="item.label"
+                                :value="item.value"></el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-form>
+            </el-col>
+        </el-row>
+    </div>
 </template>
 
 <script>
@@ -83,6 +106,13 @@ export default {
                 return {}
             }
         },
+        config: {
+            type: Object,
+            required: true,
+            default() {
+                return {}
+            }
+        },
         attachment: {
             type: Array,
             default() {
@@ -93,7 +123,10 @@ export default {
     computed: {
         bushingData() {
             return this.data
-        }
+        },
+        configurationData() {
+            return this.config
+        },
     },
     data() {
         return {
@@ -142,6 +175,11 @@ export default {
         }
     },
     methods: {
+        onChangeNumberOfPhase(val) {
+            if (val === '3') {
+                this.configurationData.phase = ''
+            }
+        }
     }
 }
 </script>

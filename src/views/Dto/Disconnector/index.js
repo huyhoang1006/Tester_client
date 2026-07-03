@@ -2,6 +2,7 @@ import { UnitSymbol } from '@/views/Enum/UnitSymbol'
 import { UnitMultiplier } from '@/views/Enum/UnitMultiplier'
 import Attachment from '@/views/Flatten/Attachment'
 import PropertiesDto from './Properties'
+import ConfigurationDto from './Configuration'
 
 class DisconnectorDTO {
     constructor() {
@@ -17,6 +18,7 @@ class DisconnectorDTO {
         this.assetInfoId = ''
         this.assetPsrId = ''
         this.locationId = '';
+        this.config = new ConfigurationDto()
 
         // Ratings
         this.ratings = {

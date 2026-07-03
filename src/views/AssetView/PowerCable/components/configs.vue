@@ -4,12 +4,21 @@
             <el-col :xs="24" :md="12" class="col-content">
                 <div>
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
-                        <span class="bolder">Phase</span>
+                        <span class="bolder">Configuration</span>
                         <el-divider></el-divider>
-                        <el-radio-group style="margin-top: 10px;" v-model="configsData.phases.value">
-                            <el-radio :label="1"></el-radio>
-                            <el-radio :label="3"></el-radio>
-                        </el-radio-group>
+                        <el-form-item label="Number of phase" class="inline-radios">
+                            <el-radio-group v-model="configsData.number_of_phase" @change="onChangeNumberOfPhases">
+                                <el-radio :label="1">1</el-radio>
+                                <el-radio :label="3">3</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        <el-form-item v-if="configsData.number_of_phase == 1" label="Phase">
+                            <el-select style="width: 100%" v-model="configsData.phase" placeholder="Select phase">
+                                <el-option label="A" value="A"></el-option>
+                                <el-option label="B" value="B"></el-option>
+                                <el-option label="C" value="C"></el-option>
+                            </el-select>
+                        </el-form-item>
                     </el-form>
                     <el-form style="margin-top: 20px;" :inline-message="true" :label-width="labelWidth" size="mini"
                         label-position="left">
@@ -699,7 +708,12 @@ export default {
         changeRadio(data) {
             console.log(this.layersData.conductor)
             console.log(data)
-        }
+        },
+        onChangeNumberOfPhases() {
+            if (this.configsData.number_of_phase !== 1) {
+                this.configsData.phase = ''
+            }
+        },
     },
     computed: {
         configsData() { return this.configs },

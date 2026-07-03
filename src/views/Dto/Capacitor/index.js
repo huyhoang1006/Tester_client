@@ -22,8 +22,8 @@ class CapacitorsDTO {
         this.locationId = '';
 
         this.configsData = {
-            phase: '1',
-            phase_name: '',
+            number_of_phase: '1',
+            phase: '',
         };
         // Ratings
         this.ratings = {

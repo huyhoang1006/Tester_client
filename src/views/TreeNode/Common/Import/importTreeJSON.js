@@ -12,7 +12,7 @@
  * ----------------------------------------------------------------------------
  */
 import { importBranchFromJSON, collectGraftBranches, isOrgIntoOrg, nodeModeOf } from '@/views/Import/services/importJsonService'
-import { scanTreeConflicts } from '@/views/TreeNode/Common/Import/mridConflictScan'
+import { scanTreeConflicts, CONFLICT_ACTION } from '@/views/TreeNode/Common/Import/mridConflictScan'
 
 // ==== DTO→Entity mappers cho node thường + asset (chiều xuôi import) ====
 import { OrgDtoToOrgEntity } from '@/views/Mapping/Organisation'
@@ -48,6 +48,7 @@ export default {
         return {
             conflictDialogVisible: false,
             pendingConflicts: [],
+            pendingAutoDecisions: null,
             pendingImportContext: null,
             graftDialogVisible: false,
             graftInfo: null,
@@ -191,7 +192,10 @@ export default {
 
                 let conflicts = []
                 try {
-                    const scan = await scanTreeConflicts(branchesToScan, { electronAPI: window.electronAPI, opts: { resolvePath: true } })
+                    const scan = await scanTreeConflicts(branchesToScan, {
+                        electronAPI: window.electronAPI,
+                        opts: { resolvePath: true, targetMrid: targetNode.mrid },
+                    })
                     conflicts = (scan && scan.conflicts) || []
                     console.log('[IMPORT] scan conflicts:', conflicts.length, conflicts)
                 } catch (e) {
@@ -199,11 +203,28 @@ export default {
                     this.$message.warning('Could not check for mRID conflicts; importing as new')
                 }
 
-                if (conflicts.length > 0) {
-                    console.log('[IMPORT] CÓ trùng → mở dialog')
-                    this.pendingConflicts = conflicts
+                // TỐI ƯU LỰA CHỌN: trùng mrid nhưng node cũ ở NHÁNH KHÁC (cha khác)
+                // → auto "create new", KHÔNG đưa vào dialog. Dialog chỉ hỏi các node
+                // trùng CÙNG NHÁNH (mới thật sự cần người dùng quyết định).
+                const autoDecisions = {}
+                const askConflicts = []
+                for (const c of conflicts) {
+                    if (c.autoNew) autoDecisions[c.mrid] = CONFLICT_ACTION.NEW
+                    else askConflicts.push(c)
+                }
+                if (Object.keys(autoDecisions).length) {
+                    console.log('[IMPORT] auto create-new (khác nhánh):', Object.keys(autoDecisions).length, Object.keys(autoDecisions))
+                }
+
+                if (askConflicts.length > 0) {
+                    console.log('[IMPORT] CÓ trùng cùng nhánh → mở dialog', askConflicts.length)
+                    this.pendingConflicts = askConflicts
+                    this.pendingAutoDecisions = autoDecisions
                     this.pendingImportContext = { fileContent: content, targetNode }
                     this.conflictDialogVisible = true
+                } else if (Object.keys(autoDecisions).length > 0) {
+                    console.log('[IMPORT] tất cả trùng đều khác nhánh → import thẳng với auto create-new')
+                    await this.importTreeFromJSON(content, targetNode, autoDecisions)
                 } else {
                     console.log('[IMPORT] KHÔNG trùng → import thẳng')
                     await this.importTreeFromJSON(content, targetNode, null)
@@ -218,16 +239,20 @@ export default {
         async handleConflictConfirm(decisions) {
             this.conflictDialogVisible = false
             const ctx = this.pendingImportContext
+            // gộp quyết định dialog + auto create-new (khác nhánh)
+            const merged = Object.assign({}, this.pendingAutoDecisions || {}, decisions || {})
             this.pendingConflicts = []
+            this.pendingAutoDecisions = null
             this.pendingImportContext = null
             if (!ctx) return
-            await this.importTreeFromJSON(ctx.fileContent, ctx.targetNode, decisions)
+            await this.importTreeFromJSON(ctx.fileContent, ctx.targetNode, merged)
         },
 
         // Dialog xung dot: user Cancel -> huy
         handleConflictCancel() {
             this.conflictDialogVisible = false
             this.pendingConflicts = []
+            this.pendingAutoDecisions = null
             this.pendingImportContext = null
         },
 
@@ -254,6 +279,10 @@ export default {
                 out[key] = async (dto, parent) => {
                     // Asset DTO: parent (psr = bay/substation mrid) ở field dto.psrId.
                     if (dto) dto.psrId = parent.mrid
+                    // TƯƠNG THÍCH NGƯỢC (DTO mới có number_of_phase/phase): file export CŨ
+                    // không có object config/configuration → mapper mới đọc
+                    // dto.config.number_of_phase sẽ CRASH. Bổ sung khung rỗng trước khi map.
+                    self._ensurePhaseFields(dto, key)
                     let entity, oldEntity, rs
                     try {
                         entity = def.map(dto)
@@ -303,6 +332,47 @@ export default {
         // Đổi FK rỗng '' → null (tránh FOREIGN KEY constraint failed).
         // Áp cho field tham chiếu: kết thúc _id/Id, hoặc tên FK đã biết của assetInfo
         // (c1, c2, rated_frequency, rated_voltage, rated_power, base_voltage...).
+        // TƯƠNG THÍCH NGƯỢC cho DTO mới (number_of_phase + phase, chỉ asset):
+        // file export cũ thiếu object chứa 2 field này → mapper mới crash khi đọc.
+        // Bổ sung khung rỗng đúng vị trí từng asset (theo Dto mới):
+        //   CT/VT/Disconnector/SurgeArrester/Reactor → dto.config
+        //   Bushing → dto.configuration | CB → dto.circuitBreaker (numberOfPhases)
+        //   Transformer → dto.winding_configuration | PowerCable/Capacitor → dto gốc
+        _ensurePhaseFields(dto, type) {
+            if (!dto || typeof dto !== 'object') return
+            const fill = (o, npKey = 'number_of_phase') => {
+                if (o[npKey] === undefined) o[npKey] = ''
+                if (o.phase === undefined) o.phase = ''
+            }
+            switch (type) {
+                case 'currentTransformer':
+                case 'voltageTransformer':
+                case 'disconnector':
+                case 'surgeArrester':
+                case 'reactor':
+                    if (!dto.config) dto.config = {}
+                    fill(dto.config)
+                    break
+                case 'bushing':
+                    if (!dto.configuration) dto.configuration = {}
+                    fill(dto.configuration)
+                    break
+                case 'breaker':
+                    if (!dto.circuitBreaker) dto.circuitBreaker = {}
+                    fill(dto.circuitBreaker, 'numberOfPhases')
+                    break
+                case 'transformer':
+                    if (!dto.winding_configuration) dto.winding_configuration = {}
+                    if (dto.winding_configuration.phase === undefined) dto.winding_configuration.phase = ''
+                    break
+                case 'powerCable':
+                case 'capacitor':
+                    fill(dto)
+                    break
+                default:
+                    break
+            }
+        },
         _nullifyEmptyFKs(obj) {
             if (!obj || typeof obj !== 'object') return
             if (Array.isArray(obj)) { for (const it of obj) this._nullifyEmptyFKs(it); return }
@@ -477,6 +547,23 @@ export default {
                     this.progressName = name || ''
                     this.progressType = type || ''
                     this.progressDone = Math.min(this.progressTotal, this.progressDone + 1)
+                },
+                // Node fail (mọi cấp) → hiện notification chi tiết, giữ trên màn hình
+                // đến khi người dùng đóng (duration 0) — trước đây lỗi chỉ nằm console.
+                onImportFailures: (failures) => {
+                    const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                    const MAX = 10
+                    const lines = failures.slice(0, MAX).map(f => {
+                        const label = f.asset || f.type || 'node'
+                        return `<li><b>${esc(f.name)}</b> (${esc(label)}): ${esc(f.message)}</li>`
+                    })
+                    const more = failures.length > MAX ? `<li>...and ${failures.length - MAX} more (see console)</li>` : ''
+                    this.$notify.error({
+                        title: `Import failed for ${failures.length} item(s)`,
+                        dangerouslyUseHTMLString: true,
+                        message: `<ul style="margin:0;padding-left:16px;max-height:220px;overflow:auto">${lines.join('')}${more}</ul>`,
+                        duration: 0,
+                    })
                 },
             }
             await importBranchFromJSON(fileContent, targetNode, deps, decisions)

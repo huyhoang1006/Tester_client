@@ -37,19 +37,6 @@
                     <el-form-item label="Feeder">
                         <el-input v-model="propertiesData.feeder"></el-input>
                     </el-form-item>
-                    <el-form-item label="Number of Phase" class="inline-phases">
-                        <el-radio-group v-model="propertiesData.number_of_phase" @change="onChangeNumberOfPhase">
-                            <el-radio label="1">1</el-radio>
-                            <el-radio label="3">3</el-radio>
-                        </el-radio-group>
-                    </el-form-item>
-                    <el-form-item v-if="propertiesData.number_of_phase === '1'" label="Phase">
-                        <el-select style="width: 100%" v-model="propertiesData.phase" placeholder="Select phase">
-                            <el-option label="A" value="A"></el-option>
-                            <el-option label="B" value="B"></el-option>
-                            <el-option label="C" value="C"></el-option>
-                        </el-select>
-                    </el-form-item>
                 </el-form>
             </el-col>
             <el-col :xs="24" :md="12" class="col-content">

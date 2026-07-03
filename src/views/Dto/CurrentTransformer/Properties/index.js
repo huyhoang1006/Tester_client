@@ -10,8 +10,6 @@ class PropertiesDto {
         this.country_of_origin = '';
         this.apparatus_id = '';
         this.comment = '';
-        this.number_of_phase = '3';
-        this.phase = '';
     }
 }
 

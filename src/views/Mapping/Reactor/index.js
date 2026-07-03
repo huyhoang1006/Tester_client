@@ -38,6 +38,8 @@ export function mapDtoToEntity(dto) {
     entity.productAssetModel.manufacturer = dto.properties.manufacturer || null;
     entity.productAssetModel.mrid = dto.productAssetModelId || null;
     entity.asset.location = dto.locationId || null;
+    entity.asset.number_of_phase = dto.config.number_of_phase || null;
+    entity.asset.phase = dto.config.phase || null;
 
     entity.productAssetModel.weight_total = dto.reactorOther.weight.mrid || null;
     const weight = new Mass();
@@ -113,6 +115,9 @@ export function mapEntityToDto(entity) {
     dto.properties.comment = entity.asset.description || null;
     dto.properties.manufacturing_year = entity.lifecycleDate.manufactured_date || null;
     dto.locationId = entity.asset.location || null;
+
+    dto.config.number_of_phase = entity.asset.number_of_phase || null;
+    dto.config.phase = entity.asset.phase || null;
 
     /** ---------- Asset Info & Product Asset Model ---------- */
     dto.assetInfoId = entity.reactor.mrid || null;

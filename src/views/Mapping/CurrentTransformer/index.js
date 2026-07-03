@@ -44,6 +44,9 @@ export const mapDtoToEntity = (dto) => {
     entity.asset.product_asset_model = dto.productAssetModelId || null;
     entity.assetInfo.product_asset_model = dto.productAssetModelId || null
 
+    entity.asset.number_of_phase = dto.config.number_of_phase || null;
+    entity.asset.phase = dto.config.phase || null;
+
     /** ================== attachment ================== */
     entity.attachment.id = dto.attachmentId || null;
     entity.attachment = dto.attachment || null;
@@ -247,6 +250,9 @@ export const mapEntityToDto = (entity) => {
     dto.properties.comment = entity.asset.description;
     dto.productAssetModelId = entity.assetInfo.product_asset_model;
     dto.locationId = entity.asset.location;
+
+    dto.config.number_of_phase = entity.asset.number_of_phase;
+    dto.config.phase = entity.asset.phase;
 
     // lifecycle date
     dto.lifecycleDateId = entity.lifecycleDate.mrid || null;

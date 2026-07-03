@@ -68,11 +68,11 @@ export default {
         },
         updateConfigs(configs) {
             // Backup toàn bộ state trước khi phase thay đổi
-            const oldPhase = this.capacitor.configsData ? this.capacitor.configsData.phase : null;
-            const newPhase = configs ? configs.phase : null;
+            const oldPhase = this.capacitor.configsData ? this.capacitor.configsData.number_of_phase : null;
+            const newPhase = configs ? configs.number_of_phase : null;
 
             // Nếu quay lại phase cũ VÀ phase thực sự thay đổi, restore dữ liệu từ backup
-            if (this.capacitorOld && this.capacitorOld.configsData && oldPhase !== newPhase && this.capacitorOld.configsData.phase === newPhase) {
+            if (this.capacitorOld && this.capacitorOld.configsData && oldPhase !== newPhase && this.capacitorOld.configsData.number_of_phase === newPhase) {
                 // Restore toàn bộ configsData, capacitance, dissipationFactor
                 this.capacitor.configsData = JSON.parse(JSON.stringify(this.capacitorOld.configsData));
                 this.capacitor.capacitance = JSON.parse(JSON.stringify(this.capacitorOld.capacitance));

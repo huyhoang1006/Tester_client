@@ -6,13 +6,12 @@
                     @editManu="editManu" :title="title" :properties.sync="currentTransformer.properties"
                     @createAdd="updateShowAdd" :manufact="manufacturerCustom" @reloadManu="reloadManu()">
                 </currentTransProperty>
+                <currentTransConfiguration :config.sync="currentTransformer.config"></currentTransConfiguration>
                 <currentTransRating :ratings.sync="currentTransformer.ratings"></currentTransRating>
                 <currentCTConfig v-if="currentTransformer.ctConfiguration" :configs.sync="currentTransformer.ctConfiguration"
                     :ratings="currentTransformer.ratings"></currentCTConfig>
             </div>
         </div>
-        <manufacturerAdd :dataProperties="dataProperties" :showAdd.sync="showAdd" @backSign="backSign()"
-            @backSignUpdate="backSignUpdate" :title="title" :modeManu="modeManu"></manufacturerAdd>
     </div>
 </template>
 
@@ -22,15 +21,14 @@ import CurrentTransformerDto from '@/views/Dto/CurrentTransformer'
 import currentTransProperty from '../CurrentTransformer/components/properties.vue'
 import currentTransRating from '../CurrentTransformer/components/ratings.vue'
 import currentCTConfig from '../CurrentTransformer/components/CTConfiguration.vue'
-import manufacturerAdd from '@/views/Common/ManufacturerAdd.vue'
-
+import currentTransConfiguration from '../CurrentTransformer/components/configuration.vue'
 export default {
     name: 'currentTransformer',
     components: {
         currentTransProperty,
         currentTransRating,
         currentCTConfig,
-        manufacturerAdd
+        currentTransConfiguration
     },
     props: {
         parent: {

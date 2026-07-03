@@ -33,6 +33,8 @@ class Asset extends IdentifiedObject {
         this.productAssetModel = new ProductAssetModel();
         this.location = new Location();
         this.countryOfOrigin = null;
+        this.numberOfPhase = null;
+        this.phase = null;
     }
 }
 export default Asset;

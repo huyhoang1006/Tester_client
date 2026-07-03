@@ -1,10 +1,12 @@
 import PropertiesDto from './Properties/index.js';
 import BushingDto from './Bushing/index.js';
 import Attachment from '@/views/Flatten/Attachment/index.js'
+import ConfigurationDto from './Configuration/index.js';
 class BushingAssetDto {
     constructor() {
         this.properties = new PropertiesDto();
         this.bushing = new BushingDto();
+        this.configuration = new ConfigurationDto();
         this.assetInfoId = ''
         this.productAssetModelId = '';
         this.lifecycleDateId = '';

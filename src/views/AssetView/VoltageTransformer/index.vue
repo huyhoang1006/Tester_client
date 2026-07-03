@@ -6,13 +6,12 @@
                     @editManu="editManu" :title="title" :properties.sync="voltageTransformer.properties"
                     @createAdd="updateShowAdd" :manufact="manufacturerCustom" @reloadManu="reloadManu()">
                 </voltageTransProperty>
+                <configuration :config.sync="voltageTransformer.config"></configuration>
                 <ratings :ratings.sync="voltageTransformer.ratings" :properties="voltageTransformer.properties">
                 </ratings>
                 <currentVTConfig :configs.sync="voltageTransformer.vt_Configuration"></currentVTConfig>
             </div>
         </div>
-        <manufacturerAdd :dataProperties="dataProperties" :showAdd.sync="showAdd" @backSign="backSign()"
-            @backSignUpdate="backSignUpdate" :title="title" :modeManu="modeManu"></manufacturerAdd>
     </div>
 </template>
 
@@ -21,7 +20,7 @@ import mixin from '../VoltageTransformer/mixin'
 import voltageTransProperty from '../VoltageTransformer/components/properties.vue'
 import ratings from '../VoltageTransformer/components/ratings.vue'
 import currentVTConfig from '../VoltageTransformer/components/VTConfiguration.vue'
-import manufacturerAdd from '@/views/Common/ManufacturerAdd.vue'
+import configuration from '../VoltageTransformer/components/configuration.vue'
 
 export default {
     name: 'voltageTransformer',
@@ -29,7 +28,7 @@ export default {
         voltageTransProperty,
         ratings,
         currentVTConfig,
-        manufacturerAdd
+        configuration
     },
     props: {
         parent: {

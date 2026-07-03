@@ -11,8 +11,6 @@ class PropertiesDto {
         this.apparatus_id = '';
         this.feeder = '';
         this.comment = '';
-        this.number_of_phase = '3';
-        this.phase = '';
     }
 }
 export default PropertiesDto;
