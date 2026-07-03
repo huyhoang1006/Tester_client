@@ -486,9 +486,9 @@ export default {
                     return two_winding_1phase_secondary_value
                 } else if (this.winding_config.prim === WindingConnection.Y && (this.winding_config.tert.i === WindingConnection.Z || this.winding_config.tert.i === WindingConnection.Zn)) {
                     return two_winding_3phase_secondary_value_odd.filter((item) => item.value !== '3' && item.value !== '9')
-                } else if (this.winding_config.prim === WindingConnection.Yn && this.winding_config.tert.I === WindingConnection.D) {
+                } else if (this.winding_config.prim === WindingConnection.Yn && this.winding_config.tert.i === WindingConnection.D) {
                     return two_winding_3phase_secondary_value_odd
-                } else if (this.winding_config.prim === 'YyNa' && this.winding_config.tert.I === WindingConnection.D) {
+                } else if (this.winding_config.prim === 'YyNa' && this.winding_config.tert.i === WindingConnection.D) {
                     return two_winding_3phase_secondary_value_odd
                 }
                 else {
