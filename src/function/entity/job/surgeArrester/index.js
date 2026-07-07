@@ -3,7 +3,7 @@ import * as attachmentContext from '../../../attachmentcontext/index'
 import path from 'path'
 import { uploadAttachmentTransaction, deleteAttachmentByIdTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType } from '@/function/entity/attachment'
 import {insertOldWorkTransaction, getOldWorkById, deleteOldWorkByIdTransaction} from "@/function/cim/oldWork/index"
-import { insertTestingEquipmentTransaction, getTestingEquipmentByWorkId, deleteTestingEquipmentByIdTransaction } from '../../testingEquipment/index.js'
+import { insertTestingEquipmentTransaction, getTestingEquipmentByWorkId, ensureTestingEquipmentAssetTransaction, persistJobCalibrationTransaction, unlinkTestingEquipmentFromWorkTransaction } from '../../testingEquipment/index.js'
 import SurgeArresterJobEntity from '@/views/Flatten/Job/SurgeArrester/index.js'
 import { insertWorkTaskTransaction, getWorkTaskByWork, deleteWorkTaskByIdTransaction } from '@/function/cim/workTask/index.js'
 import { insertSurgeArresterTestingEquipmentTestTypeTransaction, getSurgeArresterTestingEquipmentTestingEqId, deleteSurgeArresterTestingEquipmentTestTypeByIdTransaction } from '../../surgeArresterTestingEquipmentTestType/index.js'
@@ -88,10 +88,14 @@ export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
             const toDelete = old_entity.testingEquipment.filter(v => v.mrid && !newIds.includes(v.mrid));
             const toUpdate = entity.testingEquipment.filter(v => v.mrid && oldIds.includes(v.mrid));
             for (const equipment of toAdd) {
+                await ensureTestingEquipmentAssetTransaction(equipment, db);
                 await insertTestingEquipmentTransaction(equipment, db);
+                await persistJobCalibrationTransaction(equipment, db);
             }
             for (const equipment of toUpdate) {
+                await ensureTestingEquipmentAssetTransaction(equipment, db);
                 await insertTestingEquipmentTransaction(equipment, db);
+                await persistJobCalibrationTransaction(equipment, db);
             }
 
             //surgeArresterTestingEquipmentTestType
@@ -314,7 +318,7 @@ export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
                 await deleteSurgeArresterTestingEquipmentTestTypeByIdTransaction(equipmentTestType.mrid, db);
             }
             for (const equipment of toDelete) {
-                await deleteTestingEquipmentByIdTransaction(equipment.mrid, db);
+                await unlinkTestingEquipmentFromWorkTransaction(equipment.mrid, db);
             }
 
             // ── 4. TestStandard: xóa trước workTask (FK: testStandard.work_task_id → workTask)
@@ -524,7 +528,7 @@ export const deleteSurgeArresterJobEntity = async (entity) => {
         // 4. Xóa Thiết bị kiểm tra (Testing Equipment)
         if (entity.testingEquipment && entity.testingEquipment.length > 0) {
             for (const item of entity.testingEquipment) {
-                await deleteTestingEquipmentByIdTransaction(item.mrid, db);
+                await unlinkTestingEquipmentFromWorkTransaction(item.mrid, db);
             }
         }
 

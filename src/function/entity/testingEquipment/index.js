@@ -60,6 +60,10 @@ export const getAllTestingEquipmentList = async (userId) => {
                     pam.manufacturer AS manufacturer,
                     pam.model_number AS model,
                     te.asset_tag AS asset_tag,
+                    (SELECT cr.calibration_date FROM calibration_record cr
+                     WHERE cr.testing_equipment = te.mrid
+                     ORDER BY substr(cr.calibration_date,7,4)||substr(cr.calibration_date,1,2)||substr(cr.calibration_date,4,2) DESC
+                     LIMIT 1) AS calibration_date,
                     te.is_accessory AS is_accessory,
                     (SELECT COUNT(*) FROM activity_record ar
                      WHERE ar.asset = te.mrid AND ar.type = 'Repair') AS repair_count
@@ -129,8 +133,21 @@ export const getTestingEquipmentById = async (mrid) => {
 
 export const getTestingEquipmentByWorkId = async (workId) => {
     return new Promise((resolve, reject) => {
+        // JOIN để lấy lại model/serial/calibration cho JobView
+        // (các cột này đã chuyển sang asset/identified_object/product_asset_model/calibration_record)
         db.all(
-            `SELECT * FROM testing_equipment WHERE work_id=?`,
+            `SELECT te.*,
+                    COALESCE(pam.model_number, io.name) AS model,
+                    a.serial_number AS serial_number,
+                    (SELECT cr.calibration_date FROM calibration_record cr
+                     WHERE cr.testing_equipment = te.mrid
+                     ORDER BY substr(cr.calibration_date,7,4)||substr(cr.calibration_date,1,2)||substr(cr.calibration_date,4,2) DESC
+                     LIMIT 1) AS calibration_date
+             FROM testing_equipment te
+             JOIN asset a ON a.mrid = te.mrid
+             LEFT JOIN identified_object io ON io.mrid = te.mrid
+             LEFT JOIN product_asset_model pam ON pam.mrid = a.product_asset_model
+             WHERE te.work_id=?`,
             [workId],
             (err, rows) => {
                 if (err) return reject({ success: false, err, message: 'Get testingEquipment by workId failed' })
@@ -162,6 +179,69 @@ export const insertTestingEquipmentTransaction = async (testingEquipment, dbsql)
             function (err) {
                 if (err) return reject({ success: false, err, message: 'Insert testingEquipment failed' })
                 return resolve({ success: true, data: testingEquipment, message: 'Insert testingEquipment completed' })
+            }
+        )
+    })
+}
+
+// Đảm bảo asset nền tồn tại (FK: testing_equipment.mrid -> asset.mrid).
+// Dùng cho luồng save job: equipment gõ tay chưa có trong kho -> tạo asset tối thiểu,
+// equipment chọn từ kho -> ON CONFLICT DO NOTHING, không đụng data manager.
+export const ensureTestingEquipmentAssetTransaction = async (equipment, dbsql) => {
+    const runOne = (sql, params) => new Promise((resolve, reject) => {
+        dbsql.run(sql, params, function (err) {
+            if (err) return reject({ success: false, err, message: 'Ensure asset for testingEquipment failed' })
+            return resolve()
+        })
+    })
+    // Thứ tự FK: identified_object -> asset (asset.mrid FK -> identified_object.mrid)
+    await runOne(
+        `INSERT INTO identified_object(mrid, name) VALUES (?, ?)
+         ON CONFLICT(mrid) DO NOTHING`,
+        [equipment.mrid, equipment.model || null]
+    )
+    await runOne(
+        `INSERT INTO asset(mrid, serial_number) VALUES (?, ?)
+         ON CONFLICT(mrid) DO NOTHING`,
+        [equipment.mrid, equipment.serial_number || null]
+    )
+    return { success: true, data: equipment, message: 'Ensure asset for testingEquipment completed' }
+}
+
+// calibration_date của form job -> calibration_record (cột trong testing_equipment đã bị bỏ).
+// PHẢI gọi SAU insertTestingEquipmentTransaction (FK: calibration_record.testing_equipment -> testing_equipment.mrid).
+// mrid định danh '<te>-jobcal' để save nhiều lần không nhân bản; bỏ qua nếu đã có record trùng ngày.
+export const persistJobCalibrationTransaction = async (equipment, dbsql) => {
+    if (!equipment.calibration_date) return { success: true, data: null, message: 'No calibration date to persist' }
+    return new Promise((resolve, reject) => {
+        dbsql.run(
+            `INSERT INTO calibration_record(mrid, testing_equipment, calibration_date)
+             SELECT ?, ?, ?
+             WHERE NOT EXISTS (
+                SELECT 1 FROM calibration_record WHERE testing_equipment = ? AND calibration_date = ?
+             )
+             ON CONFLICT(mrid) DO UPDATE SET calibration_date = excluded.calibration_date`,
+            [
+                `${equipment.mrid}-jobcal`, equipment.mrid, equipment.calibration_date,
+                equipment.mrid, equipment.calibration_date
+            ],
+            function (err) {
+                if (err) return reject({ success: false, err, message: 'Persist job calibration failed' })
+                return resolve({ success: true, data: equipment, message: 'Persist job calibration completed' })
+            }
+        )
+    })
+}
+
+// Gỡ equipment khỏi work (không xóa bản ghi — equipment có thể là máy trong kho manager)
+export const unlinkTestingEquipmentFromWorkTransaction = async (mrid, dbsql) => {
+    return new Promise((resolve, reject) => {
+        dbsql.run(
+            `UPDATE testing_equipment SET work_id = NULL WHERE mrid = ?`,
+            [mrid],
+            function (err) {
+                if (err) return reject({ success: false, err, message: 'Unlink testingEquipment from work failed' })
+                return resolve({ success: true, data: null, message: 'Unlink testingEquipment from work completed' })
             }
         )
     })

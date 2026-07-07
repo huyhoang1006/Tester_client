@@ -1,54 +1,41 @@
 <template>
-    <li>
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <div class="arrow-wrapper" @click.stop="fetchNodeData" v-if="node.mode != 'job'">
-                <i v-if="!node.expanded" class="fa-solid fa-angle-right" style="font-size: 12px; color: #CCCCCC;"></i>
-                <i v-else class="fa-solid fa-angle-down" style="font-size: 12px; color: #CCCCCC;"></i>
-            </div>
-            
-            <el-tooltip 
-                effect="dark" 
-                :content="getNodeDisplayName" 
-                placement="top-start" 
-                :open-delay="600"
-            >
-                <span @contextmenu.prevent="openContextMenu($event, node)" :class="{ selected: isSelected(node), refreshing: node._isRefreshing }" class="folder" @click="toggle" @dblclick="doubleToggle">
-                    <div v-if="node.mode == 'substation'" class="icon-wrapper">
-                        <icon size="16px" folderType="location" :transformerType="node.type" badgeColor="146EBE"></icon>
-                        <span class="node-name">{{ node.name  }}</span>
-                    </div>
-                    <div v-else-if="node.mode == 'voltageLevel'" class="icon-wrapper">
-                        <icon size="16px" folderType="voltageLevel" :transformerType="node.type" badgeColor="146EBE"></icon>
-                        <span class="node-name">{{ node.name }}</span>
-                    </div>
-                    <div v-else-if="node.mode == 'bay'" class="icon-wrapper">
-                        <icon size="16px" folderType="bay" :transformerType="node.type" badgeColor="146EBE"></icon>
-                        <span class="node-name">{{ node.name }}</span>
-                    </div>
-                    <div v-else-if="node.mode == 'asset'" class="icon-wrapper">
-                        <icon size="16px" folderType="asset" :assetDetail="node.asset" :transformerType="node.type" badgeColor="146EBE"></icon>
-                        <span class="node-name">{{ node.apparatus_id || node.serial_number}} </span>
-                    </div>
-                    <div style="margin-left: 20px;" v-else-if="node.mode == 'job'" class="icon-wrapper">
-                        <icon size="16px" folderType="job" :transformerType="node.type" badgeColor="FF0000"></icon>
-                        <span class="node-name">{{ node.name }}</span>
-                    </div>
-                    <div v-else class="icon-wrapper">
-                        <icon size="16px" folderType="building" :transformerType="node.type" badgeColor="008001"></icon>
-                        <span class="node-name">{{ node.aliasName || node.name }}</span>
-                    </div>
-                </span>
-            </el-tooltip>
+    <li class="tree-li">
+        <div
+            class="tree-row"
+            :class="{ selected: isSelected(node), refreshing: node._isRefreshing }"
+            :title="getNodeDisplayName"
+            @contextmenu.prevent="openContextMenu($event, node)"
+            @click="toggle"
+            @dblclick="doubleToggle">
+
+            <!-- mũi tên expand / placeholder cho node lá để thẳng hàng -->
+            <span v-if="node.mode != 'job'" class="arrow-wrapper" @click.stop="fetchNodeData" @dblclick.stop>
+                <i class="fa-solid fa-angle-right arrow-icon" :class="{ open: node.expanded }"></i>
+            </span>
+            <span v-else class="arrow-wrapper placeholder"></span>
+
+            <!-- icon công ty (PNG) cho substation / voltageLevel / bay / asset: GIỮ NGUYÊN -->
+            <icon
+                v-if="usesCompanyIcon"
+                size="16px"
+                :folderType="iconProps.folderType"
+                :assetDetail="iconProps.assetDetail"
+                :transformerType="node.type"
+                :badgeColor="iconProps.badgeColor"></icon>
+            <!-- chỉ organisation + job dùng icon phẳng mới -->
+            <i v-else-if="node.mode === 'job'" class="fa-solid fa-clipboard-list type-icon icon-job"></i>
+            <i v-else class="fa-solid fa-building type-icon icon-org"></i>
+            <span class="node-name">{{ displayLabel }}</span>
         </div>
-        
-        <spinner style="margin-left: 20px;" v-if="isLoading"></spinner>
-        
-        <ul v-if="node.expanded">
-            <TreeNode 
-                v-for="child in sortedChildren" 
-                :key="getChildUniqueKey(child)" :node="child" 
+
+        <spinner class="tree-spinner" v-if="isLoading"></spinner>
+
+        <ul v-if="node.expanded" class="tree-children">
+            <TreeNode
+                v-for="child in sortedChildren"
+                :key="getChildUniqueKey(child)" :node="child"
                 :selectedNodes="selectedNodes"
-                @double-click-node="(n) => $emit('double-click-node', n)" 
+                @double-click-node="(n) => $emit('double-click-node', n)"
                 @fetch-children="(n) => $emit('fetch-children', n)"
                 @show-properties="(n) => $emit('show-properties', n)"
                 @update-selection="updateSelection"
@@ -59,7 +46,7 @@
         </ul>
     </li>
 </template>
-  
+
 <script>
 /* eslint-disable */
 import Vue from "vue"
@@ -82,18 +69,39 @@ export default {
             } else if (this.node.mode === 'bay') {
                 return `Bay`;
             }
-            
+
             else if (this.node.mode === 'asset') {
-                
+
                 const type = this.node.asset;
                 return `${type}`;
             }
-            
+
             if (this.node.mode === 'job') {
                 return `Job`;
             }
 
             return this.node.aliasName || this.node.name || 'Unknown';
+        },
+        // các mode dùng icon PNG của công ty -> không đụng vào
+        usesCompanyIcon() {
+            const mode = this.node ? this.node.mode : ''
+            return ['substation', 'voltageLevel', 'bay', 'asset'].includes(mode)
+        },
+        // gom cấu hình icon theo mode về 1 chỗ (trước đây là 6 nhánh v-if trong template)
+        iconProps() {
+            const mode = this.node ? this.node.mode : ''
+            if (mode === 'substation')    return { folderType: 'location',     badgeColor: '146EBE', assetDetail: undefined }
+            if (mode === 'voltageLevel')  return { folderType: 'voltageLevel', badgeColor: '146EBE', assetDetail: undefined }
+            if (mode === 'bay')           return { folderType: 'bay',          badgeColor: '146EBE', assetDetail: undefined }
+            if (mode === 'asset')         return { folderType: 'asset',        badgeColor: '146EBE', assetDetail: this.node.asset }
+            if (mode === 'job')           return { folderType: 'job',          badgeColor: 'FF0000', assetDetail: undefined }
+            return { folderType: 'building', badgeColor: '008001', assetDetail: undefined }
+        },
+        displayLabel() {
+            if (!this.node) return ''
+            if (this.node.mode === 'asset') return this.node.apparatus_id || this.node.serial_number
+            if (this.node.mode === 'job') return this.node.name
+            return this.node.aliasName || this.node.name
         },
         sortedChildren() {
             if (!this.node || !Array.isArray(this.node.children) || this.node.children.length === 0) {
@@ -102,7 +110,7 @@ export default {
 
             // Tạo bản sao để không mutate data gốc
             const children = [...this.node.children]
-            
+
             return children.sort((a, b) => {
                 // Lấy tên để so sánh
                 const getDisplayName = (node) => {
@@ -144,12 +152,12 @@ export default {
     },
     methods: {
         getChildUniqueKey(child) {
-    if (!child.mrid) return Math.random().toString(36).substr(2, 9)
-    if (child.mode === 'asset') {
-        return `${child.mrid}_${child.asset}`
-    }
-    return `${child.mrid}_${child.mode}`
-},
+            if (!child.mrid) return Math.random().toString(36).substr(2, 9)
+            if (child.mode === 'asset') {
+                return `${child.mrid}_${child.asset}`
+            }
+            return `${child.mrid}_${child.mode}`
+        },
         async toggle(event) {
             // Phân biệt click và double click
             if (this.clickTimeout) clearTimeout(this.clickTimeout);
@@ -209,121 +217,115 @@ export default {
 </script>
 
 <style scoped>
-/* --- Style mới cho nút mũi tên --- */
+.tree-li {
+    list-style: none;
+    min-width: 0;
+    max-width: 100%;
+}
+/* chặn CSS bên ngoài (global/ag-grid...) vẽ border ngang lên các phần tử của tree */
+.tree-li,
+.tree-row,
+.tree-children {
+    border-top: none !important;
+    border-bottom: none !important;
+    border-right: none !important;
+    box-shadow: none !important;
+}
+
+/* ===== Hàng node ===== */
+.tree-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 26px;
+    max-width: 100%;
+    padding-right: 4px;
+    box-sizing: border-box;
+    border-radius: 4px;
+    /* chống tràn ngang: mọi thứ trong hàng không được vẽ ra ngoài */
+    overflow: hidden;
+    cursor: pointer;
+    user-select: none;
+    font-size: 12px;
+}
+.tree-row:hover {
+    background-color: #f0f2f5;
+}
+.tree-row.selected {
+    background-color: #e6f1fb;
+}
+.tree-row.selected .node-name {
+    color: #146ebe;
+    font-weight: 600;
+}
+.tree-row.selected .type-icon {
+    color: #146ebe;
+}
+
+/* ===== Mũi tên expand ===== */
 .arrow-wrapper {
-    width: 24px;       /* Tăng vùng bấm lên 24px */
-    height: 24px;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     border-radius: 4px;
-    transition: background-color 0.2s ease;
+}
+.arrow-wrapper:hover:not(.placeholder) {
+    background-color: #e4e7ed;
+}
+.arrow-wrapper.placeholder {
+    cursor: default;
+}
+.arrow-icon {
+    font-size: 12px;
+    color: #a8abb2;
+    transition: transform 0.15s ease;
+}
+.arrow-icon.open {
+    transform: rotate(90deg);
+}
+.arrow-wrapper:hover .arrow-icon {
+    color: #606266;
 }
 
-.arrow-wrapper:hover {
-    background-color: #e6e6e6; /* Màu nền xám nhạt khi hover */
+/* ===== Tên node ===== */
+.node-name {
+    flex: 1;
+    min-width: 0;
+    font-weight: 500;
+    color: #303133;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 26px;
 }
 
-.arrow-wrapper:hover i {
-    color: #555 !important; /* Đổi màu icon đậm hơn khi hover */
-}
-/* -------------------------------- */
-
-.folder {
-    display: block;
-    padding: 5px;
-    white-space: nowrap; /* Ngăn văn bản xuống dòng */
-    overflow: hidden; /* Ẩn phần văn bản vượt quá kích thước */
-    text-overflow: ellipsis; /* Hiển thị dấu ... khi văn bản quá dài */
-    font-size: 12px; /* Cỡ chữ cho thư mục và tệp */
-    cursor: pointer;
-    border-radius: 4px;
-}
-
-.folder:hover {
-    background-color:rgb(189, 184, 184);
-    color: white;
-}
-
-.folder i {
-    width: 16px; /* Kích thước icon */
-    text-align: center;
-    font-size: 12px; /* Cỡ chữ cho icon */
-}
-
-ul {
-    list-style: none;
-    padding-left: 20px;
-}
-
-.selected {
-    background-color: #555;
-    color: white;
-}
-
-/* Context Menu */
-.context-menu {
-    position: absolute;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    list-style: none;
-    padding: 8px 0;
-    z-index: 1000;
-    min-width: 160px;
-    font-size: 14px;
-    animation: fadeIn 0.2s ease-in-out;
-}
-
-.context-menu li {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 15px;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.context-menu li:hover {
-    background-color: #F0F0F0;
-}
-
-/* Icon */
-.context-menu i {
+/* icon phẳng cho organisation + job (icon PNG công ty không đổi) */
+.type-icon {
     width: 16px;
     text-align: center;
-    color: #555;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+.icon-org { color: #3b6d11; }
+.icon-job { color: #b3562e; }
+
+/* ===== Cây con: thụt lề + guide line phân cấp ===== */
+.tree-children {
+    list-style: none;
+    margin: 0 0 0 9px;
+    padding-left: 10px;
+    border-left: 1px solid #e8ebf0;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
 }
 
-/* Hiệu ứng menu */
-.fade-enter-active, .fade-leave-active {
-    transition: opacity 0.2s ease;
-}
-.fade-enter, .fade-leave-to {
-    opacity: 0;
-}
-
-.icon-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.node-name {
-    font-weight: 600;
-}
-
-/* Keyframes cho menu */
-@keyframes fadeIn {
-    from {
-        transform: scale(0.95);
-        opacity: 0;
-    }
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
+.tree-spinner {
+    margin-left: 20px;
 }
 
 /* Hiệu ứng nhấp nháy khi refresh */
@@ -335,7 +337,6 @@ ul {
         opacity: 0.3;
     }
 }
-
 .refreshing {
     animation: blink 0.5s ease-in-out infinite;
 }

@@ -112,11 +112,13 @@ export default {
 
 .sidebar ul {
   list-style: none;
-  padding-left: 20px;
+  padding-left: 8px;
+  padding-right: 4px;
+  margin: 4px 0;
 }
 
 .sidebar li {
-  margin: 5px 0;
+  margin: 0;
   cursor: pointer;
 }
 
@@ -176,10 +178,12 @@ export default {
   overflow-y: hidden;
   height: calc(100% - 80px);
   box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .child-nav:hover {
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .title-node {

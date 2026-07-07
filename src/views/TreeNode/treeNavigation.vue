@@ -60,184 +60,17 @@
                     </div>
                     <div @mousedown="startResizeContentServer" ref="resizerContentServer" class="resizer"></div>
                     <div v-if="propertiesSign" ref="properties" class="properties">
-                        <div class="title-properties">
-                            <div class="title-wrapper">
-                                <div class="title-name">Object Properties</div>
-                                <div style="margin-right: 5px">
-                                    <i @click="hideProperties" class="fa-solid fa-square-caret-right"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="content-properties">
-                            <div class="content-properties-header">
-                                <i class="fa-solid fa-chevron-down" style="padding-right: 5px; font-size: 10px"></i>
-                                Owner & Position
-                            </div>
-                            <div class="content-properties-table">
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Name</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        properties.name }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Region</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        properties.region }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Plant</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        properties.plant }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Address</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        properties.address }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">City</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        properties.city }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">State/Province</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        properties.state_province }}</div>
-                                </div>
-
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Country</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        properties.country }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Geo coordinates</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word"></div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Phone number</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        properties.phone_no }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Email</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        properties.email }}</div>
-                                </div>
-                            </div>
-                            <div v-if="assetPropertySign" class="content-properties-header">
-                                <i class="fa-solid fa-chevron-down" style="padding-right: 5px; font-size: 10px"></i>
-                                Asset Properties
-                            </div>
-                            <div v-if="assetPropertySign" class="content-properties-table">
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Asset</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        assetProperties.asset }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Asset type</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        assetProperties.asset_type }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Serial number</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        assetProperties.serial_no }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Manufacturer</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        assetProperties.manufacturer }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Manufacturer type</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        assetProperties.manufacturer_type }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Manufacturing year</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        assetProperties.manufacturing_year }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Country</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        assetProperties.country }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Asset ID</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        assetProperties.apparatus_id }}</div>
-                                </div>
-                            </div>
-                            <div v-if="jobPropertySign" class="content-properties-header">
-                                <i class="fa-solid fa-chevron-down" style="padding-right: 5px; font-size: 10px"></i>
-                                Job Properties
-                            </div>
-                            <div v-if="jobPropertySign" class="content-properties-table">
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Name</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobProperties.name }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Work order</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobProperties.work_order }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Creation date</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobProperties.creation_date }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Execution date</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobProperties.execution_date }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Tested by</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobProperties.tested_by }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Approved by</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobProperties.approved_by }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Ambient condition</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobProperties.ambient_condition }}</div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Standard</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word">{{
-                                        jobProperties.standard }}</div>
-                                </div>
-                            </div>
-                            <div class="content-properties-header">
-                                <i class="fa-solid fa-chevron-down" style="padding-right: 5px; font-size: 10px"></i>
-                                Configuration Version
-                            </div>
-                            <div class="content-properties-table">
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Last Modified</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word"></div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Author</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word"></div>
-                                </div>
-                                <div class="content-properties-table-flex">
-                                    <div class="content-properties-table-header">Last Saved By</div>
-                                    <div class="content-properties-table-content fixed-box pl10 break-word"></div>
-                                </div>
-                            </div>
-                        </div>
+                        <ObjectPropertiesPanel
+                            :properties="properties"
+                            :show-asset="assetPropertySign"
+                            :asset-properties="assetProperties"
+                            :show-job="jobPropertySign"
+                            :job-properties="jobProperties"
+                            @hide="hideProperties" />
                     </div>
-                    <div v-if="!propertiesSign" @click="showProperties" class="trapezoid"></div>
+                    <button v-if="!propertiesSign" @click="showProperties" class="op-show-btn" title="Show Object Properties">
+                        <i class="fa-solid fa-angles-left"></i>
+                    </button>
                 </div>
                 <div ref="logBar" v-if="logSign" class="log-bar">
                     <LogBar :logData="logDataServer" @hideLogBar="hideLogBar"></LogBar>
@@ -401,6 +234,7 @@ import TreeToolbar from './components/TreeToolbar.vue'
 
 //client
 import TopBarClient from './Client/Topbar/index.vue'
+import ObjectPropertiesPanel from '@/views/Common/ObjectPropertiesPanel.vue'
 import ContextDataClient from './Client/ClientContext/ContextData.vue'
 
 // Import Mappers
@@ -483,6 +317,7 @@ import ServerTreePanel from './Server/ServerTree/index.vue'
 export default {
     name: 'TreeNavigation',
     components: {
+        ObjectPropertiesPanel,
         TreeToolbar,
         ContextDataClient,
         ServerTreePanel,
@@ -1435,7 +1270,34 @@ export default {
     width: 100%;
     height: 100%;
     display: flex;
+    position: relative;
 }
+.op-show-btn {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 22px;
+    height: 64px;
+    border: 1px solid #e4e7ed;
+    border-right: none;
+    border-radius: 6px 0 0 6px;
+    background: #f5f7fa;
+    color: #909399;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: background 0.15s, color 0.15s;
+}
+.op-show-btn:hover {
+    background: #ecf5ff;
+    color: #409eff;
+    border-color: #b5d4f4;
+}
+
 
 .log-bar {
     box-sizing: border-box;

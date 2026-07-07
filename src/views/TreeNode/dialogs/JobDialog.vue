@@ -129,7 +129,9 @@ export default {
 }
 
 ::v-deep(.app-dialog.el-dialog) {
-    width: 50%;
+    width: 82%;
+    max-width: 1000px;
+    // min-width: 900px;
     margin-top: 5vh !important;
     border-radius: 6px;
     max-height: 90vh;

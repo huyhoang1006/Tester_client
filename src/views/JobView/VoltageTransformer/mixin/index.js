@@ -113,11 +113,14 @@ export default {
 
         checkTestingEquipment(data) {
             const arr = [];
+            // UI chỉ cho chọn từ kho: bỏ các hàng chưa chọn thiết bị (mrid rỗng)
+            data.testingEquipmentData = data.testingEquipmentData.filter(it => it && it.mrid && it.mrid !== this.$constant.ROOT);
             for (const item of data.testingEquipmentData) {
                 if (item.mrid === '' || item.mrid === null || item.mrid === this.$constant.ROOT) {
                     item.mrid = uuid.newUuid();
-                    item.work_id = data.properties.mrid;
                 }
+                // luôn gán work_id: equipment chọn từ kho (mrid có sẵn) cũng phải link vào job này
+                item.work_id = data.properties.mrid;
                 for (const test_type_id of item.test_type_voltage_transformer_id) {
                     arr.push({
                         mrid: uuid.newUuid(),
