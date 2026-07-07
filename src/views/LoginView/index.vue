@@ -50,8 +50,13 @@
                     <div class="checkbox-row">
                         <el-checkbox v-model="remember" class="remember-checkbox">Remember</el-checkbox>
                     </div>
-                    <el-button :loading="loadingLogin" class="submit-btn" type="primary"
-                        native-type="submit">Login</el-button>
+                    <el-button class="submit-btn" :class="{ 'is-pending': loadingLogin }" type="primary"
+                        native-type="submit">
+                        <template v-if="loadingLogin">
+                            <i class="el-icon-loading"></i> Signing in... (click to cancel)
+                        </template>
+                        <template v-else>Login</template>
+                    </el-button>
                 </el-form>
             </div>
             <div class="mobile-footer no-select">
@@ -63,6 +68,7 @@
 
 <script>
 /* eslint-disable */
+import axios from 'axios'
 import * as userApi from '@/api/user'
 
 export default {
@@ -76,6 +82,7 @@ export default {
             },
             remember: true,
             loadingLogin: false,
+            loginAbort: null,
             loginRules: {
                 username: [
                     {
@@ -110,15 +117,27 @@ export default {
     },
     methods: {
         async login() {
-            let valid = await this.$refs.form.validate()
+            // Đang chờ đăng nhập -> bấm lần nữa = HỦY
+            if (this.loadingLogin) {
+                if (this.loginAbort) this.loginAbort.abort()
+                return
+            }
+
+            let valid = false
+            try {
+                valid = await this.$refs.form.validate()
+            } catch (e) {
+                return
+            }
             if (!valid) {
                 return
             }
             this.loadingLogin = true
+            this.loginAbort = new AbortController()
 
-            // Gọi API login (Lưu ý: api/user.js phải được cấu hình dùng qs và Basic Auth)
+            // Gọi API login (có timeout 20s + có thể hủy)
             userApi
-                .login(this.model)
+                .login(this.model, { signal: this.loginAbort.signal })
                 .then((response) => {
                     // Xử lý response từ OAuth2
                     // console.log("Login Success:", response) 
@@ -142,6 +161,17 @@ export default {
                 .catch((error) => {
                     console.log("Login Error:", error)
 
+                    // User chủ động hủy
+                    if (axios.isCancel(error) || error.code === 'ERR_CANCELED') {
+                        this.$message.info('Login cancelled')
+                        return
+                    }
+                    // Timeout
+                    if (error.code === 'ECONNABORTED' || /timeout/i.test(error.message || '')) {
+                        this.$message.error('Login timed out. Please check server address and network connection.')
+                        return
+                    }
+
                     // Xử lý hiển thị lỗi chi tiết từ OAuth server
                     let msg = 'Login failed'
                     if (error.response && error.response.data) {
@@ -152,6 +182,7 @@ export default {
                 })
                 .finally(async () => {
                     this.loadingLogin = false
+                    this.loginAbort = null
                 })
         },
         getOtherQuery(query) {

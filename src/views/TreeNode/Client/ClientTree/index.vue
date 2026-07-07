@@ -21,8 +21,12 @@
         </TreeNode>
       </ul>
 
-      <contextMenu ref="contextMenuClient" @delete-data="$emit('delete-data', $event)"
+      <contextMenu ref="contextMenuClient" side="client" @delete-data="$emit('delete-data', $event)"
       @show-zero-diagram="$emit('show-zero-diagram', $event)"
+        @upload-node="$emit('upload-node', $event)" @fmeca-node="$emit('fmeca-node', $event)"
+        @show-equipment="$emit('show-equipment')"
+        @export-json-only-node="$emit('export-json-only-node', $event)"
+        @export-json-full-tree="$emit('export-json-full-tree', $event)"
         @show-addSubsInTree="$emit('show-addSubsInTree', $event)"
         @show-addOrganisation="$emit('show-addOrganisation', $event)"
         @show-addVoltageLevel="$emit('show-addVoltageLevel', $event)"
@@ -39,6 +43,7 @@
         @export-word="$emit('export-word', $event)" @export-pdf="$emit('export-pdf', $event)"
         @duplicate-node="$emit('duplicate-node', $event)" @move-node="$emit('move-node', $event)"
         @import-json="$emit('import-json', $event)" @import-json-cim="$emit('import-json-cim', $event)"
+        @import-excel="$emit('import-excel', $event)" @import-word="$emit('import-word', $event)"
         @show-data="$emit('show-data', $event)" @refresh-node="$emit('refresh-node', $event)">
       </contextMenu>
     </div>

@@ -32,4 +32,5 @@ WHERE type='table'
 AND name NOT LIKE 'sqlite_%';
 Nhớ Ctrl + S bên Database structure sau khi chạy các lệnh xóa
 3. PRAGMA foreign_keys = ON;
+4. PRAGMA user_version = 0
 ```

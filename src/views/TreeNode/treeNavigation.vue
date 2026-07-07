@@ -8,15 +8,15 @@
         <div v-show="!clientSlide" class="toolbar">
             <TopBarServer :pathMapServer="pathMapServer" @reset-all="resetAllServer" @path-click="resetPathServer" />
         </div>
-        <!-- Tree Toolbar -->
-        <TreeToolbar ref="treeToolBar"  :clientSlide="clientSlide" @add-command="handleAddCommand"
-            @dropdown-visible-change="handleDropdownVisibleChange" @asset-command="handleAssetCommand"
-            @import-command="handleImportCommand" @export-command="handleCommand" @open-node="handleOpenNode"
-            @duplicate="duplicateSelectedNodes" @upload="handleUploadNode" @download="handleDownloadNode"
-            @delete="handleDeleteNode" @fmeca="handleClickFmeca" @move="handleMoveNode" @openDropdown="openDropdown" 
-            @show-equipment="handleShowEquipment" />
         <!-- Thanh điều hướng có thể kéo rộng/kéo hẹp -->
         <div class="resizable-sidebar">
+            <!-- Tree Toolbar: rail dọc bên trái, thu gọn được -->
+            <TreeToolbar ref="treeToolBar"  :clientSlide="clientSlide" @add-command="handleAddCommand"
+                @dropdown-visible-change="handleDropdownVisibleChange" @asset-command="handleAssetCommand"
+                @import-command="handleImportCommand" @export-command="handleCommand" @open-node="handleOpenNode"
+                @duplicate="duplicateSelectedNodes" @upload="handleUploadNode" @download="handleDownloadNode"
+                @delete="handleDeleteNode" @fmeca="handleClickFmeca" @move="handleMoveNode" @openDropdown="openDropdown"
+                @show-equipment="handleShowEquipment" />
             <ClientTreePanel ref="clientPanel" v-show="clientSlide" :organisationClientList="organisationClientList"
                 :selectedNodes.sync="selectedNodes" @showLocationRoot="showLocationRoot" @show-addSubs="showAddSubs"
                 @double-click-node="doubleClickNode" @fetch-children="fetchChildren"
@@ -34,6 +34,11 @@
                 @duplicate-node="handleDuplicateFromContext"
                 @move-node="handleMoveFromContext" @import-json="handleImportJSONFromContext"
                 @show-zero-diagram="handleShowZeroDiagram"
+                @upload-node="handleUploadFromContext" @fmeca-node="handleFmecaFromContext"
+                @show-equipment="handleShowEquipment"
+                @import-excel="handleImportExcelFromContext" @import-word="handleImportWordFromContext"
+                @export-json-only-node="handleExportJsonOnlyNodeFromContext"
+                @export-json-full-tree="handleExportJsonFullTreeFromContext"
                 @show-data="showDataClient" @refresh-node="handleRefreshNode" />
 
             <ServerTreePanel ref="serverPanel" v-show="!clientSlide" :ownerServerList="ownerServerList"
@@ -45,6 +50,8 @@
                 @duplicate-node="handleDuplicateFromContext"
                 @move-node="handleMoveFromContext" @import-json="handleImportJSONFromContext"
                 @show-zero-diagram="handleShowZeroDiagram"
+                @download-node="handleDownloadFromContext" @fmeca-node="handleFmecaFromContext"
+                @delete-data="handleDeleteFromContextMenu"
                 @refresh-node="handleRefreshNode" />
 
             <div @mousedown="startResizeClient" v-if="clientSlide" ref="resizerClient" class="resizer"></div>
@@ -231,6 +238,7 @@ import spinner from '@/views/Common/Spinner.vue'
 import Tabs from '@/views/Common/Tabs.vue'
 import contextMenu from '@/views/Common/ContextMenu.vue'
 import TreeToolbar from './components/TreeToolbar.vue'
+import contextMenuSync from './Common/contextMenuSync.js'
 
 //client
 import TopBarClient from './Client/Topbar/index.vue'
@@ -678,7 +686,7 @@ export default {
                 : 'app-dialog'
         }
     },
-    mixins: [mixin, mixinTreeNavigation, uploadNodeMixin, downloadNode, mainMixin],
+    mixins: [mixin, mixinTreeNavigation, uploadNodeMixin, downloadNode, mainMixin, contextMenuSync],
     async beforeMount() {
         try {
             const data = await window.electronAPI.getAllConfigurationEvents()
@@ -1087,7 +1095,9 @@ export default {
 
 .resizable-sidebar {
     display: flex;
-    height: calc(100% - 60px);
+    /* toolbar đã chuyển thành rail dọc nằm trong hàng này -> chỉ còn trừ topbar 30px */
+    height: calc(100% - 30px);
+    min-height: 0;
 }
 
 .resizer {

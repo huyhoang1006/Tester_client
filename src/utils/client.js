@@ -3,6 +3,9 @@ import store from '@/store'
 import route from '@/router'
 import { afterLogout } from './helper'
 import qs from 'qs'
+import { Loading, Message } from 'element-ui'
+
+const REFRESH_TIMEOUT_MS = 15000
 
 const client = axios.create({
     withCredentials: false
@@ -41,7 +44,8 @@ const refreshToken = () => {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
             'Authorization': basicAuth
-        }
+        },
+        timeout: REFRESH_TIMEOUT_MS
     }).then(response => {
         const { access_token, refresh_token } = response.data
         
@@ -149,29 +153,44 @@ client.interceptors.response.use(
                         })
                     }
 
-                    // Bắt đầu refresh token
+                    // Bắt đầu refresh token — hiện loading toàn màn hình + timeout 15s
                     isRefreshing = true
+                    let refreshLoading = null
+                    try {
+                        refreshLoading = Loading.service({
+                            fullscreen: true,
+                            lock: true,
+                            text: 'Session expired — renewing sign-in...',
+                            background: 'rgba(255, 255, 255, 0.75)'
+                        })
+                    } catch (e) { /* Loading không khả dụng thì bỏ qua, không chặn refresh */ }
 
                     return refreshToken()
                         .then(token => {
                             // Cập nhật header cho request gốc
                             originalRequest.headers.Authorization = `Bearer ${token}`
-                            
+
                             // Giải quyết tất cả request trong queue
                             processQueue(null, token)
-                            
+                            Message.success('Session renewed')
+
                             // Thực hiện lại request gốc
                             return client(originalRequest)
                         })
                         .catch(err => {
                             // Refresh token thất bại -> Xóa queue và logout
                             processQueue(err, null)
+                            const isTimeout = err && (err.code === 'ECONNABORTED' || /timeout/i.test(err.message || ''))
+                            Message.error(isTimeout
+                                ? 'Session renewal timed out. Please sign in again.'
+                                : 'Session expired. Please sign in again.')
                             afterLogout()
                             route.push({name: 'login'}).catch(()=>{})
                             return Promise.reject(err)
                         })
                         .finally(() => {
                             isRefreshing = false
+                            if (refreshLoading) refreshLoading.close()
                         })
                 } else {
                     // Đã retry rồi mà vẫn lỗi -> logout

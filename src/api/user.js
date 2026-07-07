@@ -17,8 +17,12 @@ const CLIENT_SECRET = 'tester-client'
 const API_PREFIX = 'api/v1'
 const RESOURCE = 'users'
 
+// Timeout mặc định cho login (ms)
+export const LOGIN_TIMEOUT_MS = 20000
+
 // --- HÀM LOGIN (ĐÃ SỬA) ---
-export const login = (data) => {
+// options: { signal } — AbortController.signal để hủy khi user bấm lần nữa
+export const login = (data, options = {}) => {
     // 1. Lấy Server Address trực tiếp tại thời điểm Login
     let domain = localStorage.getItem('LOGIN_ADDR') || ''
 
@@ -46,7 +50,9 @@ export const login = (data) => {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
             'Authorization': basicAuth
-        }
+        },
+        timeout: options.timeout || LOGIN_TIMEOUT_MS,
+        signal: options.signal
     }).then(response => {
         return response.data
     })

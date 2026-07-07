@@ -12,19 +12,19 @@
                 </li>
             </ul>
             <ul v-else>
-                <li v-if="this.selectedNode && this.selectedNode.mode == 'organisation'" @click="addOrganisation">
+                <li v-if="isClient && this.selectedNode && this.selectedNode.mode == 'organisation'" @click="addOrganisation">
                     <i class="fa-solid fa-plus"></i> Add organisation
                 </li>
-                <li v-if="this.selectedNode && this.selectedNode.mode == 'organisation'" @click="addSubsInTree">
+                <li v-if="isClient && this.selectedNode && this.selectedNode.mode == 'organisation'" @click="addSubsInTree">
                     <i class="fa-solid fa-plus"></i> Add substation
                 </li>
-                <li v-if="this.selectedNode && this.selectedNode.mode == 'substation'" @click="addVoltageLevel">
+                <li v-if="isClient && this.selectedNode && this.selectedNode.mode == 'substation'" @click="addVoltageLevel">
                     <i class="fa-solid fa-plus"></i> Add voltage level
                 </li>
-                <li v-if="this.selectedNode && (this.selectedNode.mode == 'voltageLevel' || this.selectedNode.mode == 'substation')" @click="addBay">
+                <li v-if="isClient && this.selectedNode && (this.selectedNode.mode == 'voltageLevel' || this.selectedNode.mode == 'substation')" @click="addBay">
                     <i class="fa-solid fa-plus"></i> Add bay
                 </li>
-                <li class="has-submenu" v-if="this.selectedNode && (this.selectedNode.mode == 'bay' || this.selectedNode.mode == 'substation')">
+                <li class="has-submenu" v-if="isClient && this.selectedNode && (this.selectedNode.mode == 'bay' || this.selectedNode.mode == 'substation')">
                     <i class="fa-solid fa-plus"></i> Add asset
                     <ul class="submenu">
                         <li @click="addTransformer"><i class="fa-solid fa-bolt"></i> Add transformer</li>
@@ -40,7 +40,7 @@
                         <li @click="addReactor"><i class="fa-solid fa-bolt"></i> Add Reactor</li>
                     </ul>
                 </li>
-                <li @click="addJob" v-if="this.selectedNode && this.selectedNode.mode == 'asset'">
+                <li @click="addJob" v-if="isClient && this.selectedNode && this.selectedNode.mode == 'asset'">
                     <i class="fa-solid fa-plus"></i> Add job
                 </li>
                 <li v-if="this.selectedNode && this.selectedNode.mode == 'substation'" @click="showZeroDiagram">
@@ -52,8 +52,11 @@
                 <li @click="refresh">
                     <i class="fa-solid fa-rotate"></i> Refresh
                 </li>
-                <li>
+                <li v-if="isServer" @click="downloadNode">
                     <i class="fa-solid fa-file-arrow-down"></i> Download
+                </li>
+                <li v-if="isClient" @click="uploadNode">
+                    <i class="fa-solid fa-upload"></i> Upload
                 </li>
                 <li @click="move">
                     <i class="fa-solid fa-arrows-up-down-left-right"></i> Move
@@ -61,31 +64,28 @@
                 <li @click="deleteNode">
                     <i class="fas fa-trash-alt"></i> Delete
                 </li>
-                <li @click="duplicate">
+                <li v-if="isClient" @click="duplicate">
                     <i class="fa-solid fa-copy"></i> Duplicate
                 </li>
-                <li class="has-submenu">
+                <li @click="fmeca">
+                    <i class="fa-solid fa-table"></i> FMECA
+                </li>
+                <li v-if="isClient" @click="showEquipment">
+                    <i class="fa-solid fa-screwdriver-wrench"></i> Show equipment
+                </li>
+                <li v-if="isClient" class="has-submenu">
                     <i class="fa-solid fa-file-export"></i> Export
                     <ul class="submenu">
-                        <li class="has-submenu">
-                            <i class="fa-solid fa-file-code"></i> Export to JSON
-                            <ul class="submenu">
-                                <li @click="exportJSON"><i class="fa-solid fa-file-code"></i> Export JSON</li>
-                            </ul>
-                        </li>
+                        <li @click="exportJSONOnlyNode"><i class="fa-solid fa-file-code"></i> Export JSON only node</li>
+                        <li @click="exportJSONFullTree"><i class="fa-solid fa-file-code"></i> Export JSON full tree</li>
                         <li @click="exportExcel"><i class="fa-solid fa-file-excel"></i> Export to Excel</li>
                         <li @click="exportWord"><i class="fa-solid fa-file-word"></i> Export to Word</li>
                     </ul>
                 </li>
-                <li class="has-submenu">
+                <li v-if="isClient" class="has-submenu">
                     <i class="fa-solid fa-file-import"></i> Import
                     <ul class="submenu">
-                        <li class="has-submenu">
-                            <i class="fa-solid fa-file-code"></i> Import from JSON
-                            <ul class="submenu">
-                                <li @click="importJSON"><i class="fa-solid fa-file-code"></i> Import JSON</li>
-                            </ul>
-                        </li>
+                        <li @click="importJSON"><i class="fa-solid fa-file-code"></i> Import from JSON</li>
                         <li @click="importExcel"><i class="fa-solid fa-file-excel"></i> Import from Excel</li>
                         <li @click="importWord"><i class="fa-solid fa-file-word"></i> Import from Word</li>
                     </ul>
@@ -99,6 +99,13 @@
 <script>
 /* eslint-disable */
 export default {
+    props: {
+        // 'client' | 'server' — hiển thị đúng bộ chức năng như toolbar từng bên
+        side: {
+            type: String,
+            default: 'client'
+        }
+    },
     data() {
         return {
             visible: false,
@@ -107,6 +114,10 @@ export default {
             sign : '',
             organisationId: '00000000-0000-0000-0000-000000000000' // Mặc định là ID của tổ chức
         };
+    },
+    computed: {
+        isClient() { return this.side === 'client' },
+        isServer() { return this.side === 'server' }
     },
     methods: {
         openContextMenu(event, node, { top, left } = {}) {
@@ -290,6 +301,30 @@ export default {
         },
         exportJSON() {
             this.$emit("export-json", this.selectedNode)
+            this.closeContextMenu()
+        },
+        exportJSONOnlyNode() {
+            this.$emit("export-json-only-node", this.selectedNode)
+            this.closeContextMenu()
+        },
+        exportJSONFullTree() {
+            this.$emit("export-json-full-tree", this.selectedNode)
+            this.closeContextMenu()
+        },
+        uploadNode() {
+            this.$emit("upload-node", this.selectedNode)
+            this.closeContextMenu()
+        },
+        downloadNode() {
+            this.$emit("download-node", this.selectedNode)
+            this.closeContextMenu()
+        },
+        fmeca() {
+            this.$emit("fmeca-node", this.selectedNode)
+            this.closeContextMenu()
+        },
+        showEquipment() {
+            this.$emit("show-equipment")
             this.closeContextMenu()
         },
         exportJSONCIM() {

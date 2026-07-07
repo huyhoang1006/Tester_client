@@ -1,11 +1,13 @@
 <template>
-    <div id="toolbar-setting-id" class="toolbar-setting">
-        <div v-if="clientSlide">
-            <el-dropdown ref="addDropdown" @command="handleAddCommand" @visible-change="handleDropdownVisibleChange"
-                trigger="click">
-                <span class="icon-wrapper">
-                    <i title="Add" style="font-size: 12px" class="fa-solid fa-square-plus"></i>
-                </span>
+    <div id="toolbar-setting-id" class="toolbar-rail-wrap" :class="{ collapsed: collapsed }">
+        <!-- Rail dọc -->
+        <div v-if="!collapsed" class="toolbar-rail">
+            <!-- Nhóm tạo mới -->
+            <el-dropdown v-if="clientSlide" ref="addDropdown" @command="handleAddCommand"
+                @visible-change="handleDropdownVisibleChange" trigger="click" placement="bottom-start">
+                <button type="button" class="rail-btn" title="Add">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
                 <el-dropdown-menu slot="dropdown">
                     <el-dropdown-item v-if="isCommandAllowed('organisation')" command="organisation">
                         <icon size="12px" folderType="building" badgeColor="146EBE"></icon> add Organisation
@@ -74,19 +76,24 @@
                     </el-dropdown-item>
                 </el-dropdown-menu>
             </el-dropdown>
-        </div>
-        <div>
-            <i @click="handleOpenNode" title="Open" style="font-size: 12px" class="fa-regular fa-folder-open"></i>
-        </div>
-        <div v-if="clientSlide">
-            <i @click="handleDuplicate" title="Duplicate" style="font-size: 12px" class="fa-solid fa-clone"></i>
-        </div>
-        <div v-if="clientSlide">
-            <el-dropdown @command="handleImportCommand" trigger="click">
-                <i title="Import" style="font-size: 12px" class="fa-solid fa-file-import"></i>
+
+            <button type="button" class="rail-btn" title="Open" @click="handleOpenNode">
+                <i class="fa-regular fa-folder-open"></i>
+            </button>
+            <button v-if="clientSlide" type="button" class="rail-btn" title="Duplicate" @click="handleDuplicate">
+                <i class="fa-solid fa-clone"></i>
+            </button>
+
+            <div class="rail-sep"></div>
+
+            <!-- Nhóm dữ liệu vào/ra -->
+            <el-dropdown v-if="clientSlide" @command="handleImportCommand" trigger="click" placement="bottom-start">
+                <button type="button" class="rail-btn" title="Import">
+                    <i class="fa-solid fa-file-import"></i>
+                </button>
                 <el-dropdown-menu slot="dropdown">
                     <el-dropdown-item command="importJSON">
-                        <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon>
+                        <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon>
                         import from JSON
                     </el-dropdown-item>
                     <el-dropdown-item command="importExcel">
@@ -99,24 +106,19 @@
                     </el-dropdown-item>
                 </el-dropdown-menu>
             </el-dropdown>
-        </div>
-        <div v-if="clientSlide">
-            <el-dropdown @command="handleExportCommand" trigger="click">
-                <i title="Export" style="font-size: 12px" class="fa-solid fa-file-export"></i>
+
+            <el-dropdown v-if="clientSlide" @command="handleExportCommand" trigger="click" placement="bottom-start">
+                <button type="button" class="rail-btn" title="Export">
+                    <i class="fa-solid fa-file-export"></i>
+                </button>
                 <el-dropdown-menu slot="dropdown">
-                    <el-dropdown-item class="export-json-parent" @mouseenter.native="showSub = 'json'"
-                        @mouseleave.native="showSub = null">
+                    <el-dropdown-item command="exportJSONOnlyNode">
                         <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon>
-                        export to JSON
-                        <div class="export-json-submenu" v-if="showSub === 'json'" @click.stop @mouseenter.stop
-                            @mouseleave.stop>
-                            <div class="submenu-item" @click="handleExportCommand('exportJSONOnlyNode')">
-                                export JSON only Node
-                            </div>
-                            <div class="submenu-item" @click="handleExportCommand('exportJSONFullTree')">
-                                export JSON Full Tree
-                            </div>
-                        </div>
+                        export JSON only Node
+                    </el-dropdown-item>
+                    <el-dropdown-item command="exportJSONFullTree">
+                        <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon>
+                        export JSON Full Tree
                     </el-dropdown-item>
                     <el-dropdown-item command="exportExcel">
                         <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon>
@@ -128,14 +130,16 @@
                     </el-dropdown-item>
                 </el-dropdown-menu>
             </el-dropdown>
-        </div>
-        <div v-if="clientSlide">
-            <i @click="handleUpload" title="Upload" style="font-size: 12px; cursor: pointer;"
-                class="fa-solid fa-upload"></i>
-        </div>
-        <div v-if="!clientSlide">
-            <el-dropdown @command="handleDownloadCommand" ref="downloadDropdown" trigger="manual">
-                <i @click="openDropdown" title="Download" style="font-size: 12px" class="fa-solid fa-download"></i>
+
+            <button v-if="clientSlide" type="button" class="rail-btn" title="Upload" @click="handleUpload">
+                <i class="fa-solid fa-upload"></i>
+            </button>
+
+            <el-dropdown v-if="!clientSlide" @command="handleDownloadCommand" ref="downloadDropdown" trigger="manual"
+                placement="bottom-start">
+                <button type="button" class="rail-btn" title="Download" @click="openDropdown">
+                    <i class="fa-solid fa-download"></i>
+                </button>
                 <el-dropdown-menu slot="dropdown">
                     <el-dropdown-item command="downloadOnlyNode">
                         <icon size="12px" fileTypeDetail="xml" folderType="fileType" badgeColor="146EBE"></icon>
@@ -151,25 +155,42 @@
                     </el-dropdown-item>
                 </el-dropdown-menu>
             </el-dropdown>
+
+            <div class="rail-sep"></div>
+
+            <!-- Nhóm thao tác -->
+            <button type="button" class="rail-btn" title="Move" @click="handleMove">
+                <i class="fa-solid fa-arrows-up-down-left-right"></i>
+            </button>
+            <button type="button" class="rail-btn" title="FMECA" @click="handleFmeca">
+                <i class="fa-solid fa-table"></i>
+            </button>
+            <button v-if="clientSlide" type="button" class="rail-btn" title="Show Equipment" @click="handleShowEquipment">
+                <i class="fa-solid fa-screwdriver-wrench"></i>
+            </button>
+            <button type="button" class="rail-btn" title="Delete" @click="handleDelete">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+
+            <div class="rail-spacer"></div>
+
+            <!-- Thu gọn -->
+            <button type="button" class="rail-btn" title="Collapse toolbar" @click="setCollapsed(true)">
+                <i class="fa-solid fa-angles-left"></i>
+            </button>
         </div>
-        <div>
-            <i @click="handleDelete" title="Delete" style="font-size: 12px" class="fa-solid fa-trash"></i>
-        </div>
-        <div @click="handleFmeca">
-            <i title="Fmeca" style="font-size: 12px" class="fa-solid fa-table"></i>
-        </div>
-        <div>
-            <i @click="handleMove" title="Move" style="font-size: 12px"
-                class="fa-solid fa-arrows-up-down-left-right"></i>
-        </div>
-        <div v-if="clientSlide">
-            <i @click="handleShowEquipment" title="Show Equipment" style="font-size: 12px" class="fa-solid fa-screwdriver-wrench"></i>
-        </div>
+
+        <!-- Nút hiện lại (như Object Properties) -->
+        <button v-else type="button" class="rail-show-btn" title="Show toolbar" @click="setCollapsed(false)">
+            <i class="fa-solid fa-angles-right"></i>
+        </button>
     </div>
 </template>
 
 <script>
 import Icon from '@/views/Common/Icon.vue'
+
+const COLLAPSE_KEY = 'treeToolbarCollapsed'
 
 export default {
     name: 'TreeToolbar',
@@ -186,9 +207,14 @@ export default {
         return {
             showAssetSub: false,
             showSub: null,
+            collapsed: localStorage.getItem(COLLAPSE_KEY) === '1'
         }
     },
     methods: {
+        setCollapsed(v) {
+            this.collapsed = v
+            localStorage.setItem(COLLAPSE_KEY, v ? '1' : '0')
+        },
         // Add dropdown methods
         handleAddCommand(command) {
             this.$emit('add-command', command)
@@ -268,33 +294,100 @@ export default {
 </script>
 
 <style scoped>
-/* Toolbar styles - copy from treeNavigation.vue */
-.toolbar-setting {
-    background-color: white;
-    height: 30px;
+/* ===== Rail dọc bên trái ===== */
+.toolbar-rail-wrap {
+    height: 100%;
+    flex-shrink: 0;
     display: flex;
-    gap: 30px;
-    border-bottom: 1px solid #cccccc;
-    align-items: center;
-    font-size: 12px;
-    color: #555;
-    font-weight: 600;
+    align-items: stretch;
     box-sizing: border-box;
-    width: 100%;
-    padding-left: 10px;
+}
+/* ẩn hết như Object Properties: không chiếm cột, chỉ còn nút nổi ở mép trái */
+.toolbar-rail-wrap.collapsed {
+    width: 0;
+    position: relative;
+    overflow: visible;
 }
 
-.toolbar-setting>div {
+.toolbar-rail {
+    width: 44px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 0;
+    box-sizing: border-box;
+    background: #fafbfc;
+    border-right: 1px solid #e4e7ed;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+}
+.toolbar-rail::-webkit-scrollbar {
+    display: none;
+}
+
+.rail-btn {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #909399;
+    font-size: 13px;
     cursor: pointer;
-}
-
-.icon-wrapper {
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: background 0.15s, color 0.15s;
+}
+/* hover: đậm lên — nền xanh đặc, icon trắng */
+.rail-btn:hover {
+    background: #409eff;
+    color: #fff;
 }
 
-/* Asset submenu styles */
+.rail-sep {
+    width: 24px;
+    height: 1px;
+    flex-shrink: 0;
+    background: #e4e7ed;
+    margin: 3px 0;
+}
+.rail-spacer {
+    flex: 1;
+}
+
+/* Nút hiện lại khi đã thu gọn — đối xứng với nút hiện Object Properties */
+.rail-show-btn {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    width: 16px;
+    height: 64px;
+    border: 1px solid #e4e7ed;
+    border-left: none;
+    border-radius: 0 6px 6px 0;
+    background: #f5f7fa;
+    color: #909399;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+}
+.rail-show-btn:hover {
+    background: #ecf5ff;
+    color: #409eff;
+    border-color: #b5d4f4;
+}
+
+/* ===== Submenu Add Asset (giữ từ bản cũ) ===== */
 .asset-submenu-parent {
     position: relative;
 }
@@ -330,85 +423,6 @@ export default {
 
 .submenu-item span {
     flex: 1;
-}
-
-/* Import/Export submenu styles */
-.export-json-parent {
-    position: relative;
-}
-
-.export-json-submenu {
-    position: absolute;
-    left: 100%;
-    top: 0;
-    background: #fff;
-    border: 1px solid #e4e7ed;
-    border-radius: 4px;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-    min-width: 170px;
-    z-index: 1000;
-    padding: 1px 0;
-}
-
-.import-json-submenu .submenu-item,
-.export-json-submenu .submenu-item {
-    padding: 1px 20px;
-    font-size: 12px;
-    cursor: pointer;
-    color: #606266;
-}
-
-.import-json-submenu .submenu-item:hover,
-.export-json-submenu .submenu-item:hover {
-    background-color: #f5f7fa;
-    color: rgb(51.8, 80.6, 171);
-}
-</style>
-<style scoped>
-/* Kiểu dáng dropdown */
-.dropdown {
-    width: 35%;
-    margin-right: 10px;
-}
-
-/* Ô input */
-.dropdown-input {
-    width: 100%;
-    padding-right: 80px;
-    cursor: pointer;
-    background-color: #fff;
-    padding: 0 0 0 10px;
-    height: 40px;
-}
-
-/* Style menu dropdown */
-.dropdown-menu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #fff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    padding: 0;
-    margin: 5px 0;
-    list-style: none;
-    display: none;
-    /* Ẩn mặc định */
-    z-index: 10;
-}
-
-/* Style cho từng mục */
-.dropdown-menu li {
-    padding: 10px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-/* Hover làm nổi bật */
-.dropdown-menu li:hover {
-    background-color: #f0f0f0;
 }
 
 .el-dropdown-menu__item {
