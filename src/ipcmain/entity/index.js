@@ -23,6 +23,7 @@ import * as ipcUpdate from './update/index.js'
 import * as ipcEntitySnapshot from './entitySnapshot/index.js'
 import * as ipcTemplate from './template/index.js'
 import * as ipcMridCheck from './mRIDCheck/index.js'
+import * as ipcTestingEquipment from './testingEquipment/index.js'
 
 
 export const active = () => {
@@ -51,4 +52,5 @@ export const active = () => {
     ipcEntitySnapshot.active()
     ipcTemplate.active()
     ipcMridCheck.active()
+    ipcTestingEquipment.active()
 }

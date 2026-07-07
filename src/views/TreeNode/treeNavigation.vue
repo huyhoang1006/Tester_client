@@ -13,7 +13,8 @@
             @dropdown-visible-change="handleDropdownVisibleChange" @asset-command="handleAssetCommand"
             @import-command="handleImportCommand" @export-command="handleCommand" @open-node="handleOpenNode"
             @duplicate="duplicateSelectedNodes" @upload="handleUploadNode" @download="handleDownloadNode"
-            @delete="handleDeleteNode" @fmeca="handleClickFmeca" @move="handleMoveNode" @openDropdown="openDropdown" />
+            @delete="handleDeleteNode" @fmeca="handleClickFmeca" @move="handleMoveNode" @openDropdown="openDropdown" 
+            @show-equipment="handleShowEquipment" />
         <!-- Thanh điều hướng có thể kéo rộng/kéo hẹp -->
         <div class="resizable-sidebar">
             <ClientTreePanel ref="clientPanel" v-show="clientSlide" :organisationClientList="organisationClientList"
@@ -338,7 +339,7 @@
             @cancel="handleCancelExport" @confirm="handleExportConfirm" />
 
         <ImportDialog :visible="openImportDialog" @update:visible="openImportDialog = $event" :importType="importType"
-            @cancel="handleCancelImport" />
+            @cancel="handleCancelImport" @imported="handleImportedRefresh" />
 
         <FmecaDialog :visible="signFmeca" @update:visible="signFmeca = $event" @close="handleFmecaCancel"
             @cancel="handleFmecaCancel" @confirm="handleFmecaConfirm" />
@@ -378,6 +379,14 @@
             :current-type="progressType"
             :done="progressDone"
             :total="progressTotal" />
+
+        <TestingEquipmentDialog
+            :visible="openTestingEquipmentDialog"
+            @update:visible="openTestingEquipmentDialog = $event"
+            :equipmentMrid="selectedEquipmentMrid"
+            @cancel="openTestingEquipmentDialog = false"
+            @saved="handleTestingEquipmentSaved" />
+        
     </div>
 </template>
 <script>
@@ -429,6 +438,7 @@ import JobCircuitBreaker from '@/views/JobView/CircuitBreaker/index.vue'
 import JobTransformer from '@/views/JobView/Transformer/index.vue'
 
 import mixin from './Common'
+import mainMixin from './mixin/index.js'
 import Icon from '@/views/Common/Icon.vue'
 import Fmeca from '@/views/Fmeca'
 import Export from '@/views/Export/index.vue'
@@ -459,7 +469,8 @@ import {
     ZeroDiagramDialog,
     ImportConflictDialog,
     ImportGraftDialog,
-    ImportProgressDialog
+    ImportProgressDialog,
+    TestingEquipmentDialog
 } from './dialogs'
 
 
@@ -539,10 +550,13 @@ export default {
         ZeroDiagramDialog,
         ImportConflictDialog,
         ImportGraftDialog,
-        ImportProgressDialog
+        ImportProgressDialog,
+        TestingEquipmentDialog
     },
     data() {
         return {
+            openTestingEquipmentDialog: false,
+            selectedEquipmentMrid: null,
             conflictDialogVisible: false,
             pendingConflicts: [],       // conflicts[] đang chờ user quyết
             pendingImportContext: null, // { fileContent, targetNode } để chạy tiếp sau khi có quyết định
@@ -829,7 +843,7 @@ export default {
                 : 'app-dialog'
         }
     },
-    mixins: [mixin, mixinTreeNavigation, uploadNodeMixin, downloadNode],
+    mixins: [mixin, mixinTreeNavigation, uploadNodeMixin, downloadNode, mainMixin],
     async beforeMount() {
         try {
             const data = await window.electronAPI.getAllConfigurationEvents()
@@ -849,6 +863,15 @@ export default {
         });
     },
     methods: {
+        // After Word/Excel/JSON import finishes, reload the client tree so newly
+        // imported nodes appear immediately (no manual right-click Refresh needed).
+        async handleImportedRefresh() {
+            try {
+                await this.showLocationRoot()
+            } catch (e) {
+                console.error('handleImportedRefresh error:', e)
+            }
+        },
         handleUpdateNodeData(payload) {
             // ✅ Validation: Đảm bảo payload hợp lệ
             if (!payload || !payload.mrid || !payload.data) {
@@ -1060,11 +1083,11 @@ export default {
             }
         },
         async handleNodeDeletedFromDiagram(node) {
-  // Clear selection giống như xóa trên tree
-  this.selectedNodes = [];
-  // Đóng properties panel
-  this.$emit('close-properties');
-},
+            // Clear selection giống như xóa trên tree
+            this.selectedNodes = [];
+            // Đóng properties panel
+            this.$emit('close-properties');
+        },
         async handleEditNodeFromDiagram(nodeData) {
             try {
                 const type = nodeData.asset || nodeData.mode;

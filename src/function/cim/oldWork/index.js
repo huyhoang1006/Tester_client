@@ -127,6 +127,28 @@ export const updateOldWorkByIdTransaction = async (mrid, oldWork, dbsql) => {
     })
 }
 
+// Cập nhật asset_id của oldWork (dùng khi MOVE job sang asset khác).
+// Job liên kết với asset chỉ qua old_work.asset_id nên chỉ cần đổi trường này.
+export const updateOldWorkAssetIdById = async (mrid, assetId) => {
+    return new Promise((resolve, reject) => {
+        db.serialize(() => {
+            db.run('BEGIN TRANSACTION')
+            db.run(
+                `UPDATE old_work SET asset_id = ? WHERE mrid = ?`,
+                [assetId, mrid],
+                function (err) {
+                    if (err) {
+                        db.run('ROLLBACK')
+                        return reject({ success: false, err, message: 'Update oldWork asset_id failed' })
+                    }
+                    db.run('COMMIT')
+                    return resolve({ success: true, data: { mrid, asset_id: assetId }, message: 'Update oldWork asset_id completed' })
+                }
+            )
+        })
+    })
+}
+
 // Xóa oldWork
 export const deleteOldWorkByIdTransaction = async (mrid, dbsql) => {
     return new Promise(async (resolve, reject) => {

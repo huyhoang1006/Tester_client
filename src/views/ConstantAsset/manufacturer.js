@@ -189,6 +189,18 @@ const MANUFACTURER_MAP = {
     'Siemens',
     'Toshiba',
     'Westinghouse'
+  ],
+  TestingEquipmentDto: [
+    'OMICRON',
+    'HVI',
+    'Megger',
+    'Doble',
+    'Phenix Technologies',
+    'Haefely',
+    'Vanguard Instruments',
+    'ISA',
+    'Raytech',
+    'SebaKMT'
   ]
 }
 

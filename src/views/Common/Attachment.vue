@@ -19,7 +19,7 @@
                         @dblclick="onTdDblClick" 
                         ref="table"
                     >
-                        <i class="fa-regular fa-folder-open main-icon"></i> {{ item.path.split(/[/\\]/).pop() }} 
+                        <i :class="fileIcon(item.path).cls" class="main-icon" :style="{ color: fileIcon(item.path).color }"></i> {{ item.path.split(/[/\\]/).pop() }}
                     </td>
                 </tr>
             </table>
@@ -183,6 +183,41 @@ export default {
             var  fileExtension;
             fileExtension = fileName.replace(/^.*\./, '');
             return fileExtension;
+        },
+        // Icon theo phần mở rộng file (FontAwesome) + màu
+        fileIcon(p) {
+            const parts = String(p || '').split('.')
+            const ext = parts.length > 1 ? parts.pop().toLowerCase() : ''
+            const byExt = {
+                pdf:  { cls: 'fa-solid fa-file-pdf',        color: '#e11d48' },
+                doc:  { cls: 'fa-solid fa-file-word',       color: '#2563eb' },
+                docx: { cls: 'fa-solid fa-file-word',       color: '#2563eb' },
+                xls:  { cls: 'fa-solid fa-file-excel',      color: '#16a34a' },
+                xlsx: { cls: 'fa-solid fa-file-excel',      color: '#16a34a' },
+                csv:  { cls: 'fa-solid fa-file-csv',        color: '#16a34a' },
+                ppt:  { cls: 'fa-solid fa-file-powerpoint', color: '#ea580c' },
+                pptx: { cls: 'fa-solid fa-file-powerpoint', color: '#ea580c' },
+                png:  { cls: 'fa-solid fa-file-image',      color: '#7c3aed' },
+                jpg:  { cls: 'fa-solid fa-file-image',      color: '#7c3aed' },
+                jpeg: { cls: 'fa-solid fa-file-image',      color: '#7c3aed' },
+                gif:  { cls: 'fa-solid fa-file-image',      color: '#7c3aed' },
+                bmp:  { cls: 'fa-solid fa-file-image',      color: '#7c3aed' },
+                svg:  { cls: 'fa-solid fa-file-image',      color: '#7c3aed' },
+                webp: { cls: 'fa-solid fa-file-image',      color: '#7c3aed' },
+                zip:  { cls: 'fa-solid fa-file-zipper',     color: '#a16207' },
+                rar:  { cls: 'fa-solid fa-file-zipper',     color: '#a16207' },
+                '7z': { cls: 'fa-solid fa-file-zipper',     color: '#a16207' },
+                txt:  { cls: 'fa-solid fa-file-lines',      color: '#4b5563' },
+                mp4:  { cls: 'fa-solid fa-file-video',      color: '#db2777' },
+                avi:  { cls: 'fa-solid fa-file-video',      color: '#db2777' },
+                mkv:  { cls: 'fa-solid fa-file-video',      color: '#db2777' },
+                mov:  { cls: 'fa-solid fa-file-video',      color: '#db2777' },
+                wmv:  { cls: 'fa-solid fa-file-video',      color: '#db2777' },
+                mp3:  { cls: 'fa-solid fa-file-audio',      color: '#0891b2' },
+                wav:  { cls: 'fa-solid fa-file-audio',      color: '#0891b2' },
+                flac: { cls: 'fa-solid fa-file-audio',      color: '#0891b2' }
+            }
+            return byExt[ext] || { cls: 'fa-solid fa-file', color: '#6b7280' }
         },
         async isIMage(fileName){
             var fileExt = await this.getFileExtension(fileName);

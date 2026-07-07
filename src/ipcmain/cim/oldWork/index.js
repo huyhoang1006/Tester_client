@@ -57,7 +57,35 @@ export const getOldWorkByAssetId = () => {
     })
 }
 
+export const updateOldWorkAssetIdById = () => {
+    ipcMain.handle('updateOldWorkAssetIdById', async function (event, mrid, assetId) {
+        try {
+            const rs = await cimFunc.oldWorkFunc.updateOldWorkAssetIdById(mrid, assetId)
+            if (rs.success === true) {
+                return {
+                    success: true,
+                    message: rs.message || "Success",
+                    data: rs.data
+                }
+            } else {
+                return {
+                    success: false,
+                    message: rs.message || "fail",
+                }
+            }
+        } catch (error) {
+            console.log(error)
+            return {
+                error: error,
+                success: false,
+                message: (error && error.message) ? error.message : "Internal error",
+            }
+        }
+    })
+}
+
 export const active = () => {
     getOldWorkByMrid()
     getOldWorkByAssetId()
+    updateOldWorkAssetIdById()
 }

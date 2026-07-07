@@ -16,7 +16,6 @@ export default {
                     const data = JSON.parse(JSON.stringify(this.bushing_data));
                     const result = this.checkBushingData(data);
                     const resultEntity = Mapping.mapDtoToEntity(result);
-                    console.log("resultEntity: ", resultEntity)
                     let rs = await window.electronAPI.insertBushingEntity(resultEntity)
                     if (rs.success) {
                         return {
@@ -46,15 +45,15 @@ export default {
         },
 
         async saveCtrS() {
-            console.log('[BUSHING] saveCtrS called')
             const data = await this.saveAsset()
-            console.log('[BUSHING] saveAsset result:', data)
             if (data.success) {
+                // Nạp lại entity vừa lưu để UI (attachment, mrid...) phản ánh đúng dữ liệu đã ghi
+                if (data.data) {
+                    const dto = Mapping.mapEntityToDto(data.data)
+                    this.loadData(dto)
+                }
                 this.$message.success("Asset saved successfully")
-
-                console.log('[BUSHING] Emitting reload event with saved data')
                 this.$emit('reload', { savedData: this.bushing_data })
-                console.log('[BUSHING] Reload event emitted')
             } else {
                 this.$message.error("Failed to save asset")
             }
@@ -66,6 +65,7 @@ export default {
         },
 
         loadData(data) {
+            console.log("Loading data into Bushing form:", data);
             this.bushing_data = data;
             if (data.attachment && data.attachment.path) {
                 this.attachmentData = JSON.parse(data.attachment.path)

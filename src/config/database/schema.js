@@ -6,6 +6,13 @@ CREATE TABLE IF NOT EXISTS "acceptance_test" (
 	"type"	TEXT,
 	PRIMARY KEY("mrid")
 );
+CREATE TABLE IF NOT EXISTS "accessory_testing_equipment" (
+    "equipment"  TEXT NOT NULL,   -- máy chính  -> testing_equipment.mrid
+    "accessory"  TEXT NOT NULL,   -- phụ kiện   -> testing_equipment.mrid
+    PRIMARY KEY("equipment","accessory"),
+    FOREIGN KEY("equipment") REFERENCES "testing_equipment"("mrid") ON DELETE CASCADE,
+    FOREIGN KEY("accessory") REFERENCES "testing_equipment"("mrid") ON DELETE CASCADE
+);
 CREATE TABLE IF NOT EXISTS "active_power" (
 	"mrid"	TEXT NOT NULL,
 	"multiplier"	TEXT,
@@ -20,9 +27,13 @@ CREATE TABLE IF NOT EXISTS "activity_record" (
 	"reason"	TEXT,
 	"severity"	TEXT,
 	"type"	TEXT,
-	FOREIGN KEY("status") REFERENCES "status"("mrid"),
+	"asset"	TEXT,
+	"provider"	TEXT,
+	"cost"	TEXT,
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("asset") REFERENCES "asset"("mrid") on delete cascade,
 	FOREIGN KEY("mrid") REFERENCES "identified_object"("mrid") ON DELETE CASCADE,
-	PRIMARY KEY("mrid")
+	FOREIGN KEY("status") REFERENCES "status"("mrid")
 );
 CREATE TABLE IF NOT EXISTS "analog" (
 	"mrid"	TEXT NOT NULL,
@@ -419,6 +430,19 @@ CREATE TABLE IF NOT EXISTS "cable_info" (
 	FOREIGN KEY("mrid") REFERENCES "wire_info"("mrid") on delete cascade,
 	FOREIGN KEY("nominal_temperature") REFERENCES "temperature"("mrid"),
 	PRIMARY KEY("mrid")
+);
+CREATE TABLE IF NOT EXISTS "calibration_record" (
+	"mrid"	TEXT NOT NULL,
+	"testing_equipment"	TEXT,
+	"calibration_date"	TEXT,
+	"due_date"	TEXT,
+	"interval_months"	INTEGER,
+	"provider"	TEXT,
+	"certificate_number"	TEXT,
+	"result"	TEXT,
+	"notes"	TEXT,
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("testing_equipment") REFERENCES "testing_equipment"("mrid") on delete cascade
 );
 CREATE TABLE IF NOT EXISTS "capacitance" (
 	"mrid"	TEXT NOT NULL,
@@ -2032,6 +2056,24 @@ CREATE TABLE IF NOT EXISTS "short_circuit_test_transformer_end_info" (
 	FOREIGN KEY("short_circuit_test_id") REFERENCES "short_circuit_test"("mrid") ON DELETE CASCADE,
 	PRIMARY KEY("mrid")
 );
+CREATE TABLE IF NOT EXISTS "software_license" (
+	"mrid"	TEXT NOT NULL,
+	"option_name"	TEXT,
+	"license_key"	TEXT,
+	"enabled"	TEXT,
+	"description"	TEXT,
+	"activation_date"	TEXT,
+	"expiry_date"	TEXT,
+	"seat_count"	TEXT,
+	PRIMARY KEY("mrid")
+);
+CREATE TABLE IF NOT EXISTS "software_license_testing_equipment" (
+	"software_license"	TEXT NOT NULL,
+	"testing_equipment"	TEXT NOT NULL,
+	PRIMARY KEY("software_license","testing_equipment"),
+	FOREIGN KEY("software_license") REFERENCES "software_license"("mrid") ON DELETE CASCADE,
+	FOREIGN KEY("testing_equipment") REFERENCES "testing_equipment"("mrid") ON DELETE CASCADE
+);
 CREATE TABLE IF NOT EXISTS "standard" (
 	"mrid"	TEXT NOT NULL,
 	"name"	TEXT,
@@ -2327,12 +2369,12 @@ CREATE TABLE IF NOT EXISTS "testing_condition" (
 );
 CREATE TABLE IF NOT EXISTS "testing_equipment" (
 	"mrid"	TEXT NOT NULL,
-	"model"	TEXT,
-	"serial_number"	TEXT,
 	"work_id"	TEXT,
-	"calibration_date"	TEXT,
-	FOREIGN KEY("work_id") REFERENCES "work"("mrid"),
-	PRIMARY KEY("mrid")
+	"asset_tag"	TEXT,
+	"is_accessory"	INTEGER,
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("mrid") REFERENCES "asset"("mrid") on delete cascade,
+	FOREIGN KEY("work_id") REFERENCES "work"("mrid")
 );
 CREATE TABLE IF NOT EXISTS "town_detail" (
 	"mrid"	TEXT NOT NULL,

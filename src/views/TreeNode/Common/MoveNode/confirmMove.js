@@ -158,6 +158,11 @@ export default {
                                 updateResult = await window.electronAPI.updateBayByMrid(nodeToMove.mrid, bay.data)
                                 success = updateResult.success
                             }
+                        } else if (nodeToMove.mode === 'job') {
+                            // Job liên kết với asset chỉ qua old_work.asset_id -> đổi sang asset đích.
+                            // Các test nằm trong job (work_task.work = job) nên tự đi theo.
+                            updateResult = await window.electronAPI.updateOldWorkAssetIdById(nodeToMove.mrid, newParent.mrid)
+                            success = updateResult.success
                         }
 
                         // --- CẬP NHẬT UI SAU KHI THÀNH CÔNG ---

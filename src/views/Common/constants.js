@@ -53,7 +53,7 @@ export const FEATURE_TREE = {
             comment: { label: 'Comment', value: 'comment' }
         }},
         WindingConfigurationDto: { label: 'Winding Config', children: {
-            phases: { label: 'Phases', value: 'phases' }, vector_group_custom: { label: 'Vector group (custom)', value: 'vector_group_custom' },
+            phases: { label: 'Phases', value: 'phases' }, phase: { label: 'Phase', value: 'phase' }, vector_group_custom: { label: 'Vector group (custom)', value: 'vector_group_custom' },
             unsupported_vector_group: { label: 'Vector group (unsupported)', value: 'unsupported_vector_group' },
             vector_group_data: { label: 'Vector group (computed)', value: 'vector_group_data' }
         }},
@@ -216,6 +216,9 @@ export const FEATURE_TREE = {
         }}
         }},
         VoltageTransformerDto: { label: 'VT', children: {
+        ConfigurationDto: { label: 'Configuration', children: {
+            number_of_phase: { label: 'Number of phase', value: 'number_of_phase' }, phase: { label: 'Phase', value: 'phase' }
+        }},
         PropertiesDto: { label: 'Properties', children: {
             type: { label: 'Asset type', value: 'type' }, serial_no: { label: 'Serial no.', value: 'serial_no' },
             manufacturer: { label: 'Manufacturer', value: 'manufacturer' }, manufacturer_type: { label: 'Manufacturer type', value: 'manufacturer_type' },
@@ -238,6 +241,9 @@ export const FEATURE_TREE = {
         }}
         }},
         CurrentTransformerDto: { label: 'CT', children: {
+        ConfigurationDto: { label: 'Configuration', children: {
+            number_of_phase: { label: 'Number of phase', value: 'number_of_phase' }, phase: { label: 'Phase', value: 'phase' }
+        }},
         PropertiesDto: { label: 'Properties', children: {
             type: { label: 'Asset type', value: 'type' }, serial_no: { label: 'Serial no.', value: 'serial_no' },
             manufacturer: { label: 'Manufacturer', value: 'manufacturer' }, manufacturer_type: { label: 'Manufacturer type', value: 'manufacturer_type' },
@@ -328,7 +334,7 @@ export const FEATURE_TREE = {
             apparatus_id: { label: 'Apparatus ID', value: 'apparatus_id' }, comment: { label: 'Comment', value: 'comment' }
         }},
         circuitBreakerDto: { label: 'Circuit Breaker', children: {
-            numberOfPhases: { label: 'Number of phases', value: 'numberOfPhases' }, interruptersPerPhase: { label: 'Interrupters per phase', value: 'interruptersPerPhase' },
+            numberOfPhases: { label: 'Number of phases', value: 'numberOfPhases' }, interruptersPerPhase: { label: 'Interrupters per phase', value: 'interruptersPerPhase' }, phase: { label: 'Phase', value: 'phase' },
             poleOperation: { label: 'Pole operation', value: 'poleOperation' }, hasPIR: { label: 'Has PIR', value: 'hasPIR' }, pirValue: { label: 'PIR value', value: 'pirValue' },
             hasGradingCapacitors: { label: 'Has grading capacitors', value: 'hasGradingCapacitors' }, capacitorValue: { label: 'Capacitor value', value: 'capacitorValue' },
             interruptingMedium: { label: 'Interrupting medium', value: 'interruptingMedium' }, tankType: { label: 'Tank type', value: 'tankType' }
@@ -734,6 +740,9 @@ export const FEATURE_TREE = {
         }}
         }},
         PowerCableDTO: { label: 'Power cable', children: {
+        ConfigurationDto: { label: 'Configuration', children: {
+            number_of_phase: { label: 'Number of phase', value: 'number_of_phase' }, phase: { label: 'Phase', value: 'phase' }
+        }},
         PropertiesDto: { label: 'Properties', children: {
             type: { label: 'Asset type', value: 'type' }, serial_no: { label: 'Serial no.', value: 'serial_no' },
             manufacturer: { label: 'Manufacturer', value: 'manufacturer' }, manufacturer_type: { label: 'Manufacturer type', value: 'manufacturer_type' },
@@ -855,6 +864,9 @@ export const FEATURE_TREE = {
         }}
         }},
         SurgeArresterDto: { label: 'Surge Arrester', children: {
+        ConfigurationDto: { label: 'Configuration', children: {
+            number_of_phase: { label: 'Number of phase', value: 'number_of_phase' }, phase: { label: 'Phase', value: 'phase' }
+        }},
         PropertiesDto: { label: 'Properties', children: {
             type:              { label: 'Asset type',         value: 'type' },
             serial_no:         { label: 'Serial no.',         value: 'serial_no' },
@@ -880,6 +892,9 @@ export const FEATURE_TREE = {
         }}
         }},
         BushingAssetDto: { label: 'Bushing', children: {
+        ConfigurationDto: { label: 'Configuration', children: {
+            number_of_phase: { label: 'Number of phase', value: 'number_of_phase' }, phase: { label: 'Phase', value: 'phase' }
+        }},
         PropertiesDto: { label: 'Properties', children: {
             type:              { label: 'Asset type',         value: 'type' },
             serial_no:         { label: 'Serial no.',         value: 'serial_no' },
@@ -904,6 +919,9 @@ export const FEATURE_TREE = {
         }}
         }},
         ReactorDto: { label: 'Reactor', children: {
+        ConfigurationDto: { label: 'Configuration', children: {
+            number_of_phase: { label: 'Number of phase', value: 'number_of_phase' }, phase: { label: 'Phase', value: 'phase' }
+        }},
         PropertiesDto: { label: 'Properties', children: {
             type: { label: 'Asset type', value: 'type' }, serial_no: { label: 'Serial no.', value: 'serial_no' },
             manufacturer: { label: 'Manufacturer', value: 'manufacturer' }, manufacturer_type: { label: 'Manufacturer type', value: 'manufacturer_type' },
@@ -919,6 +937,9 @@ export const FEATURE_TREE = {
         }}
         }},
         CapacitorsDTO: { label: 'Capacitor', children: {
+        ConfigurationDto: { label: 'Configuration', children: {
+            number_of_phase: { label: 'Number of phase', value: 'number_of_phase' }, phase: { label: 'Phase', value: 'phase' }
+        }},
         PropertiesDto: { label: 'Properties', children: {
             type:               { label: 'Asset type',         value: 'type' },
             serial_no:          { label: 'Serial no.',         value: 'serial_no' },
@@ -958,6 +979,9 @@ export const FEATURE_TREE = {
         }}
         }},
         DisconnectorDTO: { label: 'Disconnector', children: {
+        ConfigurationDto: { label: 'Configuration', children: {
+            number_of_phase: { label: 'Number of phase', value: 'number_of_phase' }, phase: { label: 'Phase', value: 'phase' }
+        }},
         PropertiesDto: { label: 'Properties', children: {
             type:               { label: 'Asset type',         value: 'type' },
             serial_no:          { label: 'Serial no.',         value: 'serial_no' },

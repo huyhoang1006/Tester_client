@@ -64,13 +64,15 @@ export default {
         async saveCtrS() {
             
             const data = await this.saveAsset()
-            
+
             if (data.success) {
+                // Nạp lại entity vừa lưu để UI (attachment...) phản ánh đúng dữ liệu đã ghi
+                if (data.data) {
+                    const dto = CurrentTransformerMapping.mapEntityToDto(data.data)
+                    this.loadData(dto)
+                }
                 this.$message.success("Asset saved successfully")
-                
-                
                 this.$emit('reload', { savedData: this.currentTransformer })
-                
             } else {
                 this.$message.error("Failed to save asset")
             }

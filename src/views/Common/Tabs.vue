@@ -451,6 +451,7 @@ export default {
                         } else if (tab.asset === 'Bushing') {
                             ctx.parentOrganization = { mrid: tab.parentId }
                             const data = await window.electronAPI.getBushingEntityByMrid(tab.mrid, tab.parentId)
+                            console.log('Bushing data:', data); // Debugging line
                             if (data.success) {
                                 const BushingDto = bushingMapper.mapEntityToDto(data.data)
                                 if (!BushingDto.properties?.serial_no) BushingDto.properties = { serial_no: tab.serial_number || '' }

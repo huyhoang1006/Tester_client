@@ -14,21 +14,27 @@ export const insertActivityRecord = async (activity) => {
                     }
                     db.run(
                         `INSERT INTO activity_record(
-                            mrid, status, created_date_time, reason, severity, type
-                        ) VALUES (?, ?, ?, ?, ?, ?)
+                            mrid, status, created_date_time, reason, severity, type, asset, provider, cost
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                         ON CONFLICT(mrid) DO UPDATE SET
                             status = excluded.status,
                             created_date_time = excluded.created_date_time,
                             reason = excluded.reason,
                             severity = excluded.severity,
-                            type = excluded.type`,
+                            type = excluded.type,
+                            asset = excluded.asset,
+                            provider = excluded.provider,
+                            cost = excluded.cost`,
                         [
                             activity.mrid,
                             activity.status,
                             activity.created_date_time,
                             activity.reason,
                             activity.severity,
-                            activity.type
+                            activity.type,
+                            activity.asset,
+                            activity.provider,
+                            activity.cost
                         ],
                         function (err) {
                             if (err) {
@@ -58,21 +64,27 @@ export const insertActivityRecordTransaction = async (activity, dbsql) => {
                 }
                 dbsql.run(
                     `INSERT INTO activity_record(
-                        mrid, status, created_date_time, reason, severity, type
-                    ) VALUES (?, ?, ?, ?, ?, ?)
+                        mrid, status, created_date_time, reason, severity, type, asset, provider, cost
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ON CONFLICT(mrid) DO UPDATE SET
                         status = excluded.status,
                         created_date_time = excluded.created_date_time,
                         reason = excluded.reason,
                         severity = excluded.severity,
-                        type = excluded.type`,
+                        type = excluded.type,
+                        asset = excluded.asset,
+                        provider = excluded.provider,
+                        cost = excluded.cost`,
                     [
                         activity.mrid,
                         activity.status,
                         activity.created_date_time,
                         activity.reason,
                         activity.severity,
-                        activity.type
+                        activity.type,
+                        activity.asset,
+                        activity.provider,
+                        activity.cost
                     ],
                     function (err) {
                         if (err) {
@@ -108,6 +120,21 @@ export const getActivityRecordById = async (mrid) => {
     }
 }
 
+// Lấy các activity_record theo asset (dùng cho Repair History: lọc type='Repair')
+export const getActivityRecordByAssetId = async (assetId, type = 'Repair') => {
+    return new Promise((resolve, reject) => {
+        db.all(
+            "SELECT * FROM activity_record WHERE asset = ? AND type = ?",
+            [assetId, type],
+            (err, rows) => {
+                if (err) return reject({ success: false, err, message: 'Get activity record by asset failed' })
+                if (!rows || rows.length === 0) return resolve({ success: false, data: null, message: 'Activity record not found' })
+                return resolve({ success: true, data: rows, message: 'Get activity record by asset completed' })
+            }
+        )
+    })
+}
+
 // Cập nhật ActivityRecord (gồm cả identified_object)
 export const updateActivityRecordById = async (mrid, activity) => {
     return new Promise((resolve, reject) => {
@@ -125,7 +152,10 @@ export const updateActivityRecordById = async (mrid, activity) => {
                             created_date_time = ?,
                             reason = ?,
                             severity = ?,
-                            type = ?
+                            type = ?,
+                            asset = ?,
+                            provider = ?,
+                            cost = ?
                          WHERE mrid = ?`,
                         [
                             activity.status,
@@ -133,6 +163,9 @@ export const updateActivityRecordById = async (mrid, activity) => {
                             activity.reason,
                             activity.severity,
                             activity.type,
+                            activity.asset,
+                            activity.provider,
+                            activity.cost,
                             mrid
                         ],
                         function (err) {
@@ -167,7 +200,10 @@ export const updateActivityRecordByIdTransaction = async (mrid, activity, dbsql)
                         created_date_time = ?,
                         reason = ?,
                         severity = ?,
-                        type = ?
+                        type = ?,
+                        asset = ?,
+                        provider = ?,
+                        cost = ?
                      WHERE mrid = ?`,
                     [
                         activity.status,
@@ -175,6 +211,9 @@ export const updateActivityRecordByIdTransaction = async (mrid, activity, dbsql)
                         activity.reason,
                         activity.severity,
                         activity.type,
+                        activity.asset,
+                        activity.provider,
+                        activity.cost,
                         mrid
                     ],
                     function (err) {

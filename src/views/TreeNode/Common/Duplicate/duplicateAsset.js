@@ -1,6 +1,6 @@
 export default {
     methods: {
-        async processDuplicateAsset(node, apiGetEntity, mappingFunction, mixinObject, dataPropName) {
+        async processDuplicateAsset(node, apiGetEntity, mappingFunction, mixinObject, dataPropName, overrideParent = null) {
             try {
                 // Helper nội bộ: lấy label hiển thị trên Tree cho một node
                 const getDisplayLabel = (n) => {
@@ -81,8 +81,8 @@ export default {
                     return `${prefix} (${maxIndex + 1})` // "X - Copy (2)", "X - Copy (3)", ...
                 }
 
-                // 1. Tìm Node cha
-                let parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                // 1. Find parent node (prefer overrideParent when duplicating recursively into a new parent)
+                let parentNode = overrideParent || this.findNodeById(node.parentId, this.organisationClientList)
 
                 if (!parentNode) {
                     const isRoot = node.parentId === this.$constant.ROOT || !node.parentId
@@ -112,6 +112,33 @@ export default {
                 // 3. Map sang DTO & Clean dữ liệu (Xóa ID cũ)
                 const dto = mappingFunction(entityRes.data)
                 this.cleanDtoForDuplicate(dto)
+
+                // JOB: remap nhất quán TẤT CẢ id nội bộ. Sinh id mới cho mọi 'mrid' trong dto,
+                // rồi thay MỌI chuỗi tham chiếu tới id cũ (work_task_id, testing_equipment_id, work_id...)
+                // bằng id mới. Ref NGOÀI (asset_id, procedure_id, test_type_id...) không nằm trong map -> giữ nguyên.
+                // -> copy độc lập hoàn toàn, không re-point/ghi đè dữ liệu test của job GỐC, và không lệch FK nội bộ.
+                if (node.mode === 'job') {
+                    const idMap = {}
+                    const collect = (obj, depth = 0) => {
+                        if (!obj || typeof obj !== 'object' || depth > 20) return
+                        if (Array.isArray(obj)) { obj.forEach((o) => collect(o, depth + 1)); return }
+                        if (typeof obj.mrid === 'string' && obj.mrid && !idMap[obj.mrid]) {
+                            idMap[obj.mrid] = this.generateUuid()
+                        }
+                        Object.values(obj).forEach((v) => { if (v && typeof v === 'object') collect(v, depth + 1) })
+                    }
+                    collect(dto)
+                    const remap = (obj, depth = 0) => {
+                        if (!obj || typeof obj !== 'object' || depth > 20) return
+                        if (Array.isArray(obj)) { obj.forEach((o) => remap(o, depth + 1)); return }
+                        Object.keys(obj).forEach((k) => {
+                            const v = obj[k]
+                            if (typeof v === 'string' && idMap[v]) obj[k] = idMap[v]
+                            else if (v && typeof v === 'object') remap(v, depth + 1)
+                        })
+                    }
+                    remap(dto)
+                }
 
                 // --- Generate UUID mới cho các nested objects ---
                 if (Array.isArray(dto.voltage)) {
@@ -182,6 +209,28 @@ export default {
                 if (dto.properties && !dto.properties.mrid) {
                     dto.properties.mrid = this.generateUuid()
                 }
+
+                // Entity primary mrid: assets use dto.properties.mrid; locations use their own id.
+                let primaryMrid = dto.properties ? dto.properties.mrid : null
+                if (!dto.properties) {
+                    // Location duplicate: clear ALL *Id references (except the parent link and userId)
+                    // so checkX creates brand-new copies. Otherwise saving would UPSERT the shared
+                    // rows (user link, org_psr, location, person...) and re-point them from the
+                    // original to the copy -> the original loses its links and disappears.
+                    const parentField = node.mode === 'substation' ? 'organisationId'
+                        : node.mode === 'voltageLevel' ? 'substationId'
+                            : node.mode === 'organisation' ? 'parentId' : null
+                    Object.keys(dto).forEach((k) => {
+                        if (/Id$/.test(k) && k !== parentField && k !== 'userId') dto[k] = ''
+                    })
+                    // Regenerate the OWN id
+                    primaryMrid = this.generateUuid()
+                    if (node.mode === 'substation') dto.subsId = primaryMrid
+                    else if (node.mode === 'voltageLevel') dto.voltageLevelId = primaryMrid
+                    else if (node.mode === 'organisation') dto.organisationId = primaryMrid
+                    else if (node.mode === 'bay') dto.bayId = primaryMrid
+                    else dto.mrid = primaryMrid
+                }
                 if (!dto.lifecycleDateId) {
                     dto.lifecycleDateId = this.generateUuid()
                 }
@@ -221,7 +270,7 @@ export default {
                     dto.attachmentId = this.generateUuid()
                 }
                 dto.attachment.id = dto.attachmentId
-                dto.attachment.id_foreign = dto.properties?.mrid || null
+                dto.attachment.id_foreign = primaryMrid || dto.properties?.mrid || null
                 dto.attachment.type = dto.attachment.type || 'asset'
                 dto.attachment.name = dto.attachment.name || null
 
@@ -421,9 +470,36 @@ export default {
                     if (!dto.properties) dto.properties = {}
                     dto.properties.apparatus_id = nextLabel
                     // serial_no giữ nguyên từ bản gốc, không thay đổi
+                } else if (node.mode === 'job') {
+                    // Job: tên nằm ở properties.name
+                    if (!dto.properties) dto.properties = {}
+                    dto.properties.name = nextLabel
                 } else {
-                    // Location / Job / Test: dùng name
+                    // Location: dùng name
                     dto.name = nextLabel
+                }
+
+                // Point the copy's parent field to its parent (works for both top-level duplicate
+                // and recursive duplicate, since parentNode = overrideParent || the real parent).
+                if (parentNode && parentNode.mrid) {
+                    const pMrid = parentNode.mrid
+                    if (node.mode === 'organisation') {
+                        if (parentNode.mode === 'organisation') dto.parentId = pMrid
+                    } else if (node.mode === 'substation') {
+                        dto.organisationId = pMrid
+                    } else if (node.mode === 'voltageLevel') {
+                        dto.substationId = pMrid
+                    } else if (node.mode === 'bay') {
+                        // NOTE: dùng null (không phải '') cho field còn lại, nếu không FK bay.substation/voltage_level sẽ fail
+                        if (parentNode.mode === 'voltageLevel') { dto.voltage_level = pMrid; dto.substation = null }
+                        else { dto.substation = pMrid; dto.voltage_level = null }
+                    } else if (node.mode === 'asset') {
+                        dto.psrId = pMrid
+                        if (overrideParent) dto.locationId = null // re-derived from the new parent in Location logic below
+                    } else if (node.mode === 'job') {
+                        // job's parent is the asset; link via properties.asset_id
+                        if (dto.properties) dto.properties.asset_id = pMrid
+                    }
                 }
 
                 // Location logic
@@ -458,7 +534,14 @@ export default {
                     [dataPropName + 'Old']: defaultMixinData[dataPropName + 'Old'],
 
                     parentData: parentNode,
+                    parent: parentNode, // BayMixin.checkBay() uses this.parent
+                    // Job mixins (checkAssetId/checkDataMeasurement) read this.assetData.properties.mrid.
+                    // For a job, parentNode is the asset -> expose its mrid.
+                    assetData: { properties: { mrid: (parentNode && parentNode.mrid) || null } },
                     locationId: targetLocationId,
+                    // organisationId: substation's checkOrganisation() does dto.organisationId = this.organisationId,
+                    // so the parent org must be exposed on the context (parentNode = the org for a substation).
+                    organisationId: (node.mode === 'substation') ? parentNode.mrid : this.organisationId,
                     attachmentData: [],
                     ...mixinObject.methods,
                     $message: this.$message,
@@ -499,6 +582,8 @@ export default {
                     saveResult = await context.saveBay()
                 } else if (typeof context.saveVoltageLevel === 'function') {
                     saveResult = await context.saveVoltageLevel()
+                } else if (typeof context.saveJob === 'function') {
+                    saveResult = await context.saveJob()
                 } else {
                     return {
                         success: false,
@@ -582,6 +667,18 @@ export default {
                             }
                         }
                     }
+
+                    // Job: mrid nằm ở properties.mrid; đảm bảo node cây có mrid + tên để click mở được
+                    if (node.mode === 'job') {
+                        if (!newNodeData.mrid && dto.properties && dto.properties.mrid) {
+                            newNodeData.mrid = dto.properties.mrid
+                            newNodeData.id = dto.properties.mrid
+                        }
+                        newNodeData.name = (dto.properties && dto.properties.name) || nextLabel
+                        newNodeData.mode = 'job'
+                        newNodeData.job = node.job
+                    }
+
                     return {
                         success: true,
                         data: newNodeData

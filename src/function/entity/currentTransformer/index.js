@@ -17,7 +17,9 @@ import { insertAssetPsrTransaction, getAssetPsrByAssetIdAndPsrId, deleteAssetPsr
 import { insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction } from "@/function/cim/lifecycleDate";
 import CurrentTransformerEntity from "@/views/Flatten/CurrentTransformer";
 import { getAssetInfoById, insertAssetInfoTransaction, deleteAssetInfoByIdTransaction } from "@/function/cim/assetInfo";
-import { getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction } from "@/function/entity/attachment";
+import { getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction, uploadAttachmentTransaction } from "@/function/entity/attachment";
+import path from "path";
+import * as attachmentContext from "@/function/attachmentcontext/index";
 
 
 export const insertCurrentTransformerEntity = async (old_entity, entity) => {
@@ -182,6 +184,25 @@ export const insertCurrentTransformerEntity = async (old_entity, entity) => {
         await insertAssetTransaction(entity.asset, db);
         //assetPsr
         await insertAssetPsrTransaction(entity.assetPsr, db);
+
+        //attachment record (ghi vào bảng attachment; trước đây bị thiếu nên load ra mất file)
+        if (entity.attachment && entity.attachment.id && entity.attachment.path
+            && Array.isArray(JSON.parse(entity.attachment.path))) {
+            const pathData = JSON.parse(entity.attachment.path);
+            const newPath = [];
+            for (let i = 0; i < pathData.length; i++) {
+                const namefile = path.basename(pathData[i].path);
+                pathData[i].path = path.join(
+                    attachmentContext.getAttachmentDir(),
+                    entity.oldCurrentTransformerInfo.mrid,
+                    namefile
+                );
+                newPath.push(pathData[i]);
+            }
+            entity.attachment.path = JSON.stringify(newPath);
+            await uploadAttachmentTransaction(entity.attachment, db);
+        }
+
         await runAsync('COMMIT');
         deleteBackupFiles(null, entity.oldCurrentTransformerInfo.mrid);
         return { success: true, data: entity, message: 'Current Transformer entity inserted successfully' };

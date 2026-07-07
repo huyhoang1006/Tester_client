@@ -9,7 +9,7 @@
         :custom-class="customClass"
         :importType="importType"
     >
-        <Import :importType="importType" />
+        <Import :importType="importType" @imported="$emit('imported')" />
         <span slot="footer" class="dialog-footer custom-footer">
             <el-button class="footer-btn" size="small" type="danger" @click="handleCancel">Cancel</el-button>
         </span>

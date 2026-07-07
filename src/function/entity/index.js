@@ -29,6 +29,8 @@ import * as updateEntityFunc from "./update/index"
 import * as entitySnapshotFunc from "./entitySnapshot/index"
 import * as templateFunc from "./template/index"
 import * as mRIDCheckFunc from "./mRIDCheck/index"
+import * as testingEquipmentEntityFunc from "./testingEquipment/index"
+import * as accessoryTestingEquipmentFunc from "./accessoryTestingEquipment/index"
 
 
 export {
@@ -37,7 +39,8 @@ export {
     organisationPsrFunc, geoMapFunc, parentOrganizationEntityFunc, voltageLevelEntityFunc,
     bayEntityFunc, surgeArresterEntityFunc, transformerEntityFunc, jobEntityFunc, powerCableEntityFunc,
     capacitorEntityFunc, breakerEntityFunc, updateEntityFunc, entitySnapshotFunc, mRIDCheckFunc,
-    voltageTransformerEntityFunc, bushingEntityFunc, disconnectorEntityFunc, rotatingMachineEntityFunc, 
-    currentTransformerEntityFunc, reactorEntityFunc, assetPsrFunc, notificationEntityFunc, templateFunc
+    voltageTransformerEntityFunc, bushingEntityFunc, disconnectorEntityFunc, rotatingMachineEntityFunc,
+    currentTransformerEntityFunc, reactorEntityFunc, assetPsrFunc, notificationEntityFunc, templateFunc,
+    testingEquipmentEntityFunc, accessoryTestingEquipmentFunc
 
 }

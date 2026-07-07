@@ -179,9 +179,12 @@ export var deepImportService = {
       }
     }
     if (levelId === 'sub') {
-      // 1. Kiểm tra ctx trực tiếp (selectedNode.context đã có sub)
+      // 1. Check ctx directly (selectedNode.context may already carry sub).
+      //    Only reuse the ctx node when its NAME matches exactly. Previously this had
+      //    '|| !ctxSub.name', which let a new node (different name) be treated as the
+      //    ctx node when the name was missing -> wrongly overwriting the old node.
       var ctxSub = ctx.sub || ctx.substation
-      if (ctxSub && ctxSub.mrid && (ctxSub.name === name || !ctxSub.name)) {
+      if (ctxSub && ctxSub.mrid && ctxSub.name && ctxSub.name === name) {
           return ctxSub
       }
       var orgMrid = (ctx.org && ctx.org.mrid) || (ctx.organisation && ctx.organisation.mrid)
@@ -189,13 +192,18 @@ export var deepImportService = {
       var rs = await window.electronAPI.getSubstationsInOrganisationForUser(orgMrid, userId)
       if (!rs || !rs.success) return null
       var list = rs.data || []
-      var found = list.find(function(s) { return s.name === name || s.aliasName === name })
+      var target = (name || '').trim().toLowerCase()
+      var found = list.find(function(s) {
+        var sn = (s.name || '').trim().toLowerCase()
+        var sa = (s.aliasName || '').trim().toLowerCase()
+        return (sn && sn === target) || (sa && sa === target)
+      })
       return found || null
     }
     if (levelId === 'vl') {
-      // 1. Kiểm tra ctx trực tiếp
+      // 1. Check ctx directly — only reuse ctx node when the NAME matches exactly.
       var ctxVl = ctx.vl || ctx.voltageLevel
-      if (ctxVl && ctxVl.mrid && (ctxVl.name === name || !ctxVl.name)) {
+      if (ctxVl && ctxVl.mrid && ctxVl.name && ctxVl.name === name) {
           return ctxVl
       }
       var subMrid = (ctx.sub && ctx.sub.mrid) || (ctx.substation && ctx.substation.mrid)
@@ -203,19 +211,30 @@ export var deepImportService = {
       var rs = await window.electronAPI.getVoltageLevelBySubstationId(subMrid)
       if (!rs || !rs.success) return null
       var list = rs.data || []
-      return list.find(function(vl) { return vl.name === name || vl.aliasName === name }) || null
+      // Match by NAME (not base voltage). Compare trimmed, case-insensitive to be safe.
+      var target = (name || '').trim().toLowerCase()
+      return list.find(function(vl) {
+        var vn = (vl.name || '').trim().toLowerCase()
+        var va = (vl.aliasName || '').trim().toLowerCase()
+        return (vn && vn === target) || (va && va === target)
+      }) || null
     }
     if (levelId === 'bay') {
-      // 1. Kiểm tra ctx trực tiếp
+      // 1. Check ctx directly — only reuse ctx node when the NAME matches exactly.
       var ctxBay = ctx.bay
-      if (ctxBay && ctxBay.mrid && (ctxBay.name === name || !ctxBay.name)) return ctxBay
+      if (ctxBay && ctxBay.mrid && ctxBay.name && ctxBay.name === name) return ctxBay
 
       var vlMrid = (ctx.vl && ctx.vl.mrid) || (ctx.voltageLevel && ctx.voltageLevel.mrid)
       var subMrid = (ctx.sub && ctx.sub.mrid) || (ctx.substation && ctx.substation.mrid)
       var rs = await window.electronAPI.getBayByVoltageBySubstationId(vlMrid || null, subMrid || null)
       if (!rs || !rs.success) return null
       var list = rs.data || []
-      return list.find(function(b) { return b.name === name || b.aliasName === name }) || null
+      var target = (name || '').trim().toLowerCase()
+      return list.find(function(b) {
+        var bn = (b.name || '').trim().toLowerCase()
+        var ba = (b.aliasName || '').trim().toLowerCase()
+        return (bn && bn === target) || (ba && ba === target)
+      }) || null
     }
     if (levelId === 'asset') {
       // Map catKey → kind string đúng với API (từ constants.js)
@@ -311,6 +330,47 @@ export var deepImportService = {
     var keys = Object.keys(data)
     var found = keys.find(function(k) { return k === suffix || k.endsWith('_' + suffix) })
     return found !== undefined ? data[found] : undefined
+  },
+
+  // Đổ number_of_phase + phase vào ĐÚNG vị trí config của từng asset (khớp mapper).
+  _applyPhaseToDto: function(dto, catKey, npVal, phVal) {
+    switch (catKey) {
+      case 'Asset_CurrentTransformerDto':
+      case 'Asset_VoltageTransformerDto':
+      case 'Asset_DisconnectorDTO':
+      case 'Asset_SurgeArresterDto':
+      case 'Asset_ReactorDto':
+        if (!dto.config) dto.config = {}
+        dto.config.number_of_phase = npVal
+        dto.config.phase = phVal
+        break
+      case 'Asset_BushingAssetDto':
+        if (!dto.configuration) dto.configuration = {}
+        dto.configuration.number_of_phase = npVal
+        dto.configuration.phase = phVal
+        break
+      case 'Asset_CircuitBreakerDto':
+        if (!dto.circuitBreaker) dto.circuitBreaker = {}
+        dto.circuitBreaker.numberOfPhases = npVal
+        dto.circuitBreaker.phase = phVal
+        break
+      case 'Asset_TransformerDataDto':
+        if (!dto.winding_configuration) dto.winding_configuration = {}
+        // TF: 'phases' đã dùng cho winding — chỉ set phase (số pha lấy từ winding type)
+        dto.winding_configuration.phase = phVal
+        if (npVal !== null && dto.winding_configuration.phases === undefined) {
+          dto.winding_configuration.phases = npVal
+        }
+        break
+      case 'Asset_PowerCableDTO':
+      case 'Asset_CapacitorsDTO':
+        dto.number_of_phase = npVal
+        dto.phase = phVal
+        break
+      default:
+        // asset khác chưa có 2 trường — bỏ qua
+        break
+    }
   },
 
   // Fill DTO flat fields từ lvm — dùng suffix matching
@@ -524,6 +584,22 @@ export var deepImportService = {
       if (!dto.productAssetModelId) dto.productAssetModelId = uuid.newUuid() // checkProductAssetModel
       if (!dto.assetPsrId)        dto.assetPsrId        = uuid.newUuid()  // checkAssetPrs
       if (!dto.assetInfoId)       dto.assetInfoId       = uuid.newUuid()  // checkAssetInfoId
+
+      // ── SỐ PHA + PHA (number_of_phase / phase) ─────────────────────────────
+      // Đọc từ template (suffix-match: number_of_phase, phase, hoặc <prefix>_number_of_phase)
+      // rồi đổ vào ĐÚNG vị trí config mà mapper của từng asset đọc. Quy tắc: phase (A/B/C)
+      // chỉ hợp lệ khi number_of_phase = 1; số pha khác → phase = null.
+      var _np = this._getField(data, 'number_of_phase')
+      if (_np === undefined) _np = this._getField(data, 'numberOfPhase')
+      if (_np === undefined) _np = this._getField(data, 'numberOfPhases')
+      var _ph = this._getField(data, 'phase')
+      if (_np !== undefined || _ph !== undefined) {
+        var npVal = (_np === undefined || _np === '') ? null : _np
+        var phVal = (_ph === undefined || _ph === '') ? null : _ph
+        // ép quy tắc: chỉ 1 pha mới có phase A/B/C
+        if (String(npVal) !== '1') phVal = null
+        this._applyPhaseToDto(dto, lv.catKey, npVal, phVal)
+      }
 
       // ── Type-specific initializations (từ check* functions trong từng mixin) ────
       var catKey = lv.catKey
@@ -907,6 +983,58 @@ export var deepImportService = {
     return { success: false, message: 'Unknown level' }
   },
 
+  // ── 8a. Scan nodes whose name already exists in DB -> ask user per node ──
+  // Returns: [{ key, catKey, levelId, label, name, existingMrid, choice: 'overwrite'|'use_existing'|'skip' }]
+  // Runs BEFORE import: builds ctx like importHierarchy and probes with findExistingByName.
+  async scanNameConflicts(codeValueMap, tableData, selectedNode, userId) {
+    var allLevelData = this.buildAllLevelData(codeValueMap, tableData)
+    var selectedMode = selectedNode ? selectedNode.mode : null
+    var levelsToProcess = this.getLevelsToProcess(selectedMode, allLevelData)
+    var _userId = userId || this._getUserId()
+
+    var ctx = {}
+    if (selectedNode && selectedNode.context) {
+      ctx = Object.assign({}, selectedNode.context)
+      if (ctx.organisation && !ctx.org) ctx.org = ctx.organisation
+      if (ctx.substation   && !ctx.sub) ctx.sub = ctx.substation
+      if (ctx.voltageLevel && !ctx.vl)  ctx.vl  = ctx.voltageLevel
+    }
+
+    var conflicts = []
+    for (var i = 0; i < levelsToProcess.length; i++) {
+      var lv = levelsToProcess[i]
+      var data = allLevelData[lv.catKey]
+      if (!data || Object.keys(data).length === 0) continue
+      var occurrences = this._getOccurrences(data, lv.reqField)
+      if (occurrences.length === 0) continue
+
+      for (var oi = 0; oi < occurrences.length; oi++) {
+        var reqVal = occurrences[oi].reqVal
+        if (!reqVal) continue
+        var existing = null
+        try {
+          existing = await this.findExistingByName(lv.id, reqVal, ctx, lv.catKey, _userId)
+        } catch (e) { existing = null }
+
+        if (existing && existing.mrid) {
+          conflicts.push({
+            key: 'dup_' + lv.id + '_' + oi + '_' + reqVal,
+            catKey: lv.catKey, levelId: lv.id, label: lv.label,
+            name: reqVal, existingMrid: existing.mrid,
+            choice: 'use_existing',   // Safe default: reuse existing node, do NOT overwrite
+          })
+          // Update ctx so child levels can be scanned (first occurrence only)
+          if (oi === 0) ctx = this._updateCtx(ctx, lv.id, existing.mrid, reqVal)
+        } else if (oi === 0) {
+          // New node at first occurrence -> assume it will be created (no mrid yet).
+          // Put name into ctx so child-level findExistingByName won't mismatch.
+          ctx = this._updateCtx(ctx, lv.id, null, reqVal)
+        }
+      }
+    }
+    return conflicts
+  },
+
   // ── 8. Phân tích các quyết định cần hỏi user trước khi import ──────────
   // Trả về: [{ key, label, issue, choice: null, catKey?, generatedValue? }]
   analyzeDecisionsNeeded: function(allLevelData, levelsToProcess) {
@@ -1272,7 +1400,7 @@ export var deepImportService = {
   // ── 8. Main import ────────────────────────────────────────────────────
   // selectedNode: { mode, context: { organisation:{mrid}, substation:{mrid}, ... } }
   // overwrite: boolean — true=ghi đè, false=chỉ dùng làm parent context
-  async importHierarchy(codeValueMap, tableData, selectedNode, overwrite, decisions, userId) {
+  async importHierarchy(codeValueMap, tableData, selectedNode, overwrite, decisions, userId, nameConflicts) {
     var allLevelData = this.buildAllLevelData(codeValueMap, tableData)
     var selectedMode = selectedNode ? selectedNode.mode : null
     var levelsToProcess = this.getLevelsToProcess(selectedMode, allLevelData)
@@ -1329,12 +1457,23 @@ export var deepImportService = {
           var existing = await this.findExistingByName(lv.id, reqVal, ctx, lv.catKey, _userId)
 
           if (existing) {
-            if (overwrite) {
+            // Per-node decision (from dialog): 'overwrite' | 'use_existing' | 'skip'.
+            // If no per-node decision -> fall back to the global overwrite flag (legacy).
+            var choice = this._conflictChoiceFor(nameConflicts, lv.id, reqVal)
+            if (!choice) choice = overwrite ? 'overwrite' : 'use_existing'
+
+            if (choice === 'skip') {
+              // Skip this node; still set ctx so children use the existing node as parent
+              results.push({ level: lv.label, catKey: lv.catKey, action: 'skipped', name: reqVal, success: true, skipped: true, mrid: existing.mrid, reason: 'User chose skip' })
+              // keep ctx pointing to the existing node (skip = leave old node untouched)
+              if (oi === 0) ctx = this._updateCtx(ctx, lv.id, existing.mrid, reqVal)
+            } else if (choice === 'overwrite') {
               var rs = await this.overwriteEntity(lv, existing, occData, ctx)
               var ok = rs && (rs.success !== false)
               if (oi === 0) ctx = this._updateCtx(ctx, lv.id, existing.mrid, reqVal)
               results.push({ level: lv.label, catKey: lv.catKey, action: 'overwritten', name: reqVal, success: ok, mrid: existing.mrid })
             } else {
+              // use_existing: dùng node cũ làm parent, KHÔNG đổi data
               if (oi === 0) ctx = this._updateCtx(ctx, lv.id, existing.mrid, reqVal)
               results.push({ level: lv.label, catKey: lv.catKey, action: 'used_existing', name: reqVal, success: true, mrid: existing.mrid })
             }
@@ -1361,6 +1500,12 @@ export var deepImportService = {
       var f = fields[i]
       if (source[f] !== undefined) target[f] = source[f]
     }
+  },
+  // Look up the per-node decision from the conflict dialog list (by levelId + name).
+  _conflictChoiceFor: function(nameConflicts, levelId, name) {
+    if (!nameConflicts || !nameConflicts.length) return null
+    var c = nameConflicts.find(function(x) { return x.levelId === levelId && x.name === name })
+    return c ? c.choice : null
   },
   _updateCtx: function(ctx, levelId, mrid, name) {
     var result = Object.assign({}, ctx)

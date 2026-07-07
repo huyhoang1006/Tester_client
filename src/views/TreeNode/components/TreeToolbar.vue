@@ -162,6 +162,9 @@
             <i @click="handleMove" title="Move" style="font-size: 12px"
                 class="fa-solid fa-arrows-up-down-left-right"></i>
         </div>
+        <div v-if="clientSlide">
+            <i @click="handleShowEquipment" title="Show Equipment" style="font-size: 12px" class="fa-solid fa-screwdriver-wrench"></i>
+        </div>
     </div>
 </template>
 
@@ -252,7 +255,9 @@ export default {
         handleMove() {
             this.$emit('move')
         },
-
+        handleShowEquipment() {
+            this.$emit('show-equipment')
+        },
         // Command validation method
         isCommandAllowed(command) {
             // Emit to parent to check if command is allowed

@@ -108,7 +108,7 @@ export const updateConnectivityNodeContainerById = async (mrid, cnc) => {
     return new Promise((resolve, reject) => {
         db.serialize(() => {
             db.run('BEGIN TRANSACTION')
-            powerSystemResourceFunc.updatePowerSystemResourceTransaction(mrid, cnc, db)
+            powerSystemResourceFunc.updatePowerSystemResourceByIdTransaction(mrid, cnc, db)
                 .then(result => {
                     if (!result.success) {
                         db.run('ROLLBACK')
@@ -138,7 +138,7 @@ export const updateConnectivityNodeContainerById = async (mrid, cnc) => {
 // Cập nhật ConnectivityNodeContainer trong transaction (cho lớp cha gọi)
 export const updateConnectivityNodeContainerByIdTransaction = async (mrid, cnc, dbsql) => {
     return new Promise((resolve, reject) => {
-        powerSystemResourceFunc.updatePowerSystemResourceTransaction(mrid, cnc, dbsql)
+        powerSystemResourceFunc.updatePowerSystemResourceByIdTransaction(mrid, cnc, dbsql)
             .then(result => {
                 if (!result.success) {
                     return reject({ success: false, message: 'Update PowerSystemResource failed', err: result.err })

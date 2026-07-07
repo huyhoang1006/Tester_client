@@ -4,7 +4,8 @@
             <div style="flex: 1; display: flex; flex-direction: column;">
                 <currentTransProperty @setUpdate="setUpdate" :updateNew='updateNew' :update="update"
                     @editManu="editManu" :title="title" :properties.sync="currentTransformer.properties"
-                    @createAdd="updateShowAdd" :manufact="manufacturerCustom" @reloadManu="reloadManu()">
+                    @createAdd="updateShowAdd" :manufact="manufacturerCustom" @reloadManu="reloadManu()"
+                    :attachment.sync="attachmentData" @update-attachment="updateAttachment">
                 </currentTransProperty>
                 <currentTransConfiguration :config.sync="currentTransformer.config"></currentTransConfiguration>
                 <currentTransRating :ratings.sync="currentTransformer.ratings"></currentTransRating>

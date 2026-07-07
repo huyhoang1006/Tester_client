@@ -23,6 +23,7 @@ export { default as DownloadDialog } from './DownloadDialog.vue'
 export { default as ImportConflictDialog } from './ImportConflictDialog.vue'
 export { default as ImportGraftDialog } from './ImportGraftDialog.vue'
 export { default as ImportProgressDialog } from './ImportProgressDialog.vue'
+export { default as TestingEquipmentDialog } from './TestingEquipmentDialog.vue'
 
 // Thêm dòng này vào cuối file
 export { default as ZeroDiagramDialog } from './ZeroDiagramDialog.vue'

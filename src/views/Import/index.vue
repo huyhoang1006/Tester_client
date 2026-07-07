@@ -241,6 +241,32 @@
         <el-divider style="margin:10px 0;"></el-divider>
       </div>
 
+      <!-- Nodes with names that already exist in the tree -> choose per node -->
+      <div v-if="nameConflicts.length" style="margin-bottom:12px;">
+        <div style="font-size:12px;font-weight:600;color:#E6A23C;margin-bottom:8px;">
+          <i class="el-icon-warning-outline"></i>
+          {{ nameConflicts.length }} node(s) already exist in the tree — choose how to handle each:
+        </div>
+        <div v-for="c in nameConflicts" :key="c.key"
+          style="margin-bottom:8px;padding:10px 12px;border-radius:6px;border:1px solid #faecd8;background:#fdf6ec;">
+          <div style="font-size:12px;color:#606266;margin-bottom:6px;">
+            <b>{{ c.label }}</b>: "<b>{{ c.name }}</b>" already exists
+          </div>
+          <el-radio-group v-model="c.choice" size="small">
+            <el-radio-button label="use_existing">
+              <i class="el-icon-folder-opened"></i> Use existing (keep data)
+            </el-radio-button>
+            <el-radio-button label="overwrite">
+              <i class="el-icon-edit"></i> Overwrite (keep MRID)
+            </el-radio-button>
+            <el-radio-button label="skip">
+              <i class="el-icon-close"></i> Skip
+            </el-radio-button>
+          </el-radio-group>
+        </div>
+        <el-divider style="margin:10px 0;"></el-divider>
+      </div>
+
       <div>
         <div style="margin-bottom:8px;font-size:12px;color:#606266;">
           <b>{{ importPreview.filter(r => r.hasData).length }}</b> levels will be imported
@@ -410,6 +436,7 @@ export default {
       importLoading: false,
       importCachedCodeValueMap: null,
       importOverwrite: false,
+      nameConflicts: [],   // node trùng tên với cây hiện có → user chọn per-node
       importDecisions: [],
       nodePickerVisible: false,
       pickerTempSelected: null,
@@ -598,6 +625,7 @@ export default {
       this.importLoading = false
       this.importCachedCodeValueMap = null
       this.importOverwrite = false
+      this.nameConflicts = []
       this.importDecisions = []
     },
 
@@ -687,6 +715,19 @@ export default {
           return d
         })
 
+        // ── Quét node TRÙNG TÊN với cây hiện có → hỏi user quyết định per-node ──
+        try {
+          this.nameConflicts = await deepImportService.scanNameConflicts(
+            this.importCachedCodeValueMap,
+            this.tableData,
+            this.importSelectedNode,
+            this.$store.state.user.user_id
+          )
+        } catch (e) {
+          console.error('scanNameConflicts error:', e)
+          this.nameConflicts = []
+        }
+
         this.importStep = 2
       } catch(e) {
         this.$message.error('Preview error: ' + e.message)
@@ -705,7 +746,8 @@ export default {
           this.importSelectedNode,
           this.importOverwrite,
           this.importDecisions,
-          this.$store.state.user.user_id
+          this.$store.state.user.user_id,
+          this.nameConflicts
         )
         this.importResults = rs.results || []
         this.importStep = 3
@@ -713,6 +755,9 @@ export default {
         const fail = this.importResults.filter(r => !r.success && !r.skipped).length
         if (fail === 0) this.$message.success(ok + ' level' + (ok !== 1 ? 's' : '') + ' imported successfully')
         else            this.$message.warning(ok + ' OK, ' + fail + ' failed')
+        // Báo component cha reload CÂY TÀI SẢN (node mới import phải hiện ngay,
+        // không cần user chuột phải → Refresh). Sửa TES-161/163.
+        if (ok > 0) this.$emit('imported')
       } catch(e) {
         this.$message.error('Import error: ' + e.message)
         console.error('confirmImport error:', e)
