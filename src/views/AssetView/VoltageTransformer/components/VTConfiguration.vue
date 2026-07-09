@@ -14,7 +14,7 @@
                 <el-col :xs="24" :md="12" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Windings">
-                            <el-select @change="changeWindingData(configsData.windings)" style="width: 100%;"
+                            <el-select @change="changeWindingData(configsData.windings)" class="windings-select"
                                 v-model="configsData.windings">
                                 <el-option v-for="item in 6" :key="item" :label="item" :value="item"> </el-option>
                             </el-select>
@@ -28,9 +28,9 @@
                         <table class="table-strip-input-data fixed-table">
                             <colgroup>
                                 <col style="width: 80px" />
-                                <col style="width: 260px" />
+                                <col style="width: 360px" />
+                                <col style="width: 190px" />
                                 <col style="width: 140px" />
-                                <col style="width: 100px" />
                             </colgroup>
                             <thead>
                                 <th>Name</th>
@@ -143,14 +143,17 @@ export default {
     width: max-content;
     table-layout: auto;
     border-collapse: collapse;
-    border: 1px solid #fff;
     font-size: 12px;
 }
 
 .fixed-table th,
 .fixed-table td {
-    border: 1px solid #fff;
     text-align: center;
+}
+
+/* select chỉ chứa giá trị ngắn (1..6) — không cần giãn full cột */
+::v-deep(.windings-select) {
+    max-width: 220px;
 }
 
 .table-scroll {

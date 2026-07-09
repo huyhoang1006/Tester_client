@@ -10,9 +10,9 @@
             </el-col>
         </el-row>
         <div class="content-toggle" v-if="openWindingConfiguration">
-            <el-row :gutter="20" class="content">
-                <el-col :xs="24" :sm="24" :md="12" class="col-content">
-                    <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
+            <div class="content winding-content">
+                <div class="phase-row">
+                    <el-form class="winding-form" :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Number of Phase" class="inline-phases">
                             <el-radio-group @change="onChangePhase" v-model="windingConfigurationData.phases">
                                 <el-radio type="number" label="1">1</el-radio>
@@ -20,28 +20,32 @@
                             </el-radio-group>
                         </el-form-item>
                         <el-form-item v-if="windingConfigurationData.phases === '1'" label="Phase">
-                            <el-select style="width: 100%" v-model="windingConfigurationData.phase" placeholder="Select phase">
+                            <el-select class="phase-select" v-model="windingConfigurationData.phase" placeholder="Select phase">
                                 <el-option label="A" value="A"></el-option>
                                 <el-option label="B" value="B"></el-option>
                                 <el-option label="C" value="C"></el-option>
                             </el-select>
                         </el-form-item>
-                        <el-form-item label="Vector group">
-                            <div v-if="vectorGroup !== null && vectorGroup !== '' && vectorGroup !== undefined"
-                                style="font-weight: bold; font-size: 12px; text-transform: uppercase">{{ vectorGroup }}
-                            </div>
-                            <el-input size="mini" v-model="windingConfigurationData.vector_group_custom"
-                                placeholder="Enter custom vector group"></el-input>
-                            <el-button type="primary"
-                                style="width: 100%; margin-top: 10px; display: flex; flex: 1; align-items: center; justify-content: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
-                                @click="onOpenVectorGroup"> Select winding configuration </el-button>
-                            <div style="color: black; font-size: 12px;">Unsupported vector group</div>
-                            <el-input size="mini" v-model="windingConfigurationData.unsupported_vector_group"
-                                placeholder="Enter unsupported vector group"></el-input>
-                        </el-form-item>
                     </el-form>
-                </el-col>
-            </el-row>
+                </div>
+                <div class="vector-grid">
+                    <section class="vector-field">
+                        <div class="vector-label">Vector group</div>
+                        <div v-if="vectorGroup !== null && vectorGroup !== '' && vectorGroup !== undefined"
+                            class="vector-preview">{{ vectorGroup }}
+                        </div>
+                        <el-input size="mini" v-model="windingConfigurationData.vector_group_custom"
+                            placeholder="Enter custom vector group"></el-input>
+                        <el-button class="winding-select-btn" type="primary"
+                            @click="onOpenVectorGroup"> Select </el-button>
+                    </section>
+                    <section class="vector-field">
+                        <div class="vector-label">Unsupported vector</div>
+                        <el-input size="mini" v-model="windingConfigurationData.unsupported_vector_group"
+                            placeholder="Enter unsupported vector"></el-input>
+                    </section>
+                </div>
+            </div>
         </div>
         <vector-group ref="vectorGroup" :openDialog="openDialog" :asset_type="properties.type"
             :asset_phase="windingConfigurationData.phases" :asset_winding_config="windingConfigurationData.vector_group"
@@ -258,11 +262,127 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.winding-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.phase-row {
+    width: 100%;
+}
+
+.vector-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    width: 100%;
+}
+
+.winding-form {
+    height: 100%;
+    padding: 2px 4px;
+}
+
+.vector-field {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    min-width: 0;
+    padding: 12px 14px;
+    background: #fff;
+    border: 1px solid #ebeef5;
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(31, 45, 61, 0.04);
+}
+
+.vector-label {
+    color: #303133;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.vector-preview {
+    min-height: 28px;
+    padding: 6px 8px;
+    background: #fff;
+    border: 1px solid #ebeef5;
+    border-radius: 4px;
+    color: #303133;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    word-break: break-word;
+}
+
+.winding-select-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 30px;
+    padding: 6px 12px;
+    margin-top: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+::v-deep(.vector-field .el-input__inner) {
+    height: 32px;
+    line-height: 32px;
+}
+
+::v-deep(.vector-field .el-input),
+::v-deep(.vector-field .el-button) {
+    width: 100%;
+}
+
+::v-deep(.winding-form .el-select),
+::v-deep(.winding-form .el-input) {
+    width: 100%;
+}
+
+::v-deep(.winding-form .phase-select.el-select) {
+    width: 120px;
+    max-width: 100%;
+}
+
+::v-deep(.winding-form .el-form-item) {
+    margin-bottom: 12px;
+}
+
+::v-deep(.inline-phases .el-radio-group) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    min-height: 32px;
+    align-items: center;
+}
+
 ::v-deep(.el-radio__label) {
     font-size: 12px;
 }
 
+@media (max-width: 991px) {
+    .winding-content {
+        gap: 6px;
+    }
+}
+
 @media (max-width: 767px) {
+    .vector-field {
+        padding: 10px 12px;
+    }
+
+    .winding-form {
+        padding: 0;
+    }
+
     ::v-deep(.el-form-item) {
         display: flex;
         flex-direction: column;
@@ -282,13 +402,17 @@ export default {
         margin-left: 0 !important;
     }
 
+    ::v-deep(.winding-form .phase-select.el-select) {
+        width: 100%;
+    }
+
     ::v-deep(.inline-phases) {
         flex-direction: row;
         align-items: center;
     }
 
     ::v-deep(.inline-phases .el-form-item__label) {
-        width: 80px !important;
+        width: 120px !important;
         padding-bottom: 0;
     }
 
@@ -298,7 +422,23 @@ export default {
 
     ::v-deep(.inline-phases .el-radio-group) {
         display: flex;
-        gap: 12px;
+        gap: 16px;
+    }
+}
+
+@media (max-width: 575px) {
+    ::v-deep(.inline-phases) {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    ::v-deep(.inline-phases .el-form-item__label) {
+        width: auto !important;
+        padding-bottom: 4px;
+    }
+
+    ::v-deep(.inline-phases .el-form-item__content) {
+        width: 100%;
     }
 }
 </style>

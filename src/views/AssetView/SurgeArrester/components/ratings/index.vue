@@ -1,15 +1,20 @@
 <template>
     <div id="ratings" class="mgt-10">
+        <el-row>
+            <el-col :span="24">
+                <div class="header-toggle pointer" @click="openRatings = !openRatings">
+                    <i v-if="openRatings" class="fa-solid fa-caret-up"></i>
+                    <i v-else class="fa-solid fa-caret-down"></i>
+                    Ratings
+                </div>
+            </el-col>
+        </el-row>
         <div class="content-toggle" v-if="openRatings">
             <el-row :gutter="20" class="content">
-                <el-col :span="24">
-                    <span style="font-size: 12px;" class="bolder">Ratings</span>
-                    <el-divider></el-divider>
-                </el-col>
                 <el-col :xs="24" :md="12" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Units in stack">
-                            <el-select @change="changeUnit(ratingsData.unitStack)" style="width: 100%;"
+                            <el-select @change="changeUnit(ratingsData.unitStack)" class="unit-stack-select"
                                 v-model="ratingsData.unitStack">
                                 <el-option v-for="(item, index) in 8" :value="item" :label="item"
                                     :key="index"></el-option>
@@ -134,7 +139,7 @@ export default {
     },
     data() {
         return {
-            openRatings: "true",
+            openRatings: true,
             labelWidth: `150px`,
             unitMultiplier: UnitMultiplier,
             unitSymbol: UnitSymbol,
@@ -214,13 +219,12 @@ export default {
     width: max-content;
     table-layout: fixed;
     border-collapse: collapse;
-    border: 1px solid #fff;
     font-size: 12px;
 }
 
-.fixed-table th,
-.fixed-table td {
-    border: 1px solid #fff;
+/* select chỉ chứa giá trị ngắn (1..8) — không cần giãn full cột */
+::v-deep(.unit-stack-select) {
+    max-width: 220px;
 }
 
 .table-scroll {

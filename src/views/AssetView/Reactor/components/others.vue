@@ -1,18 +1,27 @@
 <template>
-    <div style="font-size: 12px;" class="col-content">
-        <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
-            <span class="bolder">Others</span>
-            <el-divider></el-divider>
-            <el-form-item label="Insulation type">
-                <el-input v-model="otherData.insulation_type">
-                </el-input>
-            </el-form-item>
-            <el-form-item label="Weight">
-                <el-input type="number" number="positive" v-model="otherData.weight.value">
-                    <template slot="append">kg</template>
-                </el-input>
-            </el-form-item>
-        </el-form>
+    <div id="others">
+        <el-row>
+            <el-col :span="24">
+                <div class="header-toggle pointer" @click="openOthers = !openOthers">
+                    <i v-if="openOthers" class="fa-solid fa-caret-up"></i>
+                    <i v-else class="fa-solid fa-caret-down"></i>
+                    Others
+                </div>
+            </el-col>
+        </el-row>
+        <div class="content-toggle" v-if="openOthers">
+            <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
+                <el-form-item label="Insulation type">
+                    <el-input v-model="otherData.insulation_type">
+                    </el-input>
+                </el-form-item>
+                <el-form-item label="Weight">
+                    <el-input type="number" number="positive" v-model="otherData.weight.value">
+                        <template slot="append">kg</template>
+                    </el-input>
+                </el-form-item>
+            </el-form>
+        </div>
     </div>
 </template>
 <script>
@@ -21,6 +30,7 @@ export default {
     data() {
         return {
             labelWidth: '120px',
+            openOthers: true,
         }
     },
     props: {

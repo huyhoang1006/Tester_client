@@ -182,8 +182,55 @@ export default {
 }
 </script>
 <style scoped>
-.bolder {
+#properties {
+    min-width: 0;
+}
+
+::v-deep(.content) {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+}
+
+::v-deep(.col-content) {
+    min-width: 0;
+}
+
+::v-deep(.el-form) {
+    min-width: 0;
+    padding: 12px;
+    background: #fff;
+    border: 1px solid #e4e7ed;
+    border-radius: 6px;
+}
+
+::v-deep(.el-form .bolder) {
+    display: flex;
+    align-items: center;
+    min-height: 36px;
+    margin: -12px -12px 12px;
+    padding: 8px 12px;
+    background: #f5f7fa;
+    border-bottom: 1px solid #e4e7ed;
+    border-radius: 6px 6px 0 0;
+    color: #606266;
     font-size: 12px;
+    font-weight: 600;
+}
+
+::v-deep(.el-divider.el-divider--horizontal) {
+    display: none;
+}
+
+::v-deep(.el-select),
+::v-deep(.el-input),
+::v-deep(.el-textarea) {
+    width: 100%;
+}
+
+::v-deep(.el-input-group__append) {
+    min-width: 38px;
+    padding: 0 8px;
+    text-align: center;
 }
 
 ::v-deep(.content:last-of-type > .col-content:first-child) {
@@ -197,6 +244,31 @@ export default {
 
     ::v-deep(.content:last-of-type > .col-content:first-child) {
         margin-top: 10px;
+    }
+}
+
+@media (max-width: 767px) {
+    ::v-deep(.el-form) {
+        padding: 10px;
+    }
+
+    ::v-deep(.el-form .bolder) {
+        margin: -10px -10px 10px;
+        padding: 8px 10px;
+    }
+
+    ::v-deep(.el-form-item) {
+        display: block;
+    }
+
+    ::v-deep(.el-form-item__label) {
+        width: 100% !important;
+        text-align: left;
+        margin-bottom: 4px;
+    }
+
+    ::v-deep(.el-form-item__content) {
+        margin-left: 0 !important;
     }
 }
 </style>

@@ -149,12 +149,9 @@ export default {
 </script>
 
 <style scoped>
+/* borders/màu bảng dùng chung theo style ở Transformer/index.vue */
 ::v-deep(th),
-::v-deep(td),
-::v-deep(table) {
-    border-collapse: collapse;
-    border: 1px solid !important;
-    border-color: #808080 !important;
+::v-deep(td) {
     text-align: center;
 }
 

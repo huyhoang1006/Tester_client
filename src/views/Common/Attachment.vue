@@ -1,30 +1,45 @@
 <template>
-    <div>
-        <br/>
-        <br/>
-        <span style="font-weight: bold; font-size: 12px;">Attachments
-            <span class="last-right-parent">
-                <i @click="downloadItem()" class="fa fa-download mgr-10 pointer"></i>
-                <i @click="openFile()" class="fa-solid fa-folder-open mgr-10 pointer"></i>
-                <i @click="upload()" class="fa-solid fa-plus mgr-10 pointer"></i>
-                <i @click="deleteItem(rowCurrent)" class="fa-solid fa-trash mgr-10 pointer"></i>
-            </span>
-        </span>
-        <el-divider></el-divider>
-        <div class="border-main color-main" :style="{height: height, overflow: 'auto', fontSize: '12px'}">
-            <table class="table-attachment">
-                <tr class="tr-hover" v-for="(item, index) in rowData" :key="index">
-                    <td 
-                        @click="onTdClick(index)" 
-                        @dblclick="onTdDblClick" 
-                        ref="table"
-                    >
-                        <i :class="fileIcon(item.path).cls" class="main-icon" :style="{ color: fileIcon(item.path).color }"></i> {{ item.path.split(/[/\\]/).pop() }}
-                    </td>
-                </tr>
-            </table>
+    <section class="att-card">
+        <div class="att-header">
+            <div class="att-title">
+                <i class="fa-solid fa-paperclip"></i>
+                <span>Attachments</span>
+                <span class="att-count">{{ rowData.length }}</span>
+            </div>
+            <div class="att-actions">
+                <button type="button" class="att-btn" :class="{ disabled: rowCurrent === '' }" title="Download" @click="downloadItem()">
+                    <i class="fa fa-download"></i>
+                </button>
+                <button type="button" class="att-btn" :class="{ disabled: rowCurrent === '' }" title="Open" @click="openFile()">
+                    <i class="fa-solid fa-folder-open"></i>
+                </button>
+                <button type="button" class="att-btn primary" title="Upload file" @click="upload()">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+                <button type="button" class="att-btn danger" :class="{ disabled: rowCurrent === '' }" title="Delete" @click="deleteItem(rowCurrent)">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
         </div>
-    </div>
+        <div class="att-body">
+            <div class="att-list" :style="{ height: height || '120px' }">
+                <div v-if="rowData.length === 0" class="att-empty">
+                    <i class="fa-regular fa-folder-open"></i>
+                    <span>No attachment selected</span>
+                </div>
+                <div
+                    v-for="(item, index) in rowData"
+                    :key="index"
+                    class="att-row"
+                    :class="{ active: rowCurrent === index }"
+                    @click="onTdClick(index)"
+                    @dblclick="onTdDblClick">
+                    <i :class="fileIcon(item.path).cls" class="att-icon" :style="{ color: fileIcon(item.path).color }"></i>
+                    <span class="att-name" :title="fileName(item.path)">{{ fileName(item.path) }}</span>
+                </div>
+            </div>
+        </div>
+    </section>
 </template>
 
 <script>
@@ -33,9 +48,18 @@ import { mapState } from 'vuex'
 export default {
     name: 'attachments',
     props: {
-        title : String,
-        height : String,
-        attachment_ : []
+        title: {
+            type: String,
+            default: 'Attachments'
+        },
+        height: {
+            type: String,
+            default: '120px'
+        },
+        attachment_: {
+            type: Array,
+            default: () => []
+        }
     },
     data() {
         return {
@@ -57,8 +81,11 @@ export default {
         attachment_ : {
             deep : true,
             immediate : true,
-            handler() {
-                this.rowData = this.attachment_
+            handler(value) {
+                this.rowData = value || []
+                if (this.rowCurrent !== '' && !this.rowData[this.rowCurrent]) {
+                    this.rowCurrent = ''
+                }
             }
         }
     },
@@ -110,21 +137,7 @@ export default {
             this.openFile()
         },
         selectRow(x) {
-            let ref = this.$refs['table'][x]
-            let myDivObjBgColor = window.getComputedStyle(ref).backgroundColor;
-            this.$refs['table'].forEach((element) => {
-                element.style.backgroundColor = 'rgba(0, 0, 0, 0)',
-                element.style.color = 'black'
-            })
-            if(myDivObjBgColor.toString() === 'rgba(0, 0, 0, 0)') {
-                ref.style.backgroundColor = '#012596',
-                ref.style.color = 'white'
-                this.rowCurrent = x
-            } else {
-                ref.style.backgroundColor = 'rgba(0, 0, 0, 0)',
-                ref.style.color = 'black'
-                this.rowCurrent = ''
-            }
+            this.rowCurrent = this.rowCurrent === x ? '' : x
         },
         async upload() {
             try {
@@ -175,6 +188,12 @@ export default {
                     })
                 }
             }
+            else {
+                this.$message({
+                    type: 'error',
+                    message: 'No file selected'
+                })
+            }
         },
         async launchFile() {
             await window.electronAPI.openFile(this.rowData[this.rowCurrent].path)
@@ -219,6 +238,9 @@ export default {
             }
             return byExt[ext] || { cls: 'fa-solid fa-file', color: '#6b7280' }
         },
+        fileName(path) {
+            return String(path || '').split(/[/\\]/).pop()
+        },
         async isIMage(fileName){
             var fileExt = await this.getFileExtension(fileName);
             var imagesExtension = ["png", "jpg", "jpeg"];
@@ -240,6 +262,13 @@ export default {
             this.dialogVisible = false
         },
         async downloadItem() {
+            if(this.rowCurrent === '' || !this.rowData[this.rowCurrent]) {
+                this.$message({
+                        type: 'error',
+                        message: 'No file selected'
+                    })
+                return
+            }
             const rs = await window.electronAPI.downloadFile(this.rowData[this.rowCurrent].path)
             if(rs.success) {
                 this.$message({
@@ -258,27 +287,158 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-.last-right-parent {
-    position: relative;
-    float: right;
+.att-card {
+    border: 1px solid #e4e7ed;
+    border-radius: 6px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    height: 100%;
 }
-.table-attachment {
-    width: 100%;
-    table-layout:fixed;
+.att-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 10px;
+    background: #f5f7fa;
+    border-bottom: 1px solid #e4e7ed;
+    border-radius: 6px 6px 0 0;
 }
-.border-main {
-    border: 1px solid #9b9797!important;
+.att-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    color: #606266;
+    font-size: 12px;
+    font-weight: 600;
 }
-.color-main {
-    background-color: white;
-    color: black;
+.att-title i {
+    color: #909399;
+}
+.att-count {
+    min-width: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    background: #e4e7ed;
+    color: #606266;
+    font-size: 11px;
+    text-align: center;
+    line-height: 18px;
+}
+.att-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+.att-btn {
+    border: none;
+    background: transparent;
     cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 4px;
+    color: #909399;
+    line-height: 1;
+    font-size: 12px;
+    transition: background 0.15s, color 0.15s;
+}
+.att-btn:hover {
+    color: #409eff;
+    background: #ecf5ff;
+}
+.att-btn.danger:hover {
+    color: #f56c6c;
+    background: #fef0f0;
+}
+.att-btn.disabled {
+    color: #c0c4cc;
+}
+.att-body {
+    padding: 8px;
+    flex: 1;
+    min-height: 0;
+}
+.att-list {
+    overflow-y: auto;
+    border: 1px solid #ebeef5;
+    border-radius: 4px;
+    background: #fff;
+}
+.att-empty {
+    height: 100%;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: #c0c4cc;
+    font-size: 12px;
+}
+.att-empty i {
+    font-size: 20px;
+}
+.att-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-bottom: 1px solid #f5f7fa;
+    color: #303133;
+    cursor: pointer;
+    font-size: 12px;
+    min-width: 0;
+}
+.att-row:last-child {
+    border-bottom: none;
+}
+.att-row:hover {
+    background: #fafbfc;
+}
+.att-row.active {
+    background: #ecf5ff;
+    color: #012596;
+}
+.att-icon {
+    width: 16px;
+    text-align: center;
+    flex-shrink: 0;
+}
+.att-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.main-icon {
-    font-size: v-bind(size);
-    color: #ffc107;
-    position: relative;
-    z-index: 1;
+@media (max-width: 767px) {
+    .att-card {
+        height: auto;
+    }
+
+    .att-header {
+        align-items: flex-start;
+        flex-wrap: wrap;
+        padding: 8px 10px;
+    }
+
+    .att-title {
+        flex: 1 1 140px;
+    }
+
+    .att-actions {
+        justify-content: flex-end;
+        flex-wrap: wrap;
+    }
+
+    .att-body {
+        padding: 8px;
+    }
+
+    .att-list {
+        height: 170px !important;
+    }
 }
 </style>

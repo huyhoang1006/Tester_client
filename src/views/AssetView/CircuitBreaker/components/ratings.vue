@@ -13,32 +13,18 @@
             <el-row :gutter="20" class="content">
                 <el-col :xs="24" :sm="18" :md="14" :lg="12" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
-                        <el-form-item v-if="ratingsData.rated_frequency.value !== 'Custom'" label="Rated frequency">
-                            <el-row class="pdl-0">
-                                <el-select style="width: 100%;" v-model="ratingsData.rated_frequency.value">
+                        <el-form-item label="Rated frequency" class="inline-two-input">
+                            <div class="rf-wrap">
+                                <el-select v-model="ratingsData.rated_frequency.value">
                                     <el-option label="Custom" value="Custom"></el-option>
                                     <el-option label="60Hz" value="60"></el-option>
                                     <el-option label="50Hz" value="50"></el-option>
                                     <el-option label="16.7Hz" value="16.7"></el-option>
                                 </el-select>
-                            </el-row>
-                        </el-form-item>
-                        <el-form-item v-else label="Rated frequency">
-                            <div style="display: flex;">
-                                <div style="width: 48%;">
-                                    <el-select v-model="ratingsData.rated_frequency.value">
-                                        <el-option label="Custom" value="Custom"></el-option>
-                                        <el-option label="60Hz" value="60"></el-option>
-                                        <el-option label="50Hz" value="50"></el-option>
-                                        <el-option label="16.7Hz" value="16.7"></el-option>
-                                    </el-select>
-                                </div>
-                                <div style="width: 4%;"></div>
-                                <div style="width: 48%;" v-if="ratingsData.rated_frequency.value === 'Custom'">
-                                    <el-input type="text" number="positive" v-model="ratingsData.rated_frequency_custom.value">
-                                        <template slot="append">Hz</template>
-                                    </el-input>
-                                </div>
+                                <el-input v-if="ratingsData.rated_frequency.value === 'Custom'" type="text"
+                                    number="positive" v-model="ratingsData.rated_frequency_custom.value">
+                                    <template slot="append">Hz</template>
+                                </el-input>
                             </div>
                         </el-form-item>
                     </el-form>
@@ -126,5 +112,45 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+#ratings {
+    min-width: 0;
+}
 
+::v-deep(.inline-two-input .rf-wrap) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+::v-deep(.inline-two-input .rf-wrap > .el-select),
+::v-deep(.inline-two-input .rf-wrap > .el-input) {
+    flex: 0 0 100%;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+::v-deep(.inline-two-input .el-input-group__append) {
+    min-width: 38px;
+    padding: 0 8px;
+    text-align: center;
+}
+
+::v-deep(.el-form-item__content) {
+    min-width: 0;
+}
+
+::v-deep(.el-input),
+::v-deep(.el-select),
+::v-deep(.el-textarea) {
+    width: 100%;
+}
+
+@media (max-width: 767px) {
+    ::v-deep(.inline-two-input .rf-wrap > .el-select),
+    ::v-deep(.inline-two-input .rf-wrap > .el-input) {
+        flex-basis: 100%;
+        width: 100%;
+    }
+}
 </style>

@@ -89,68 +89,72 @@
         <div class="content-toggle" v-if="openOperatingTime">
             <el-row :gutter="20" class="content">
                 <transition>
-                    <el-col v-if="assessLimitsData.limits === 'Absolute'" :span="18" class="col-content">
-                        <table class="table-strip-input-data" style="width: 100% !important;">
-                            <thead>
-                                <tr>
-                                    <th></th>
-                                    <th>t min</th>
-                                    <th>t max</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="(item, index) in opening_times" :key="index">
-                                    <td>{{ item.label }}</td>
-                                    <td>
-                                        <el-input size="mini" type="text" number="positive"
-                                            v-model="assessLimitsData.operating_time.abs[item.value].t_min.value">
-                                            <template slot="append">ms</template>
-                                        </el-input>
-                                    </td>
-                                    <td>
-                                        <el-input size="mini" type="text" number="positive"
-                                            v-model="assessLimitsData.operating_time.abs[item.value].t_max.value">
-                                            <template slot="append">ms</template>
-                                        </el-input>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <el-col v-if="assessLimitsData.limits === 'Absolute'" :span="24" class="col-content">
+                        <div class="operating-time-scroll">
+                            <table class="table-strip-input-data operating-time-table operating-time-table-abs">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>t min</th>
+                                        <th>t max</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(item, index) in opening_times" :key="index">
+                                        <td>{{ item.label }}</td>
+                                        <td>
+                                            <el-input size="mini" type="text" number="positive"
+                                                v-model="assessLimitsData.operating_time.abs[item.value].t_min.value">
+                                                <template slot="append">ms</template>
+                                            </el-input>
+                                        </td>
+                                        <td>
+                                            <el-input size="mini" type="text" number="positive"
+                                                v-model="assessLimitsData.operating_time.abs[item.value].t_max.value">
+                                                <template slot="append">ms</template>
+                                            </el-input>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </el-col>
-                    <el-col v-if="assessLimitsData.limits === 'Relative'" :span="18" class="col-content">
-                        <table class="table-strip-input-data" style="width: 100% !important;">
-                            <thead>
-                                <tr>
-                                    <th></th>
-                                    <th>t ref</th>
-                                    <th>- t dev</th>
-                                    <th>+ t dev</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="(item, index) in opening_times" :key="index">
-                                    <td>{{ item.label }}</td>
-                                    <td>
-                                        <el-input size="mini" type="text" number="positive"
-                                            v-model="assessLimitsData.operating_time.rel[item.value].t_ref.value">
-                                            <template slot="append">ms</template>
-                                        </el-input>
-                                    </td>
-                                    <td>
-                                        <el-input size="mini" type="text" number="positive"
-                                            v-model="assessLimitsData.operating_time.rel[item.value].minus_t_dev.value">
-                                            <template slot="append">ms</template>
-                                        </el-input>
-                                    </td>
-                                    <td>
-                                        <el-input size="mini" type="text" number="positive"
-                                            v-model="assessLimitsData.operating_time.rel[item.value].plus_t_dev.value">
-                                            <template slot="append">ms</template>
-                                        </el-input>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <el-col v-if="assessLimitsData.limits === 'Relative'" :span="24" class="col-content">
+                        <div class="operating-time-scroll">
+                            <table class="table-strip-input-data operating-time-table operating-time-table-rel">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>t ref</th>
+                                        <th>- t dev</th>
+                                        <th>+ t dev</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(item, index) in opening_times" :key="index">
+                                        <td>{{ item.label }}</td>
+                                        <td>
+                                            <el-input size="mini" type="text" number="positive"
+                                                v-model="assessLimitsData.operating_time.rel[item.value].t_ref.value">
+                                                <template slot="append">ms</template>
+                                            </el-input>
+                                        </td>
+                                        <td>
+                                            <el-input size="mini" type="text" number="positive"
+                                                v-model="assessLimitsData.operating_time.rel[item.value].minus_t_dev.value">
+                                                <template slot="append">ms</template>
+                                            </el-input>
+                                        </td>
+                                        <td>
+                                            <el-input size="mini" type="text" number="positive"
+                                                v-model="assessLimitsData.operating_time.rel[item.value].plus_t_dev.value">
+                                                <template slot="append">ms</template>
+                                            </el-input>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </el-col>
                 </transition>
             </el-row>
@@ -1117,5 +1121,99 @@ th {
     margin-right: 0;
     display: inline-flex;
     align-items: center;
+}
+
+#assessmentLimits,
+.col-content {
+    min-width: 0;
+}
+
+.operating-time-scroll {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 4px;
+}
+
+.operating-time-scroll::-webkit-scrollbar {
+    height: 5px;
+}
+
+.operating-time-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.operating-time-scroll::-webkit-scrollbar-thumb {
+    background-color: rgba(120, 120, 120, 0.6);
+    border-radius: 6px;
+}
+
+.operating-time-table {
+    width: 100% !important;
+    table-layout: fixed;
+    margin: 12px 0 !important;
+}
+
+.operating-time-table-abs {
+    min-width: 540px;
+}
+
+.operating-time-table-rel {
+    min-width: 680px;
+}
+
+.operating-time-table th:first-child,
+.operating-time-table td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    width: 250px !important;
+    min-width: 250px;
+    max-width: 250px;
+    background: #fff;
+    white-space: normal;
+}
+
+.operating-time-table th:first-child {
+    z-index: 2;
+    background: #f5f7fa;
+}
+
+.operating-time-table td:first-child {
+    box-shadow: 1px 0 0 #e4e7ed;
+}
+
+.operating-time-table th:not(:first-child),
+.operating-time-table td:not(:first-child) {
+    min-width: 132px;
+}
+
+.operating-time-table ::v-deep(.el-input) {
+    width: 132px;
+    max-width: 100%;
+}
+
+.operating-time-table ::v-deep(.el-input-group__append) {
+    min-width: 38px;
+    padding: 0 8px;
+    text-align: center;
+}
+
+@media (max-width: 767px) {
+    .operating-time-table-abs {
+        min-width: 500px;
+    }
+
+    .operating-time-table-rel {
+        min-width: 620px;
+    }
+
+    .operating-time-table th:first-child,
+    .operating-time-table td:first-child {
+        width: 210px !important;
+        min-width: 210px;
+        max-width: 210px;
+    }
 }
 </style>

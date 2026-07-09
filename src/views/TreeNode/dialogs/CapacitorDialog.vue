@@ -86,7 +86,10 @@ export default {
 }
 
 ::v-deep(.app-dialog.el-dialog) {
-    width: 50%;
+    /* 1920px -> 960 (50%), 2560px -> 1200; màn nhỏ giữ ~960 rồi co theo 92vw */
+    width: 92%;
+    width: clamp(960px, 37.5vw + 240px, 1200px);
+    max-width: 92vw;
     margin-top: 5vh !important;
     border-radius: 6px;
     max-height: 90vh;

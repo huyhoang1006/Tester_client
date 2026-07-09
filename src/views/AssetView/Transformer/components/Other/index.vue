@@ -11,8 +11,8 @@
         </el-row>
         <div class="content-toggle" v-if="openOthers">
             <el-row :gutter="20" class="content">
-                <el-col :xs="24" :md="16" :lg="12" class="col-content">
-                    <el-form :model="othersData" :label-width="labelWidth" size="mini" label-position="left">
+                <el-col :span="24" class="col-content">
+                    <el-form class="other-form" :model="othersData" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Category">
                             <el-select allow-create filterable :reserve-keyword="false" v-model="othersData.category"
                                 placeholder="Select category" class="w-100">
@@ -83,7 +83,7 @@
                         </el-form-item>
                     </el-form>
                 </el-col>
-                <el-col>
+                <el-col :span="24" class="col-content">
                     <div class="table-scroll mgt-5">
                         <table class="table-strip-input-data fixed-table">
                             <colgroup>
@@ -212,6 +212,31 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+#others {
+    min-width: 0;
+    overflow: hidden;
+}
+
+::v-deep(.content),
+::v-deep(.col-content),
+::v-deep(.other-form) {
+    min-width: 0;
+}
+
+::v-deep(.other-form .el-form-item) {
+    margin-bottom: 10px;
+}
+
+::v-deep(.other-form .el-form-item__content) {
+    min-width: 0;
+}
+
+::v-deep(.other-form .el-select),
+::v-deep(.other-form .el-input) {
+    width: 100%;
+    min-width: 0;
+}
+
 ::v-deep(.insulation-item .el-form-item__content) {
     display: flex;
     flex-direction: column;
@@ -230,7 +255,7 @@ export default {
 }
 
 ::v-deep(.insulation-row .el-radio) {
-    width: 40px;
+    width: 56px;
     flex-shrink: 0;
 }
 
@@ -245,6 +270,7 @@ export default {
 
 ::v-deep(.table-scroll) {
     width: 100%;
+    max-width: 100%;
     overflow-x: auto;
     overflow-y: hidden;
 }
@@ -267,7 +293,8 @@ export default {
 }
 
 ::v-deep(.fixed-table) {
-    width: max-content;
+    width: 100%;
+    min-width: 285px;
     table-layout: fixed;
 }
 
@@ -278,5 +305,33 @@ export default {
 
 ::v-deep(.table-strip-input-data) {
     font-size: 12px !important;
+}
+
+::v-deep(.table-strip-input-data .el-select) {
+    width: 100%;
+}
+
+@media (max-width: 767px) {
+    ::v-deep(.other-form .el-form-item) {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    ::v-deep(.other-form .el-form-item__label) {
+        width: auto !important;
+        padding: 0 0 4px;
+        text-align: left;
+        line-height: 1.2;
+    }
+
+    ::v-deep(.other-form .el-form-item__content) {
+        width: 100%;
+        margin-left: 0 !important;
+    }
+
+    ::v-deep(.insulation-row) {
+        width: 100%;
+    }
 }
 </style>

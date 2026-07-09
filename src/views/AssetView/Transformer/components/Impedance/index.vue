@@ -34,17 +34,17 @@
                 <el-col :span="24" class="col-content">
                     <el-row :gutter="8">
                         <el-col :xs="24" :md="12">
-                            <el-row :gutter="8">
-                                <el-col :span="12">
+                            <el-row :gutter="8" class="action-row">
+                                <el-col class="action-col-fit">
                                     <el-button size="mini" type="primary" class="btn-fluid" @click="addPrimSec">
                                         <i class="fas fa-plus"></i>
                                         Add
                                     </el-button>
                                 </el-col>
-                                <el-col :span="12">
-                                    <el-button size="mini" type="primary" class="btn-fluid" @click="removeAllPrimSec">
+                                <el-col class="action-col-fit">
+                                    <el-button size="mini" class="btn-fluid" @click="removeAllPrimSec">
                                         <i class="fas fa-xmark"></i>
-                                        Remove all
+                                        Clear
                                     </el-button>
                                 </el-col>
                             </el-row>
@@ -54,11 +54,11 @@
                         <table class="table-strip-input-data fixed-table">
                             <colgroup>
                                 <col style="width: 165px" />
+                                <col style="width: 190px" />
+                                <col style="width: 190px" />
                                 <col style="width: 165px" />
-                                <col style="width: 165px" />
-                                <col style="width: 165px" />
-                                <col style="width: 165px" />
-                                <col style="width: 165px" />
+                                <col style="width: 190px" />
+                                <col style="width: 190px" />
                                 <col style="width: 40px" />
                             </colgroup>
                             <thead>
@@ -155,17 +155,17 @@
                 <el-col :span="24" class="col-content">
                     <el-row :gutter="8">
                         <el-col :xs="24" :md="12">
-                            <el-row :gutter="8">
-                                <el-col :span="12">
+                            <el-row :gutter="8" class="action-row">
+                                <el-col class="action-col-fit">
                                     <el-button size="mini" type="primary" class="btn-fluid" @click="addPrimTert"> <i
                                             class="fas fa-plus"></i>
                                         Add
                                     </el-button>
                                 </el-col>
-                                <el-col :span="12">
-                                    <el-button size="mini" type="primary" class="btn-fluid" @click="removeAllPrimTert">
+                                <el-col class="action-col-fit">
+                                    <el-button size="mini" class="btn-fluid" @click="removeAllPrimTert">
                                         <i class="fas fa-xmark"></i>
-                                        Remove all
+                                        Clear
                                     </el-button>
                                 </el-col>
                             </el-row>
@@ -175,8 +175,8 @@
                         <table class="table-strip-input-data fixed-table">
                             <colgroup>
                                 <col style="width: 165px" />
-                                <col style="width: 165px" />
-                                <col style="width: 165px" />
+                                <col style="width: 190px" />
+                                <col style="width: 190px" />
                                 <col style="width: 165px" />
                                 <col style="width: 165px" />
                                 <col style="width: 165px" />
@@ -275,17 +275,17 @@
                 <el-col :span="24" class="col-content">
                     <el-row :gutter="8">
                         <el-col :xs="24" :md="12">
-                            <el-row :gutter="8">
-                                <el-col :span="12">
+                            <el-row :gutter="8" class="action-row">
+                                <el-col class="action-col-fit">
                                     <el-button size="mini" type="primary" class="btn-fluid" @click="addSecTert"> <i
                                             class="fas fa-plus"></i>
                                         Add
                                     </el-button>
                                 </el-col>
-                                <el-col :span="12">
-                                    <el-button size="mini" type="primary" class="btn-fluid" @click="removeAllSecTert">
+                                <el-col class="action-col-fit">
+                                    <el-button size="mini" class="btn-fluid" @click="removeAllSecTert">
                                         <i class="fas fa-xmark"></i>
-                                        Remove all
+                                        Clear
                                     </el-button>
                                 </el-col>
                             </el-row>
@@ -715,9 +715,23 @@ export default {
     margin-bottom: 0;
 }
 
-::v-deep(.btn-fluid) {
+::v-deep(.ref-temp-form .el-form-item__content) {
+    min-width: 135px;
+}
+
+::v-deep(.ref-temp-form .el-input),
+::v-deep(.ref-temp-input) {
     width: 100%;
-    min-width: 0 !important;
+    min-width: 135px;
+}
+
+::v-deep(.select-in-input) {
+    min-width: 58px;
+}
+
+::v-deep(.btn-fluid) {
+    width: auto;
+    min-width: 72px;
     padding-left: 8px;
     padding-right: 8px;
     box-sizing: border-box;
@@ -758,5 +772,24 @@ export default {
 
 ::v-deep(.table-strip-input-data) {
     font-size: 12px !important;
+}
+
+@media (max-width: 767px) {
+    ::v-deep(.ref-temp-form .el-form-item) {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    ::v-deep(.ref-temp-form .el-form-item__label) {
+        width: auto !important;
+        padding: 0 0 4px;
+        text-align: left;
+    }
+
+    ::v-deep(.ref-temp-form .el-form-item__content) {
+        width: 100%;
+        margin-left: 0 !important;
+    }
 }
 </style>

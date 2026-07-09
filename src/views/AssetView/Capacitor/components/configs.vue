@@ -1,38 +1,55 @@
 <template>
   <div id="configs">
     <!-- Configuration -->
-    <div>
-      <el-row :gutter="20" class="content mgt-20">
-        <el-col :xs="24" :md="12" class="col-content">
-          <el-form :label-width="'120px'" size="mini" label-position="left">
-            <span class="bolder">Configuration</span>
-            <el-divider></el-divider>
-            <el-form-item label="Number of phase" class="inline-radios">
-                <el-radio-group v-model="internalConfigsData.number_of_phase" @change="handlePhaseChange">
-                  <el-radio label="1">1</el-radio>
-                  <el-radio label="3">3</el-radio>
-                </el-radio-group>
-            </el-form-item>
-            <el-form-item v-if="internalConfigsData.number_of_phase === '1'" label="Phase">
-              <el-select v-model="internalConfigsData.phase" size="mini" style="width: 100%"
-                @change="handlePhaseNameChange" placeholder="Select phase">
-                <el-option label="A" value="A"></el-option>
-                <el-option label="B" value="B"></el-option>
-                <el-option label="C" value="C"></el-option>
-              </el-select>
-            </el-form-item>
-          </el-form>
+    <div class="mgt-10">
+      <el-row>
+        <el-col :span="24">
+          <div class="header-toggle pointer" @click="openConfiguration = !openConfiguration">
+            <i v-if="openConfiguration" class="fa-solid fa-caret-up"></i>
+            <i v-else class="fa-solid fa-caret-down"></i>
+            Configuration
+          </div>
         </el-col>
       </el-row>
+      <div class="content-toggle" v-if="openConfiguration">
+        <el-row :gutter="20" class="content">
+          <el-col :xs="24" :md="16" :lg="12" class="col-content">
+            <el-form :label-width="'120px'" size="mini" label-position="left">
+              <el-form-item label="Number of phase" class="inline-radios">
+                  <el-radio-group v-model="internalConfigsData.number_of_phase" @change="handlePhaseChange">
+                    <el-radio label="1">1</el-radio>
+                    <el-radio label="3">3</el-radio>
+                  </el-radio-group>
+              </el-form-item>
+              <el-form-item v-if="internalConfigsData.number_of_phase === '1'" label="Phase">
+                <el-select class="phase-select" v-model="internalConfigsData.phase" size="mini"
+                  @change="handlePhaseNameChange" placeholder="Select phase">
+                  <el-option label="A" value="A"></el-option>
+                  <el-option label="B" value="B"></el-option>
+                  <el-option label="C" value="C"></el-option>
+                </el-select>
+              </el-form-item>
+            </el-form>
+          </el-col>
+        </el-row>
+      </div>
     </div>
 
-    <!-- Ratings -->
-    <el-row :gutter="20" class="content mgt-20">
-      <el-col :xs="24" :md="12" class="col-content">
+    <!-- Ratings + Others: 2 card ngắn cạnh nhau trên màn rộng -->
+    <el-row :gutter="16" class="short-cards">
+      <el-col :xs="24" :md="12" class="short-card-col">
+        <div class="short-card-wrap">
+          <el-row>
+            <el-col :span="24">
+              <div class="header-toggle pointer" @click="openRatings = !openRatings">
+                <i v-if="openRatings" class="fa-solid fa-caret-up"></i>
+                <i v-else class="fa-solid fa-caret-down"></i>
+                Ratings
+              </div>
+            </el-col>
+          </el-row>
+          <div class="content-toggle" v-if="openRatings">
         <el-form :label-width="labelWidth" size="mini" label-position="left">
-          <span class="bolder">Ratings</span>
-          <el-divider></el-divider>
-
           <el-form-item label="Rated voltage">
             <el-input type="number" number="positive" v-model="ratingsData.rated_voltage.value"
               @input="updateField('ratings', 'rated_voltage', $event.target ? $event.target.value : $event)">
@@ -107,14 +124,24 @@
             </el-form-item>
           </template>
         </el-form>
+          </div>
+        </div>
       </el-col>
 
       <!-- Others -->
-      <el-col :xs="24" :md="12" class="col-content">
+      <el-col :xs="24" :md="12" class="short-card-col">
+        <div class="short-card-wrap">
+          <el-row>
+            <el-col :span="24">
+              <div class="header-toggle pointer" @click="openOthers = !openOthers">
+                <i v-if="openOthers" class="fa-solid fa-caret-up"></i>
+                <i v-else class="fa-solid fa-caret-down"></i>
+                Others
+              </div>
+            </el-col>
+          </el-row>
+          <div class="content-toggle" v-if="openOthers">
         <el-form :label-width="labelWidth" size="mini" label-position="left">
-          <span class="bolder">Others</span>
-          <el-divider></el-divider>
-
           <el-form-item label="Insulation type">
             <el-input v-model="othersData.insulation_type"
               @input="updateField('others', 'insulation_type', $event.target ? $event.target.value : $event)" />
@@ -127,6 +154,8 @@
             </el-input>
           </el-form-item>
         </el-form>
+          </div>
+        </div>
       </el-col>
     </el-row>
   </div>
@@ -139,6 +168,9 @@ export default {
   data() {
     return {
       labelWidth: "150px",
+      openConfiguration: true,
+      openRatings: true,
+      openOthers: true,
       internalConfigsData: JSON.parse(JSON.stringify(this.configs)),
       internalCapacitanceData: JSON.parse(JSON.stringify(this.capacitance)),
       internalDissipationFactorData: JSON.parse(JSON.stringify(this.dissipationFactor))
@@ -251,8 +283,32 @@ export default {
   font-weight: bold;
 }
 
+/* Ratings + Others cạnh nhau, đều chiều cao */
+.short-cards {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.short-cards .short-card-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.short-card-wrap {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.short-card-wrap .content-toggle {
+  flex: 1;
+}
+
 .bordered-form.vertical-label {
-  border: 1px solid #2e2f31;
+  border: 1px solid #e4e7ed;
+  border-radius: 4px;
+  background: #f9fafc;
   padding: 8px 12px;
   display: flex;
   flex-direction: column;
@@ -274,6 +330,11 @@ export default {
 
 .phase-row .el-input {
   width: 100%;
+}
+
+::v-deep(.phase-select.el-select) {
+  width: 120px !important;
+  max-width: 100%;
 }
 
 ::v-deep(.inline-radios .el-radio-group) {
@@ -314,6 +375,10 @@ export default {
 
   .phase-label {
     text-align: left;
+  }
+
+  ::v-deep(.phase-select.el-select) {
+    width: 100% !important;
   }
 }
 </style>

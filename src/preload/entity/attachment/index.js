@@ -2,7 +2,7 @@
 const {ipcRenderer} = require('electron')
 export const attachmentPreload = () => {
     return {
-        getAttachmentpath : () => ipcRenderer.invoke('getAttachmentpath'),
+        getAttachmentpath : (type) => ipcRenderer.invoke('getAttachmentpath', type),
         insertAttachment : (attachment) => ipcRenderer.invoke('insertAttachment', attachment),
         getAttachmentById : (id_foreign, type) => ipcRenderer.invoke('getAttachmentById', id_foreign, type),
         updateAttachmentById : (id) => ipcRenderer.invoke('updateAttachmentById', id),

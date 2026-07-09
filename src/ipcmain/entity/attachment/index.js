@@ -70,12 +70,15 @@ export const downloadFile = () => {
 }
 
 export const getAttachmentpath = () => {
-    ipcMain.handle('getAttachmentpath', async function (event) {
+    ipcMain.handle('getAttachmentpath', async function (event, type) {
         try {
+            const filters = type === 'image'
+                ? [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'] }]
+                : []
             const rs = await dialog.showOpenDialog({
                 title: 'Select the file to be uploaded',
                 buttonLabel: 'Upload',
-                filters: [],
+                filters,
                 properties: ['openFile']
             })
             if (!rs.canceled) {

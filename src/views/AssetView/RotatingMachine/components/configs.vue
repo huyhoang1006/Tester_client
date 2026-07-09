@@ -1,18 +1,13 @@
 <template>
     <div id="configs" class="mgy-5">
-        <el-row>
-            <el-col :span="24">
-                <div style="font-size: 12px;" class="header-toggle pointer" @click="openConfigs = !openConfigs">
-                    <i v-if="openConfigs" class="fa-solid fa-caret-up"></i>
-                    <i v-else class="fa-solid fa-caret-down"></i>
-                    Configurations
-                </div>
-            </el-col>
-        </el-row>
-        <el-row>
-            <el-col :xs="24" :sm="18" :md="12">
-                <el-form class="mgy-5" v-if="openConfigs" :inline-message="true" :label-width="labelWidth" size="mini"
-                    label-position="left">
+        <div class="header-toggle pointer" @click="openConfigs = !openConfigs">
+            <i v-if="openConfigs" class="fa-solid fa-caret-up"></i>
+            <i v-else class="fa-solid fa-caret-down"></i>
+            Configurations
+        </div>
+        <div v-if="openConfigs" class="content-toggle">
+            <div class="config-grid">
+                <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                     <el-form-item label="Star point" class="inline-radios">
                         <el-radio-group v-model="configsData.star_point">
                             <el-radio value="close" label="Close"></el-radio>
@@ -20,8 +15,8 @@
                         </el-radio-group>
                     </el-form-item>
                 </el-form>
-            </el-col>
-        </el-row>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -46,7 +41,6 @@ export default {
 
     computed: {
         configsData() {
-            console.log(this.configs)
             return this.configs
         }
     }
@@ -54,19 +48,25 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.bolder {
-    font-size: 12px;
+#configs {
+    min-width: 0;
+}
+
+.config-grid {
+    width: min(100%, 420px);
+    min-width: 0;
 }
 
 ::v-deep(.inline-radios .el-radio-group) {
     display: flex;
-    width: 100%;
+    gap: 28px;
     align-items: center;
     min-height: 28px;
+    width: 100%;
 }
 
 ::v-deep(.inline-radios .el-form-item__label) {
-    font-weight: bold;
+    font-weight: 400;
 }
 
 ::v-deep(.inline-radios .el-radio__label) {
@@ -80,9 +80,28 @@ export default {
 }
 
 ::v-deep(.inline-radios .el-radio) {
-    flex: 1;
     margin-right: 0;
     display: inline-flex;
     align-items: center;
+}
+
+@media (max-width: 767px) {
+    .config-grid {
+        width: 100%;
+    }
+
+    ::v-deep(.el-form-item) {
+        display: block;
+    }
+
+    ::v-deep(.el-form-item__label) {
+        width: 100%;
+        text-align: left;
+        margin-bottom: 4px;
+    }
+
+    ::v-deep(.el-form-item__content) {
+        margin-left: 0 !important;
+    }
 }
 </style>

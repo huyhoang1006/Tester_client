@@ -27,8 +27,8 @@
                     <el-tabs v-if="!isNaN(parseInt(configsData.cores))" type="card" class="w-100 h-100">
                         <el-tab-pane v-for="(item, index) in this.configsData.dataCT" :key="index"
                             :label="(index + 1).toString()">
-                            <el-row style="background-color: #F5F5F5;">
-                                <el-col :span="12" class="col-content margin-data">
+                            <el-row class="tap-config-row">
+                                <el-col :xs="24" :sm="12" class="col-content">
                                     <el-form :inline-message="true" :label-width="labelWidth" size="mini"
                                         label-position="left">
                                         <el-form-item label="Taps">
@@ -44,7 +44,7 @@
                                         </el-form-item>
                                     </el-form>
                                 </el-col>
-                                <el-col :span="12" class="col-content margin-data">
+                                <el-col :xs="24" :sm="12" class="col-content">
                                     <el-form :inline-message="true" :label-width="labelWidth" size="mini"
                                         label-position="left">
                                         <el-form-item label="Common tap">
@@ -102,7 +102,7 @@
                                             </tbody>
                                         </table>
                                         <div v-if="item.fullTap.table.isShow"
-                                            style="width: 80%; margin: auto; margin-top: 20px; margin-bottom: 20px">
+                                            class="class-rating-block">
                                             <div style="font-size: 12px;" class="bolder">Class ratings</div>
                                             <el-divider></el-divider>
                                             <el-row style="width: 100%;">
@@ -561,7 +561,7 @@
                                                 </tbody>
                                             </table>
                                             <div v-if="item.mainTap.data[element - 1].table.isShow"
-                                                style="width: 80%; margin: auto; margin-top: 20px; margin-bottom: 20px">
+                                                class="class-rating-block">
                                                 <el-row style="width: 100%; margin-top: 20px;">
                                                     <el-col :span="11">
                                                         <el-form :inline-message="true" label-width="150px" size="mini"
@@ -695,7 +695,7 @@
                                                 </tbody>
                                             </table>
                                             <div v-if="item.interTap.data[i].table.isShow"
-                                                style="width: 80%; margin: auto; margin-top: 20px; margin-bottom: 20px">
+                                                class="class-rating-block">
                                                 <el-row style="width: 100%; margin-top: 20px;">
                                                     <el-col :span="11">
                                                         <el-form :inline-message="true" label-width="150px" size="mini"
@@ -1343,13 +1343,19 @@ td {
 }
 
 .fulltap-data {
-    background-color: #f5f5f5;
-    border: 1px solid black;
+    max-width: 100%;
+    overflow-x: auto;
+    background-color: #fff;
+    border: 1px solid #e4e7ed;
+    border-radius: 4px;
 }
 
 .fulltap-data td,
-th {
-    border: 1px solid #7f7f7f;
+.fulltap-data th {
+    border: 1px solid #e4e7ed;
+    padding: 4px 8px;
+    height: 34px;
+    vertical-align: middle;
     font-size: 12px;
 }
 
@@ -1358,12 +1364,57 @@ th {
     font-size: 12px;
 }
 
+.fulltap-data thead,
 .fulltap-data th {
+    background: #f5f7fa;
+    color: #606266;
+    font-weight: 600;
     border-top: none;
     font-size: 12px;
 }
 
+/* khung .fulltap-data đã có viền — bỏ viền cạnh ngoài của ô để không bị viền đôi */
+.fulltap-data th:first-child,
+.fulltap-data td:first-child {
+    border-left: none;
+}
+
+.fulltap-data th:last-child,
+.fulltap-data td:last-child {
+    border-right: none;
+}
+
+/* chỉ bỏ border-bottom khi bảng nằm sát mép dưới khung (không mở Class ratings) để tránh viền đôi;
+   khi Class ratings mở ra, hoặc giữa các tap (main/inter), giữ border làm vạch ngăn cách */
+.fulltap-data > table:last-child tbody tr:last-child > td,
+.fulltap-data > div:last-child > table:last-child tbody tr:last-child > td {
+    border-bottom: none;
+}
+
 .displayItem {
     display: none;
+}
+
+.tap-config-row {
+    padding: 10px 10px 2px;
+    background-color: #f9fafc;
+    border: 1px solid #e4e7ed;
+    border-radius: 4px;
+}
+
+.class-rating-block {
+    width: 100%;
+    margin: 20px 0;
+    padding: 0 12px;
+    box-sizing: border-box;
+}
+
+/* select chỉ chứa giá trị ngắn (2..6) — không cần giãn full cột */
+.tap-config-row ::v-deep(.el-select) {
+    max-width: 220px;
+}
+
+.tap-config-row ::v-deep(.el-form-item) {
+    margin-right: 12px;
 }
 </style>

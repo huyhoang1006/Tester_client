@@ -39,18 +39,18 @@
                     <el-divider></el-divider>
                     <el-row :gutter="8">
                         <el-col :xs="24" :md="12" :lg="12">
-                            <el-row :gutter="8">
-                                <el-col :span="12">
+                            <el-row :gutter="8" class="action-row">
+                                <el-col class="action-col-fit">
                                     <el-button size="mini" type="primary" class="btn-fluid" @click="addVoltageRating">
                                         <i class="fas fa-plus"></i>
                                         Add
                                     </el-button>
                                 </el-col>
-                                <el-col :span="12">
-                                    <el-button size="mini" type="primary" class="btn-fluid"
+                                <el-col class="action-col-fit">
+                                    <el-button size="mini" class="btn-fluid"
                                         @click="removeAllVoltageRating">
                                         <i class="fas fa-xmark"></i>
-                                        Remove all
+                                        Clear
                                     </el-button>
                                 </el-col>
                             </el-row>
@@ -152,18 +152,18 @@
                     <el-divider></el-divider>
                     <el-row :gutter="8">
                         <el-col :xs="24" :md="12">
-                            <el-row :gutter="8">
-                                <el-col :span="12">
+                            <el-row :gutter="8" class="action-row">
+                                <el-col class="action-col-fit">
                                     <el-button size="mini" type="primary" class="btn-fluid" @click="addPowerRating">
                                         <i class="fas fa-plus"></i>
                                         Add
                                     </el-button>
                                 </el-col>
-                                <el-col :span="12">
-                                    <el-button size="mini" type="primary" class="btn-fluid"
+                                <el-col class="action-col-fit">
+                                    <el-button size="mini" class="btn-fluid"
                                         @click="removeAllPowerRating">
                                         <i class="fas fa-xmark"></i>
-                                        Remove all
+                                        Clear
                                     </el-button>
                                 </el-col>
                             </el-row>
@@ -590,18 +590,34 @@ const arr = ['Prim', 'Sec', 'Tert']
 
 ::v-deep(.inline-two-input .rf-wrap) {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
 }
 
-::v-deep(.inline-two-input .el-select),
-::v-deep(.inline-two-input .el-input) {
-    flex: 1;
-    min-width: 0;
+::v-deep(.inline-two-input .rf-wrap > .el-select) {
+    flex: 0 0 178px;
+    min-width: 150px;
+}
+
+::v-deep(.inline-two-input .rf-wrap > .el-input) {
+    flex: 0 0 178px;
+    min-width: 150px;
+}
+
+::v-deep(.inline-two-input .select-in-input) {
+    width: 58px;
+    min-width: 58px;
+}
+
+::v-deep(.inline-two-input .el-input-group__append) {
+    min-width: 38px;
+    padding: 0 8px;
+    text-align: center;
 }
 
 ::v-deep(.btn-fluid) {
-    width: 100%;
-    min-width: 0 !important;
+    width: auto;
+    min-width: 72px;
     padding-left: 8px;
     padding-right: 8px;
     box-sizing: border-box;
@@ -626,8 +642,8 @@ const arr = ['Prim', 'Sec', 'Tert']
         margin-left: 0 !important;
     }
 
-    ::v-deep(.inline-two-input .el-select),
-    ::v-deep(.inline-two-input .el-input) {
+    ::v-deep(.inline-two-input .rf-wrap > .el-select),
+    ::v-deep(.inline-two-input .rf-wrap > .el-input) {
         width: 100%;
     }
 }

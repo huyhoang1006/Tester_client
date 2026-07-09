@@ -392,7 +392,8 @@ table {
 }
 
 .fixed-table {
-    width: max-content;
+    width: 100%;
+    min-width: 620px;
     table-layout: fixed;
     border-collapse: collapse;
     border: 1px solid #fff;
@@ -406,7 +407,8 @@ table {
 
 .table-scroll {
     width: 100%;
-    overflow: auto;
+    overflow-x: auto;
+    overflow-y: hidden;
 }
 
 .table-scroll::-webkit-scrollbar {

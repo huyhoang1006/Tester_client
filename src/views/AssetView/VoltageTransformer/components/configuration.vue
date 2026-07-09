@@ -20,7 +20,7 @@
                             </el-radio-group>
                         </el-form-item>
                         <el-form-item v-if="configData.number_of_phase == 1" label="Phase">
-                            <el-select style="width: 100%" v-model="configData.phase" placeholder="Select phase">
+                            <el-select class="phase-select" v-model="configData.phase" placeholder="Select phase">
                                 <el-option label="A" value="A"></el-option>
                                 <el-option label="B" value="B"></el-option>
                                 <el-option label="C" value="C"></el-option>
@@ -109,6 +109,11 @@ export default {
     margin-left: 8px !important;
 }
 
+::v-deep(.phase-select.el-select) {
+    width: 120px !important;
+    max-width: 100%;
+}
+
 @media (max-width: 991px) {
     ::v-deep(.custom-form-item .el-form-item__label) {
         text-align: left;
@@ -118,6 +123,10 @@ export default {
 @media (max-width: 767px) {
     ::v-deep(.nom-max-sel .el-form-item__content) {
         margin-left: 120px !important;
+    }
+
+    ::v-deep(.phase-select.el-select) {
+        width: 100% !important;
     }
 }
 </style>

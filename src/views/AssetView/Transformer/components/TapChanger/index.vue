@@ -62,19 +62,19 @@
                         <el-divider></el-divider>
                         <el-row :gutter="8">
                             <el-col :span="24">
-                                <el-row :gutter="8">
-                                    <el-col :span="12">
+                                <el-row :gutter="8" class="action-row">
+                                    <el-col class="action-col-fit">
                                         <el-button :disabled="!tapChangersData.tap_scheme" size="mini" type="primary"
                                             class="btn-fluid" @click="openDialog = true">
                                             <i class="fas fa-calculator"></i>
                                             Calculate
                                         </el-button>
                                     </el-col>
-                                    <el-col :span="12">
-                                        <el-button size="mini" type="primary" class="btn-fluid"
+                                    <el-col class="action-col-fit">
+                                        <el-button size="mini" class="btn-fluid"
                                             :disabled="!tapChangersData.tap_scheme" @click="removeAllVoltageTable">
                                             <i class="fas fa-xmark"></i>
-                                            Remove all
+                                            Clear
                                         </el-button>
                                     </el-col>
                                 </el-row>
@@ -179,19 +179,19 @@
                         <el-divider></el-divider>
                         <el-row :gutter="8">
                             <el-col :span="24">
-                                <el-row :gutter="8">
-                                    <el-col :span="12">
+                                <el-row :gutter="8" class="action-row">
+                                    <el-col class="action-col-fit">
                                         <el-button :disabled="!tapChangersData.tap_scheme" size="mini" type="primary"
                                             class="btn-fluid" @click="openDialog = true">
                                             <i class="fas fa-calculator"></i>
                                             Calculate
                                         </el-button>
                                     </el-col>
-                                    <el-col :span="12">
-                                        <el-button size="mini" type="primary" class="btn-fluid"
+                                    <el-col class="action-col-fit">
+                                        <el-button size="mini" class="btn-fluid"
                                             :disabled="!tapChangersData.tap_scheme" @click="removeAllVoltageTable">
                                             <i class="fas fa-xmark"></i>
-                                            Remove all
+                                            Clear
                                         </el-button>
                                     </el-col>
                                 </el-row>
@@ -509,8 +509,8 @@ export default {
 }
 
 ::v-deep(.btn-fluid) {
-    width: 100%;
-    min-width: 0 !important;
+    width: auto;
+    min-width: 72px;
     padding-left: 8px;
     padding-right: 8px;
     box-sizing: border-box;

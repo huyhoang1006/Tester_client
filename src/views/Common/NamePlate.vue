@@ -1,252 +1,376 @@
 <template>
-    <div>
-        <br/>
-        <br/>
-        <span class="bolder">Name plate
-            <span class="last-right-parent">
-                <i @click="downloadItem()" class="fa fa-download mgr-10 pointer"></i>
-                <i @click="openFile()" class="fa-solid fa-folder-open mgr-10 pointer"></i>
-                <i @click="upload()" class="fa-solid fa-plus mgr-10 pointer"></i>
-                <input type="file" ref="fileInput" style="display:none" @change="handleFileSelect" accept="image/*">
-                <a style="display : none" id="download"></a>
-                <i @click="deleteItem()" class="fa-solid fa-trash mgr-10 pointer"></i>
-            </span>
-        </span>
-        <el-divider></el-divider>
-        <div class="border-main color-main" :style="{height: height, overflow: 'auto'}">
-            <img @dblclick="openFile()" v-if="imageUrl" :src="imageUrl" :alt="this.rowData.name" width="100%">
+    <section class="np-card">
+        <div class="np-header">
+            <div class="np-title">
+                <i class="fa-solid fa-image"></i>
+                <span>{{ title || 'Name plate' }}</span>
+            </div>
+            <div class="np-actions">
+                <button type="button" class="np-btn" :class="{ disabled: !hasImage }" title="Download" @click="downloadItem()">
+                    <i class="fa fa-download"></i>
+                </button>
+                <button type="button" class="np-btn" :class="{ disabled: !hasImage }" title="Open" @click="openFile()">
+                    <i class="fa-solid fa-folder-open"></i>
+                </button>
+                <button type="button" class="np-btn primary" title="Upload image" @click="upload()">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+                <a ref="download" style="display: none"></a>
+                <button type="button" class="np-btn danger" :class="{ disabled: !hasImage }" title="Delete" @click="deleteItem()">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
         </div>
-    </div>
+        <div class="np-body">
+            <div class="np-preview" :style="{ height: height }" @dblclick="openFile()">
+                <img v-if="imageUrl" :src="imageUrl" :alt="imageName">
+                <div v-else class="np-empty">
+                    <i class="fa-regular fa-image"></i>
+                    <span>No image selected</span>
+                </div>
+            </div>
+            <div v-if="imageName" class="np-file" :title="imageName">{{ imageName }}</div>
+        </div>
+    </section>
 </template>
 
 <script>
-/* eslint-disable */
 import { mapState } from 'vuex'
+
 export default {
     name: 'namePlate',
     props: {
-        title : String,
-        height : String,
-        attachment_ : {},
-        fileUrl : {
-            type : String,
-            require : true
+        title: {
+            type: String,
+            default: 'Name plate'
         },
-        deleteList : {},
-        dataParent : Object
+        height: {
+            type: String,
+            default: '120px'
+        },
+        attachment_: {
+            type: [Object, Array],
+            default: null
+        },
+        fileUrl: {
+            type: String,
+            default: '-1'
+        },
+        deleteList: {
+            type: [Object, Array],
+            default: null
+        },
+        dataParent: {
+            type: Object,
+            default: () => ({})
+        }
     },
     data() {
         return {
-            attachment : "",
-            rowCurrent : "",
-            rowData : {
-                name : ''
-            },
-            imageUrl : null,
-            fileURL : String
+            rowData: null,
+            imageUrl: null,
+            fileURL: '-1'
         }
     },
-    beforeMount() {
-    },
-    watch : {
-        rowData : {
-            deep : true,
-            immediate : true,
-            handler() {
-                this.$emit('data-attachment', this.rowData, this.fileURL)
+    watch: {
+        attachment_: {
+            deep: true,
+            immediate: true,
+            handler(value) {
+                this.setAttachment(value)
             }
         },
-        attachment_ : {
-            deep : true,
-            immediate : true,
-            handler() {
-                this.rowData = this.attachment_
-            }
-        },
-        fileUrl : {
-            deep : true,
-            immediate : true,
-            handler() {
-                this.fileURL = this.fileUrl
-                if(this.fileURL != '-1') {
-                    this.imageUrl = this.fileURL
-                } else {
-                    this.imageUrl = null
-                }
+        fileUrl: {
+            immediate: true,
+            handler(value) {
+                this.fileURL = value || '-1'
+                this.imageUrl = this.fileURL !== '-1' ? this.toDisplayUrl(this.fileURL) : null
             }
         }
     },
     computed: {
-        ...mapState(['selectedLocation', 'selectedAsset'])
+        ...mapState(['selectedLocation', 'selectedAsset']),
+        imageName() {
+            return this.getFileName(this.rowData)
+        },
+        hasImage() {
+            return Boolean(this.rowData && this.rowData.path)
+        }
     },
     methods: {
-        async reload() {
-            this.rowData = {
-                name : ""
+        setAttachment(value) {
+            const item = Array.isArray(value) ? value[0] : value
+            if (item && item.path) {
+                this.rowData = { ...item, role: item.role || 'nameplate' }
+                this.fileURL = item.path
+                this.imageUrl = this.toDisplayUrl(item.path)
+            } else {
+                this.rowData = null
+                this.fileURL = '-1'
+                this.imageUrl = null
             }
+        },
+        emitAttachment() {
+            this.$emit('data-attachment', this.rowData, this.fileURL)
+        },
+        reload() {
+            this.rowData = null
             this.fileURL = '-1'
             this.imageUrl = null
+            this.emitAttachment()
         },
         async deleteItem() {
-            if(this.rowData.name !== undefined) {
-                await this.$confirm('This will permanently delete the file. Continue?', 'Warning', {
-                    confirmButtonText: 'OK',
-                    cancelButtonText: 'Cancel',
-                    type: 'warning'
-                })
-                .then(async () => {
-                    if(this.rowData.upload != 'new') {
-                        this.deleteList = JSON.parse(JSON.stringify(this.rowData))
-                    }
-                    this.rowData = {
-                        name : ""
-                    }
+            if (!(this.rowData && this.rowData.path)) {
+                return
+            }
+            await this.$confirm('This will permanently delete the file. Continue?', 'Warning', {
+                confirmButtonText: 'OK',
+                cancelButtonText: 'Cancel',
+                type: 'warning'
+            })
+                .then(() => {
+                    this.rowData = null
                     this.fileURL = '-1'
                     this.imageUrl = null
+                    this.emitAttachment()
                 })
-            }
+                .catch(() => {})
         },
         async upload() {
-            this.$refs.fileInput.click();
+            const rs = await window.electronAPI.getAttachmentpath('image')
+            if (!rs.success || !rs.path) {
+                return
+            }
+            if (!this.isImage(rs.path)) {
+                this.$message({
+                    type: 'error',
+                    message: "File extension don't be supported"
+                })
+                return
+            }
+            this.rowData = {
+                path: rs.path,
+                name: this.getFileName({ path: rs.path }),
+                role: 'nameplate'
+            }
+            this.fileURL = rs.path
+            this.imageUrl = this.toDisplayUrl(rs.path)
+            this.emitAttachment()
         },
         async openFile() {
-            if(this.rowData.name !== undefined && this.rowData.name !== '') {
-                if(await this.isIMage((this.rowData.name)) === true) {
-                    await this.launchFile()
-                } else {
-                    this.$message({
-                        type: 'error',
-                        message: "File extension don't be supported"
-                    })
-                }
+            if (this.hasImage) {
+                await this.launchFile()
             } else {
                 this.$message({
                     type: 'error',
-                    message: "No file to open"
+                    message: 'No file to open'
                 })
             }
         },
         async launchFile() {
-            if(this.fileURL != -1) {
-                if(typeof(this.fileUrl) == 'string') {
-                    if(!this.fileUrl.startsWith("data:image")) {
-                        window.open(this.fileURL)
-                    } else {
-                        const byteString = atob(this.fileUrl.split(',')[1]);
-                        const mimeString = this.fileUrl.split(',')[0].split(':')[1].split(';')[0];
-
-                        const byteNumbers = new Array(byteString.length);
-                        for (let i = 0; i < byteString.length; i++) {
-                            byteNumbers[i] = byteString.charCodeAt(i);
-                        }
-
-                        const byteArray = new Uint8Array(byteNumbers);
-                        const blob = new Blob([byteArray], { type: mimeString });
-                        this.fileUrl = URL.createObjectURL(blob);
-                        window.open(this.fileUrl);
-                    }
+            if (this.hasImage) {
+                if (this.isExternalPreview(this.rowData.path)) {
+                    window.open(this.rowData.path)
                 } else {
-                    window.open(this.fileURL)
+                    await window.electronAPI.openFile(this.rowData.path)
                 }
             } else {
-                this.$message.error("No file to open")
+                this.$message.error('No file to open')
             }
         },
-        async getFileExtension(fileName){
-            var  fileExtension;
-            fileExtension = fileName.replace(/^.*\./, '');
-            return fileExtension;
+        getFileExtension(fileName) {
+            return String(fileName || '').replace(/^.*\./, '')
         },
-        async isIMage(fileName){
-            var fileExt = await this.getFileExtension(fileName);
-            var imagesExtension = ["png", "jpg", "jpeg"];
+        isImage(fileName) {
+            const fileExt = this.getFileExtension(fileName)
+            const imagesExtension = ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp']
             return imagesExtension.includes(fileExt.toLowerCase())
         },
-        async isVideo(filename) {
-            var ext = await this.getFileExtension(filename);
-            switch (ext.toLowerCase()) {
-                case 'm4v':
-                case 'avi':
-                case 'mpg':
-                case 'mp4':
-                // etc
-                return true;
+        getFileName(file) {
+            const path = file && (file.name || file.path)
+            if (!path) {
+                return ''
             }
-            return false;
+            return String(path).split(/[\\/]/).pop()
         },
-        handleClose() {
-            this.dialogVisible = false
+        isExternalPreview(path) {
+            return /^(data:image|blob:|https?:)/i.test(String(path || ''))
+        },
+        toDisplayUrl(path) {
+            const value = String(path || '')
+            if (!value || value === '-1') {
+                return null
+            }
+            if (this.isExternalPreview(value) || value.startsWith('file://')) {
+                return value
+            }
+            return `file:///${value.replace(/\\/g, '/')}`
         },
         async downloadItem() {
-            if(this.rowData.name == undefined && this.rowData.name == '') {
-                try {
-                    const a = document.getElementById('download');
-                    a.href = this.fileURL;
-                    a.download = this.fileURL;
-                    a.click();
-                    this.$message({
-                        type: 'success',
-                        message: "Download file completed"
-                    })
-                } catch (e) {
-                    this.$message({
-                        type: 'error',
-                        message: "Download failed"
-                    })
-                }
-            } else {
+            if (!this.hasImage) {
                 this.$message({
                     type: 'error',
-                    message: "No file to download"
+                    message: 'No file to download'
                 })
+                return
             }
-        },
-        async handleFileSelect(event) {
-            const file = event.target.files[0];
-            const reader = new FileReader();
-            file.upload = "new"
-            if(this.rowData.name == file.name) {
+            try {
+                if (this.isExternalPreview(this.rowData.path)) {
+                    const a = this.$refs.download
+                    a.href = this.rowData.path
+                    a.download = this.imageName
+                    a.click()
+                } else {
+                    await window.electronAPI.downloadFile(this.rowData.path)
+                }
+                this.$message({
+                    type: 'success',
+                    message: 'Download file completed'
+                })
+            } catch (e) {
                 this.$message({
                     type: 'error',
-                    message: "File upload have the same name"
+                    message: 'Download failed'
                 })
-            } else {
-                if(this.rowData.name !== undefined && this.rowData.name !== '' && this.rowData.upload !== 'new') {
-                    this.deleteList = JSON.parse(JSON.stringify(this.rowData))
-                }
-                reader.onload = (e) => {
-                    this.fi
-                    this.imageUrl = e.target.result;
-                };
-                reader.readAsDataURL(file);
-                let fileURLTemp = URL.createObjectURL(file);
-                this.rowData = file
-                this.fileURL = fileURLTemp
             }
-            this.$refs.fileInput.value = '';
-        },
-        
+        }
     }
 }
 </script>
+
 <style lang="scss" scoped>
-.last-right-parent {
-    position: relative;
-    float: right;
+.np-card {
+    border: 1px solid #e4e7ed;
+    border-radius: 6px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    height: 100%;
 }
-.table-attachment {
+.np-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 10px;
+    background: #f5f7fa;
+    border-bottom: 1px solid #e4e7ed;
+    border-radius: 6px 6px 0 0;
+}
+.np-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    color: #606266;
+    font-size: 12px;
+    font-weight: 600;
+}
+.np-title i {
+    color: #909399;
+}
+.np-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+.np-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 4px;
+    color: #909399;
+    line-height: 1;
+    font-size: 12px;
+    transition: background 0.15s, color 0.15s;
+}
+.np-btn:hover {
+    color: #409eff;
+    background: #ecf5ff;
+}
+.np-btn.primary:hover {
+    color: #409eff;
+}
+.np-btn.danger:hover {
+    color: #f56c6c;
+    background: #fef0f0;
+}
+.np-btn.disabled {
+    color: #c0c4cc;
+}
+.np-body {
+    padding: 12px;
+    flex: 1;
+}
+.np-preview {
     width: 100%;
-    table-layout:fixed;
-}
-.border-main {
-    border: 1px solid #9b9797!important;
-}
-.color-main {
-    background-color: white;
-    color: black;
+    min-height: 120px;
+    border: 1px dashed #dcdfe6;
+    border-radius: 4px;
+    background: #fafbfc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
     cursor: pointer;
 }
-.mgr-10 {
-    margin-left: 10px;
+.np-preview img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #fff;
+}
+.np-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: #c0c4cc;
+    font-size: 12px;
+}
+.np-empty i {
+    font-size: 22px;
+}
+.np-file {
+    margin-top: 8px;
+    color: #606266;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (max-width: 767px) {
+    .np-card {
+        height: auto;
+    }
+
+    .np-header {
+        align-items: flex-start;
+        flex-wrap: wrap;
+        padding: 8px 10px;
+    }
+
+    .np-title {
+        flex: 1 1 140px;
+    }
+
+    .np-actions {
+        justify-content: flex-end;
+        flex-wrap: wrap;
+    }
+
+    .np-body {
+        padding: 10px;
+    }
+
+    .np-preview {
+        height: 170px !important;
+    }
 }
 </style>

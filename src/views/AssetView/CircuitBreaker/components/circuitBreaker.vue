@@ -1,9 +1,11 @@
 <template>
-    <div id="ratings" class="mgt-20">
+    <div id="circuit-breaker-data" class="mgy-5">
         <el-row>
             <el-col :span="24">
-                <span style="font-size: 12px;" class="bolder">Circuit breaker</span>
-                <el-divider></el-divider>
+                <div class="header-toggle">
+                    <i class="fa-solid fa-sliders"></i>
+                    Circuit breaker
+                </div>
             </el-col>
         </el-row>
         <div class="content-toggle">
@@ -18,7 +20,7 @@
                             </el-radio-group>
                         </el-form-item>
                         <el-form-item v-if="circuitBreakerData.numberOfPhases == '1'" label="Phase">
-                            <el-select style="width: 100%" v-model="circuitBreakerData.phase" placeholder="Select phase">
+                            <el-select class="phase-select" v-model="circuitBreakerData.phase" placeholder="Select phase">
                                 <el-option label="A" value="A"></el-option>
                                 <el-option label="B" value="B"></el-option>
                                 <el-option label="C" value="C"></el-option>
@@ -157,6 +159,10 @@ export default {
 </script>
 
 <style scoped>
+#circuit-breaker-data {
+    min-width: 0;
+}
+
 ::v-deep(.el-radio__label) {
     font-size: 12px !important;
 }
@@ -179,9 +185,32 @@ export default {
 }
 
 ::v-deep(.inline-radios .el-radio) {
-    flex: 1;
+    flex: 0 1 auto;
     margin-right: 0;
     display: inline-flex;
     align-items: center;
+    min-width: 48px;
+}
+
+::v-deep(.el-select),
+::v-deep(.el-input) {
+    width: 100%;
+    min-width: 0;
+}
+
+::v-deep(.phase-select.el-select) {
+    width: 120px;
+    max-width: 100%;
+}
+
+@media (max-width: 767px) {
+    ::v-deep(.inline-radios .el-radio-group) {
+        flex-wrap: wrap;
+        gap: 8px 14px;
+    }
+
+    ::v-deep(.phase-select.el-select) {
+        width: 100%;
+    }
 }
 </style>

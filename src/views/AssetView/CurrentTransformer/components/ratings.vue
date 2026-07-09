@@ -45,24 +45,24 @@
                     </el-form>
                 </el-col>
             </el-row>
-            <el-row style="margin: 10px;"
+            <el-row class="show-more-row"
                 v-if="!ratingsData.standard.value || ratingsData.standard.value !== 'selectStandard'">
-                <div class="pointer" @click="openShow = !openShow">
-                    <div style="font-size: 12px; font-weight: bold;" v-if="!openShow">
+                <div class="pointer show-more" @click="openShow = !openShow">
+                    <template v-if="!openShow">
                         <i class="fa-solid fa-angles-down"></i>
                         Show more
-                    </div>
-                    <div style="font-size: 12px; font-weight: bold;" v-else>
+                    </template>
+                    <template v-else>
                         <i class="fa-solid fa-angles-up"></i>
                         Show less
-                    </div>
+                    </template>
                 </div>
             </el-row>
             <el-row v-if="openShow && ratingsData.standard.value !== 'IEEEC5713'" class="content rating-wrapper">
-                <el-col :xs="24" :lg="18" class="col-content">
+                <el-col :span="24" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
-                        <el-row>
-                            <el-col :xs="24" :md="12" :lg="10" class="custom-col-spacing">
+                        <el-row :gutter="20">
+                            <el-col :xs="24" :sm="16" :md="12" :lg="10" class="custom-col-spacing">
                                 <el-form-item label="Primary windings">
                                     <el-select style="width: 100%;" v-model="ratingsData.primary_winding_count">
                                         <el-option label="1" value="1"></el-option>
@@ -97,15 +97,15 @@
                                 </el-form-item>
                             </el-col>
                         </el-row>
-                        <el-row>
-                            <el-col :xs="24" :md="12" :lg="10">
+                        <el-row :gutter="20">
+                            <el-col :xs="24" :sm="16" :md="12" :lg="10">
                                 <el-form-item label="Ith (r.m.s)">
                                     <el-input type="text" number="positive" v-model="ratingsData.ith_rms.value">
                                         <template slot="append">A</template>
                                     </el-input>
                                 </el-form-item>
                             </el-col>
-                            <el-col :xs="24" :md="12" :lg="10">
+                            <el-col :xs="24" :sm="16" :md="12" :lg="10">
                                 <el-form-item label="Duration" class="custom-form-item">
                                     <el-input type="text" number="positive" v-model="ratingsData.ith_duration.value">
                                         <template slot="append">s</template>
@@ -230,9 +230,27 @@ export default {
 }
 
 ::v-deep(.rating-wrapper) {
-    background-color: #f5f5f5;
-    border: 1px solid #000;
-    padding: 10px;
+    background-color: #f9fafc;
+    border: 1px solid #e4e7ed;
+    border-radius: 6px;
+    padding: 12px;
+}
+
+.show-more-row {
+    margin: 10px 0;
+}
+
+.show-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #012596;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.show-more:hover {
+    text-decoration: underline;
 }
 
 ::v-deep(.form-inline) {

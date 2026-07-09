@@ -1,59 +1,76 @@
 <template>
-    <div id="properties">
-        <el-row :gutter="20" class="content">
-            <el-col :xs="24" :md="12" class="col-content">
-                <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
-                    <span style="font-size: 12px;" class="bolder">Properties</span>
-                    <el-divider></el-divider>
-                    <el-form-item label="Asset">
-                        <el-select style="width: 100%" v-model="propertiesData.kind" placeholder="Select asset">
-                            <el-option label="Current transformer" value="Current transformer"> </el-option>
-                        </el-select>
-                    </el-form-item>
-                    <el-form-item label="Asset type">
-                        <el-select style="width: 100%" v-model="propertiesData.asset_type"
-                            placeholder="Select asset type">
-                            <el-option label="Inductive" value="inductive"> </el-option>
-                        </el-select>
-                    </el-form-item>
-                    <el-form-item label="Serial no.">
-                        <el-input v-model="propertiesData.serial_no"></el-input>
-                    </el-form-item>
-                    <el-form-item label="Manufacturer">
-                        <el-select style="width: 100%;" filterable v-model="propertiesData.manufacturer">
-                            <el-option v-for="item in manufacturerList" :label="item" :key="item" :value=item> </el-option>
-                        </el-select>
-                     </el-form-item>
-
-                    <el-form-item label="Manufacturer type">
-                        <el-input v-model="propertiesData.manufacturer_type"></el-input>
-                    </el-form-item>
-                    <el-form-item label="Manufacturing year">
-                        <el-input type="text" number="year" v-model="propertiesData.manufacturing_year"></el-input>
-                    </el-form-item>
-                    <el-form-item label="Country of origin">
-                        <el-select style="width: 100%;" filterable v-model="propertiesData.country_of_origin">
-                            <el-option v-for="item in countryData" :key="item" :label="item" :value="item"> </el-option>
-                        </el-select>
-                    </el-form-item>
-                    <el-form-item label="Asset ID">
-                        <el-input v-model="propertiesData.apparatus_id"></el-input>
-                    </el-form-item>
-                    <el-form-item label="Feeder">
-                        <el-input v-model="propertiesData.feeder"></el-input>
-                    </el-form-item>
-                </el-form>
-            </el-col>
-            <el-col :xs="24" :md="12" class="col-content">
-                <el-form :label-width="labelWidth" size="mini" label-position="left">
-                    <span style="font-size: 12px;" class="bolder">Comment</span>
-                    <el-divider></el-divider>
-                    <el-input type="textarea" :rows="5" v-model="propertiesData.comment"></el-input>
-                    <Attachment :attachment_="this.attachmentData" title="circuit" height="120px"
-                        @data-attachment="getDataAttachment"></Attachment>
-                </el-form>
-            </el-col>
-        </el-row>
+    <div id="properties" class="ct-property-wrap">
+        <div class="ct-row property">
+            <div class="col-content">
+                <section class="ct-card">
+                    <div class="ct-header">
+                        <i class="fa-solid fa-box"></i>
+                        <span>Properties</span>
+                    </div>
+                    <div class="ct-body">
+                        <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
+                            <el-form-item label="Asset">
+                                <el-select v-model="propertiesData.kind" placeholder="Select asset">
+                                    <el-option label="Current transformer" value="Current transformer"> </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item label="Asset type">
+                                <el-select v-model="propertiesData.asset_type" placeholder="Select asset type">
+                                    <el-option label="Inductive" value="inductive"> </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item label="Serial no.">
+                                <el-input v-model="propertiesData.serial_no"></el-input>
+                            </el-form-item>
+                            <el-form-item label="Manufacturer">
+                                <el-select filterable v-model="propertiesData.manufacturer">
+                                    <el-option v-for="item in manufacturerList" :label="item" :key="item" :value=item> </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item label="Manufacturer type">
+                                <el-input v-model="propertiesData.manufacturer_type"></el-input>
+                            </el-form-item>
+                            <el-form-item label="Manufacturing year">
+                                <el-input type="text" number="year" v-model="propertiesData.manufacturing_year"></el-input>
+                            </el-form-item>
+                            <el-form-item label="Country of origin">
+                                <el-select filterable v-model="propertiesData.country_of_origin">
+                                    <el-option v-for="item in countryData" :key="item" :label="item" :value="item"> </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item label="Asset ID">
+                                <el-input v-model="propertiesData.apparatus_id"></el-input>
+                            </el-form-item>
+                            <el-form-item label="Feeder">
+                                <el-input v-model="propertiesData.feeder"></el-input>
+                            </el-form-item>
+                        </el-form>
+                    </div>
+                </section>
+            </div>
+            <div class="col-content">
+                <section class="ct-card ct-comment-card">
+                    <div class="ct-header">
+                        <i class="fa-solid fa-align-left"></i>
+                        <span>Comment</span>
+                    </div>
+                    <div class="ct-body">
+                        <el-form :label-width="labelWidth" size="mini" label-position="left" class="ct-comment-form">
+                            <el-input class="ct-comment-input" type="textarea" v-model="propertiesData.comment"></el-input>
+                        </el-form>
+                    </div>
+                </section>
+            </div>
+        </div>
+        <div class="ct-row property">
+            <div class="col-content">
+                <slot name="side-top"></slot>
+            </div>
+            <div class="col-content">
+                <Attachment class="ct-attach-card" :attachment_="this.attachmentData" title="circuit" height="230px"
+                    @data-attachment="getDataAttachment"></Attachment>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -172,6 +189,8 @@ export default {
     },
     watch: {
         attachment: {
+            deep: true,
+            immediate: true,
             handler(val) {
                 this.attachmentData = val
             },
@@ -190,52 +209,121 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-#asset {
+.ct-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    gap: 20px;
+    margin-top: 14px;
+}
+
+.col-content {
+    min-width: 0;
+}
+
+.ct-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-width: 0;
+    background: #fff;
+    border: 1px solid #e4e7ed;
+    border-radius: 6px;
+}
+
+.ct-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #f5f7fa;
+    border-bottom: 1px solid #e4e7ed;
+    border-radius: 6px 6px 0 0;
+    color: #606266;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.ct-header i {
+    color: #909399;
+}
+
+.ct-body {
+    flex: 1;
+    padding: 12px;
+}
+
+.ct-comment-card,
+.ct-attach-card,
+::v-deep(.ct-media-card) {
+    height: 310px;
+}
+
+::v-deep(.el-select),
+::v-deep(.el-input),
+::v-deep(.el-textarea) {
     width: 100%;
+}
+
+.ct-comment-form,
+.ct-comment-input,
+.ct-comment-input ::v-deep(.el-textarea__inner) {
     height: 100%;
 }
 
-table,
-td,
-th {
-    border: 1px solid;
+.ct-comment-input ::v-deep(.el-textarea__inner) {
+    min-height: 230px !important;
+    resize: vertical;
 }
 
-table {
-    width: 100%;
-    table-layout: fixed;
-    border-collapse: collapse;
+::v-deep(.el-form-item) {
+    margin-bottom: 10px;
 }
 
-th,
-td {
-    padding: 0px 10px;
-    height: 30px;
+::v-deep(.el-input__inner),
+::v-deep(.el-select .el-input__inner),
+::v-deep(.el-form-item__label) {
+    font-size: 12px !important;
 }
 
 @media (max-width: 991px) {
-    ::v-deep(.col-content) {
-        margin-bottom: 10px;
+    .ct-card,
+    .ct-comment-card,
+    .ct-attach-card,
+    ::v-deep(.ct-media-card) {
+        height: auto;
     }
 }
 
 @media (max-width: 767px) {
+    .ct-row {
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .ct-header {
+        padding: 8px 10px;
+    }
+
+    .ct-body {
+        padding: 10px;
+    }
+
     ::v-deep(.el-form-item) {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
+        display: block;
     }
 
     ::v-deep(.el-form-item__label) {
-        width: auto !important;
-        margin-left: 0 !important;
-        padding-bottom: 0;
+        width: 100%;
         text-align: left;
+        margin-bottom: 4px;
     }
 
     ::v-deep(.el-form-item__content) {
-        width: 100%;
         margin-left: 0 !important;
+    }
+
+    .ct-comment-input ::v-deep(.el-textarea__inner) {
+        min-height: 120px !important;
     }
 }
 </style>

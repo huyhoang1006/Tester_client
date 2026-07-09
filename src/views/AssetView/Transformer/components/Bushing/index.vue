@@ -1,6 +1,6 @@
 <template>
-    <div class="mgt-20" label="Bushings">
-        <el-row :gutter="20" class="content">
+    <div class="transformer-bushing-tab" label="Bushings">
+        <el-row :gutter="20" class="content transformer-table-card">
             <el-col :span="24" class="col-content">
                 <span class="bolder">Primary bushings</span>
                 <el-divider></el-divider>
@@ -125,7 +125,7 @@
                 </div>
             </el-col>
         </el-row>
-        <el-row :gutter="20" class="content mgt-20" v-if="bushingData.sec.length > 0">
+        <el-row :gutter="20" class="content transformer-table-card" v-if="bushingData.sec.length > 0">
             <el-col :span="24" class="col-content">
                 <span class="bolder">Secondary bushings</span>
                 <el-divider></el-divider>
@@ -249,7 +249,7 @@
                 </div>
             </el-col>
         </el-row>
-        <el-row :gutter="20" class="content mgt-20" v-if="bushingData.tert.length > 0">
+        <el-row :gutter="20" class="content transformer-table-card" v-if="bushingData.tert.length > 0">
             <el-col :span="24" class="col-content">
                 <span class="bolder">Tertiary bushings</span>
                 <el-divider></el-divider>
@@ -435,8 +435,28 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.transformer-bushing-tab {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 6px;
+}
+
+.transformer-table-card {
+    margin: 0 !important;
+    padding: 14px;
+    background: #fff;
+    border: 1px solid #e4e7ed;
+    border-radius: 6px;
+}
+
 .bolder {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    color: #606266;
     font-size: 12px !important;
+    font-weight: 600;
 }
 
 ::v-deep(.el-input),
@@ -489,5 +509,11 @@ export default {
 
 ::v-deep(.table-strip-input-data) {
     font-size: 12px !important;
+}
+
+@media (max-width: 768px) {
+    .transformer-table-card {
+        padding: 12px;
+    }
 }
 </style>

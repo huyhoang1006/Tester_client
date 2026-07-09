@@ -20,7 +20,7 @@
                             </el-radio-group>
                         </el-form-item>
                         <el-form-item v-if="configData.number_of_phase == 1" label="Phase">
-                            <el-select style="width: 100%" v-model="configData.phase" placeholder="Select phase">
+                            <el-select class="phase-select" v-model="configData.phase" placeholder="Select phase">
                                 <el-option label="A" value="A"></el-option>
                                 <el-option label="B" value="B"></el-option>
                                 <el-option label="C" value="C"></el-option>
@@ -65,59 +65,44 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-::v-deep(.rating_content) {
-    margin-left: 5px;
-    margin-top: 5px;
+#config {
+    min-width: 0;
 }
 
-::v-deep(.ith_content) {
-    margin-left: 5px;
+::v-deep(.col-content) {
+    min-width: 0;
 }
 
-::v-deep(.rating-wrapper) {
-    background-color: #f5f5f5;
-    border: 1px solid #000;
-    padding: 10px;
+::v-deep(.inline-radios .el-radio-group) {
+    display: flex;
+    align-items: center;
+    gap: 26px;
+    min-height: 28px;
 }
 
-::v-deep(.form-inline) {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
+::v-deep(.inline-radios .el-radio) {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 0;
+}
+
+::v-deep(.el-radio__label) {
+    font-size: 12px !important;
+}
+
+::v-deep(.el-select),
+::v-deep(.el-input) {
     width: 100%;
 }
 
-::v-deep(.form-control) {
-    flex: 1;
-}
-
-::v-deep(.custom-form-item .el-form-item__label) {
-    text-align: center;
-}
-
-::v-deep(.el-form-item__label) {
-    white-space: normal;
-    word-break: break-word;
-    line-height: 1.2;
-}
-
-::v-deep(.nom-max-sel .el-form-item__label) {
-    display: none;
-}
-
-::v-deep(.nom-max-sel .el-form-item__content) {
-    margin-left: 8px !important;
-}
-
-@media (max-width: 991px) {
-    ::v-deep(.custom-form-item .el-form-item__label) {
-        text-align: left;
-    }
+::v-deep(.phase-select.el-select) {
+    width: 120px !important;
+    max-width: 100%;
 }
 
 @media (max-width: 767px) {
-    ::v-deep(.nom-max-sel .el-form-item__content) {
-        margin-left: 120px !important;
+    ::v-deep(.phase-select.el-select) {
+        width: 100% !important;
     }
 }
 </style>
