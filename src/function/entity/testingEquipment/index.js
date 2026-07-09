@@ -2,6 +2,7 @@ import db from '../../datacontext/index'
 import { insertAssetTransaction, getAssetById, deleteAssetByIdTransaction } from '@/function/cim/asset'
 import { insertProductAssetModelTransaction, getProductAssetModelById } from '@/function/cim/productAssetModel'
 import { insertLifecycleDateTransaction, getLifecycleDateById } from '@/function/cim/lifecycleDate'
+import { insertInUseDateTransaction, getInUseDateById } from '@/function/cim/inUseDate'
 import {
     insertSoftwareLicenseTransaction,
     getSoftwareLicenseById
@@ -19,7 +20,6 @@ import {
 } from '@/function/entity/calibrationRecord'
 import {
     insertAccessoryTestingEquipmentTransaction,
-    getAccessoriesByEquipmentId,
     getAccessoryDetailsByEquipmentId,
     deleteAccessoryTestingEquipmentTransaction,
     deleteAccessoryTestingEquipmentByEquipmentIdTransaction
@@ -57,6 +57,7 @@ export const getAllTestingEquipmentList = async (userId) => {
             `SELECT te.mrid AS mrid,
                     io.name AS name,
                     a.serial_number AS serial,
+                    a.type AS type,
                     pam.manufacturer AS manufacturer,
                     pam.model_number AS model,
                     te.asset_tag AS asset_tag,
@@ -153,6 +154,54 @@ export const getTestingEquipmentByWorkId = async (workId) => {
                 if (err) return reject({ success: false, err, message: 'Get testingEquipment by workId failed' })
                 if (!rows || rows.length === 0) return resolve({ success: false, data: null, message: 'TestingEquipment not found' })
                 return resolve({ success: true, data: rows, message: 'Get testingEquipment by workId completed' })
+            }
+        )
+    })
+}
+
+// Usage history is inferred from job/test links instead of a separate table.
+// Some rows store test_type_id as work_task.mrid, while the current schema/UI
+// store it as procedure.mrid. Support both shapes across all equipment link tables.
+const TE_TEST_TYPE_TABLES = [
+    'transformer_testing_equipment_test_type',
+    'voltage_transformer_testing_equipment_test_type',
+    'current_transformer_testing_equipment_test_type',
+    'circuit_breaker_testing_equipment_test_type',
+    'power_cable_testing_equipment_test_type',
+    'surge_arrester_testing_equipment_test_type',
+    'reactor_testing_equipment_test_type',
+    'capacitor_testing_equipment_test_type',
+    'disconnector_testing_equipment_test_type',
+    'rotating_machine_testing_equipment_test_type',
+    'bushing_testing_equipment_test_type',
+]
+
+export const getTestingEquipmentUsageHistory = async (teMrid) => {
+    const unionSql = TE_TEST_TYPE_TABLES.map((t) => `
+        SELECT DISTINCT
+               ow.execution_date            AS date,
+               io_w.name                    AS job_name,
+               COALESCE(io_a.name, a.serial_number) AS asset_name,
+               COALESCE(io_wt.name, io_p.name) AS test_type,
+               ow.tested_by                 AS tested_by
+        FROM ${t} l
+        LEFT JOIN work_task wt ON wt.mrid = l.test_type_id
+        LEFT JOIN testing_equipment te ON te.mrid = l.testing_equipment_id
+        JOIN old_work ow ON ow.mrid = COALESCE(wt.work, te.work_id)
+        LEFT JOIN identified_object io_w ON io_w.mrid = ow.mrid
+        LEFT JOIN identified_object io_a ON io_a.mrid = ow.asset_id
+        LEFT JOIN asset a ON a.mrid = ow.asset_id
+        LEFT JOIN identified_object io_wt ON io_wt.mrid = wt.mrid
+        LEFT JOIN identified_object io_p ON io_p.mrid = l.test_type_id
+        WHERE l.testing_equipment_id = ?`).join('\n        UNION\n')
+
+    return new Promise((resolve, reject) => {
+        db.all(
+            `SELECT * FROM (${unionSql}) ORDER BY date DESC`,
+            TE_TEST_TYPE_TABLES.map(() => teMrid),
+            (err, rows) => {
+                if (err) return reject({ success: false, err, message: 'Get testingEquipment usage history failed' })
+                return resolve({ success: true, data: rows || [], message: 'Get testingEquipment usage history completed' })
             }
         )
     })
@@ -310,14 +359,27 @@ export const insertTestingEquipmentEntity = async (old_entity, entity) => {
         await runAsync('BEGIN TRANSACTION')
 
         // 0a) đảm bảo user tồn tại trong bảng user (FK cho user_identified_object)
-        if (entity.user && entity.user.user_id) {
-            await insertUserTransaction(entity.user, db)
+        const ownerUserId = (entity.user && entity.user.user_id) ||
+            (entity.userIdentifiedObject && entity.userIdentifiedObject.user_id)
+        if (ownerUserId) {
+            await insertUserTransaction({
+                user_id: ownerUserId,
+                role: entity.user && entity.user.role != null ? entity.user.role : null,
+                permission: entity.user && entity.user.permission != null ? entity.user.permission : null,
+                username: entity.user && entity.user.username != null ? entity.user.username : null,
+                token: entity.user && entity.user.token != null ? entity.user.token : null,
+                group_user: entity.user && entity.user.group_user != null ? entity.user.group_user : null
+            }, db)
         }
 
         // 0) product_asset_model + lifecycle_date (asset tham chiếu FK tới 2 bảng này -> insert trước)
         if (entity.lifecycleDate && entity.lifecycleDate.mrid) {
             await insertLifecycleDateTransaction(entity.lifecycleDate, db)
             entity.asset.lifecycle_date = entity.lifecycleDate.mrid
+        }
+        if (entity.inUseDate && entity.inUseDate.mrid) {
+            await insertInUseDateTransaction(entity.inUseDate, db)
+            entity.asset.in_use_date = entity.inUseDate.mrid
         }
         if (entity.productAssetModel && entity.productAssetModel.mrid) {
             await insertProductAssetModelTransaction(entity.productAssetModel, db)
@@ -442,6 +504,7 @@ export const getTestingEquipmentEntity = async (mrid) => {
             asset: null,
             productAssetModel: null,
             lifecycleDate: null,
+            inUseDate: null,
             testingEquipment: null,
             attachment: null,
             userIdentifiedObject: null,
@@ -465,6 +528,10 @@ export const getTestingEquipmentEntity = async (mrid) => {
         if (entity.asset.lifecycle_date) {
             const lcRes = await getLifecycleDateById(entity.asset.lifecycle_date)
             if (lcRes.success && lcRes.data) entity.lifecycleDate = lcRes.data
+        }
+        if (entity.asset.in_use_date) {
+            const iudRes = await getInUseDateById(entity.asset.in_use_date)
+            if (iudRes.success && iudRes.data) entity.inUseDate = iudRes.data
         }
 
         const teRes = await getTestingEquipmentById(mrid)

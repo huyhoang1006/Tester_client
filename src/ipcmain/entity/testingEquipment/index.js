@@ -91,6 +91,22 @@ export const getTestingEquipmentEntityByMrid = () => {
     })
 }
 
+// Usage history — suy ra từ job/test (bảng <asset>_testing_equipment_test_type), không lưu record riêng
+export const getTestingEquipmentUsage = () => {
+    ipcMain.handle('getTestingEquipmentUsage', async function (event, mrid) {
+        try {
+            const rs = await entityFunc.testingEquipmentEntityFunc.getTestingEquipmentUsageHistory(mrid)
+            if (rs.success == true) {
+                return { success: true, message: "Success", data: rs.data }
+            } else {
+                return { success: false, message: "fail" }
+            }
+        } catch (error) {
+            return { error, success: false, message: (error && error.message) ? error.message : "Internal error" }
+        }
+    })
+}
+
 // Xóa toàn bộ thông tin của 1 testing equipment
 export const deleteTestingEquipmentEntity = () => {
     ipcMain.handle('deleteTestingEquipmentEntity', async function (event, mrid) {
@@ -124,5 +140,6 @@ export const active = () => {
     getAllTestingEquipmentList()
     getAllAccessories()
     getTestingEquipmentEntityByMrid()
+    getTestingEquipmentUsage()
     deleteTestingEquipmentEntity()
 }

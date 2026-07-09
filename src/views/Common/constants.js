@@ -43,6 +43,55 @@ export const FEATURE_TREE = {
         breaker_configuration: { label: 'Breaker configuration', value: 'breaker_configuration' },
         bus_bar_configuration: { label: 'Bus Bar configuration', value: 'bus_bar_configuration' }
     }},
+    // Testing equipment: danh sách phẳng, KHÔNG thuộc cây org→job.
+    // Leaf values khớp Dto/TestingEquipment (Properties + Calibration + License).
+    TestingEquipmentDto: { label: 'Testing equipment', children: {
+        PropertiesDto: { label: 'Properties', children: {
+            name:              { label: 'Equipment name',     value: 'name' },
+            type:              { label: 'Equipment type',     value: 'type' },
+            serial_no:         { label: 'Serial no.',         value: 'serial_no' },
+            manufacturer:      { label: 'Manufacturer',       value: 'manufacturer' },
+            model:             { label: 'Model',              value: 'model' },
+            manufacturer_year: { label: 'Manufacturing date', value: 'manufacturer_year' },
+            asset_tag:         { label: 'Asset tag',          value: 'asset_tag' },
+            status:            { label: 'Status',             value: 'status' },
+            country_of_origin: { label: 'Country of origin',  value: 'country_of_origin' },
+            in_use_date:       { label: 'In use date',        value: 'in_use_date' },
+            comment:           { label: 'Comment',            value: 'comment' },
+            is_accessory:      { label: 'Is accessory (0/1)', value: 'is_accessory' }
+        }},
+        CalibrationDto: { label: 'Calibration', children: {
+            calibration_date:   { label: 'Calibration date',   value: 'cal_calibration_date' },
+            due_date:           { label: 'Due date',           value: 'cal_due_date' },
+            interval_months:    { label: 'Interval (months)',  value: 'cal_interval_months' },
+            provider:           { label: 'Provider',           value: 'cal_provider' },
+            certificate_number: { label: 'Certificate number', value: 'cal_certificate_number' },
+            result:             { label: 'Result',             value: 'cal_result' },
+            notes:              { label: 'Notes',              value: 'cal_notes' }
+        }},
+        LicenseDto: { label: 'Software license', children: {
+            option_name:     { label: 'Option name',     value: 'lic_option_name' },
+            license_key:     { label: 'License key',     value: 'lic_license_key' },
+            enabled:         { label: 'Enabled (0/1)',   value: 'lic_enabled' },
+            description:     { label: 'Description',     value: 'lic_description' },
+            activation_date: { label: 'Activation date', value: 'lic_activation_date' },
+            expiry_date:     { label: 'Expiry date',     value: 'lic_expiry_date' }
+        }},
+        RepairDto: { label: 'Repair history', children: {
+            created_date_time: { label: 'Date',     value: 'rep_created_date_time' },
+            reason:            { label: 'Reason',   value: 'rep_reason' },
+            provider:          { label: 'Provider', value: 'rep_provider' },
+            cost:              { label: 'Cost',     value: 'rep_cost' },
+            status:            { label: 'Status (InProgress/Completed)', value: 'rep_status' }
+        }},
+        UsageDto: { label: 'Usage history (export only)', children: {
+            date:       { label: 'Date',       value: 'use_date' },
+            job_name:   { label: 'Job name',   value: 'use_job_name' },
+            asset_name: { label: 'Asset name', value: 'use_asset_name' },
+            test_type:  { label: 'Test type',  value: 'use_test_type' },
+            tested_by:  { label: 'Tested by',  value: 'use_tested_by' }
+        }}
+    }},
     Asset: { label: 'Asset', children: {
         TransformerDataDto: { label: 'Transformer', children: {
         PropertiesDto: { label: 'Properties', children: {
@@ -2524,4 +2573,10 @@ export const CATEGORY_OPTION = [
     { label: 'Bay',           value: 'Bay' },
     { label: 'Asset',         value: 'Asset' },
     { label: 'Job',           value: 'Job' }
+]
+
+// Category riêng cho màn Testing equipment (import/export template tách biệt,
+// KHÔNG xuất hiện trong Import/Export cũ)
+export const TE_CATEGORY_OPTION = [
+    { label: 'Testing equipment', value: 'TestingEquipmentDto' }
 ]

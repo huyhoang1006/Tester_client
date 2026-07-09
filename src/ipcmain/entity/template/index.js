@@ -681,6 +681,11 @@ export const exportTemplateWithData = () => {
             // ── HÀM GHI DỮ LIỆU AN TOÀN (BẢO TOÀN KIỂU NUMBER) ────────────
             function setCellValueSafe(cell, val, code) {
                 const currentValue = cell.value()
+                const applyWrapIfNeeded = (value) => {
+                    if (typeof value === 'string' && value.indexOf('\n') !== -1) {
+                        try { cell.style('wrapText', true) } catch (e) { /* keep export best-effort */ }
+                    }
+                }
                 
                 let finalVal = val
                 if (typeof val === 'string' && val.trim() !== '') {
@@ -690,6 +695,7 @@ export const exportTemplateWithData = () => {
 
                 if (currentValue === null || currentValue === undefined || currentValue === '') {
                     cell.value(finalVal)
+                    applyWrapIfNeeded(finalVal)
                     return
                 }
 
@@ -698,21 +704,50 @@ export const exportTemplateWithData = () => {
 
                 if (currentStr === codeTrimmed || currentStr === `{${codeTrimmed}}`) {
                     cell.value(finalVal)
+                    applyWrapIfNeeded(finalVal)
                     return
                 }
 
                 const codeRegex = new RegExp('(?<![A-Za-z0-9])\\{?' + codeTrimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\}?(?![A-Za-z0-9])', 'g')
                 if (codeRegex.test(currentStr)) {
                     codeRegex.lastIndex = 0
-                    cell.value(currentStr.replace(codeRegex, () => val))
+                    const replaced = currentStr.replace(codeRegex, () => val)
+                    cell.value(replaced)
+                    applyWrapIfNeeded(replaced)
                 } else {
                     cell.value(finalVal)
+                    applyWrapIfNeeded(finalVal)
                 }
             }
 
             // ── THUẬT TOÁN CHÍNH: QUẢN LÝ DỊCH CHUYỂN TỌA ĐỘ ───────────────
             function fillWorkbookSheet(wb, vars, codeMap) {
                 const actionsBySheet = {}
+                const parseExcelCellAddress = (addr) => {
+                    const match = String(addr || '').match(/^([A-Z]+)(\d+)$/i)
+                    if (!match) return null
+                    return { colStr: match[1].toUpperCase(), rowNum: parseInt(match[2], 10) }
+                }
+                const parseExcelCoordinate = (coord) => {
+                    const bangIdx = String(coord || '').indexOf('!')
+                    if (bangIdx === -1) return null
+                    const cell = parseExcelCellAddress(coord.substring(bangIdx + 1))
+                    if (!cell) return null
+                    return { sheetName: coord.substring(0, bangIdx), ...cell }
+                }
+                const isVerticalSeries = (coordinates) => {
+                    if (!Array.isArray(coordinates) || coordinates.length < 2) return null
+                    const parsed = coordinates.map(parseExcelCoordinate).filter(Boolean)
+                    if (parsed.length < 2) return null
+                    const first = parsed[0]
+                    const sameSheetAndColumn = parsed.every(p => p.sheetName === first.sheetName && p.colStr === first.colStr)
+                    if (!sameSheetAndColumn) return null
+                    const rows = parsed.map(p => p.rowNum).sort((a, b) => a - b)
+                    for (let i = 1; i < rows.length; i++) {
+                        if (rows[i] - rows[i - 1] !== 1) return null
+                    }
+                    return { sheetName: first.sheetName, colStr: first.colStr, rowNum: rows[0] }
+                }
 
                 for (const variable of (vars || [])) {
                     const { code, coordinates } = variable
@@ -722,20 +757,23 @@ export const exportTemplateWithData = () => {
                     const values = Array.isArray(rawVals) ? rawVals : (rawVals !== undefined ? [String(rawVals)] : [])
                     if (!values.length) continue
 
+                    const verticalSeries = isVerticalSeries(coordinates)
+                    if (verticalSeries && values.length > 1) {
+                        const { sheetName, colStr, rowNum } = verticalSeries
+                        if (!actionsBySheet[sheetName]) actionsBySheet[sheetName] = {}
+                        if (!actionsBySheet[sheetName][rowNum]) actionsBySheet[sheetName][rowNum] = []
+                        actionsBySheet[sheetName][rowNum].push({
+                            code, colStr, isAutoInsert: true, values, templateRowCount: coordinates.length
+                        })
+                        continue
+                    }
+
                     const isAutoInsert = (coordinates.length === 1 && values.length > 1)
 
                     coordinates.forEach((coord, i) => {
-                        const bangIdx = coord.indexOf('!')
-                        if (bangIdx === -1) return
-
-                        const sheetName = coord.substring(0, bangIdx)
-                        const cellAddr = coord.substring(bangIdx + 1)
-                        
-                        const match = cellAddr.match(/^([A-Z]+)(\d+)$/i)
-                        if (!match) return
-
-                        const colStr = match[1].toUpperCase()
-                        const rowNum = parseInt(match[2], 10)
+                        const parsed = parseExcelCoordinate(coord)
+                        if (!parsed) return
+                        const { sheetName, colStr, rowNum } = parsed
 
                         if (!actionsBySheet[sheetName]) actionsBySheet[sheetName] = {}
                         if (!actionsBySheet[sheetName][rowNum]) actionsBySheet[sheetName][rowNum] = []
@@ -761,7 +799,7 @@ export const exportTemplateWithData = () => {
                         let maxShiftRequired = 0
                         rowActions.forEach(act => {
                             if (act.isAutoInsert) {
-                                maxShiftRequired = Math.max(maxShiftRequired, act.values.length - 1)
+                                maxShiftRequired = Math.max(maxShiftRequired, act.values.length - (act.templateRowCount || 1))
                             }
                         })
 
@@ -1140,6 +1178,8 @@ export const readExcelForImport = () => {
             const isCsv = ext === 'csv'
  
             var codeValueMap = {}
+            var codeSheetMap = {}
+            var sheetNames = []
  
             if (isCsv) {
                 // ── CSV path ──────────────────────────────────────────────────
@@ -1164,6 +1204,7 @@ export const readExcelForImport = () => {
                     if (!code || !coordinates || !coordinates.length) continue
  
                     codeValueMap[code] = []
+                    codeSheetMap[code] = []
  
                     for (var ci = 0; ci < coordinates.length; ci++) {
                         var coord    = coordinates[ci]
@@ -1173,13 +1214,14 @@ export const readExcelForImport = () => {
  
                         try {
                             var idx = cellAddressToIndex(cellAddr)
-                            if (!idx) { codeValueMap[code].push(''); continue }
+                            if (!idx) { codeValueMap[code].push(''); codeSheetMap[code].push('CSV'); continue }
  
                             var row    = filledRows[idx.row]
                             var rawVal = row ? row[idx.col] : undefined
  
                             if (rawVal === undefined || rawVal === null || rawVal === '') {
                                 codeValueMap[code].push('')
+                                codeSheetMap[code].push('CSV')
                                 continue
                             }
  
@@ -1187,6 +1229,7 @@ export const readExcelForImport = () => {
                             var numVal = Number(rawVal)
                             if (!isNaN(numVal) && rawVal.trim() !== '') {
                                 codeValueMap[code].push(String(rawVal).trim())
+                                codeSheetMap[code].push('CSV')
                                 continue
                             }
  
@@ -1201,10 +1244,12 @@ export const readExcelForImport = () => {
                                     extracted = extractValue(String(rawTmpl), filledStr, code)
                                 }
                             }
- 
+
                             codeValueMap[code].push(extracted.trim())
+                            codeSheetMap[code].push('CSV')
                         } catch(e) {
                             codeValueMap[code].push('')
+                            codeSheetMap[code].push('CSV')
                         }
                     }
                 }
@@ -1212,67 +1257,183 @@ export const readExcelForImport = () => {
                 // ── Excel path (giữ nguyên) ───────────────────────────────────
                 const XlsxPopulate = require('xlsx-populate')
                 const filled = await XlsxPopulate.fromFileAsync(filePath)
+                sheetNames = filled.sheets().map(sheet => sheet.name())
+                const filledSheets = filled.sheets()
+                const nonEmptySheets = filledSheets.filter(sheet => {
+                    try { return !!sheet.usedRange() } catch (e) { return false }
+                })
  
                 var tmpl = null
                 if (templatePath && fs.existsSync(templatePath)) {
                     try { tmpl = await XlsxPopulate.fromFileAsync(templatePath) }
                     catch(e) { console.warn('Cannot open template for prefix detection:', e.message) }
                 }
+
+                const pushExcelCellValue = (sheet, cellAddr, templateSheetName, code) => {
+                    const actualSheetName = sheet.name()
+                    var rawFilled = sheet.cell(cellAddr).value()
+
+                    if (typeof rawFilled === 'number') {
+                        codeValueMap[code].push(String(rawFilled))
+                        codeSheetMap[code].push(actualSheetName)
+                        return
+                    }
+                    if (rawFilled === null || rawFilled === undefined) {
+                        codeValueMap[code].push('')
+                        codeSheetMap[code].push(actualSheetName)
+                        return
+                    }
+
+                    var filledStr = String(rawFilled)
+                    var extracted = filledStr
+
+                    if (tmpl) {
+                        var tmplSheet = tmpl.sheet(templateSheetName)
+                        if (tmplSheet) {
+                            var rawTmpl = tmplSheet.cell(cellAddr).value()
+                            if (rawTmpl !== null && rawTmpl !== undefined) {
+                                extracted = extractValue(String(rawTmpl), filledStr, code)
+                            }
+                        }
+                    }
+
+                    codeValueMap[code].push(extracted.trim())
+                    codeSheetMap[code].push(actualSheetName)
+                }
+
+                const parseExcelCellAddress = (addr) => {
+                    const m = String(addr || '').match(/^([A-Z]+)(\d+)$/i)
+                    if (!m) return null
+                    const colText = m[1].toUpperCase()
+                    let col = 0
+                    for (let i = 0; i < colText.length; i++) col = col * 26 + (colText.charCodeAt(i) - 64)
+                    return { colText, col, row: parseInt(m[2], 10) }
+                }
+
+                const excelColumnName = (index) => {
+                    let n = index
+                    let name = ''
+                    while (n > 0) {
+                        const rem = (n - 1) % 26
+                        name = String.fromCharCode(65 + rem) + name
+                        n = Math.floor((n - 1) / 26)
+                    }
+                    return name
+                }
+
+                const getExcelTargetSheet = (sheetName) => {
+                    const explicit = filled.sheet(sheetName)
+                    if (explicit) return explicit
+                    const fallbackSheets = nonEmptySheets.length ? nonEmptySheets : filledSheets
+                    return fallbackSheets[0] || null
+                }
+
+                const buildVerticalImportSpecs = () => {
+                    const specs = []
+                    for (const variable of variables) {
+                        if (!variable || !variable.code || !Array.isArray(variable.coordinates) || variable.coordinates.length < 2) continue
+                        const parsed = variable.coordinates
+                            .map(coord => {
+                                const bangIdx = String(coord || '').indexOf('!')
+                                if (bangIdx === -1) return null
+                                const sheetName = coord.substring(0, bangIdx)
+                                const cell = parseExcelCellAddress(coord.substring(bangIdx + 1))
+                                return cell ? { sheetName, ...cell } : null
+                            })
+                            .filter(Boolean)
+                        if (parsed.length < 2) continue
+                        const first = parsed[0]
+                        const second = parsed[1]
+                        const sameColumn = first.sheetName === second.sheetName && first.col === second.col
+                        const adjacentRows = Math.abs(first.row - second.row) === 1
+                        if (!sameColumn || !adjacentRows) continue
+                        specs.push({
+                            code: variable.code,
+                            templateSheetName: first.sheetName,
+                            col: first.col,
+                            startRow: Math.min(first.row, second.row)
+                        })
+                    }
+                    return specs
+                }
+
+                const isExcelBlank = (value) => value === null || value === undefined || String(value).trim() === ''
+                const verticalSpecs = buildVerticalImportSpecs()
+                const canUseVerticalScan = verticalSpecs.length >= 2
  
-                for (var vi = 0; vi < variables.length; vi++) {
-                    var variable    = variables[vi]
-                    var code        = variable.code
-                    var coordinates = variable.coordinates
-                    if (!code || !coordinates || !coordinates.length) continue
+                if (canUseVerticalScan) {
+                    for (const variable of variables) {
+                        if (variable && variable.code) {
+                            codeValueMap[variable.code] = []
+                            codeSheetMap[variable.code] = []
+                        }
+                    }
+
+                    const startRow = Math.min(...verticalSpecs.map(spec => spec.startRow))
+                    const templateSheetName = verticalSpecs[0].templateSheetName
+                    const targetSheet = getExcelTargetSheet(templateSheetName)
+
+                    if (targetSheet) {
+                        const maxRows = 5000
+                        let readRows = 0
+                        for (let row = startRow; row < startRow + maxRows; row++) {
+                            const rowIsBlank = verticalSpecs.every(spec => {
+                                const addr = `${excelColumnName(spec.col)}${row}`
+                                return isExcelBlank(targetSheet.cell(addr).value())
+                            })
+                            if (rowIsBlank && readRows > 0) break
+                            if (rowIsBlank) continue
+
+                            for (const spec of verticalSpecs) {
+                                const addr = `${excelColumnName(spec.col)}${row}`
+                                pushExcelCellValue(targetSheet, addr, spec.templateSheetName, spec.code)
+                            }
+                            readRows++
+                        }
+                    }
+                } else {
+                for (let excelVi = 0; excelVi < variables.length; excelVi++) {
+                    const excelVariable    = variables[excelVi]
+                    const excelCode        = excelVariable.code
+                    const excelCoordinates = excelVariable.coordinates
+                    if (!excelCode || !excelCoordinates || !excelCoordinates.length) continue
  
-                    codeValueMap[code] = []
+                    codeValueMap[excelCode] = []
+                    codeSheetMap[excelCode] = []
  
-                    for (var ci = 0; ci < coordinates.length; ci++) {
-                        var coord    = coordinates[ci]
-                        var bangIdx  = coord.indexOf('!')
-                        if (bangIdx === -1) { codeValueMap[code].push(''); continue }
+                    for (let excelCi = 0; excelCi < excelCoordinates.length; excelCi++) {
+                        const excelCoord    = excelCoordinates[excelCi]
+                        const excelBangIdx  = excelCoord.indexOf('!')
+                        if (excelBangIdx === -1) { codeValueMap[excelCode].push(''); codeSheetMap[excelCode].push(''); continue }
  
-                        var sheetName = coord.substring(0, bangIdx)
-                        var cellAddr  = coord.substring(bangIdx + 1)
+                        var sheetName = excelCoord.substring(0, excelBangIdx)
+                        const cellAddr  = excelCoord.substring(excelBangIdx + 1)
  
                         try {
                             var filledSheet = filled.sheet(sheetName)
-                            if (!filledSheet) { codeValueMap[code].push(''); continue }
- 
-                            var rawFilled = filledSheet.cell(cellAddr).value()
- 
-                            if (typeof rawFilled === 'number') {
-                                codeValueMap[code].push(String(rawFilled))
-                                continue
-                            }
-                            if (rawFilled === null || rawFilled === undefined) {
-                                codeValueMap[code].push('')
-                                continue
-                            }
- 
-                            var filledStr = String(rawFilled)
-                            var extracted = filledStr
- 
-                            if (tmpl) {
-                                var tmplSheet = tmpl.sheet(sheetName)
-                                if (tmplSheet) {
-                                    var rawTmpl = tmplSheet.cell(cellAddr).value()
-                                    if (rawTmpl !== null && rawTmpl !== undefined) {
-                                        extracted = extractValue(String(rawTmpl), filledStr, code)
-                                    }
+                            if (!filledSheet) {
+                                const fallbackSheets = nonEmptySheets.length ? nonEmptySheets : filledSheets
+                                const fallbackSheet = fallbackSheets[0]
+                                if (!fallbackSheet) {
+                                    codeValueMap[excelCode].push('')
+                                    codeSheetMap[excelCode].push(sheetName)
+                                    continue
                                 }
+                                pushExcelCellValue(fallbackSheet, cellAddr, sheetName, excelCode)
+                                continue
                             }
- 
-                            codeValueMap[code].push(extracted.trim())
+                            pushExcelCellValue(filledSheet, cellAddr, sheetName, excelCode)
                         } catch(cellErr) {
-                            console.warn('readExcelForImport cell error:', coord, cellErr.message)
-                            codeValueMap[code].push('')
+                            console.warn('readExcelForImport cell error:', excelCoord, cellErr.message)
+                            codeValueMap[excelCode].push('')
+                            codeSheetMap[excelCode].push(sheetName)
                         }
                     }
                 }
+                }
             }
  
-            return { success: true, codeValueMap: codeValueMap }
+            return { success: true, codeValueMap: codeValueMap, codeSheetMap: codeSheetMap, sheetNames: sheetNames }
         } catch (error) {
             console.error('readExcelForImport error:', error)
             return { success: false, message: error.message }

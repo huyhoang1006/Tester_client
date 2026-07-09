@@ -6,6 +6,7 @@ export const testingEquipmentEntityPreload = () => {
         getAllTestingEquipmentList: (userId) => ipcRenderer.invoke('getAllTestingEquipmentList', userId),
         getAllAccessories: () => ipcRenderer.invoke('getAllAccessories'),
         getTestingEquipmentEntityByMrid: (mrid) => ipcRenderer.invoke('getTestingEquipmentEntityByMrid', mrid),
+        getTestingEquipmentUsage: (mrid) => ipcRenderer.invoke('getTestingEquipmentUsage', mrid),
         deleteTestingEquipmentEntity: (mrid) => ipcRenderer.invoke('deleteTestingEquipmentEntity', mrid),
     }
 }

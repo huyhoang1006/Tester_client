@@ -11,7 +11,7 @@ class PropertiesDto {
         this.asset_tag = '';
         this.status = 'Available';
         this.country_of_origin = '';
-        this.purchase_date = '';
+        this.in_use_date = '';
         this.comment = '';
         this.is_accessory = 0;      // 0 = máy chính, 1 = thiết bị đi kèm (accessory)
     }

@@ -4,7 +4,7 @@
             <div class="panel">
                 <div class="panel-header">Identification</div>
                 <div class="frow">
-                    <div class="flabel">Name <span class="req">*</span></div>
+                    <div class="flabel">Name</div>
                     <div class="fvalue"><input class="inp" v-model="form.name" placeholder="e.g. OMICRON CMC 356" /></div>
                 </div>
                 <div class="frow">
@@ -38,11 +38,9 @@
                     <div class="fvalue"><input class="inp" v-model="form.model" /></div>
                 </div>
                 <div class="frow">
-                    <div class="flabel">Manufacturing year</div>
+                    <div class="flabel">Manufacturing date</div>
                     <div class="fvalue">
-                        <input class="inp" :class="{ 'inp-err': yearInvalid }" v-model="form.manufacturer_year"
-                            placeholder="YYYY" maxlength="4" inputmode="numeric" />
-                        <div v-if="yearInvalid" class="fhint-err">Year must be 1900–2100</div>
+                        <input class="inp" type="date" v-model="form.manufacturer_year" />
                     </div>
                 </div>
             </div>
@@ -84,8 +82,8 @@
                         </div>
                     </div>
                     <div class="frow">
-                        <div class="flabel">Purchase date</div>
-                        <div class="fvalue"><input class="inp" type="date" v-model="form.purchase_date" /></div>
+                        <div class="flabel">In use date</div>
+                        <div class="fvalue"><input class="inp" type="date" v-model="form.in_use_date" /></div>
                     </div>
                 </div>
 
@@ -132,12 +130,6 @@ export default {
             if (v && !list.includes(v)) list.unshift(v)
             return list
         },
-        // năm SX: nếu có nhập thì phải là năm hợp lệ 1900..2100
-        yearInvalid() {
-            const y = String(this.form.manufacturer_year || '').trim()
-            if (!y) return false
-            return !/^\d{4}$/.test(y) || +y < 1900 || +y > 2100
-        }
     }
 }
 </script>

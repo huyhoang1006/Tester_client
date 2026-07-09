@@ -11,12 +11,14 @@ export const mapServerToDto = (s) => {
     s = s || {};
     const pam = s.productAssetModel || s.product_asset_model || {};
     const lc = s.lifecycleDate || s.lifecycle_date || {};
+    const iud = s.inUseDate || s.in_use_date || {};
 
     const mrid = s.mrid || s.mRID || s.id || '';
     dto.mrid = mrid;
     dto.organisationId = s.organisationId || s.organisation_id || s.organisation || '';
     dto.productAssetModelId = pam.mrid || pam.mRID || s.productAssetModelId || '';
     dto.lifecycleDateId = lc.mrid || lc.mRID || s.lifecycleDateId || '';
+    dto.inUseDateId = iud.mrid || iud.mRID || s.inUseDateId || '';
 
     const p = dto.properties;
     p.mrid = mrid;
@@ -25,7 +27,7 @@ export const mapServerToDto = (s) => {
     p.manufacturer = pam.manufacturer || s.manufacturer || '';
     p.model = pam.modelNumber || pam.model_number || s.model || '';
     p.manufacturer_year = lc.manufacturedDate || lc.manufactured_date || s.manufacturerYear || '';
-    p.purchase_date = lc.purchaseDate || lc.purchase_date || s.purchaseDate || '';
+    p.in_use_date = iud.inUseDate || iud.in_use_date || s.inUseDate || s.in_use_date || s.purchaseDate || '';
     p.asset_tag = s.assetTag || s.asset_tag || '';
     p.status = s.status || '';
     p.country_of_origin = s.countryOfOrigin || s.country_of_origin || '';

@@ -1,6 +1,7 @@
 import Asset from "../../Cim/Asset";
 import ProductAssetModel from "../../Cim/ProductAssetModel";
 import LifecycleDate from "../../Cim/LifecycleDate";
+import InUseDate from "../../Cim/InUseDate";
 import TestingEquipmentInfo from "../TestingEquipmentInfo";
 import Attachment from "../Attachment";
 import UserIdentifiedObject from "../UserIdentifiedObject";
@@ -13,7 +14,8 @@ class TestingEquipmentEntity {
     constructor() {
         this.asset = new Asset();                       // Cim/Asset (asset.mrid === testingEquipment.mrid)
         this.productAssetModel = new ProductAssetModel(); // manufacturer / model_number
-        this.lifecycleDate = new LifecycleDate();         // manufactured_date / purchase_date
+        this.lifecycleDate = new LifecycleDate();         // manufactured_date
+        this.inUseDate = new InUseDate();                 // in_use_date
         this.testingEquipment = new TestingEquipmentInfo();
         this.attachment = new Attachment();               // 1 record, path = JSON [{path}]
         this.userIdentifiedObject = new UserIdentifiedObject(); // link user <-> thiết bị

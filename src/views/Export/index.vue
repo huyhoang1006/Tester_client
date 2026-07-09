@@ -388,7 +388,7 @@ export default {
     },
     refreshPickerTree() {
       this.pickerTempSelected = null
-      this.pickerTreeKey++   
+      this.pickerTreeKey++
     },
     addPickerSelectionToList() {
       if (!this.pickerTempSelected) return

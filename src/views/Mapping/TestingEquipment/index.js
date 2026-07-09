@@ -9,6 +9,58 @@ import TestingEquipmentInfo from "@/views/Flatten/TestingEquipmentInfo";
 
 /* eslint-disable */
 
+const splitRepairReason = (value) => {
+    if (value == null) return []
+    const text = String(value).trim()
+    if (!text) return []
+
+    const protectedText = text
+        .replace(/\b\d{1,2}\/\d{1,2}(?:\/\d{2,4})?\b/g, match => match.replace(/\//g, '__DATE_SLASH__'))
+        .replace(/\b\d{1,2}\\\d{1,2}(?:\\\d{2,4})?\b/g, match => match.replace(/\\/g, '__DATE_BACKSLASH__'))
+
+    const rawParts = protectedText
+        .split(/\r?\n|[;\\/]+/)
+        .map(part => part
+            .replace(/__DATE_SLASH__/g, '/')
+            .replace(/__DATE_BACKSLASH__/g, '\\')
+            .trim()
+        )
+        .filter(Boolean)
+
+    const ascii = (part) => String(part || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D')
+    const startsEvent = (part) => /^['"`\s]*(?:[-•*]+\s*|\d+[.)]\s*|[A-Z0-9]+:\s*|(?:bi hong|loi|sua|thay|gui|chuyen|ngay)\b)/i.test(ascii(part))
+    const events = []
+
+    rawParts.forEach(part => {
+        const cleaned = part.replace(/^['"`\s]*[-•*]+\s*/, '').trim()
+        if (!cleaned) return
+        if (!events.length || startsEvent(part)) events.push(cleaned)
+        else events[events.length - 1] = `${events[events.length - 1]}\n${cleaned}`
+    })
+
+    return events.length ? events : [text]
+}
+
+const normalizeRepairDtos = (repairs) => {
+    const seen = new Set()
+    return (repairs || []).flatMap((r) => {
+        const reasons = splitRepairReason(r.reason || '')
+        return (reasons.length ? reasons : ['']).map((reason, index) => ({
+            mrid: index === 0 ? (r.mrid || '') : '',
+            type: r.type || 'Repair',
+            created_date_time: r.created_date_time || '',
+            reason,
+            provider: r.provider || '',
+            cost: r.cost || ''
+        }))
+    }).filter((r) => {
+        const key = [r.reason, r.created_date_time, r.provider, r.cost, r.status].join('|').toLowerCase()
+        if (seen.has(key)) return false
+        seen.add(key)
+        return r.reason || r.created_date_time || r.provider || r.cost
+    })
+}
+
 // DTO (7 tab) -> Entity phẳng (khớp shape insertTestingEquipmentEntity)
 export const mapDtoToEntity = (dto) => {
     const entity = new TestingEquipmentEntity();
@@ -21,10 +73,13 @@ export const mapDtoToEntity = (dto) => {
     entity.productAssetModel.model_number = p.model || null;
     entity.productAssetModel.manufacturer = p.manufacturer || null;
 
-    // --- lifecycle_date (năm SX / ngày mua) ---
+    // --- lifecycle_date (manufacturing date) ---
     entity.lifecycleDate.mrid = dto.lifecycleDateId || null;
     entity.lifecycleDate.manufactured_date = p.manufacturer_year || null;
-    entity.lifecycleDate.purchase_date = p.purchase_date || null;
+
+    // --- in_use_date ---
+    entity.inUseDate.mrid = dto.inUseDateId || null;
+    entity.inUseDate.in_use_date = p.in_use_date || null;
 
     // --- asset (nền) + identified_object ---
     entity.asset.mrid = mrid;
@@ -37,6 +92,7 @@ export const mapDtoToEntity = (dto) => {
     entity.asset.status = null;                               // FK -> status; map sau
     entity.asset.product_asset_model = entity.productAssetModel.mrid;
     entity.asset.lifecycle_date = entity.lifecycleDate.mrid;
+    entity.asset.in_use_date = entity.inUseDate.mrid;
 
     // --- testing_equipment ---
     entity.testingEquipment.mrid = mrid;
@@ -152,6 +208,8 @@ export const mapEntityToDto = (entity) => {
     dto.mrid = mrid;
     dto.productAssetModelId = pam.mrid || '';
     dto.lifecycleDateId = lc.mrid || '';
+    const iud = entity.inUseDate || {};
+    dto.inUseDateId = iud.mrid || '';
     const uio = entity.userIdentifiedObject || {};
     dto.userId = uio.user_id || '';
     dto.userIdentifiedObjectId = uio.mrid || '';
@@ -175,7 +233,7 @@ export const mapEntityToDto = (entity) => {
     dto.properties.manufacturer = pam.manufacturer || '';
     dto.properties.model = pam.model_number || '';
     dto.properties.manufacturer_year = lc.manufactured_date || '';
-    dto.properties.purchase_date = lc.purchase_date || '';
+    dto.properties.in_use_date = iud.in_use_date || lc.purchase_date || '';
 
     dto.licenses = (entity.softwareLicenses || []).map((l) => ({
         mrid: l.mrid || '',
@@ -198,15 +256,7 @@ export const mapEntityToDto = (entity) => {
         notes: c.notes || ''
     }));
 
-    dto.repairs = (entity.repairs || []).map((r) => ({
-        mrid: r.mrid || '',
-        type: r.type || 'Repair',
-        created_date_time: r.created_date_time || '',
-        reason: r.reason || '',
-        status: r.severity || 'InProgress',   // tiến độ đọc lại từ cột severity
-        provider: r.provider || '',
-        cost: r.cost || ''
-    }));
+    dto.repairs = normalizeRepairDtos(entity.repairs || []);
 
     // accessories: từ DB là dòng chi tiết {mrid,name,model,serial_no,description};
     // từ mapDtoToEntity là mini-entity {asset,productAssetModel,...}
