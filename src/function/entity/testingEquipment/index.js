@@ -61,6 +61,7 @@ export const getAllTestingEquipmentList = async (userId) => {
                     pam.manufacturer AS manufacturer,
                     pam.model_number AS model,
                     te.asset_tag AS asset_tag,
+                    a.in_use_state AS status,
                     (SELECT cr.calibration_date FROM calibration_record cr
                      WHERE cr.testing_equipment = te.mrid
                      ORDER BY substr(cr.calibration_date,7,4)||substr(cr.calibration_date,1,2)||substr(cr.calibration_date,4,2) DESC
@@ -68,6 +69,9 @@ export const getAllTestingEquipmentList = async (userId) => {
                     te.is_accessory AS is_accessory,
                     (SELECT COUNT(*) FROM activity_record ar
                      WHERE ar.asset = te.mrid AND ar.type = 'Repair') AS repair_count
+                    ,
+                    (SELECT COUNT(*) FROM activity_record ar
+                     WHERE ar.asset = te.mrid AND ar.type = 'Repair' AND ar.severity = 'InProgress') AS repair_in_progress_count
              FROM testing_equipment te
              JOIN asset a ON a.mrid = te.mrid
              LEFT JOIN identified_object io ON io.mrid = te.mrid
@@ -140,6 +144,7 @@ export const getTestingEquipmentByWorkId = async (workId) => {
             `SELECT te.*,
                     COALESCE(pam.model_number, io.name) AS model,
                     a.serial_number AS serial_number,
+                    a.in_use_state AS status,
                     (SELECT cr.calibration_date FROM calibration_record cr
                      WHERE cr.testing_equipment = te.mrid
                      ORDER BY substr(cr.calibration_date,7,4)||substr(cr.calibration_date,1,2)||substr(cr.calibration_date,4,2) DESC

@@ -21,7 +21,7 @@
                 :text-inside="true"
                 status="success" />
 
-            <div class="prog-count">{{ done }} / {{ total }} nodes</div>
+            <div class="prog-count">{{ done }} / {{ total }} {{ unitLabel }}</div>
         </div>
     </el-dialog>
 </template>
@@ -35,6 +35,7 @@ export default {
         currentType: { type: String, default: '' },
         done: { type: Number, default: 0 },
         total: { type: Number, default: 0 },
+        unitLabel: { type: String, default: 'nodes' },
     },
     computed: {
         percent() {
@@ -52,6 +53,7 @@ export default {
             const m = {
                 organisation: 'Organisation', substation: 'Substation',
                 voltageLevel: 'Voltage Level', bay: 'Bay', job: 'Job',
+                testingEquipment: 'Testing Equipment',
             }
             return m[type] || type
         },

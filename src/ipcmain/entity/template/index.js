@@ -1557,6 +1557,513 @@ function extractValue(templateStr, filledStr, code) {
     return filledStr
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// TESTING EQUIPMENT — Word import RIÊNG (không đụng readWordForImport cũ)
+// Khác biệt: hiểu placeholder dạng {code} — file điền thay NGUYÊN "{code}" bằng
+// giá trị (không giữ ngoặc), nên prefix/suffix phải tính theo "{code}" chứ không
+// phải "code" trần như extractValue cũ.
+//   template: "Name: {B1}"  + filled: "Name: CPC 100"  → "CPC 100"
+//   template: "{B1}"        + filled: "CPC 100"        → "CPC 100"
+//   template: "Year: B1"    + filled: "Year: 2019"     → "2019" (fallback code trần)
+// ══════════════════════════════════════════════════════════════════════════════
+function extractValueWordTE(templateStr, filledStr, code) {
+    var escapedCode = code.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    var prefix = null
+    var suffix = null
+
+    // Ưu tiên placeholder {code}
+    var placeholder = '{' + code + '}'
+    var idx = templateStr.indexOf(placeholder)
+    if (idx !== -1) {
+        prefix = templateStr.substring(0, idx)
+        suffix = templateStr.substring(idx + placeholder.length)
+    } else {
+        // Fallback: code trần với word boundary (như extractValue cũ)
+        var tokenRegex = new RegExp('(?<![A-Za-z0-9])' + escapedCode + '(?![A-Za-z0-9])')
+        var match = tokenRegex.exec(templateStr)
+        if (!match) return filledStr
+        prefix = templateStr.substring(0, match.index)
+        suffix = templateStr.substring(match.index + code.length)
+    }
+
+    // Strip chặt bằng regex ^prefix(.*)suffix$
+    var escPrefix = prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    var escSuffix = suffix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    var extractMatch = new RegExp('^' + escPrefix + '([\\s\\S]*)' + escSuffix + '$').exec(filledStr)
+    if (extractMatch) return extractMatch[1]
+
+    // Strip mềm: bỏ prefix/suffix nếu khớp riêng lẻ (file điền lệch nhẹ)
+    var value = filledStr
+    if (prefix && value.startsWith(prefix)) value = value.substring(prefix.length)
+    if (suffix && value.endsWith(suffix)) value = value.substring(0, value.length - suffix.length)
+    return value
+}
+
+// Parse docx GIỮ XUỐNG DÒNG trong ô (đa đoạn văn / <w:br/> → '\n') — bản riêng cho TE.
+// Excel giữ '\n' trong cell nên các cơ chế tách theo serial / license / sự kiện repair
+// (split theo dòng) hoạt động; parser này cho Word hành xử giống hệt.
+// Chỉ số table/row/cell/para giống parseDocxContent nên coordinate tương thích 100%.
+function parseDocxContentTE(buffer) {
+    const PizZip = require('pizzip')
+    const zip = new PizZip(buffer)
+    // <w:br/> trong run → newline
+    const xml = zip.file('word/document.xml').asText()
+        .replace(/<w:br\s*\/>/g, '<w:t>\n</w:t>')
+
+    function getRunsText(fragment) {
+        const matches = []
+        const re = /<w:t(?:\s[^>]*)?>([^<]*)<\/w:t>/g
+        let m
+        while ((m = re.exec(fragment)) !== null) matches.push(m[1])
+        return matches.join('')
+    }
+    // Text của 1 fragment = các <w:p> join '\n' (đa đoạn văn trong ô)
+    function getText(fragment) {
+        const paraTexts = []
+        const pRe = /<w:p\b[^>]*>([\s\S]*?)<\/w:p>/g
+        let pM
+        while ((pM = pRe.exec(fragment)) !== null) paraTexts.push(getRunsText(pM[1]))
+        if (!paraTexts.length) return getRunsText(fragment)
+        return paraTexts.join('\n')
+    }
+
+    const cells = []
+    const paras = []
+
+    let tblIdx = 0
+    const tblRe = /<w:tbl\b[^>]*>([\s\S]*?)<\/w:tbl>/g
+    let tblM
+    while ((tblM = tblRe.exec(xml)) !== null) {
+        let trIdx = 0
+        const trRe = /<w:tr\b[^>]*>([\s\S]*?)<\/w:tr>/g
+        let trM
+        while ((trM = trRe.exec(tblM[1])) !== null) {
+            let tcIdx = 0
+            const tcRe = /<w:tc\b[^>]*>([\s\S]*?)<\/w:tc>/g
+            let tcM
+            while ((tcM = tcRe.exec(trM[1])) !== null) {
+                cells.push({ table: tblIdx, row: trIdx, cell: tcIdx, text: getText(tcM[1]) })
+                tcIdx++
+            }
+            trIdx++
+        }
+        tblIdx++
+    }
+
+    const xmlNoTbl = xml.replace(/<w:tbl\b[^>]*>[\s\S]*?<\/w:tbl>/g, '')
+    const bodyM = xmlNoTbl.match(/<w:body\b[^>]*>([\s\S]*?)<\/w:body>/)
+    if (bodyM) {
+        let pIdx = 0
+        const pRe = /<w:p\b[^>]*>([\s\S]*?)<\/w:p>/g
+        let pM
+        while ((pM = pRe.exec(bodyM[1])) !== null) {
+            paras.push({ para: pIdx, text: getRunsText(pM[1]) })
+            pIdx++
+        }
+    }
+
+    return { cells, paras }
+}
+
+export const readWordForImportTE = () => {
+    ipcMain.handle('readWordForImportTE', async function (event, { filePath, templatePath, variables }) {
+        try {
+            if (!filePath || !fs.existsSync(filePath)) {
+                return { success: false, message: 'File not found: ' + filePath }
+            }
+            if (!variables || !variables.length) {
+                return { success: true, codeValueMap: {} }
+            }
+
+            const filledBuf = fs.readFileSync(filePath)
+            const { cells: filledCells, paras: filledParas } = parseDocxContentTE(filledBuf)
+
+            let tmplCells = [], tmplParas = []
+            if (templatePath && fs.existsSync(templatePath)) {
+                try {
+                    const { cells, paras } = parseDocxContentTE(fs.readFileSync(templatePath))
+                    tmplCells = cells; tmplParas = paras
+                } catch(e) { console.warn('Cannot parse Word template:', e.message) }
+            }
+
+            function getCellText(cells, t, r, c) {
+                const f = cells.find(x => x.table === t && x.row === r && x.cell === c)
+                return f ? f.text : ''
+            }
+            function getParaText(paras, p) {
+                const f = paras.find(x => x.para === p)
+                return f ? f.text : ''
+            }
+
+            const codeValueMap = {}
+
+            // ── VERTICAL SCAN (cơ chế như readExcelForImport) ─────────────────
+            // Kích hoạt khi: code có ≥2 tọa độ CÙNG BẢNG, CÙNG CỘT (cell index),
+            // hàng liền kề — và có ≥2 code như vậy. Khi đó quét bảng của file
+            // ĐÃ ĐIỀN từ hàng đầu tiên xuống hết bảng (bỏ hàng trống đầu, dừng
+            // ở hàng trống sau khi đã có dữ liệu) → số thiết bị không giới hạn
+            // theo số hàng khai trong template.
+            const isBlankText = (v) => v === null || v === undefined || String(v).trim() === ''
+            const buildVerticalSpecs = () => {
+                const specs = []
+                for (const variable of variables) {
+                    if (!variable || !variable.code || !Array.isArray(variable.coordinates) || variable.coordinates.length < 2) continue
+                    const parsed = variable.coordinates
+                        .map(coord => decodeWordCoord(coord || ''))
+                        .filter(pos => pos && pos.table !== undefined)
+                    if (parsed.length < 2) continue
+                    const first = parsed[0]
+                    const second = parsed[1]
+                    const sameColumn = first.table === second.table && first.cell === second.cell
+                    const adjacentRows = Math.abs(first.row - second.row) === 1
+                    if (!sameColumn || !adjacentRows) continue
+                    specs.push({
+                        code: variable.code,
+                        table: first.table,
+                        cell: first.cell,
+                        startRow: Math.min(first.row, second.row)
+                    })
+                }
+                return specs
+            }
+            let verticalSpecs = buildVerticalSpecs()
+            if (verticalSpecs.length) {
+                // chỉ nhận các spec cùng 1 bảng (bảng của spec đầu tiên)
+                const tableIdx = verticalSpecs[0].table
+                verticalSpecs = verticalSpecs.filter(spec => spec.table === tableIdx)
+            }
+            const canUseVerticalScan = verticalSpecs.length >= 2
+
+            if (canUseVerticalScan) {
+                for (const variable of variables) {
+                    if (variable && variable.code) codeValueMap[variable.code] = []
+                }
+                const tableIdx = verticalSpecs[0].table
+                const startRow = Math.min(...verticalSpecs.map(spec => spec.startRow))
+                const maxRow = filledCells.reduce((m, c) => c.table === tableIdx ? Math.max(m, c.row) : m, -1)
+                let readRows = 0
+                for (let row = startRow; row <= maxRow; row++) {
+                    const rowIsBlank = verticalSpecs.every(spec =>
+                        isBlankText(getCellText(filledCells, tableIdx, row, spec.cell))
+                    )
+                    if (rowIsBlank && readRows > 0) break
+                    if (rowIsBlank) continue
+
+                    for (const spec of verticalSpecs) {
+                        const filledText = getCellText(filledCells, tableIdx, row, spec.cell)
+                        const tmplText = tmplCells.length ? getCellText(tmplCells, tableIdx, row, spec.cell) : ''
+                        let extracted = filledText
+                        if (tmplText && tmplText !== filledText) {
+                            try { extracted = extractValueWordTE(tmplText, filledText, spec.code) } catch(e) {}
+                        }
+                        codeValueMap[spec.code].push(String(extracted).trim())
+                    }
+                    readRows++
+                }
+                return { success: true, codeValueMap }
+            }
+
+            for (const variable of variables) {
+                const { code, coordinates } = variable
+                if (!code || !coordinates || !coordinates.length) continue
+                codeValueMap[code] = []
+
+                for (const coord of coordinates) {
+                    if (!coord || coord === 'Found in Document') {
+                        codeValueMap[code].push('')
+                        continue
+                    }
+
+                    const pos = decodeWordCoord(coord)
+                    if (!pos) { codeValueMap[code].push(''); continue }
+
+                    let filledText = '', tmplText = ''
+                    if (pos.table !== undefined) {
+                        filledText = getCellText(filledCells, pos.table, pos.row, pos.cell)
+                        tmplText   = tmplCells.length ? getCellText(tmplCells, pos.table, pos.row, pos.cell) : ''
+                    } else {
+                        filledText = getParaText(filledParas, pos.para)
+                        tmplText   = tmplParas.length ? getParaText(tmplParas, pos.para) : ''
+                    }
+
+                    let extracted = filledText
+                    if (tmplText && tmplText !== filledText) {
+                        try { extracted = extractValueWordTE(tmplText, filledText, code) } catch(e) {}
+                    }
+                    codeValueMap[code].push(extracted.trim())
+                }
+            }
+
+            return { success: true, codeValueMap }
+        } catch (error) {
+            console.error('readWordForImportTE error:', error)
+            return { success: false, message: error.message }
+        }
+    })
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// TESTING EQUIPMENT — Word export RIÊNG (không đụng exportWordWithData cũ)
+// Bổ sung các cơ chế gộp nhiều bản ghi như export Excel (exportTemplateWithData):
+//   1. Vertical group (code ở ≥2 hàng cùng cột)     → nhân hàng, mỗi thiết bị 1 hàng
+//   2. Row-group auto-insert: các code SCALAR cùng 1 hàng bảng, có nhiều giá trị
+//      → nhân hàng đó (tương đương auto-insert của Excel khi 1 tọa độ + nhiều value)
+//   3. Giá trị nhiều dòng (bulletList repair/license) → <w:br/> để Word xuống dòng thật
+//   4. Escape XML (&, <, >) khi ghi thẳng vào document.xml
+//   5. Code tùy ý (không hardcode {A\d+})
+// Giữ prefix/suffix quanh {code} trong ô như Excel setCellValueSafe.
+// ══════════════════════════════════════════════════════════════════════════════
+function escapeXmlTE(text) {
+    return String(text == null ? '' : text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+}
+// Giá trị chèn vào trong <w:t>: escape + '\n' → ngắt run bằng <w:br/>
+function wordValueTE(val) {
+    return escapeXmlTE(val).replace(/\r?\n/g, '</w:t><w:br/><w:t xml:space="preserve">')
+}
+// Token regex như Excel setCellValueSafe: nhận cả "{A1}" LẪN "A1" trần
+// (template Word có thể dùng code trần y như Excel), word-boundary chặn A1 ăn vào A10
+function codeTokenRegexTE(code) {
+    const esc = String(code).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    return new RegExp('\\{' + esc + '\\}|(?<![A-Za-z0-9])' + esc + '(?![A-Za-z0-9])', 'g')
+}
+// Chỉ thay trong TEXT của <w:t> (không đụng attribute/tag XML)
+function replaceCodeInXmlTE(xmlFragment, code, val) {
+    const tokenRe = codeTokenRegexTE(code)
+    return xmlFragment.replace(/(<w:t(?:\s[^>]*)?>)([^<]*)(<\/w:t>)/g, (m, open, text, close) => {
+        tokenRe.lastIndex = 0
+        if (!tokenRe.test(text)) return m
+        tokenRe.lastIndex = 0
+        const replaced = text.replace(tokenRe, () => wordValueTE(val))
+        return open + replaced + close
+    })
+}
+// Fragment có chứa code (trong <w:t>) không — dùng để tìm hàng template
+function xmlHasCodeTE(xmlFragment, code) {
+    const tokenRe = codeTokenRegexTE(code)
+    const wtRe = /<w:t(?:\s[^>]*)?>([^<]*)<\/w:t>/g
+    let m
+    while ((m = wtRe.exec(xmlFragment)) !== null) {
+        tokenRe.lastIndex = 0
+        if (tokenRe.test(m[1])) return true
+    }
+    return false
+}
+
+export const exportWordWithDataTE = () => {
+    ipcMain.handle('exportWordWithDataTE', async function (event, { templatePath, codeMap, variables }) {
+        try {
+            if (!templatePath || !fs.existsSync(templatePath)) {
+                return { success: false, message: 'Template file not found' }
+            }
+
+            const PizZip = require('pizzip')
+
+            const vars = Array.isArray(variables) ? variables : []
+            const classified = classifyVariables(vars)
+            const vertGroups = buildVerticalGroups(classified)
+            const vertCodes = new Set(vertGroups.flatMap(g => g.codes))
+
+            const valuesOf = (code) => {
+                const v = codeMap ? codeMap[code] : undefined
+                if (v === undefined || v === null) return []
+                return Array.isArray(v) ? v.map(x => (x == null ? '' : String(x))) : [String(v)]
+            }
+
+            const content = fs.readFileSync(templatePath, 'binary')
+            const zip = new PizZip(content)
+            let xml = zip.files['word/document.xml'].asText()
+
+            // ── Normalize split runs cho MỌI code (Word hay tách "{A1}" thành nhiều run) ──
+            // Gộp text các <w:t> liên tiếp nếu ghép lại đúng bằng {code}
+            const allCodes = vars.map(v => v.code).filter(Boolean)
+            if (allCodes.length) {
+                const phSet = new Set(allCodes.map(c => '{' + c + '}'))
+                const wtPattern = /<w:t(?:[^>]*)>(.*?)<\/w:t>/gs
+                const allWt = []
+                let m
+                while ((m = wtPattern.exec(xml)) !== null) {
+                    allWt.push({ start: m.index, end: m.index + m[0].length, text: m[1] })
+                }
+                const replacements = []
+                const processed = new Set()
+                for (let i = 0; i < allWt.length; i++) {
+                    if (processed.has(i)) continue
+                    if (!allWt[i].text.includes('{')) continue
+                    let combined = allWt[i].text
+                    if (phSet.has(combined.trim())) continue // đã nguyên vẹn
+                    for (let j = i + 1; j < Math.min(i + 10, allWt.length); j++) {
+                        const between = xml.slice(allWt[j - 1].end, allWt[j].start)
+                        if (/>[^<\s][^<]*</.test(between)) break
+                        combined += allWt[j].text
+                        const trimmed = combined.trim()
+                        if (phSet.has(trimmed)) {
+                            const tagOpen = xml.slice(allWt[i].start).match(/^<w:t[^>]*>/)
+                            if (!tagOpen) break
+                            replacements.push({ start: allWt[i].start, end: allWt[i].end, val: tagOpen[0] + combined + '</w:t>' })
+                            for (let k = i + 1; k <= j; k++) {
+                                const kTag = xml.slice(allWt[k].start).match(/^<w:t[^>]*>/)
+                                if (kTag) replacements.push({ start: allWt[k].start, end: allWt[k].end, val: kTag[0] + '</w:t>' })
+                                processed.add(k)
+                            }
+                            processed.add(i)
+                            break
+                        }
+                        if (trimmed.includes('}')) break
+                    }
+                }
+                for (const r of replacements.sort((a, b) => b.start - a.start)) {
+                    xml = xml.slice(0, r.start) + r.val + xml.slice(r.end)
+                }
+            }
+
+            // ── Thay MỘT LƯỢT nhiều code trong 1 fragment (regex gộp alternation):
+            // giá trị vừa chèn không bị vòng thay thế của code sau quét lại.
+            const escCode = (c) => String(c).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+            const replaceCodesOnePassTE = (fragment, codes, getVal) => {
+                if (!codes.length) return fragment
+                const alt = codes.map(escCode).join('|')
+                const tokenRe = new RegExp('\\{(' + alt + ')\\}|(?<![A-Za-z0-9])(' + alt + ')(?![A-Za-z0-9])', 'g')
+                return fragment.replace(/(<w:t(?:\s[^>]*)?>)([^<]*)(<\/w:t>)/g, (m, open, text, close) => {
+                    tokenRe.lastIndex = 0
+                    if (!tokenRe.test(text)) return m
+                    tokenRe.lastIndex = 0
+                    const replaced = text.replace(tokenRe, (mm, g1, g2) => wordValueTE(getVal(g1 || g2)))
+                    return open + replaced + close
+                })
+            }
+
+            // ── Step 1: Horizontal — replace tuần tự theo thứ tự xuất hiện ──────
+            const horizontalCodes = Object.entries(classified)
+                .filter(([, info]) => info.type === 'horizontal')
+                .map(([code]) => code)
+            if (horizontalCodes.length) {
+                const idxByCode = {}
+                xml = replaceCodesOnePassTE(xml, horizontalCodes, (code) => {
+                    const valArr = valuesOf(code)
+                    const idx = idxByCode[code] || 0
+                    idxByCode[code] = idx + 1
+                    return idx < valArr.length ? valArr[idx] : ''
+                })
+            }
+
+            // ── Step 2: Vertical groups — nhân hàng, mỗi thiết bị 1 hàng ────────
+            for (const group of vertGroups) {
+                const maxLen = Math.max(...group.codes.map(c => valuesOf(c).length), 0)
+                const trRegex = /<w:tr[ >][\s\S]*?<\/w:tr>/g
+                const trMatches = []
+                let m
+                while ((m = trRegex.exec(xml)) !== null) {
+                    trMatches.push({ start: m.index, end: m.index + m[0].length, content: m[0] })
+                }
+                const templateRows = trMatches.filter(tr =>
+                    group.codes.some(code => xmlHasCodeTE(tr.content, code))
+                )
+                if (!templateRows.length) continue
+
+                const templateTr = templateRows[0].content
+                const expandedRows = []
+                if (maxLen === 0) {
+                    expandedRows.push(replaceCodesOnePassTE(templateTr, group.codes, () => ''))
+                } else {
+                    for (let i = 0; i < maxLen; i++) {
+                        expandedRows.push(replaceCodesOnePassTE(templateTr, group.codes, (code) => {
+                            const v = valuesOf(code)
+                            return v[i] != null ? v[i] : ''
+                        }))
+                    }
+                }
+                const first = templateRows[0]
+                const last = templateRows[templateRows.length - 1]
+                xml = xml.slice(0, first.start) + expandedRows.join('') + xml.slice(last.end)
+            }
+
+            // ── Step 3: Row-group auto-insert (như Excel: 1 tọa độ + nhiều value) ──
+            // Các code scalar nằm trong CÙNG 1 hàng bảng, có code nhiều giá trị
+            // → nhân hàng đó maxLen lần, thiết bị thứ i nhận values[i].
+            const scalarByRow = {}
+            for (const [code, info] of Object.entries(classified)) {
+                if (info.type !== 'scalar' || vertCodes.has(code)) continue
+                const pos = info.coords[0]
+                if (pos.tableIndex === undefined || pos.tableIndex === null) continue
+                const key = pos.tableIndex + ':' + pos.rowIndex
+                if (!scalarByRow[key]) scalarByRow[key] = []
+                scalarByRow[key].push(code)
+            }
+            const handledScalar = new Set()
+            for (const key of Object.keys(scalarByRow)) {
+                const codesInRow = scalarByRow[key]
+                const maxLen = Math.max(...codesInRow.map(c => valuesOf(c).length), 0)
+                if (maxLen <= 1) continue // 1 giá trị → để Docxtemplater-less scalar fill ở Step 4
+
+                const trRegex = /<w:tr[ >][\s\S]*?<\/w:tr>/g
+                const trMatches = []
+                let m
+                while ((m = trRegex.exec(xml)) !== null) {
+                    trMatches.push({ start: m.index, end: m.index + m[0].length, content: m[0] })
+                }
+                const rowMatch = trMatches.find(tr =>
+                    codesInRow.every(code => xmlHasCodeTE(tr.content, code))
+                )
+                if (!rowMatch) continue
+
+                const expandedRows = []
+                for (let i = 0; i < maxLen; i++) {
+                    expandedRows.push(replaceCodesOnePassTE(rowMatch.content, codesInRow, (code) => {
+                        const v = valuesOf(code)
+                        return v[i] != null ? v[i] : ''
+                    }))
+                }
+                xml = xml.slice(0, rowMatch.start) + expandedRows.join('') + xml.slice(rowMatch.end)
+                codesInRow.forEach(code => handledScalar.add(code))
+            }
+
+            // ── Step 4: Scalar / multi_cell còn lại — fill trực tiếp (giá trị đầu) ──
+            const scalarCodes = Object.entries(classified)
+                .filter(([code, info]) => !vertCodes.has(code) && !handledScalar.has(code)
+                    && (info.type === 'scalar' || info.type === 'multi_cell'))
+                .map(([code]) => code)
+            if (scalarCodes.length) {
+                xml = replaceCodesOnePassTE(xml, scalarCodes, (code) => {
+                    const valArr = valuesOf(code)
+                    return valArr.find(x => x != null && x !== '') || ''
+                })
+            }
+
+            // ── Step 5: dọn placeholder sót — CHỈ xóa ô còn nguyên code/{code}
+            // (không xóa token trần trong text đã fill, tránh nuốt dữ liệu trùng tên code)
+            for (const v of vars) {
+                if (!v || !v.code) continue
+                const code = v.code
+                xml = xml.replace(/(<w:t(?:\s[^>]*)?>)([^<]*)(<\/w:t>)/g, (m, open, text, close) => {
+                    const t = text.trim()
+                    if (t === code || t === '{' + code + '}') return open + close
+                    if (text.indexOf('{' + code + '}') !== -1) return open + text.split('{' + code + '}').join('') + close
+                    return m
+                })
+            }
+
+            zip.file('word/document.xml', xml)
+            const buf = zip.generate({ type: 'nodebuffer', compression: 'DEFLATE' })
+
+            const { canceled, filePath } = await dialog.showSaveDialog({
+                title: 'Save Word Export',
+                defaultPath: 'TestingEquipment_Export.docx',
+                filters: [{ name: 'Word Document', extensions: ['docx'] }]
+            })
+            if (canceled || !filePath) return { success: false, canceled: true }
+
+            fs.writeFileSync(filePath, buf)
+            return { success: true, filePath }
+        } catch (error) {
+            console.error('exportWordWithDataTE error:', error)
+            return { success: false, message: error.message }
+        }
+    })
+}
+
 // ── Thêm vào preload ─────────────────────────────────────────────────────
 // pickExcelFileForImport: () => ipcRenderer.invoke('pickExcelFileForImport'),
 // readExcelForImport: (data) => ipcRenderer.invoke('readExcelForImport', data),
@@ -1588,4 +2095,6 @@ export const active = () => {
     openFileTemplate()
     pickWordFileForImport()
     readWordForImport()
+    readWordForImportTE()
+    exportWordWithDataTE()
 }

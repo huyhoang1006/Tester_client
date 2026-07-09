@@ -218,7 +218,9 @@ export default {
                 p.model = e.model || ''
                 p.manufacturer_year = isDate ? e.made : ''
                 p.asset_tag = e.id != null ? 'TE-' + String(e.id).padStart(3, '0') : ''
-                p.status = hasRepair ? 'UnderRepair' : 'Available'
+                // repair import mặc định là Completed -> chỉ UnderRepair khi có bản ghi InProgress
+                // (nguồn legacy chỉ có text lý do, không có trạng thái => coi là Completed / Available)
+                p.status = 'Available'
                 p.country_of_origin = e.manufacturer === 'OMICRON' ? 'Austria'
                     : (e.manufacturer === 'HVI' ? 'USA' : '')
                 p.in_use_date = isInServiceDate ? e.inservice : (isDate ? e.made : '')

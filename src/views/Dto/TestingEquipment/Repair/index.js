@@ -6,7 +6,7 @@ class RepairDto {
         this.reason = '';
         this.provider = '';
         this.cost = '';
-        this.status = 'InProgress';
+        this.status = 'Completed';
     }
 }
 

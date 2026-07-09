@@ -45,6 +45,12 @@ export const templatePreload = () => {
         pickWordFileForImport: () => ipcRenderer.invoke('pickWordFileForImport'),
     
         readWordForImport: (data) => ipcRenderer.invoke('readWordForImport', data),
-        
+
+        // Word import RIÊNG cho Testing Equipment — hiểu placeholder {code}
+        readWordForImportTE: (data) => ipcRenderer.invoke('readWordForImportTE', data),
+
+        // Word export RIÊNG cho Testing Equipment — gộp nhiều bản ghi như export Excel
+        exportWordWithDataTE: (data) => ipcRenderer.invoke('exportWordWithDataTE', data),
+
     }
 }

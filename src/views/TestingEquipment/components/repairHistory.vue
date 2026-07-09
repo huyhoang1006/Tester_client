@@ -62,7 +62,7 @@ export default {
     methods: {
         addRow() {
             this.records.push({ mrid: '', type: 'Repair', created_date_time: '',
-                reason: '', provider: '', cost: '', status: 'InProgress' })
+                reason: '', provider: '', cost: '', status: 'Completed' })
             this.$nextTick(this.resizeAllReasons)
         },
         removeRow(i) { this.records.splice(i, 1) },

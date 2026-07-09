@@ -46,6 +46,18 @@ const DATE_NESTED_FIELDS = {
     lic_: ['activation_date', 'expiry_date'],
     rep_: ['created_date_time']
 }
+const STATUS_ALIASES = {
+    available: 'Available',
+    inuse: 'InUse',
+    in_use: 'InUse',
+    'in use': 'InUse',
+    underrepair: 'UnderRepair',
+    under_repair: 'UnderRepair',
+    'under repair': 'UnderRepair',
+    repair: 'UnderRepair',
+    repaired: 'UnderRepair',
+    retired: 'Retired'
+}
 // LƯU Ý: usage history KHÔNG import — nó là dữ liệu SUY RA từ job/test
 // (bảng <asset>_testing_equipment_test_type), chỉ có ở chiều export.
 
@@ -124,6 +136,31 @@ const normalizeDateField = (obj, key) => {
     if (!obj || !obj[key]) return
     const value = normalizeDate(obj[key])
     if (value) obj[key] = value
+}
+const normalizeStatus = (value) => {
+    if (value == null || String(value).trim() === '') return value
+    const text = String(value).trim()
+    const key = text.toLowerCase().replace(/[-\s]+/g, ' ')
+    return STATUS_ALIASES[key] || STATUS_ALIASES[key.replace(/\s+/g, '')] || text
+}
+const REPAIR_STATUS_ALIASES = {
+    completed: 'Completed',
+    complete: 'Completed',
+    done: 'Completed',
+    finished: 'Completed',
+    inprogress: 'InProgress',
+    'in progress': 'InProgress',
+    in_progress: 'InProgress',
+    progress: 'InProgress',
+    repairing: 'InProgress',
+    ongoing: 'InProgress'
+}
+const normalizeRepairStatus = (value) => {
+    if (value == null) return ''
+    const text = String(value).trim()
+    if (!text) return ''
+    const key = text.toLowerCase().replace(/[-\s]+/g, ' ')
+    return REPAIR_STATUS_ALIASES[key] || REPAIR_STATUS_ALIASES[key.replace(/\s+/g, '')] || text
 }
 const isYearOnlyDate = (v) => /^\d{4}$/.test(String(v == null ? '' : v).trim())
 const dateYear = (v) => String(v || '').slice(0, 4)
@@ -204,7 +241,9 @@ export const templateImport = {
                     const value = SERIAL_AWARE_PROP_FIELDS.includes(f)
                         ? this.resolveSerialAwareText(arr[i], serial, serialValues)
                         : arr[i]
-                    dto.properties[f] = f === 'is_accessory' ? (truthy(value) ? 1 : 0) : value
+                    dto.properties[f] = f === 'is_accessory'
+                        ? (truthy(value) ? 1 : 0)
+                        : (f === 'status' ? normalizeStatus(value) : value)
                 })
                 dto.properties.serial_no = serial
 
@@ -232,7 +271,16 @@ export const templateImport = {
         }
         ;(dto.calibration || []).forEach(record => DATE_NESTED_FIELDS.cal_.forEach(field => normalizeDateField(record, field)))
         ;(dto.licenses || []).forEach(record => DATE_NESTED_FIELDS.lic_.forEach(field => normalizeDateField(record, field)))
-        ;(dto.repairs || []).forEach(record => DATE_NESTED_FIELDS.rep_.forEach(field => normalizeDateField(record, field)))
+        ;(dto.repairs || []).forEach(record => {
+            DATE_NESTED_FIELDS.rep_.forEach(field => normalizeDateField(record, field))
+            // default khi import: Completed
+            record.status = normalizeRepairStatus(record.status) || 'Completed'
+        })
+        // chỉ cần 1 bản ghi repair đang InProgress -> thiết bị là UnderRepair thay vì Available
+        const hasInProgressRepair = (dto.repairs || []).some(record => record && record.status === 'InProgress')
+        if (hasInProgressRepair && dto.properties && (!dto.properties.status || dto.properties.status === 'Available')) {
+            dto.properties.status = 'UnderRepair'
+        }
     },
 
     getSheetForIndex(lvm, index) {
@@ -272,8 +320,13 @@ export const templateImport = {
         if (!text) return []
 
         const protectedText = text
+            // ngày/tháng(/năm) TRƯỚC: 12/9/2018 phải được bảo vệ nguyên cụm,
+            // nếu để tháng/năm chạy trước nó sẽ chộp "9/2018" làm hở dấu "/" giữa "12" và "9"
             .replace(/\b\d{1,2}\/\d{1,2}(?:\/\d{2,4})?\b/g, match => match.replace(/\//g, '__DATE_SLASH__'))
+            // tháng/năm: 11/2016 (word boundary chặn match cụt "11/20" nên không đụng ngày đầy đủ)
+            .replace(/\b\d{1,2}\/\d{4}\b/g, match => match.replace(/\//g, '__DATE_SLASH__'))
             .replace(/\b\d{1,2}\\\d{1,2}(?:\\\d{2,4})?\b/g, match => match.replace(/\\/g, '__DATE_BACKSLASH__'))
+            .replace(/\b\d{1,2}\\\d{4}\b/g, match => match.replace(/\\/g, '__DATE_BACKSLASH__'))
 
         const rawParts = protectedText
             .split(/\r?\n|[;\\/]+/)
@@ -434,9 +487,15 @@ export const templateImport = {
     },
 
     // Insert thiết bị mới + các thiết bị trùng user chọn overwrite (giữ mrid CÓ SẴN)
-    async run(newcomers, overwrites) {
+    async run(newcomers, overwrites, options = {}) {
         let ok = 0, fail = 0
+        const notifyProgress = (entity) => {
+            if (options && typeof options.onProgress === 'function') {
+                options.onProgress(entity)
+            }
+        }
         const doInsert = async (entity, oldEntity = null) => {
+            notifyProgress(entity)
             const rs = await window.electronAPI[INSERT_API](oldEntity, entity)
             rs && rs.success ? ok++ : fail++
         }

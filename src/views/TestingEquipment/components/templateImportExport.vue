@@ -86,6 +86,14 @@
     @confirm="onConflictConfirm"
     @cancel="onConflictCancel" />
 
+  <ImportProgressDialog
+    :visible="progressVisible"
+    :current-name="progressName"
+    :current-type="progressType"
+    :done="progressDone"
+    :total="progressTotal"
+    unit-label="equipment" />
+
   <el-dialog title="Manufacturer by sheet" :visible.sync="manufacturerSheetVisible" width="560px" append-to-body>
     <div class="mfr-sheet-note">
       Select the manufacturer for each sheet. These values are used when the imported file does not provide a manufacturer column.
@@ -129,13 +137,14 @@ import TemplateManager from '@/views/Import/components/TemplateManager.vue'
 import DataTable from '@/views/Import/components/DataTable.vue'
 import EquipmentPicker from './equipmentPicker.vue'
 import ImportConflictDialog from './importConflictDialog.vue'
+import ImportProgressDialog from '@/views/TreeNode/dialogs/ImportProgressDialog.vue'
 import templateImport from '../services/templateImport'
 import templateExport from '../services/templateExport'
 import MANUFACTURER_MAP from '@/views/ConstantAsset/manufacturer.js'
 
 export default {
   name: 'TeTemplateImportExport',
-  components: { TemplateManager, DataTable, EquipmentPicker, ImportConflictDialog },
+  components: { TemplateManager, DataTable, EquipmentPicker, ImportConflictDialog, ImportProgressDialog },
   props: {
     visible:  { type: Boolean, default: false },
     mode:     { type: String, default: 'export' },   // 'import' | 'export'
@@ -158,7 +167,12 @@ export default {
       conflictHandled: false,
       manufacturerSheetVisible: false,
       manufacturerSheetRows: [],
-      pendingRead: null
+      pendingRead: null,
+      progressVisible: false,
+      progressDone: 0,
+      progressTotal: 0,
+      progressName: '',
+      progressType: 'testingEquipment'
     }
   },
   computed: {
@@ -336,7 +350,7 @@ export default {
         }
         const payload = { templatePath: this.currentFilePath, variables, codeMap }
         const rs = this.fileType === 'word'
-          ? await window.electronAPI.exportWordWithData(payload)
+          ? await window.electronAPI.exportWordWithDataTE(payload)
           : await window.electronAPI.exportTemplateWithData(payload)
         if (rs && rs.canceled) return
         if (rs && rs.success) this.$message.success('Exported ' + rows.length + ' equipment: ' + rs.filePath)
@@ -359,9 +373,11 @@ export default {
         const tmpl = this.templateList.find(t => t.name === this.selectedTemplateName)
         const variables = tmpl ? (tmpl.variable || []) : []
         const args = { filePath: picked.filePath, templatePath: this.currentFilePath, variables }
+        this.startImportProgress(1, this.fileType === 'word' ? 'Reading Word file...' : 'Reading Excel file...')
         const read = this.fileType === 'word'
-          ? await window.electronAPI.readWordForImport(args)
+          ? await window.electronAPI.readWordForImportTE(args)
           : await window.electronAPI.readExcelForImport(args)
+        this.progressDone = 1
         if (!read || !read.success) {
           this.$message.error((read && read.message) || 'Failed to read file'); return
         }
@@ -370,6 +386,7 @@ export default {
           this.pendingRead = read
           this.manufacturerSheetRows = this.buildManufacturerSheetRows(read)
           this.manufacturerSheetVisible = true
+          this.stopImportProgress()
           return
         }
 
@@ -377,7 +394,10 @@ export default {
       } catch (e) {
         this.$message.error('Import error: ' + e.message)
         console.error('TE import error:', e)
-      } finally { this.working = false }
+      } finally {
+        if (!this.pending && !this.conflictVisible) this.stopImportProgress()
+        this.working = false
+      }
     },
     async prepareImport(read, manufacturerBySheet) {
       const codeValueMap = read.codeValueMap || {}
@@ -409,6 +429,7 @@ export default {
         }))
         this.conflictHandled = false
         this.conflictVisible = true
+        this.stopImportProgress()
         return
       }
       await this.runImport([])
@@ -470,9 +491,11 @@ export default {
       if (!pending) return
       const total = pending.newcomers.length + overwrites.length
       if (!total) { this.$message.info('Nothing to import — kept all existing equipment'); return }
-      const loading = this.$loading({ lock: true, text: 'Importing testing equipment...' })
+      this.startImportProgress(total, 'Preparing...')
       try {
-        const { ok, fail } = await templateImport.run(pending.newcomers, overwrites)
+        const { ok, fail } = await templateImport.run(pending.newcomers, overwrites, {
+          onProgress: (entity) => this.stepImportProgress(this.equipmentProgressName(entity))
+        })
         this.$message.success(
           `Imported ${ok} equipment` +
           (overwrites.length ? ` (${overwrites.length} overwritten)` : '') +
@@ -481,7 +504,27 @@ export default {
         this.$emit('imported', { ok, fail })
       } catch (e) {
         this.$message.error('Import failed: ' + (e.message || e))
-      } finally { loading.close() }
+      } finally { this.stopImportProgress() }
+    },
+    startImportProgress(total, name) {
+      this.progressVisible = true
+      this.progressDone = 0
+      this.progressTotal = total || 0
+      this.progressName = name || ''
+      this.progressType = 'testingEquipment'
+    },
+    stepImportProgress(name) {
+      this.progressName = name || ''
+      this.progressType = 'testingEquipment'
+      this.progressDone = Math.min(this.progressTotal || 1, this.progressDone + 1)
+    },
+    stopImportProgress() {
+      this.progressVisible = false
+    },
+    equipmentProgressName(entity) {
+      const asset = entity && entity.asset ? entity.asset : {}
+      const pam = entity && entity.productAssetModel ? entity.productAssetModel : {}
+      return asset.name || pam.model_number || asset.serial_number || 'Testing equipment'
     },
     onConflictConfirm(choices) {
       if (this.conflictHandled) return   // chặn 'cancel' bắn kèm khi dialog đóng

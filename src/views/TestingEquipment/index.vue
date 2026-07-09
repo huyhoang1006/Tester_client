@@ -112,7 +112,24 @@ export default {
     },
     watch: {
         equipmentMrid() { this.initForm() },
-        equipment() { this.initForm() }
+        equipment() { this.initForm() },
+        // Đồng bộ trạng thái thiết bị theo repair history:
+        // còn bản ghi InProgress -> UnderRepair; hết InProgress -> trả về Available.
+        // Không đụng tới InUse/Retired do người dùng tự đặt.
+        'testingEquipmentDto.repairs': {
+            deep: true,
+            immediate: true,
+            handler(repairs) {
+                const p = this.testingEquipmentDto && this.testingEquipmentDto.properties
+                if (!p) return
+                const hasInProgress = (repairs || []).some(r => r && r.status === 'InProgress')
+                if (hasInProgress && (!p.status || p.status === 'Available')) {
+                    p.status = 'UnderRepair'
+                } else if (!hasInProgress && p.status === 'UnderRepair') {
+                    p.status = 'Available'
+                }
+            }
+        }
     },
     computed: {
         initials() {

@@ -115,6 +115,14 @@
             @confirm="onConflictConfirm"
             @cancel="onConflictCancel" />
 
+        <ImportProgressDialog
+            :visible="progressVisible"
+            :current-name="progressName"
+            :current-type="progressType"
+            :done="progressDone"
+            :total="progressTotal"
+            unit-label="equipment" />
+
         <!-- Import/Export theo template Excel/Word — tách biệt với Import/Export cũ -->
         <TemplateImportExport
             :visible.sync="ioVisible"
@@ -132,13 +140,14 @@ import * as Mapper from '@/views/Mapping/TestingEquipment'
 import uuid from '@/utils/uuid'
 import ImportConflictDialog from './importConflictDialog.vue'
 import TemplateImportExport from './templateImportExport.vue'
+import ImportProgressDialog from '@/views/TreeNode/dialogs/ImportProgressDialog.vue'
 import { splitByDuplicate } from '../services/duplicateCheck'
 
 const TE_JSON_VERSION = 'testing-equipment-json-v1'
 
 export default {
     name: 'TestingEquipmentList',
-    components: { ImportConflictDialog, TemplateImportExport },
+    components: { ImportConflictDialog, TemplateImportExport, ImportProgressDialog },
     props: {
         // danh sách thiết bị; mặc định rỗng, dữ liệu lấy từ DB qua reload()
         items: { type: Array, default: () => [] }
@@ -150,6 +159,11 @@ export default {
             conflictVisible: false,
             conflictRows: [],
             _pendingImport: null,
+            progressVisible: false,
+            progressDone: 0,
+            progressTotal: 0,
+            progressName: '',
+            progressType: 'testingEquipment',
             // import/export theo template Excel/Word
             ioVisible: false,
             ioMode: 'export',      // 'import' | 'export'
@@ -251,6 +265,27 @@ export default {
             }
         },
 
+        startImportProgress(total, name) {
+            this.progressVisible = true
+            this.progressDone = 0
+            this.progressTotal = total || 0
+            this.progressName = name || ''
+            this.progressType = 'testingEquipment'
+        },
+        stepImportProgress(name) {
+            this.progressName = name || ''
+            this.progressType = 'testingEquipment'
+            this.progressDone = Math.min(this.progressTotal || 1, this.progressDone + 1)
+        },
+        stopImportProgress() {
+            this.progressVisible = false
+        },
+        equipmentProgressName(entity) {
+            const asset = entity && entity.asset ? entity.asset : {}
+            const pam = entity && entity.productAssetModel ? entity.productAssetModel : {}
+            return asset.name || pam.model_number || asset.serial_number || 'Testing equipment'
+        },
+
         // ===== IMPORT JSON =====
         // Check trùng: tách ra services/duplicateCheck.js (dùng chung với Import Excel/Word)
         async importJson() {
@@ -320,13 +355,14 @@ export default {
                 this.$message.info('Nothing to import — kept all existing equipment')
                 return
             }
-            const loading = this.$loading({ lock: true, text: 'Importing testing equipment...' })
+            this.startImportProgress(total, 'Preparing...')
             try {
                 const user = this.$store && this.$store.getters.getUser
                 const userId = (user && user.user_id) || null
                 let ok = 0, fail = 0
 
                 const doInsert = async (entity) => {
+                    this.stepImportProgress(this.equipmentProgressName(entity))
                     // gán thiết bị cho user hiện tại để hiện trong list
                     if (userId) {
                         entity.userIdentifiedObject = { mrid: uuid.newUuid(), user_id: userId }
@@ -359,7 +395,7 @@ export default {
                 console.error('_runImport failed:', e)
                 this.$message.error('Import failed: ' + (e.message || e))
             } finally {
-                loading.close()
+                this.stopImportProgress()
             }
         },
 
@@ -449,8 +485,16 @@ export default {
 
         // Status: DB dùng repair_count, mock dùng cột repair (text)
         statusOf(it) {
-            const hasRepair = (it.repair && String(it.repair).trim()) || it.repair_count > 0
-            return hasRepair
+            const map = {
+                Available: { label: 'Available', cls: 'green' },
+                InUse: { label: 'In use', cls: 'blue' },
+                UnderRepair: { label: 'Under repair', cls: 'orange' },
+                Retired: { label: 'Retired', cls: 'gray' }
+            }
+            if (it.status && map[it.status]) return map[it.status]
+            // repair mặc định là Completed -> chỉ Under repair khi còn bản ghi InProgress
+            const hasInProgressRepair = it.repair_in_progress_count > 0
+            return hasInProgressRepair
                 ? { label: 'Under repair', cls: 'orange' }
                 : { label: 'Available', cls: 'green' }
         },

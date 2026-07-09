@@ -15,8 +15,13 @@ const splitRepairReason = (value) => {
     if (!text) return []
 
     const protectedText = text
+        // ngày/tháng(/năm) TRƯỚC: 12/9/2018 phải được bảo vệ nguyên cụm,
+        // nếu để tháng/năm chạy trước nó sẽ chộp "9/2018" làm hở dấu "/" giữa "12" và "9"
         .replace(/\b\d{1,2}\/\d{1,2}(?:\/\d{2,4})?\b/g, match => match.replace(/\//g, '__DATE_SLASH__'))
+        // tháng/năm: 11/2016 (word boundary chặn match cụt "11/20" nên không đụng ngày đầy đủ)
+        .replace(/\b\d{1,2}\/\d{4}\b/g, match => match.replace(/\//g, '__DATE_SLASH__'))
         .replace(/\b\d{1,2}\\\d{1,2}(?:\\\d{2,4})?\b/g, match => match.replace(/\\/g, '__DATE_BACKSLASH__'))
+        .replace(/\b\d{1,2}\\\d{4}\b/g, match => match.replace(/\\/g, '__DATE_BACKSLASH__'))
 
     const rawParts = protectedText
         .split(/\r?\n|[;\\/]+/)
@@ -51,7 +56,8 @@ const normalizeRepairDtos = (repairs) => {
             created_date_time: r.created_date_time || '',
             reason,
             provider: r.provider || '',
-            cost: r.cost || ''
+            cost: r.cost || '',
+            status: r.severity || r.status || 'Completed'
         }))
     }).filter((r) => {
         const key = [r.reason, r.created_date_time, r.provider, r.cost, r.status].join('|').toLowerCase()
@@ -89,7 +95,8 @@ export const mapDtoToEntity = (dto) => {
     entity.asset.kind = 'WorkEquipmentAsset';                 // phân biệt: KHÔNG phải PowerSystemResource
     entity.asset.type = p.type || null;
     entity.asset.country_of_origin = p.country_of_origin || null;
-    entity.asset.status = null;                               // FK -> status; map sau
+    entity.asset.status = null;                               // FK -> status; do not store free-text UI status here
+    entity.asset.in_use_state = p.status || null;             // UI/import status: Available/InUse/UnderRepair/Retired
     entity.asset.product_asset_model = entity.productAssetModel.mrid;
     entity.asset.lifecycle_date = entity.lifecycleDate.mrid;
     entity.asset.in_use_date = entity.inUseDate.mrid;
@@ -153,7 +160,7 @@ export const mapDtoToEntity = (dto) => {
         // activity_record.status là FK -> status(mrid), không nhét text được.
         // Tiến độ Repair (InProgress|Completed) lưu vào cột severity (text tự do).
         r.status = null;
-        r.severity = rp.status || 'InProgress';
+        r.severity = rp.status || 'Completed';
         r.asset = mrid;
         r.provider = rp.provider || null;
         r.cost = rp.cost || null;
@@ -225,7 +232,7 @@ export const mapEntityToDto = (entity) => {
     dto.properties.serial_no = a.serial_number || '';
     dto.properties.type = a.type || '';
     dto.properties.country_of_origin = a.country_of_origin || '';
-    dto.properties.status = a.status || '';
+    dto.properties.status = a.in_use_state || a.status || '';
     dto.properties.asset_tag = te.asset_tag || '';
     dto.properties.is_accessory = te.is_accessory != null ? te.is_accessory : 0;
     dto.work_id = te.work_id || '';
