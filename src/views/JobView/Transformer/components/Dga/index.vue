@@ -1,24 +1,20 @@
 <template>
-    <div id="energy-efficiency">
+    <div id="energy-efficiency" class="test-ui">
         <!-- Cấu hình -->
-        <el-row class="mgb-10">
-            <el-col>
-                <el-button class="btn-action" size="mini" type="success" @click="openConditionIndicatorDialog = true">
-                    <i class="fa-solid fa-hammer"></i> Condition indicatior settings
-                </el-button>
-            </el-col>
-        </el-row>
+        <div class="test-toolbar">
+            <div class="test-toolbar-group">
+                <el-button size="mini" type="primary" @click="calculator"> <i class="fas fa-circle-play"></i> Assess results </el-button>
+                <el-button size="mini" @click="clear"> <i class="fas fa-xmark"></i> Clear all </el-button>
+            </div>
+            <div class="test-toolbar-group">
+                <el-button size="mini" @click="openConditionIndicatorDialog = true"> <i class="fa-solid fa-hammer"></i> Condition indicator settings </el-button>
+            </div>
+        </div>
         <!-- Tính toán đánh giá -->
-        <el-row class="mgb-10">
-            <el-col>
-                <el-button size="mini" type="primary" class="btn-action" @click="calculator"> <i
-                        class="fas fa-circle-play"></i> Assess results </el-button>
-                <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i class="fas fa-xmark"></i>
-                    Clear all </el-button>
-            </el-col>
-        </el-row>
 
-        <table class="table-strip-input-data" style="width: 120% ; font-size: 12px;">
+
+        <div class="table-scroll">
+        <table class="table-strip-input-data test-table">
             <thead>
                 <tr>
                     <th>H<sub>2</sub></th>
@@ -95,11 +91,13 @@
                 </tr>
             </tbody>
         </table>
+        </div>
 
         <!-- Condition indicator settings -->
         <el-dialog append-to-body title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog"
             width="1120px">
-            <!-- <table class="table-strip-input-data mgb-10">
+            <!-- <div class="table-scroll">
+        <table class="table-strip-input-data test-table mgb-10">
                 <thead>
                     <tr>
                         <th>Status</th>
@@ -164,7 +162,8 @@
                         <td>{{ conditionIndicatorSetting.bad.score.value }}</td>
                     </tr>
                 </tbody>
-            </table> -->
+            </table>
+        </div> -->
         </el-dialog>
     </div>
 </template>
@@ -362,4 +361,7 @@ export default {
 .default-label { font-style: italic; color: #909399; font-size: 13px; }
 .pass { color: #67C23A; font-weight: bold; }
 .fail { color: #F56C6C; font-weight: bold; }
+</style>
+<style lang="scss" scoped>
+@import "~@/views/JobView/Common/testUi.scss";
 </style>

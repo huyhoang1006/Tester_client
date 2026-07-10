@@ -1,39 +1,26 @@
 <template>
-    <div id="dc-winding-resistance-prim">
+    <div id="dc-winding-resistance-prim" class="test-ui" style="width: 100%; font-size: 12px;">
         <!-- Cấu hình -->
-        <div style="position: sticky; left: 0; display: inline-block;">
-            <el-row class="mgb-10">
-                <el-col>
-                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
-                        <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
-                    </el-button>
-                    <el-button class="btn-action" size="mini" type="success"
-                        @click="openConditionIndicatorDialog = true">
-                        <i class="fa-solid fa-hammer"></i> Condition indicatior settings
-                    </el-button>
-                </el-col>
-            </el-row>
-
-            <!-- Tương tác với bảng -->
-            <el-row class="mgb-10">
-                <el-col>
-                    <el-button size="mini" type="primary" class="btn-action" @click="calculator"> <i
-                            class="fas fa-circle-play"></i> Assess results </el-button>
-                    <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i
-                            class="fas fa-xmark"></i> Clear all</el-button>
-                </el-col>
-            </el-row>
+        <div class="test-toolbar">
+            <div class="test-toolbar-group">
+                <el-button size="mini" type="primary" @click="calculator"><i class="fas fa-circle-play"></i> Assess results</el-button>
+                <el-button size="mini" @click="clear"><i class="fas fa-xmark"></i> Clear all</el-button>
+            </div>
+            <div class="test-toolbar-group">
+                <el-button size="mini" @click="openAssessmentDialog = true"><i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings</el-button>
+                <el-button size="mini" @click="openConditionIndicatorDialog = true"><i class="fa-solid fa-hammer"></i> Condition indicator settings</el-button>
+            </div>
         </div>
 
-        <table class="table-strip-input-data" style="width: 70% ; font-size: 12px;">
+        <div class="table-scroll"><table class="table-strip-input-data test-table" style="width: 70% ; font-size: 12px;">
             <thead>
                 <tr>
                     <th>No.</th>
                     <th>Item</th>
                     <th class="assessment-col">Assessment</th>
                     <th class="condition-indicator-col">Condition indicator</th>
-                    <th @click="add()" class="action-col"><i class="fa-solid fa-plus pointer"></i></th>
-                    <th @click="removeAll()" class="action-col"><i class="fa-solid fa-trash pointer"></i></th>
+                    <th @click="add()" class="action-col th-btn" title="Add row"><i class="fa-solid fa-plus pointer"></i></th>
+                    <th @click="removeAll()" class="action-col th-btn th-btn-danger" title="Remove all"><i class="fa-solid fa-trash pointer"></i></th>
                 </tr>
             </thead>
             <tbody>
@@ -64,21 +51,21 @@
                         </el-select>
                     </td>
                     <td>
-                        <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
+                        <el-button size="mini" type="primary" class="row-btn" title="Insert row below" @click="addTest(index)">
                             <i class="fa-solid fa-plus"></i>
                         </el-button>
                     </td>
                     <td>
-                        <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index)">
+                        <el-button size="mini" type="danger" class="row-btn" title="Delete row" @click="deleteTest(index)">
                             <i class="fas fa-trash"></i>
                         </el-button>
                     </td>
                 </tr>
             </tbody>
-        </table>
+        </table></div>
 
         <!-- Assessment settings -->
-        <el-dialog append-to-body title="Assessment settings" :visible.sync="openAssessmentDialog" width="860px">
+        <el-dialog class="cb-assessment-dialog" append-to-body title="Assessment settings" :visible.sync="openAssessmentDialog" width="min(1040px, 92vw)">
         </el-dialog>
 
         <!-- Condition indicator settings -->
@@ -172,6 +159,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "~@/views/JobView/Common/testUi.scss";
 table,
 th,
 td,

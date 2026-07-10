@@ -1,32 +1,28 @@
 <template>
-    <div id="dc-winding-resistance-prim">
+    <div class="vt-test">
 
         <!-- Cấu hình -->
-        <div style="position: sticky; left: 0; display: inline-block;">
-            <el-row class="mgb-10">
-                <el-col>
-                    <el-button class="btn-action" size="mini" type="success" @click="openAssessmentDialog = true">
-                        <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
-                    </el-button>
-                    <el-button class="btn-action" size="mini" type="success"
-                        @click="openConditionIndicatorDialog = true">
-                        <i class="fa-solid fa-hammer"></i> Condition indicatior settings
-                    </el-button>
-                </el-col>
-            </el-row>
-
-            <!-- Tương tác với bảng -->
-            <el-row class="mgb-10">
-                <el-col>
-                    <el-button size="mini" type="primary" class="btn-action" @click="calculator"> <i
-                            class="fas fa-circle-play"></i> Assess results </el-button>
-                    <el-button size="mini" type="primary" class="btn-action" @click="clear"> <i
-                            class="fas fa-xmark"></i> Clear all</el-button>
-                </el-col>
-            </el-row>
+        <div class="test-toolbar">
+            <div class="test-toolbar-group">
+                <el-button size="mini" type="primary" @click="calculator">
+                    <i class="fas fa-circle-play"></i> Assess results
+                </el-button>
+                <el-button size="mini" @click="clear">
+                    <i class="fas fa-xmark"></i> Clear all
+                </el-button>
+            </div>
+            <div class="test-toolbar-group">
+                <el-button size="mini" @click="openAssessmentDialog = true">
+                    <i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings
+                </el-button>
+                <el-button size="mini" @click="openConditionIndicatorDialog = true">
+                    <i class="fa-solid fa-hammer"></i> Condition indicator settings
+                </el-button>
+            </div>
         </div>
 
-        <table class="table-strip-input-data" style="width: 100% ; font-size: 12px;">
+        <div class="table-scroll">
+        <table class="table-strip-input-data test-table">
             <thead>
                 <tr>
                     <th>Name</th>
@@ -37,8 +33,8 @@
                     <th>Polarity</th>
                     <th class="assessment-col">Assessment</th>
                     <th class="condition-indicator-col">Condition indicator</th>
-                    <th @click="add()" class="action-col"><i class="fa-solid fa-plus pointer"></i></th>
-                    <th @click="removeAll()" class="action-col"><i class="fa-solid fa-trash pointer"></i></th>
+                    <th @click="add()" class="action-col th-btn" title="Add row"><i class="fa-solid fa-plus pointer"></i></th>
+                    <th @click="removeAll()" class="action-col th-btn th-btn-danger" title="Remove all"><i class="fa-solid fa-trash pointer"></i></th>
                 </tr>
             </thead>
             <tbody>
@@ -84,24 +80,25 @@
                         </el-select>
                     </td>
                     <td>
-                        <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
+                        <el-button size="mini" type="primary" class="row-btn" title="Insert row below" @click="addTest(index)">
                             <i class="fa-solid fa-plus"></i>
                         </el-button>
                     </td>
                     <td>
-                        <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index)">
+                        <el-button size="mini" type="danger" class="row-btn" title="Delete row" @click="deleteTest(index)">
                             <i class="fas fa-trash"></i>
                         </el-button>
                     </td>
                 </tr>
             </tbody>
         </table>
+        </div>
 
         <!-- Assessment settings -->
-        <el-dialog title="Assessment settings" :visible.sync="openAssessmentDialog" width="860px" append-to-body>
-            <el-form style="width:75%;" size="small" label-position="left" label-width="140px">
+        <el-dialog title="Assessment settings" :visible.sync="openAssessmentDialog" width="min(860px, 92vw)" append-to-body>
+            <el-form size="small" label-position="left" label-width="140px">
                 <el-form-item label="Option">
-                    <el-select size="mini" placeholder="please select" v-model="option">
+                    <el-select style="width: 100%; max-width: 420px;" size="mini" placeholder="please select" v-model="option">
                         <el-option v-for="opt in assessmentList" :key="opt.mrid" :label="opt.name" :value="opt.code"></el-option>
                     </el-select>
                 </el-form-item>
@@ -134,7 +131,7 @@
         </el-dialog>
 
         <!-- Condition indicator settings -->
-        <el-dialog title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="860px">
+        <el-dialog title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog" width="min(860px, 92vw)">
         </el-dialog>
     </div>
 </template>
@@ -431,35 +428,180 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-table,
-th,
-td,
-tr {
-    white-space: nowrap;
-}
-
-.flex-container {
+.vt-test {
     display: flex;
     flex-direction: column;
-
-    div {
-        padding: 1px;
-    }
+    min-width: 0;
 }
 
-.Good input {
+/* ── Toolbar ─────────────────────────────────────────────── */
+.test-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding: 8px 10px;
+    background: #f5f7fa;
+    border: 1px solid #e4e7ed;
+    border-radius: 6px;
+}
+
+.test-toolbar-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.test-toolbar-group .el-button {
+    margin-left: 0;
+}
+
+.test-toolbar .el-button i {
+    margin-right: 4px;
+}
+
+/* ── Bảng chuẩn (đè global stripes + viền) ───────────────── */
+.table-scroll {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.table-scroll::-webkit-scrollbar {
+    height: 5px;
+}
+
+.table-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.table-scroll::-webkit-scrollbar-thumb {
+    background-color: rgba(120, 120, 120, 0.6);
+    border-radius: 6px;
+}
+
+.test-table {
+    width: max-content;
+    min-width: 100%;
+    overflow: hidden;
+    border: 1px solid #e4e7ed !important;
+    border-radius: 4px;
+    background: #fff;
+    color: #303133;
+    font-size: 12px !important;
+}
+
+::v-deep(.test-table > thead) {
+    background-color: #f5f7fa;
+}
+
+::v-deep(.test-table > tbody > tr),
+::v-deep(.test-table > tbody > tr:nth-child(even)) {
+    background-color: #fff;
+}
+
+::v-deep(.test-table > tbody > tr:hover) {
+    background-color: #f9fafc;
+}
+
+.test-table th {
+    background: #f5f7fa;
+    color: #606266;
+    font-weight: 600;
+}
+
+.test-table th,
+.test-table td {
+    border: 1px solid #e4e7ed !important;
+    height: 34px;
+    padding: 4px 8px;
+    vertical-align: middle;
+    white-space: nowrap;
+    font-size: 12px;
+}
+
+.test-table .action-col {
+    width: 44px;
+}
+
+/* Nút +/xóa trên header */
+.th-btn {
+    cursor: pointer;
+    text-align: center;
+    color: #012596;
+}
+
+.th-btn:hover {
+    background: #eef1f8;
+}
+
+.th-btn-danger {
+    color: #cc0514;
+}
+
+.th-btn-danger:hover {
+    background: #fdeaec;
+}
+
+/* Nút thêm/xóa từng hàng: kiểu ghost */
+.row-btn {
+    width: auto;
+    padding: 5px 7px;
+    background: transparent;
+    border-color: transparent;
+}
+
+.row-btn.el-button--primary {
+    color: #012596;
+}
+
+.row-btn.el-button--primary:hover,
+.row-btn.el-button--primary:focus {
+    background: #eef1f8;
+    border-color: transparent;
+    color: #012596;
+}
+
+.row-btn.el-button--danger {
+    color: #cc0514;
+}
+
+.row-btn.el-button--danger:hover,
+.row-btn.el-button--danger:focus {
+    background: #fdeaec;
+    border-color: transparent;
+    color: #cc0514;
+}
+
+::v-deep(.test-table .el-input),
+::v-deep(.test-table .el-select) {
+    width: 100%;
+    min-width: 90px;
+}
+
+::v-deep(.test-table .el-input__inner) {
+    width: 100%;
+    font-size: 12px !important;
+}
+
+/* Màu condition indicator */
+.Good ::v-deep(input) {
     background: #00CC00;
 }
 
-.Fair input {
+.Fair ::v-deep(input) {
     background: #ffff00;
 }
 
-.Poor input {
+.Poor ::v-deep(input) {
     background: #ff9900;
 }
 
-.Bad input {
+.Bad ::v-deep(input) {
     background: #ff3300;
 }
 

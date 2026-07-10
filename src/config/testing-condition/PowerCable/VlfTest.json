@@ -50,6 +50,32 @@
       "code": "weather",
       "name": "Weather",
       "type": "string"
+    },
+    {
+      "mrid": "3ca74239-df46-4260-9420-79599d155945",
+      "code": "frequency",
+      "name": "Frequency",
+      "type": "analog",
+      "unit": "Hz"
+    },
+    {
+      "mrid": "db8c190c-ac81-4ada-b786-fbb50d1627c5",
+      "code": "duration",
+      "name": "Test duration",
+      "type": "analog",
+      "unit": "min"
+    },
+    {
+      "mrid": "16501828-2cf5-43de-a670-3703a92f9964",
+      "code": "vlf_waveform",
+      "name": "VLF waveform",
+      "type": "string"
+    },
+    {
+      "mrid": "ec189e1c-9f3c-465e-aa29-2bb3181fcf32",
+      "code": "vlf_voltage_display",
+      "name": "VLF voltage display",
+      "type": "string"
     }
   ]
 }

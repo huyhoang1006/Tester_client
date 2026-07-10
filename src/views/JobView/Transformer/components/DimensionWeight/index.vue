@@ -1,6 +1,7 @@
 <template>
-    <div>
-        <table class="table-strip-input-data" style="width: 100% ; font-size: 12px;">
+    <div class="test-ui">
+        <div class="table-scroll">
+        <table class="table-strip-input-data test-table">
             <thead>
                 <tr>
                     <th colspan="4">Dimension (mm)</th>
@@ -28,6 +29,7 @@
                 </tr>
             </tbody>
         </table>
+        </div>
     </div>
 </template>
 
@@ -134,6 +136,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "~@/views/JobView/Common/testUi.scss";
 .assessment-container { width: 75%; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 16px; overflow: hidden; }
 .assessment-header { display: flex; background: #f5f7fa; font-weight: bold; padding: 8px; }
 .assessment-body { display: flex; flex-direction: column; border: 1px solid #ebeef5; border-radius: 4px; }

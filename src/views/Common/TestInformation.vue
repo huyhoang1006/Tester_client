@@ -1,12 +1,14 @@
 <template>
-    <div style="width: 100%;">
-        <div style="width: 100%;">
-            <el-row :gutter="20">
-                <el-col :span="12">
-                    <div>
-                        <div style="font-size: 12px;" class="bolder">Testing conditions</div>
-                        <el-divider></el-divider>
-                        <table style="width: 100%;">
+    <div class="ti-wrap">
+        <div class="ti-row">
+            <div class="col-content">
+                <section class="ti-card">
+                    <div class="ti-header">
+                        <i class="fa-solid fa-temperature-half"></i>
+                        <span>Testing conditions</span>
+                    </div>
+                    <div class="ti-body">
+                        <table class="ti-conditions">
                             <tr v-if="conditions.top_oil_temp">
                                 <td class="condition-head">Top oil temperature</td>
                                 <td>
@@ -70,21 +72,22 @@
                             </tr>
                         </table>
                     </div>
-                </el-col>
-                <el-col :span="12">
-                    <div>
-                        <div style="font-size: 12px;" class="bolder">Comment</div>
-                        <el-divider></el-divider>
-                        <el-input type="textarea" rows="5" v-model="testConditions.comment"></el-input>
-                        <Attachment :attachment_="attachment_" :title="title" height="120px"
-                            @data-attachment="getDataAttachment">
-                        </Attachment>
-
-
+                </section>
+            </div>
+            <div class="col-content ti-col-stack">
+                <section class="ti-card ti-comment-card">
+                    <div class="ti-header">
+                        <i class="fa-solid fa-align-left"></i>
+                        <span>Comment</span>
                     </div>
-
-                </el-col>
-            </el-row>
+                    <div class="ti-body">
+                        <el-input class="ti-comment-input" type="textarea" v-model="testConditions.comment"></el-input>
+                    </div>
+                </section>
+                <Attachment class="ti-attach-card" :attachment_="attachment_" :title="title" height="160px"
+                    @data-attachment="getDataAttachment">
+                </Attachment>
+            </div>
         </div>
     </div>
 </template>
@@ -143,26 +146,142 @@ export default {
 }
 </script>
 <style scoped>
-.condition-head {
-    min-width: fit-content;
-    width: 60%;
+.ti-wrap {
+    width: 100%;
+    margin-bottom: 12px;
 }
 
-.margin-side {
-    margin-top: 8%;
+.ti-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    gap: 16px;
 }
 
-.margin-bot {
-    margin-bottom: 3%;
+.col-content {
+    min-width: 0;
 }
 
-.last-right-parent {
-    position: relative;
-    float: right;
+.ti-col-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
-td,
-th {
+.ti-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-width: 0;
+    background: #fff;
+    border: 1px solid #e4e7ed;
+    border-radius: 6px;
+}
+
+.ti-col-stack .ti-comment-card {
+    flex: 1;
+}
+
+.ti-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #f5f7fa;
+    border-bottom: 1px solid #e4e7ed;
+    border-radius: 6px 6px 0 0;
+    color: #606266;
     font-size: 12px;
+    font-weight: 600;
+}
+
+.ti-header i {
+    color: #909399;
+}
+
+.ti-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+}
+
+/* Bảng điều kiện: 2 cột label/input, không viền */
+.ti-conditions {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 6px;
+}
+
+.ti-conditions td {
+    font-size: 12px;
+    color: #303133;
+    padding: 0;
+    border: none;
+    background: transparent;
+}
+
+.condition-head {
+    width: 45%;
+    min-width: 150px;
+    padding-right: 12px !important;
+    color: #303133;
+}
+
+::v-deep(.ti-conditions .el-input) {
+    width: 100%;
+}
+
+::v-deep(.ti-conditions .el-input__inner) {
+    font-size: 12px !important;
+}
+
+/* Comment giãn hết chiều cao card */
+.ti-comment-input,
+.ti-comment-input ::v-deep(.el-textarea__inner) {
+    height: 100%;
+}
+
+.ti-comment-input {
+    display: flex;
+    flex: 1;
+}
+
+.ti-comment-input ::v-deep(.el-textarea__inner) {
+    min-height: 110px !important;
+    resize: vertical;
+    font-size: 12px;
+}
+
+::v-deep(.ti-attach-card) {
+    min-height: 230px;
+}
+
+@media (max-width: 767px) {
+    .ti-row {
+        gap: 10px;
+    }
+
+    .ti-header {
+        padding: 8px 10px;
+    }
+
+    .ti-body {
+        padding: 10px;
+    }
+
+    .ti-conditions tr {
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    .ti-conditions td {
+        display: block;
+        width: 100%;
+    }
+
+    .condition-head {
+        width: 100%;
+        padding: 0 0 4px !important;
+    }
 }
 </style>

@@ -158,12 +158,6 @@ export default {
             return {
                 rowDataExampleCondition,
                 rowDataAssessment,
-                vlfSetting: {
-                    frequency: '',
-                    waveForm: '',
-                    testDuration: '',
-                    voltageDisplay: ''
-                }, // VlfTest specific setting
                 table
             }
         },
@@ -198,12 +192,6 @@ export default {
             return {
                 rowDataExampleCondition,
                 rowDataAssessment,
-                vlfSetting: {
-                    frequency: '',
-                    waveForm: '',
-                    testDuration: '',
-                    voltageDisplay: ''
-                }, // TandeltaVlfSource specific setting
                 table
             }
         },

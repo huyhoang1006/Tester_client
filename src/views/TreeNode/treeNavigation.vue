@@ -1109,6 +1109,9 @@ export default {
 
 .content {
     width: calc(75% - 5px);
+    /* Flex item: KHÔNG cho min-content của nội dung (bảng rộng) chống co,
+       tránh đẩy khung app tràn ngang — bảng rộng tự cuộn trong view con */
+    min-width: 0;
     background-color: white;
     font-size: 12px;
     /* Cỡ chữ cho nội dung */
@@ -1272,6 +1275,7 @@ export default {
 .context-data {
     box-sizing: border-box;
     width: calc(80% - 5px);
+    min-width: 0;   /* flex item: cho phép co, chặn khung tràn ngang */
     height: 100%;
 }
 

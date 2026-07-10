@@ -19,6 +19,7 @@ import * as disconnectorProcedureFunc from './disconnector/index'
 import * as powerCableProcedureFunc from './powerCable/index'
 
 export const updateProcedure = async (dbsql) => {
+    await createProcedure(dbsql)
 }
 
 export const createProcedure = async (dbsql) => {

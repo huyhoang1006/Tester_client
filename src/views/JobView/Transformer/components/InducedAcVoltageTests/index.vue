@@ -1,5 +1,5 @@
 <template>
-    <div id="induced-ac-voltage-tests" style="width: 100%; font-size: 12px;">
+    <div id="induced-ac-voltage-tests" class="test-ui" style="width: 100%; font-size: 12px;">
         <table class="mgb-10" style="width: 500px">
             <tbody>
                 <tr>
@@ -18,15 +18,16 @@
         </table>
         <el-divider style="width: 500px"></el-divider>
         
-        <table class="w-100 mgt-10 table-strip-input-data" style="width: 100% ; font-size: 12px;">
+        <div class="table-scroll">
+        <table class="w-100 mgt-10 table-strip-input-data test-table">
             <thead>
                 <tr>
                     <th colspan="2">Applied terminal</th>
                     <th colspan="4">Test voltage</th>
                     <th rowspan="3" class="assessment-col">Assessment</th>
                     <th rowspan="3" class="condition-indicator-col">Condition indicator</th>
-                    <th rowspan="3" @click="add()" class="action-col"><i class="fa-solid fa-plus pointer"></i></th>
-                    <th rowspan="3" @click="removeAll()" class="action-col"><i class="fa-solid fa-trash pointer"></i></th>
+                    <th rowspan="3" @click="add()" class="action-col th-btn" title="Add row"><i class="fa-solid fa-plus pointer"></i></th>
+                    <th rowspan="3" @click="removeAll()" class="action-col th-btn th-btn-danger" title="Remove all"><i class="fa-solid fa-trash pointer"></i></th>
                 </tr>
                 <tr>
                     <th rowspan="2">Terminal</th>
@@ -79,18 +80,19 @@
                         </el-select>
                     </td>
                     <td>
-                        <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
+                        <el-button size="mini" type="primary" class="row-btn" title="Insert row below" @click="addTest(index)">
                             <i class="fa-solid fa-plus"></i>
                         </el-button>
                     </td>
                     <td>
-                        <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index)">
+                        <el-button size="mini" type="danger" class="row-btn" title="Delete row" @click="deleteTest(index)">
                             <i class="fas fa-trash"></i>
                         </el-button>
                     </td>
                 </tr>
             </tbody>
         </table>
+        </div>
     </div>
 </template>
 
@@ -260,6 +262,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "~@/views/JobView/Common/testUi.scss";
 div.el-divider.el-divider--horizontal {
     width: 500px !important;
 }

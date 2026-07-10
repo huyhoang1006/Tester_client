@@ -1,5 +1,5 @@
 <template>
-    <div id="separate-source">
+    <div id="separate-source" class="test-ui">
         <table style="width: 50% ; font-size: 12px;" class="mgb-10">
             <tbody>
                 <tr>
@@ -13,7 +13,8 @@
             </tbody>
         </table>
 
-        <table class="table-strip-input-data" style="width: 50% ; font-size: 12px;">
+        <div class="table-scroll">
+        <table class="table-strip-input-data test-table">
             <thead>
                 <tr>
                     <th>Applied terminal</th>
@@ -38,6 +39,7 @@
                 </tr>
             </tbody>
         </table>
+        </div>
     </div>
 </template>
 
@@ -207,6 +209,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "~@/views/JobView/Common/testUi.scss";
 .assessment-container { width: 75%; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 16px; overflow: hidden; }
 .assessment-header { display: flex; background: #f5f7fa; font-weight: bold; padding: 8px; }
 .assessment-body { display: flex; flex-direction: column; border: 1px solid #ebeef5; border-radius: 4px; }

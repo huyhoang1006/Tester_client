@@ -1,181 +1,213 @@
 <template>
-    <div>
-        <el-row :gutter="20">
-            <el-col :xs="24" :md="12">
-                <div class="col-content">
-                    <el-form :model="properties" :inline-message="true" :label-width="labelWidth" size="mini"
-                        label-position="left">
-                        <span class="bolder">Properties</span>
-                        <el-divider class="thick-divider"></el-divider>
-                        <el-form-item label="Name">
-                            <el-input v-model="properties.name" v-if="properties"></el-input>
-                        </el-form-item>
-                        <el-form-item label="Type">
-                        </el-form-item>
-                        <el-form-item label="Substation" class="custom-label">
-                            <el-select style="width: 100%;" filterable v-model="properties.type">
-                                <el-option v-for="item in substationType" :key="item" :label="item" :value="item">
-                                </el-option>
-                            </el-select>
-                        </el-form-item>
-                        <el-form-item label="Generation" class="custom-label">
-                            <el-select style="width: 100%;" filterable v-model="properties.generation">
-                                <el-option v-for="item in generationType" :key="item" :label="item" :value="item">
-                                </el-option>
-                            </el-select>
-                        </el-form-item>
-                        <el-form-item label="Industry" class="custom-label">
-                            <el-select style="width: 100%;" filterable v-model="properties.industry">
-                                <el-option v-for="item in industryType" :key="item" :label="item" :value="item">
-                                </el-option>
-                            </el-select>
-                        </el-form-item>
-                        <el-form-item label="Location">
-                        </el-form-item>
-                        <el-form-item label="Location name" class="custom-label">
-                            <el-select @change="changeLocationName" style="width: 100%;" filterable allow-create
-                                v-model="locationTemp">
-                                <el-option v-for="(item, index) in locationListData" :key="index" :label="item && item.name ? item.name : ''"
-                                    :value="item && item.mrid ? item.mrid : ''"> </el-option>
-                            </el-select>
-                        </el-form-item>
-                        <el-form-item label="Street" class="custom-label">
-                            <el-input v-model="properties.street"></el-input>
-                        </el-form-item>
-                        <el-form-item label="Ward/ Commune" class="custom-label">
-                            <el-input v-model="properties.ward_or_commune"></el-input>
-                        </el-form-item>
-                        <el-form-item label="District/ Town" class="custom-label">
-                            <el-input v-model="properties.district_or_town"></el-input>
-                        </el-form-item>
-                        <el-form-item label="City" class="custom-label">
-                            <el-input v-model="properties.city"></el-input>
-                        </el-form-item>
-                        <el-form-item label="State/ Province" class="custom-label">
-                            <el-input v-model="properties.state_or_province"></el-input>
-                        </el-form-item>
-                        <el-form-item label="Country" class="custom-label">
-                            <el-select style="width: 100%;" filterable v-model="properties.country">
-                                <el-option v-for="item in countryData" :key="item" :label="item" :value="item">
-                                </el-option>
-                            </el-select>
-                        </el-form-item>
-                        <el-form-item label="Geo position x" class="custom-label geo-item">
-                            <div class="geo-row">
-                                <el-select class="geo-select" @change="changeValueGeo" v-model="properties.x_position">
-                                    <el-option v-for="(item, index) in properties.positionPoints.x" :key="index"
-                                        :value="index">
-                                        <div class="option-content">
-                                            <span>
-                                                {{ item.coor }}
-                                            </span>
-                                            <div class="icons">
-                                                <i @click="editCoor(index)" class="fa-solid fa-pen-to-square"
-                                                    style="color: green"></i>
-                                                <i @click="deleteCoor(index)" class="fa-solid fa-trash"
-                                                    style="color: red;"></i>
-                                            </div>
-                                        </div>
+    <div class="sub-view">
+        <!-- Hàng 1: Properties | Comment + Attachment -->
+        <div class="sub-row">
+            <div class="col-content">
+                <section class="sub-card">
+                    <div class="sub-header">
+                        <i class="fa-solid fa-industry"></i>
+                        <span>Properties</span>
+                    </div>
+                    <div class="sub-body">
+                        <el-form :model="properties" :inline-message="true" :label-width="labelWidth" size="mini"
+                            label-position="left">
+                            <el-form-item label="Name">
+                                <el-input v-model="properties.name" v-if="properties"></el-input>
+                            </el-form-item>
+
+                            <div class="sub-section">Type</div>
+                            <el-form-item label="Substation">
+                                <el-select filterable v-model="properties.type">
+                                    <el-option v-for="item in substationType" :key="item" :label="item" :value="item">
                                     </el-option>
                                 </el-select>
-                                <el-button class="geo-add-btn" @click="openAddGeo" type="primary"><i
-                                        class="fa-solid fa-plus"></i></el-button>
-                            </div>
-                        </el-form-item>
-                        <el-form-item label="Geo position y" class="custom-label geo-item">
-                            <div class="geo-row">
-                                <el-select class="geo-select" @change="changeValueGeo" v-model="properties.y_position">
-                                    <el-option v-for="(item, index) in properties.positionPoints.y" :key="index"
-                                        :value="index">
-                                        <div class="option-content">
-                                            <span>
-                                                {{ item.coor }}
-                                            </span>
-                                            <div class="icons">
-                                                <i @click="editCoor(index)" class="fa-solid fa-pen-to-square"
-                                                    style="color: green"></i>
-                                                <i @click="deleteCoor(index)" class="fa-solid fa-trash"
-                                                    style="color: red;"></i>
-                                            </div>
-                                        </div>
+                            </el-form-item>
+                            <el-form-item label="Generation">
+                                <el-select filterable v-model="properties.generation">
+                                    <el-option v-for="item in generationType" :key="item" :label="item" :value="item">
                                     </el-option>
                                 </el-select>
-                                <el-button class="geo-add-btn" @click="openAddGeo" type="primary"><i
-                                        class="fa-solid fa-plus"></i></el-button>
-                            </div>
-                        </el-form-item>
-                        <el-form-item label="Geo position z" class="custom-label geo-item">
-                            <div class="geo-row">
-                                <el-select class="geo-select" @change="changeValueGeo" v-model="properties.z_position">
-                                    <el-option v-for="(item, index) in properties.positionPoints.z" :key="index"
-                                        :value="index">
-                                        <div class="option-content">
-                                            <span>
-                                                {{ item.coor }}
-                                            </span>
-                                            <div class="icons">
-                                                <i @click="editCoor(index)" class="fa-solid fa-pen-to-square"
-                                                    style="color: green"></i>
-                                                <i @click="deleteCoor(index)" class="fa-solid fa-trash"
-                                                    style="color: red;"></i>
-                                            </div>
-                                        </div>
+                            </el-form-item>
+                            <el-form-item label="Industry">
+                                <el-select filterable v-model="properties.industry">
+                                    <el-option v-for="item in industryType" :key="item" :label="item" :value="item">
                                     </el-option>
                                 </el-select>
-                                <el-button class="geo-add-btn" @click="openAddGeo" type="primary"><i
-                                        class="fa-solid fa-plus"></i></el-button>
-                            </div>
-                        </el-form-item>
+                            </el-form-item>
+
+                            <div class="sub-section">Location</div>
+                            <el-form-item label="Location name">
+                                <el-select @change="changeLocationName" filterable allow-create v-model="locationTemp">
+                                    <el-option v-for="(item, index) in locationListData" :key="index"
+                                        :label="item && item.name ? item.name : ''"
+                                        :value="item && item.mrid ? item.mrid : ''"> </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item label="Street">
+                                <el-input v-model="properties.street"></el-input>
+                            </el-form-item>
+                            <el-form-item label="Ward/ Commune">
+                                <el-input v-model="properties.ward_or_commune"></el-input>
+                            </el-form-item>
+                            <el-form-item label="District/ Town">
+                                <el-input v-model="properties.district_or_town"></el-input>
+                            </el-form-item>
+                            <el-form-item label="City">
+                                <el-input v-model="properties.city"></el-input>
+                            </el-form-item>
+                            <el-form-item label="State/ Province">
+                                <el-input v-model="properties.state_or_province"></el-input>
+                            </el-form-item>
+                            <el-form-item label="Country">
+                                <el-select filterable v-model="properties.country">
+                                    <el-option v-for="item in countryData" :key="item" :label="item" :value="item">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                        </el-form>
+                    </div>
+                </section>
+            </div>
+            <div class="col-content sub-col-stack">
+                <section class="sub-card sub-comment-card">
+                    <div class="sub-header">
+                        <i class="fa-solid fa-align-left"></i>
+                        <span>Comment</span>
+                    </div>
+                    <div class="sub-body">
+                        <el-form size="mini" class="sub-comment-form">
+                            <el-input class="sub-comment-input" type="textarea" v-model="properties.comment"></el-input>
+                        </el-form>
+                    </div>
+                </section>
+                <Attachment class="sub-attach-card" :dataParent="this.properties" :deleteList="deleteList"
+                    :attachment_="this.attachmentData" title="substation" height="230px"
+                    @data-attachment="getDataAttachment"></Attachment>
+            </div>
+        </div>
+
+        <!-- Hàng 2: Geo location | Contact person -->
+        <div class="sub-row">
+            <div class="col-content">
+                <section class="sub-card">
+                    <div class="sub-header">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <span>Geo location</span>
+                    </div>
+                    <div class="sub-body">
+                        <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
+                            <el-form-item label="Geo position x" class="geo-item">
+                                <div class="geo-row">
+                                    <el-select class="geo-select" @change="changeValueGeo" v-model="properties.x_position">
+                                        <el-option v-for="(item, index) in properties.positionPoints.x" :key="index"
+                                            :value="index">
+                                            <div class="option-content">
+                                                <span>
+                                                    {{ item.coor }}
+                                                </span>
+                                                <div class="icons">
+                                                    <i @click="editCoor(index)" class="fa-solid fa-pen-to-square"
+                                                        style="color: green"></i>
+                                                    <i @click="deleteCoor(index)" class="fa-solid fa-trash"
+                                                        style="color: red;"></i>
+                                                </div>
+                                            </div>
+                                        </el-option>
+                                    </el-select>
+                                    <el-button class="geo-add-btn" @click="openAddGeo" type="primary"><i
+                                            class="fa-solid fa-plus"></i></el-button>
+                                </div>
+                            </el-form-item>
+                            <el-form-item label="Geo position y" class="geo-item">
+                                <div class="geo-row">
+                                    <el-select class="geo-select" @change="changeValueGeo" v-model="properties.y_position">
+                                        <el-option v-for="(item, index) in properties.positionPoints.y" :key="index"
+                                            :value="index">
+                                            <div class="option-content">
+                                                <span>
+                                                    {{ item.coor }}
+                                                </span>
+                                                <div class="icons">
+                                                    <i @click="editCoor(index)" class="fa-solid fa-pen-to-square"
+                                                        style="color: green"></i>
+                                                    <i @click="deleteCoor(index)" class="fa-solid fa-trash"
+                                                        style="color: red;"></i>
+                                                </div>
+                                            </div>
+                                        </el-option>
+                                    </el-select>
+                                    <el-button class="geo-add-btn" @click="openAddGeo" type="primary"><i
+                                            class="fa-solid fa-plus"></i></el-button>
+                                </div>
+                            </el-form-item>
+                            <el-form-item label="Geo position z" class="geo-item">
+                                <div class="geo-row">
+                                    <el-select class="geo-select" @change="changeValueGeo" v-model="properties.z_position">
+                                        <el-option v-for="(item, index) in properties.positionPoints.z" :key="index"
+                                            :value="index">
+                                            <div class="option-content">
+                                                <span>
+                                                    {{ item.coor }}
+                                                </span>
+                                                <div class="icons">
+                                                    <i @click="editCoor(index)" class="fa-solid fa-pen-to-square"
+                                                        style="color: green"></i>
+                                                    <i @click="deleteCoor(index)" class="fa-solid fa-trash"
+                                                        style="color: red;"></i>
+                                                </div>
+                                            </div>
+                                        </el-option>
+                                    </el-select>
+                                    <el-button class="geo-add-btn" @click="openAddGeo" type="primary"><i
+                                            class="fa-solid fa-plus"></i></el-button>
+                                </div>
+                            </el-form-item>
+                        </el-form>
                         <Transition>
-                            <geo-map class="mgt-20" ref='geoMap' :locationGeo='{}'></geo-map>
+                            <geo-map class="sub-geo-map" ref='geoMap' :locationGeo='{}'></geo-map>
                         </Transition>
-                    </el-form>
-                </div>
-            </el-col>
-            <el-col :xs="24" :md="12">
-                <div class="col-content">
-                    <el-form :label-width="labelWidth" size="mini" label-position="left">
-                        <span class="bolder">Contact person</span>
-                        <el-divider></el-divider>
-                        <el-form-item label="Name">
-                            <el-select @change="changePersonName" style="width: 100%;" filterable allow-create
-                                v-model="personTemp">
-                                <el-option v-for="(item, index) in personListData" :key="index" :label="item && item.name ? item.name : ''"
-                                    :value="item && item.mrid ? item.mrid : ''"> </el-option>
-                            </el-select>
-                        </el-form-item>
-                        <el-form-item label="Phone number">
-                            <el-input type="number" v-model="properties.phoneNumber"></el-input>
-                        </el-form-item>
-                        <el-form-item label="Fax">
-                            <el-input type="number" v-model="properties.fax"></el-input>
-                        </el-form-item>
-                        <el-form-item label="Email">
-                            <el-input v-model="properties.email"></el-input>
-                        </el-form-item>
-                        <el-form-item label="Department">
-                            <el-input v-model="properties.department"></el-input>
-                        </el-form-item>
-                        <el-form-item label="Position">
-                            <el-input v-model="properties.position"></el-input>
-                        </el-form-item>
-                    </el-form>
-                </div>
-                <div class="col-content mgt-20">
-                    <el-form :label-width="labelWidth" size="mini" label-position="left">
-                        <span class="bolder">Comment</span>
-                        <el-divider></el-divider>
-                        <el-input type="textarea" rows="5" v-model="properties.comment"></el-input>
-                        <Attachment :dataParent="this.properties" :deleteList="deleteList"
-                            :attachment_="this.attachmentData" title="substation" height="120px"
-                            @data-attachment="getDataAttachment"></Attachment>
-                    </el-form>
-                </div>
-            </el-col>
-        </el-row>
-        <el-dialog custom-class="app-dialog" :visible.sync="signAddGeo" :title="titleGeo" align-center :before-close="handleCloseGeo"
-            :modal="true" append-to-body>
-            <el-form :label-width="labelWidth" size="mini" label-position="left">
+                    </div>
+                </section>
+            </div>
+            <div class="col-content">
+                <section class="sub-card">
+                    <div class="sub-header">
+                        <i class="fa-solid fa-user"></i>
+                        <span>Contact person</span>
+                    </div>
+                    <div class="sub-body">
+                        <el-form :label-width="labelWidth" size="mini" label-position="left">
+                            <el-form-item label="Name">
+                                <el-select @change="changePersonName" filterable allow-create v-model="personTemp">
+                                    <el-option v-for="(item, index) in personListData" :key="index"
+                                        :label="item && item.name ? item.name : ''"
+                                        :value="item && item.mrid ? item.mrid : ''"> </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item label="Phone number">
+                                <el-input type="number" v-model="properties.phoneNumber"></el-input>
+                            </el-form-item>
+                            <el-form-item label="Fax">
+                                <el-input type="number" v-model="properties.fax"></el-input>
+                            </el-form-item>
+                            <el-form-item label="Email">
+                                <el-input v-model="properties.email"></el-input>
+                            </el-form-item>
+                            <el-form-item label="Department">
+                                <el-input v-model="properties.department"></el-input>
+                            </el-form-item>
+                            <el-form-item label="Position">
+                                <el-input v-model="properties.position"></el-input>
+                            </el-form-item>
+                        </el-form>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <el-dialog custom-class="sub-geo-dialog" :visible.sync="signAddGeo" :title="titleGeo" align-center
+            :before-close="handleCloseGeo" :modal="true" append-to-body>
+            <el-form label-width="180px" size="mini" label-position="left">
                 <el-form-item label="Geographic coordinate x">
                     <el-input type="number" v-model="geoChosen.x"></el-input>
                 </el-form-item>
@@ -250,7 +282,7 @@ export default {
             signAddGeo: false,
             titleGeo: 'Add coordinate',
             saved: false,
-            labelWidth: `150px`,
+            labelWidth: `130px`,
             countryData: country.default,
             voltageList: ['500 kV', '220 kV', '110 kV', '35 kV', '26 kV', '22 kV', '21 kV', '15.75 kV', '13.8 kV', '10 kV', '6.6 kV', '0.4 kV'],
             deleteList: [],
@@ -389,28 +421,128 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-#location {
-    width: fit-content;
+.sub-view {
+    display: flex;
+    flex-direction: column;
+    padding: 0 4px 16px;
+}
+
+.sub-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    gap: 20px;
+    margin-top: 14px;
 }
 
 .col-content {
-    width: 100%
+    min-width: 0;
 }
 
-.last-right-parent {
-    position: relative;
-    float: right;
+.sub-col-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.sub-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-width: 0;
+    background: #fff;
+    border: 1px solid #e4e7ed;
+    border-radius: 6px;
+}
+
+.sub-col-stack .sub-comment-card {
+    flex: 1;
+}
+
+.sub-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #f5f7fa;
+    border-bottom: 1px solid #e4e7ed;
+    border-radius: 6px 6px 0 0;
+    color: #606266;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.sub-header i {
+    color: #909399;
+}
+
+.sub-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+}
+
+/* Tiêu đề nhóm nhỏ trong card (Type / Location) */
+.sub-section {
+    margin: 6px 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #e4e7ed;
+    color: #606266;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.sub-comment-form,
+.sub-comment-input,
+.sub-comment-input ::v-deep(.el-textarea__inner) {
+    height: 100%;
+}
+
+.sub-comment-form {
+    display: flex;
+    flex: 1;
+}
+
+.sub-comment-input ::v-deep(.el-textarea__inner) {
+    min-height: 120px !important;
+    resize: vertical;
+}
+
+::v-deep(.sub-attach-card) {
+    min-height: 310px;
+}
+
+.sub-geo-map {
+    margin-top: 12px;
+}
+
+::v-deep(.el-select),
+::v-deep(.el-input),
+::v-deep(.el-textarea) {
+    width: 100%;
+}
+
+::v-deep(.el-form-item) {
+    margin-bottom: 10px;
+}
+
+::v-deep(.el-form-item__label) {
+    font-size: 12px !important;
+    color: #303133;
+}
+
+::v-deep(.el-input__inner),
+::v-deep(.el-select .el-input__inner) {
+    width: 100%;
+    font-size: 12px !important;
+    height: 32px;
+    line-height: 32px;
 }
 
 .option-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-
-.bolder {
-    font-weight: bold;
-    font-size: 12px;
 }
 
 .icons {
@@ -430,10 +562,11 @@ export default {
 }
 
 .geo-add-btn {
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
     padding: 0;
     display: flex;
+    flex-shrink: 0;
     align-items: center;
     justify-content: center;
 }
@@ -441,14 +574,6 @@ export default {
 .geo-add-btn i {
     font-size: 14px;
     line-height: 1;
-}
-
-::v-deep(.el-form-item__label) {
-    font-size: 12px !important;
-}
-
-::v-deep(.el-input__inner) {
-    height: 3.2vh !important;
 }
 
 ::v-deep(.custom-footer) {
@@ -468,13 +593,14 @@ export default {
     max-width: 100px;
 }
 
-::v-deep(.app-dialog) {
+::v-deep(.sub-geo-dialog) {
     box-sizing: border-box;
 }
 
-::v-deep(.app-dialog.el-dialog) {
-    width: 35%;
-    margin-top: 5vh !important;
+::v-deep(.sub-geo-dialog.el-dialog) {
+    width: 92%;
+    max-width: 520px;
+    margin-top: 8vh !important;
     border-radius: 6px;
     max-height: 90vh;
     height: auto !important;
@@ -483,18 +609,18 @@ export default {
     overflow: hidden;
 }
 
-::v-deep(.app-dialog .el-dialog__body) {
+::v-deep(.sub-geo-dialog .el-dialog__body) {
     overflow-y: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
 }
 
-::v-deep(.app-dialog .el-dialog__body::-webkit-scrollbar) {
+::v-deep(.sub-geo-dialog .el-dialog__body::-webkit-scrollbar) {
     width: 0px;
     height: 0px;
 }
 
-::v-deep(.app-dialog .el-dialog__footer) {
+::v-deep(.sub-geo-dialog .el-dialog__footer) {
     padding: 10px 20px;
     border-top: 1px solid #ebeef5;
 }
@@ -505,45 +631,34 @@ export default {
     white-space: normal;
 }
 
-@media (max-width: 991px) {
-    .col-content {
-        margin-bottom: 20px;
-    }
-
-    ::v-deep(.el-form-item.voltage-item) {
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    ::v-deep(.el-form-item.voltage-item .el-form-item__label) {
-        width: auto !important;
-        margin-left: 0 !important;
-        padding-left: 20px;
-        text-align: left;
-    }
-
-    ::v-deep(.el-form-item.voltage-item .el-form-item__content) {
-        width: 100%;
-        margin-left: 0 !important;
-    }
-
-    ::v-deep(.app-dialog.el-dialog) {
-        width: 50%;
-    }
-}
-
 @media (max-width: 767px) {
+    .sub-view {
+        padding: 0 0 12px;
+    }
+
+    .sub-row {
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .sub-header {
+        padding: 8px 10px;
+    }
+
+    .sub-body {
+        padding: 10px;
+    }
+
     ::v-deep(.el-form-item) {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
+        display: block;
     }
 
     ::v-deep(.el-form-item__label) {
-        width: auto !important;
+        float: none;
+        display: block;
+        width: 100% !important;
         margin-left: 0 !important;
-        padding-bottom: 0;
+        padding: 0 0 4px;
         text-align: left;
     }
 
@@ -552,21 +667,8 @@ export default {
         margin-left: 0 !important;
     }
 
-    ::v-deep(.el-form-item.custom-label .el-form-item__label) {
-        padding-left: 20px;
-    }
-
     ::v-deep(.custom-footer) {
         justify-content: center;
     }
-}
-</style>
-
-<style>
-.el-form-item.custom-label .el-form-item__label {
-    margin-left: 20px;
-    width: 130px !important;
-    /* Đặt chiều rộng cố định cho nhãn */
-    font-style: italic;
 }
 </style>

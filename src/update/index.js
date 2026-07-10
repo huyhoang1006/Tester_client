@@ -23,7 +23,7 @@ export const createRootOrganisation = async () => {
 }
 
 export const updateDatabase = async () => {
-    const LATEST_DB_VERSION = 1;
+    const LATEST_DB_VERSION = 2;
     const oldVersion = await databaseInitFunc.getDbVersion(db)
     if(!oldVersion) {
         try {

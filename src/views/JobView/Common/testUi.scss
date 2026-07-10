@@ -1,0 +1,313 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   testUi.scss — style chung cho màn nhập liệu test (theo giao diện Voltage
+   Transformer). Import trong <style lang="scss" scoped> của từng test:
+       @import "~@/views/JobView/Common/testUi.scss";
+   Root component gắn class .test-ui.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.test-ui {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* ── Toolbar ─────────────────────────────────────────────── */
+.test-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding: 8px 10px;
+    background: #f5f7fa;
+    border: 1px solid #e4e7ed;
+    border-radius: 6px;
+}
+
+.test-toolbar-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.test-toolbar-group .el-button {
+    margin-left: 0;
+}
+
+.test-toolbar .el-button i {
+    margin-right: 4px;
+}
+
+/* ── Bảng chuẩn (đè global stripes + viền) ───────────────── */
+.table-scroll {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.table-scroll::-webkit-scrollbar {
+    height: 5px;
+}
+
+.table-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.table-scroll::-webkit-scrollbar-thumb {
+    background-color: rgba(120, 120, 120, 0.6);
+    border-radius: 6px;
+}
+
+.test-table {
+    /* Co theo nội dung: KHÔNG ép min-width 100% — bảng ít cột sẽ gọn,
+       bảng nhiều cột vẫn cuộn ngang trong .table-scroll */
+    width: max-content;
+    overflow: hidden;
+    border: 1px solid #e4e7ed !important;
+    border-radius: 4px;
+    background: #fff;
+    color: #303133;
+    font-size: 12px !important;
+}
+
+::v-deep(.test-table > thead) {
+    background-color: #f5f7fa;
+}
+
+::v-deep(.test-table > tbody > tr),
+::v-deep(.test-table > tbody > tr:nth-child(even)) {
+    background-color: #fff;
+}
+
+::v-deep(.test-table > tbody > tr:hover) {
+    background-color: #f9fafc;
+}
+
+.test-table th {
+    background: #f5f7fa;
+    color: #606266;
+    font-weight: 600;
+}
+
+.test-table th,
+.test-table td {
+    border: 1px solid #e4e7ed !important;
+    height: 34px;
+    padding: 4px 6px;
+    vertical-align: middle;
+    white-space: nowrap;
+    font-size: 12px;
+}
+
+/* Ô chứa nhiều phần tử (input + thanh màu pha...): flex trong div con,
+   KHÔNG đặt display:flex trực tiếp lên td (phá thuật toán chia cột).
+   align-items: stretch để thanh màu pha (.colorTableRed/Yellow/Blue —
+   global style.css, không có height riêng) được kéo giãn theo ô nhập. */
+.test-table .cell-flex {
+    display: flex;
+    align-items: stretch;
+    gap: 4px;
+}
+
+.test-table .action-col {
+    width: 44px;
+}
+
+/* Nút +/xóa trên header */
+.th-btn {
+    cursor: pointer;
+    text-align: center;
+    color: #012596;
+}
+
+.th-btn:hover {
+    background: #eef1f8;
+}
+
+.th-btn-danger {
+    color: #cc0514;
+}
+
+.th-btn-danger:hover {
+    background: #fdeaec;
+}
+
+/* Nút thêm/xóa từng hàng: kiểu ghost */
+.row-btn {
+    width: auto;
+    padding: 5px 7px;
+    background: transparent;
+    border-color: transparent;
+}
+
+.row-btn.el-button--primary {
+    color: #012596;
+}
+
+.row-btn.el-button--primary:hover,
+.row-btn.el-button--primary:focus {
+    background: #eef1f8;
+    border-color: transparent;
+    color: #012596;
+}
+
+.row-btn.el-button--danger {
+    color: #cc0514;
+}
+
+.row-btn.el-button--danger:hover,
+.row-btn.el-button--danger:focus {
+    background: #fdeaec;
+    border-color: transparent;
+    color: #cc0514;
+}
+
+::v-deep(.test-table .el-input),
+::v-deep(.test-table .el-select) {
+    /* Bề rộng cố định: cột co đúng theo ô nhập, không phình theo bảng */
+    width: 120px;
+    min-width: 90px;
+    max-width: 170px;
+}
+
+::v-deep(.test-table .el-input__inner) {
+    width: 100%;
+    font-size: 12px !important;
+}
+
+/* Circuit Breaker assessment dialogs: mirrors the compact assessment tab layout. */
+::v-deep(.cb-assessment-dialog .el-dialog) {
+    max-width: calc(100vw - 48px);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+::v-deep(.cb-assessment-dialog .el-dialog__header) {
+    padding: 12px 16px;
+    background: #f5f7fa;
+    border-bottom: 1px solid #e4e7ed;
+}
+
+::v-deep(.cb-assessment-dialog .el-dialog__title) {
+    color: #606266;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+::v-deep(.cb-assessment-dialog .el-dialog__body) {
+    max-height: min(68vh, 660px);
+    padding: 14px 16px;
+    overflow: auto;
+}
+
+::v-deep(.cb-assessment-dialog .el-dialog__footer) {
+    padding: 10px 16px 14px;
+    border-top: 1px solid #e4e7ed;
+    background: #fff;
+}
+
+::v-deep(.cb-assessment-dialog .dialog-footer-actions) {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+::v-deep(.cb-assessment-dialog .el-radio-group) {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px !important;
+    padding: 4px;
+    background: #f5f7fa;
+    border: 1px solid #e4e7ed;
+    border-radius: 6px;
+}
+
+::v-deep(.cb-assessment-dialog .el-radio) {
+    margin-right: 0;
+    padding: 6px 10px;
+    border-radius: 4px;
+}
+
+::v-deep(.cb-assessment-dialog .el-radio__label) {
+    font-size: 12px;
+}
+
+::v-deep(.cb-assessment-dialog .el-form) {
+    width: min(100%, 560px);
+}
+
+::v-deep(.cb-assessment-dialog .el-form-item) {
+    margin-bottom: 10px;
+}
+
+::v-deep(.cb-assessment-dialog .el-form-item__label) {
+    color: #303133;
+    font-size: 12px;
+}
+
+::v-deep(.cb-assessment-dialog .el-input),
+::v-deep(.cb-assessment-dialog .el-select) {
+    width: 100%;
+}
+
+::v-deep(.cb-assessment-dialog .table-strip-input-data:not(.test-table)) {
+    width: max-content !important;
+    min-width: 100%;
+    margin: 10px 0 14px !important;
+    border: 1px solid #e4e7ed !important;
+    border-collapse: collapse;
+    background: #fff;
+    color: #303133;
+    font-size: 12px !important;
+}
+
+::v-deep(.cb-assessment-dialog .table-strip-input-data:not(.test-table) th) {
+    background: #f5f7fa !important;
+    border: 1px solid #e4e7ed !important;
+    color: #606266;
+    font-weight: 600;
+}
+
+::v-deep(.cb-assessment-dialog .table-strip-input-data:not(.test-table) td) {
+    border: 1px solid #e4e7ed !important;
+    background: #fff !important;
+}
+
+::v-deep(.cb-assessment-dialog .table-strip-input-data:not(.test-table) th),
+::v-deep(.cb-assessment-dialog .table-strip-input-data:not(.test-table) td) {
+    height: 34px;
+    padding: 5px 8px;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+::v-deep(.cb-assessment-dialog .table-strip-input-data:not(.test-table) th:first-child),
+::v-deep(.cb-assessment-dialog .table-strip-input-data:not(.test-table) td:first-child) {
+    min-width: 170px;
+    max-width: 260px;
+    white-space: normal;
+    text-align: left;
+}
+
+::v-deep(.cb-assessment-dialog .table-strip-input-data:not(.test-table) .el-input) {
+    min-width: 118px;
+}
+
+@media (max-width: 640px) {
+    ::v-deep(.cb-assessment-dialog .el-dialog) {
+        width: calc(100vw - 24px) !important;
+        max-width: calc(100vw - 24px);
+    }
+
+    ::v-deep(.cb-assessment-dialog .el-dialog__body) {
+        padding: 12px;
+    }
+
+    ::v-deep(.cb-assessment-dialog .el-form) {
+        width: 100%;
+    }
+}

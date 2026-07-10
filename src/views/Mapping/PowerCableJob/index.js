@@ -100,7 +100,7 @@ export const jobDtoToEntity = (dto) => {
                         entity.testDataSet.push(testData);
 
                         for (const [fieldKey, value] of Object.entries(data)) {
-                            if (typeof value === 'object') {
+                            if (value && typeof value === 'object' && value.measurement_id) {
                                 if (value.type === 'analog') {
                                     const analogValue = new AnalogValue();
                                     analogValue.mrid = value.mrid || null;
@@ -157,7 +157,7 @@ export const jobDtoToEntity = (dto) => {
         testDataCondition.type = 'condition'
         entity.testDataSet.push(testDataCondition);
         for (const [key, value] of Object.entries(item.testCondition.condition)) {
-            if (typeof value === 'object') {
+            if (value && typeof value === 'object' && value.measurement_id) {
                 if (value.type === 'analog') {
                     const analogValue = new AnalogValue();
                     analogValue.mrid = value.mrid || null;

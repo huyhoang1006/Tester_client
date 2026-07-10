@@ -1,13 +1,14 @@
 <template>
-    <div id="testing-instruments" style="width: 100%; font-size: 12px;">
-        <table style="width: 60%; font-size: 12px;" class="mgt-10 table-strip-input-data">
+    <div id="testing-instruments" class="test-ui" style="width: 100%; font-size: 12px;">
+        <div class="table-scroll">
+        <table class="mgt-10 table-strip-input-data test-table">
             <thead>
                 <tr>
                     <th class="no-col">No.</th>
                     <th>Testing instrument</th>
                     <th>Type</th>
-                    <th @click="add()" class="action-col"><i class="fa-solid fa-plus pointer"></i></th>
-                    <th @click="removeAll()" class="action-col"><i class="fa-solid fa-trash pointer"></i></th>
+                    <th @click="add()" class="action-col th-btn" title="Add row"><i class="fa-solid fa-plus pointer"></i></th>
+                    <th @click="removeAll()" class="action-col th-btn th-btn-danger" title="Remove all"><i class="fa-solid fa-trash pointer"></i></th>
                 </tr>
             </thead>
             <tbody>
@@ -22,18 +23,19 @@
                         <el-input size="mini" v-model="item.type.value"> </el-input>
                     </td>
                     <td>
-                        <el-button size="mini" type="primary" class="w-100" @click="addTest(index)">
+                        <el-button size="mini" type="primary" class="row-btn" title="Insert row below" @click="addTest(index)">
                             <i class="fa-solid fa-plus"></i>
                         </el-button>
                     </td>
                     <td>
-                        <el-button size="mini" type="danger" class="w-100" @click="deleteTest(index)">
+                        <el-button size="mini" type="danger" class="row-btn" title="Delete row" @click="deleteTest(index)">
                             <i class="fas fa-trash"></i>
                         </el-button>
                     </td>
                 </tr>
             </tbody>
         </table>
+        </div>
     </div>
 </template>
 
@@ -140,6 +142,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "~@/views/JobView/Common/testUi.scss";
 .assessment-container { width: 75%; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 16px; overflow: hidden; }
 .assessment-header { display: flex; background: #f5f7fa; font-weight: bold; padding: 8px; }
 .assessment-body { display: flex; flex-direction: column; border: 1px solid #ebeef5; border-radius: 4px; }

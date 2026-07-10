@@ -32,7 +32,7 @@ export default {
                     } else {
                         return {
                             success: false,
-                            message: 'Failed to save job'
+                            message: rs.message || 'Failed to save job'
                         }
                     }
                 }
@@ -41,7 +41,7 @@ export default {
                 return {
                     success: false,
                     data: null,
-                    message: 'Failed to save job'
+                    message: 'Failed to save job: ' + error.message
                 }
             }
         },
@@ -211,4 +211,3 @@ export default {
         },
     }
 }
-

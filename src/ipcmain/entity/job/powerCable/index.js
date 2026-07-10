@@ -16,7 +16,7 @@ export const insertPowerCableJob = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: rs.message || "fail",
                 }
             }
         } catch (error) {

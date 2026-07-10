@@ -211,7 +211,9 @@ export default {
     flex-direction: column;
     min-width: 0;
 }
-.ov-half { flex: 1 1 420px; }
+/* basis hạ từ 420px -> 340px: giữ 2 cột cạnh nhau ở màn 1920x1080 15.6" (kể cả Windows scaling 150%),
+   chỉ wrap khi cửa sổ thực sự hẹp */
+.ov-half { flex: 1 1 340px; }
 
 .ov-header {
     display: flex;
