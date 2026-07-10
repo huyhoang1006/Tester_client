@@ -34,7 +34,7 @@
                                 <th>Insul. level LL (BIL)</th>
                                 <th>Voltage L-ground</th>
                                 <th>Max. system voltage</th>
-                                <th>Rate current</th>
+                                <th>Rated Current</th>
                                 <th>DF (C1)</th>
                                 <th>Cap. (C1)</th>
                                 <th>DF (C2)</th>
@@ -159,7 +159,7 @@
                                 <th>Insul. level LL (BIL)</th>
                                 <th>Voltage L-ground</th>
                                 <th>Max. system voltage</th>
-                                <th>Rate current</th>
+                                <th>Rated Current</th>
                                 <th>DF (C1)</th>
                                 <th>Cap. (C1)</th>
                                 <th>DF (C2)</th>
@@ -283,7 +283,7 @@
                                 <th>Insul. level LL (BIL)</th>
                                 <th>Voltage L-ground</th>
                                 <th>Max. system voltage</th>
-                                <th>Rate current</th>
+                                <th>Rated Current</th>
                                 <th>DF (C1)</th>
                                 <th>Cap. (C1)</th>
                                 <th>DF (C2)</th>
