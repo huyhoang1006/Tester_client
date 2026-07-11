@@ -27,7 +27,7 @@ class PowerCableDTO {
     this.ratingsData = {
       rated_voltage: { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.V },
       max_voltage: { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.V },
-      rated_frequency: { mrid: '', value: '', unit: UnitSymbol.Hz },
+      rated_frequency: { mrid: '', value: '50', unit: UnitSymbol.Hz },
       shortcircuit: { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.A },
       rated_duration: { mrid: '', value: '', unit: UnitSymbol.s }
     };

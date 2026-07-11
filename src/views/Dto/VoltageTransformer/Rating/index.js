@@ -5,7 +5,7 @@ class RatingDto {
     constructor() {
         this.standard = '';
         this.rated_frequency_custom = '';
-        this.rated_frequency = { mrid: '', value: '', unit: UnitSymbol.Hz };
+        this.rated_frequency = { mrid: '', value: '50', unit: UnitSymbol.Hz };
         this.uprRatio = { mrid: '', value: '', unit: 'string' };
         this.upr = '';
         this.c1 = { mrid: '', value: '', unit: UnitMultiplier.p + '|' + UnitSymbol.F };

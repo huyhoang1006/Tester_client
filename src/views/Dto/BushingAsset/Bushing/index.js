@@ -2,7 +2,7 @@ class BushingDto {
     constructor() {
         this.rated_frequency = {
             mrid: '',
-            value: '',
+            value: '50',
             label: 'Hz',
             unit: 'Hz'
         }
