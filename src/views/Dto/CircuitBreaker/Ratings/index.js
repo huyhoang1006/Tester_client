@@ -48,7 +48,7 @@ class RatingsDto {
         };
         this.rated_frequency = {
             mrid: '',
-            value: '',
+            value: '50',
             unit: 'Hz'
         };
         this.rated_frequency_custom = {

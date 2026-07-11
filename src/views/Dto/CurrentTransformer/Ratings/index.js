@@ -4,7 +4,7 @@ class RatingsDto {
     constructor() {
         this.standard = { mrid: '', value: '', unit: 'string' }
         this.rated_frequency_custom = ''
-        this.rated_frequency = { mrid: '', value: '', unit: UnitSymbol.Hz }
+        this.rated_frequency = { mrid: '', value: '50', unit: UnitSymbol.Hz }
         this.primary_winding_count = ''
         this.um_rms = { mrid: '', value: '', unit: UnitSymbol.V }
         this.u_withstand_rms = { mrid: '', value: '', unit: UnitSymbol.V }

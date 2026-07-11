@@ -9,7 +9,7 @@ class ReactorRatingDto {
         };
         this.rated_frequency = {
             mrid: '',
-            value: '',
+            value: '50',
             unit: UnitSymbol.Hz,
         };
         this.rated_current = {

@@ -23,7 +23,7 @@ class DisconnectorDTO {
         // Ratings
         this.ratings = {
             rated_voltage: { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.V }, // kV
-            rated_frequency: { mrid: '', value: '', unit: UnitSymbol.Hz }, // Hz
+            rated_frequency: { mrid: '', value: '50', unit: UnitSymbol.Hz }, // Hz
             rated_current: { mrid: '', value: '', unit: UnitSymbol.A }, // A
             short_time_withstand_current: { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.A }, // kA
             rated_duration_of_short_circuit: { mrid: '', value: '', unit: UnitSymbol.s }, // s

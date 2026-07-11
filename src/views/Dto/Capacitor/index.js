@@ -28,7 +28,7 @@ class CapacitorsDTO {
         // Ratings
         this.ratings = {
             rated_voltage: { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.V }, // kV
-            rated_frequency: { mrid: '', value: '', unit: UnitSymbol.Hz }, // Hz
+            rated_frequency: { mrid: '', value: '50', unit: UnitSymbol.Hz }, // Hz
             rated_current: { mrid: '', value: '', unit: UnitSymbol.A }, // A
             rated_power: { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.VAr }, // kVAr
         }

@@ -24,7 +24,7 @@ class RotatingMachineDTO {
             rated_u: { mrid: '', value: '', unit: UnitSymbol.V },
             rated_current: { mrid: '', value: '', unit: UnitSymbol.A },
             rated_speed: '',
-            rated_frequency: { mrid: '', value: '', unit: UnitSymbol.Hz },
+            rated_frequency: { mrid: '', value: '50 Hz', unit: UnitSymbol.Hz },
             rated_power: { mrid: '', value: '', unit: UnitMultiplier.k + '|' + UnitSymbol.VA },
             rated_power_factor: '',
             rated_thermal_class: '',

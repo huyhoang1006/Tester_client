@@ -2,7 +2,7 @@ class RatingsDto {
     constructor() {
         this.rated_frequency = {
             mrid: '',
-            value: '',
+            value: '50',
             custom_value: '',
             unit: 'Hz'
         }
