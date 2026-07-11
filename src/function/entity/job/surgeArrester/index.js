@@ -8,10 +8,10 @@ import SurgeArresterJobEntity from '@/views/Flatten/Job/SurgeArrester/index.js'
 import { insertWorkTaskTransaction, getWorkTaskByWork, deleteWorkTaskByIdTransaction } from '@/function/cim/workTask/index.js'
 import { insertSurgeArresterTestingEquipmentTestTypeTransaction, getSurgeArresterTestingEquipmentTestingEqId, deleteSurgeArresterTestingEquipmentTestTypeByIdTransaction } from '../../surgeArresterTestingEquipmentTestType/index.js'
 import { insertTestDataSetTransaction, getTestDataSetByWorkTaskId, deleteTestDataSetByIdTransaction } from '@/function/cim/testDataSet'
-import { insertAnalogValueTransaction, getAnalogValueByTestDataSetMrids, deleteAnalogValueByIdTransaction } from '@/function/cim/analogValue/index.js'
-import { insertStringMeasurementValueTransaction, getStringMeasurementValueByTestDataSetMrids, deleteStringMeasurementValueByIdTransaction } from '@/function/cim/stringMeasurementValue/index.js'
-import { insertDiscreteValueTransaction, getDiscreteValueByTestDataSetMrids, deleteDiscreteValueByIdTransaction } from '@/function/cim/discreteValue/index.js'
-import { insertProcedureDataSetMeasurementValueTransaction } from '@/function/cim/procedureDataSetMeasurementValue/index.js'
+import { insertAnalogValuesTransaction, getAnalogValueByTestDataSetMrids, deleteAnalogValueByIdTransaction } from '@/function/cim/analogValue/index.js'
+import { insertStringMeasurementValuesTransaction, getStringMeasurementValueByTestDataSetMrids, deleteStringMeasurementValueByIdTransaction } from '@/function/cim/stringMeasurementValue/index.js'
+import { insertDiscreteValuesTransaction, getDiscreteValueByTestDataSetMrids, deleteDiscreteValueByIdTransaction } from '@/function/cim/discreteValue/index.js'
+import { insertProcedureDataSetMeasurementValuesTransaction } from '@/function/cim/procedureDataSetMeasurementValue/index.js'
 import { insertProcedureAssetTransaction } from '@/function/cim/procedureAsset/index.js'
 import { insertCustomizedStandardTransaction, deleteCustomizedStandardByIdTransaction, getCustomizedStandardById } from '@/function/cim/customizedStandard/index.js'
 import { insertTestStandardTransaction, deleteTestStandardByIdTransaction, getTestStandardByWorkTaskId } from '@/function/cim/testStandard/index.js'
@@ -251,49 +251,33 @@ export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
             const oldIdsAnalogValue = old_entity.analogValues.map(v => v.mrid).filter(id => id);
 
             const toAddAnalogValue = entity.analogValues.filter(v => v.mrid && !oldIdsAnalogValue.includes(v.mrid));
-            const toUpdateAnalogValue = entity.analogValues.filter(v => v.mrid && oldIdsAnalogValue.includes(v.mrid));
+            const toUpdateAnalogValue = entity.analogValues.filter(v => v.mrid && oldIdsAnalogValue.includes(v.mrid) && hasMeasurementValueChanged(v, old_entity.analogValues, ['value', 'analog']));
             const toDeleteAnalogValue = old_entity.analogValues.filter(v => v.mrid && !newIdsAnalogValue.includes(v.mrid));
-            for (const analogValue of toAddAnalogValue) {
-                await insertAnalogValueTransaction(analogValue, db);
-            }
-
-            for (const analogValue of toUpdateAnalogValue) {
-                await insertAnalogValueTransaction(analogValue, db);
-            }
+            await insertAnalogValuesTransaction([...toAddAnalogValue, ...toUpdateAnalogValue], db);
 
             //string measurement value
             const newIdsStringMeasurementValue = entity.stringMeasurementValues.map(v => v.mrid).filter(id => id); // bỏ null/empty
             const oldIdsStringMeasurementValue = old_entity.stringMeasurementValues.map(v => v.mrid).filter(id => id);
 
             const toAddStringMeasurementValue = entity.stringMeasurementValues.filter(v => v.mrid && !oldIdsStringMeasurementValue.includes(v.mrid));
-            const toUpdateStringMeasurementValue = entity.stringMeasurementValues.filter(v => v.mrid && oldIdsStringMeasurementValue.includes(v.mrid));
+            const toUpdateStringMeasurementValue = entity.stringMeasurementValues.filter(v => v.mrid && oldIdsStringMeasurementValue.includes(v.mrid) && hasMeasurementValueChanged(v, old_entity.stringMeasurementValues, ['value', 'string_measurement']));
             const toDeleteStringMeasurementValue = old_entity.stringMeasurementValues.filter(v => v.mrid && !newIdsStringMeasurementValue.includes(v.mrid));
-            for (const stringMeasurementValue of toAddStringMeasurementValue) {
-                await insertStringMeasurementValueTransaction(stringMeasurementValue, db);
-            }
-
-            for (const stringMeasurementValue of toUpdateStringMeasurementValue) {
-                await insertStringMeasurementValueTransaction(stringMeasurementValue, db);
-            }
+            await insertStringMeasurementValuesTransaction([...toAddStringMeasurementValue, ...toUpdateStringMeasurementValue], db);
 
             //discrete value
             const newIdsDiscreteValue = entity.discreteValues.map(v => v.mrid).filter(id => id);
             const oldIdsDiscreteValue = old_entity.discreteValues.map(v => v.mrid).filter(id => id);
 
             const toAddDiscreteValue = entity.discreteValues.filter(v => v.mrid && !oldIdsDiscreteValue.includes(v.mrid));
-            const toUpdateDiscreteValue = entity.discreteValues.filter(v => v.mrid && oldIdsDiscreteValue.includes(v.mrid));
+            const toUpdateDiscreteValue = entity.discreteValues.filter(v => v.mrid && oldIdsDiscreteValue.includes(v.mrid) && hasMeasurementValueChanged(v, old_entity.discreteValues, ['value', 'discrete']));
             const toDeleteDiscreteValue = old_entity.discreteValues.filter(v => v.mrid && !newIdsDiscreteValue.includes(v.mrid));
-            for (const discreteValue of toAddDiscreteValue) {
-                await insertDiscreteValueTransaction(discreteValue, db);
-            }
-            for (const discreteValue of toUpdateDiscreteValue) {
-                await insertDiscreteValueTransaction(discreteValue, db);
-            }
+            await insertDiscreteValuesTransaction([...toAddDiscreteValue, ...toUpdateDiscreteValue], db);
 
             //procedure dataset measurement value
-            for(const procedureDataSetMeasurementValue of entity.procedureDataSetMeasurementValue) {
-                await insertProcedureDataSetMeasurementValueTransaction(procedureDataSetMeasurementValue, db);
-            }
+            await insertProcedureDataSetMeasurementValuesTransaction(
+                entity.procedureDataSetMeasurementValue.filter(v => !hasProcedureDataSetMeasurementValue(old_entity.procedureDataSetMeasurementValue, v)),
+                db
+            );
 
 
             //delete section
@@ -636,6 +620,33 @@ const runAsync = (sql, params = []) => {
         });
     });
 };
+
+const BASE_MEASUREMENT_VALUE_FIELDS = [
+    'name',
+    'alias_name',
+    'description',
+    'iopoint_source',
+    'sensor_accuracy',
+    'time_stamp',
+    'measurement_value_source',
+    'calculation_method_hierarchy',
+    'erp_person'
+]
+
+const hasMeasurementValueChanged = (current, oldList, fields) => {
+    const oldValue = oldList.find(v => v.mrid === current.mrid)
+    if (!oldValue) return true
+    return [...BASE_MEASUREMENT_VALUE_FIELDS, ...fields].some(field => normalizeCompareValue(current[field]) !== normalizeCompareValue(oldValue[field]))
+}
+
+const hasProcedureDataSetMeasurementValue = (oldList, current) => {
+    return oldList.some(old =>
+        old.procedure_dataset_id === current.procedure_dataset_id &&
+        old.measurement_value_id === current.measurement_value_id
+    )
+}
+
+const normalizeCompareValue = (value) => value === undefined ? null : value
 
 const getAssessmentGroupChild = async (parentData, assessmentGroupList) => {
     const child = await getAssessmentGroupByParentId(parentData.mrid)

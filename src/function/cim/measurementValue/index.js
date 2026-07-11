@@ -63,6 +63,70 @@ export const insertMeasurementValueTransaction = async (measurementValue, dbsql)
     })
 }
 
+export const insertMeasurementValuesTransaction = async (measurementValues = [], dbsql) => {
+    if (!measurementValues || measurementValues.length === 0) {
+        return { success: true, data: [], message: 'Insert measurementValues completed' }
+    }
+
+    const identifiedStmt = dbsql.prepare(
+        `INSERT INTO identified_object(mrid, name, alias_name, description)
+         VALUES (?, ?, ?, ?)
+         ON CONFLICT(mrid) DO UPDATE SET
+            name = excluded.name,
+            alias_name = excluded.alias_name,
+            description = excluded.description`
+    )
+    const iopointStmt = dbsql.prepare(
+        `INSERT INTO iopoint(
+            mrid, iopoint_source
+        ) VALUES (?, ?)
+        ON CONFLICT(mrid) DO UPDATE SET
+            iopoint_source = excluded.iopoint_source`
+    )
+    const measurementValueStmt = dbsql.prepare(
+        `INSERT INTO measurement_value(
+            mrid, sensor_accuracy, time_stamp, measurement_value_source, calculation_method_hierarchy, erp_person
+        ) VALUES (?, ?, ?, ?, ?, ?)
+        ON CONFLICT(mrid) DO UPDATE SET
+            sensor_accuracy = excluded.sensor_accuracy,
+            time_stamp = excluded.time_stamp,
+            measurement_value_source = excluded.measurement_value_source,
+            calculation_method_hierarchy = excluded.calculation_method_hierarchy,
+            erp_person = excluded.erp_person`
+    )
+
+    try {
+        for (const measurementValue of measurementValues) {
+            await runStatement(identifiedStmt, [
+                measurementValue.mrid,
+                measurementValue.name || null,
+                measurementValue.alias_name || null,
+                measurementValue.description || null
+            ])
+            await runStatement(iopointStmt, [
+                measurementValue.mrid,
+                measurementValue.iopoint_source
+            ])
+            await runStatement(measurementValueStmt, [
+                measurementValue.mrid,
+                measurementValue.sensor_accuracy,
+                measurementValue.time_stamp,
+                measurementValue.measurement_value_source,
+                measurementValue.calculation_method_hierarchy,
+                measurementValue.erp_person
+            ])
+        }
+
+        return { success: true, data: measurementValues, message: 'Insert measurementValues completed' }
+    } catch (err) {
+        return Promise.reject({ success: false, err, message: 'Insert measurementValues failed' })
+    } finally {
+        await finalizeStatement(identifiedStmt)
+        await finalizeStatement(iopointStmt)
+        await finalizeStatement(measurementValueStmt)
+    }
+}
+
 // Cập nhật measurementValue
 export const updateMeasurementValueByIdTransaction = async (mrid, measurementValue, dbsql) => {
     return new Promise(async (resolve, reject) => {
@@ -113,5 +177,23 @@ export const deleteMeasurementValueByIdTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete measurementValue failed' })
         }
+    })
+}
+
+const runStatement = (stmt, params) => {
+    return new Promise((resolve, reject) => {
+        stmt.run(params, function (err) {
+            if (err) return reject(err)
+            return resolve(this)
+        })
+    })
+}
+
+const finalizeStatement = (stmt) => {
+    return new Promise((resolve, reject) => {
+        stmt.finalize((err) => {
+            if (err) return reject(err)
+            return resolve()
+        })
     })
 }

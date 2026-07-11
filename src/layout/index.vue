@@ -20,6 +20,7 @@
 /* eslint-disable */
 import TopBar from '@/components/TopBar'
 import { mapState } from 'vuex'
+import { loadWorkspaceState, saveWorkspaceState } from '@/utils/workspaceRestore'
 
 export default {
     components: { TopBar },
@@ -31,7 +32,30 @@ export default {
             serverSign: false,
         }
     },
+    watch: {
+        user(newUser) {
+            if (newUser) {
+                this.restoreWorkspaceSide()
+            }
+        }
+    },
+    mounted() {
+        this.restoreWorkspaceSide()
+    },
     methods: {
+        restoreWorkspaceSide() {
+            const state = loadWorkspaceState()
+            if (state && state.side) {
+                this.serverSign = state.side === 'server'
+            }
+        },
+        saveWorkspaceSide() {
+            const state = loadWorkspaceState() || {}
+            saveWorkspaceState({
+                ...state,
+                side: this.serverSign ? 'server' : 'client'
+            })
+        },
         showLog() {
             this.serverSign
                 ? this.$refs.mainWindows.showLogBar()
@@ -39,8 +63,11 @@ export default {
         },
         retweet() {
             this.serverSign = !this.serverSign
+            this.saveWorkspaceSide()
             this.$nextTick(() => {
-                this.$refs.mainWindows.serverSwap(this.serverSign);
+                if (this.$refs.mainWindows && this.$refs.mainWindows.serverSwap) {
+                    this.$refs.mainWindows.serverSwap(this.serverSign);
+                }
             })
         }
     }

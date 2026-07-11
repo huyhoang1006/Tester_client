@@ -2,6 +2,7 @@ import axios from 'axios'
 import store from '@/store'
 import route from '@/router'
 import { afterLogout } from './helper'
+import { markRestoreAfterLogin } from '@/utils/workspaceRestore'
 import qs from 'qs'
 import { Loading, Message } from 'element-ui'
 
@@ -24,6 +25,12 @@ const processQueue = (error, token = null) => {
         }
     })
     failedQueue = []
+}
+
+const logoutExpiredSession = () => {
+    markRestoreAfterLogin()
+    afterLogout()
+    route.push({ name: 'login' }).catch(() => {})
 }
 
 // --- HÀM REFRESH TOKEN ---
@@ -130,8 +137,7 @@ client.interceptors.response.use(
 
                 // Nếu request đã là refresh token, không thể refresh tiếp -> logout
                 if (originalRequest.url.includes('/oauth/token')) {
-                    afterLogout()
-                    route.push({name: 'login'}).catch(()=>{})
+                    logoutExpiredSession()
                     return Promise.reject(error)
                 }
 
@@ -184,8 +190,7 @@ client.interceptors.response.use(
                             Message.error(isTimeout
                                 ? 'Session renewal timed out. Please sign in again.'
                                 : 'Session expired. Please sign in again.')
-                            afterLogout()
-                            route.push({name: 'login'}).catch(()=>{})
+                            logoutExpiredSession()
                             return Promise.reject(err)
                         })
                         .finally(() => {
@@ -194,8 +199,7 @@ client.interceptors.response.use(
                         })
                 } else {
                     // Đã retry rồi mà vẫn lỗi -> logout
-                    afterLogout()
-                    route.push({name: 'login'}).catch(()=>{})
+                    logoutExpiredSession()
                 }
             }
 

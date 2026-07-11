@@ -114,6 +114,44 @@ export const insertAnalogValueTransaction = async (analogValue, dbsql) => {
     })
 }
 
+export const insertAnalogValuesTransaction = async (analogValues = [], dbsql) => {
+    if (!analogValues || analogValues.length === 0) {
+        return { success: true, data: [], message: 'Insert analogValues completed' }
+    }
+
+    try {
+        const mvResult = await measurementValueFunc.insertMeasurementValuesTransaction(analogValues, dbsql)
+        if (!mvResult.success) {
+            return Promise.reject({ success: false, message: 'Insert measurementValues failed', err: mvResult.err })
+        }
+
+        const stmt = dbsql.prepare(
+            `INSERT INTO analog_value(
+                mrid, value, analog
+            ) VALUES (?, ?, ?)
+            ON CONFLICT(mrid) DO UPDATE SET
+                value = excluded.value,
+                analog = excluded.analog`
+        )
+
+        try {
+            for (const analogValue of analogValues) {
+                await runStatement(stmt, [
+                    analogValue.mrid,
+                    analogValue.value,
+                    analogValue.analog
+                ])
+            }
+        } finally {
+            await finalizeStatement(stmt)
+        }
+
+        return { success: true, data: analogValues, message: 'Insert analogValues completed' }
+    } catch (err) {
+        return Promise.reject({ success: false, err, message: 'Insert analogValues failed' })
+    }
+}
+
 // Cập nhật analogValue
 export const updateAnalogValueByIdTransaction = async (mrid, analogValue, dbsql) => {
     return new Promise(async (resolve, reject) => {
@@ -158,5 +196,23 @@ export const deleteAnalogValueByIdTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete analogValue failed' })
         }
+    })
+}
+
+const runStatement = (stmt, params) => {
+    return new Promise((resolve, reject) => {
+        stmt.run(params, function (err) {
+            if (err) return reject(err)
+            return resolve(this)
+        })
+    })
+}
+
+const finalizeStatement = (stmt) => {
+    return new Promise((resolve, reject) => {
+        stmt.finalize((err) => {
+            if (err) return reject(err)
+            return resolve()
+        })
     })
 }

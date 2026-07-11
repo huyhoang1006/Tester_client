@@ -113,6 +113,44 @@ export const insertStringMeasurementValueTransaction = async (stringMeasurementV
     })
 }
 
+export const insertStringMeasurementValuesTransaction = async (stringMeasurementValues = [], dbsql) => {
+    if (!stringMeasurementValues || stringMeasurementValues.length === 0) {
+        return { success: true, data: [], message: 'Insert stringMeasurementValues completed' }
+    }
+
+    try {
+        const mvResult = await measurementValueFunc.insertMeasurementValuesTransaction(stringMeasurementValues, dbsql)
+        if (!mvResult.success) {
+            return Promise.reject({ success: false, message: 'Insert measurementValues failed', err: mvResult.err })
+        }
+
+        const stmt = dbsql.prepare(
+            `INSERT INTO string_measurement_value(
+                mrid, value, string_measurement
+            ) VALUES (?, ?, ?)
+            ON CONFLICT(mrid) DO UPDATE SET
+                value = excluded.value,
+                string_measurement = excluded.string_measurement`
+        )
+
+        try {
+            for (const stringMeasurementValue of stringMeasurementValues) {
+                await runStatement(stmt, [
+                    stringMeasurementValue.mrid,
+                    stringMeasurementValue.value,
+                    stringMeasurementValue.string_measurement
+                ])
+            }
+        } finally {
+            await finalizeStatement(stmt)
+        }
+
+        return { success: true, data: stringMeasurementValues, message: 'Insert stringMeasurementValues completed' }
+    } catch (err) {
+        return Promise.reject({ success: false, err, message: 'Insert stringMeasurementValues failed' })
+    }
+}
+
 // Cập nhật stringMeasurementValue
 export const updateStringMeasurementValueByIdTransaction = async (mrid, stringMeasurementValue, dbsql) => {
     return new Promise(async (resolve, reject) => {
@@ -157,5 +195,23 @@ export const deleteStringMeasurementValueByIdTransaction = async (mrid, dbsql) =
         } catch (err) {
             return reject({ success: false, err, message: 'Delete stringMeasurementValue failed' })
         }
+    })
+}
+
+const runStatement = (stmt, params) => {
+    return new Promise((resolve, reject) => {
+        stmt.run(params, function (err) {
+            if (err) return reject(err)
+            return resolve(this)
+        })
+    })
+}
+
+const finalizeStatement = (stmt) => {
+    return new Promise((resolve, reject) => {
+        stmt.finalize((err) => {
+            if (err) return reject(err)
+            return resolve()
+        })
     })
 }

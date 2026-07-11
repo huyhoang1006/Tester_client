@@ -10,6 +10,9 @@ import * as attachmentContext from "@/function/attachmentcontext"
 const pathUpload = attachmentContext.getAttachmentDir()
 import fs from 'fs'
 
+const MAX_ATTACHMENT_SIZE_MB = 25
+const MAX_ATTACHMENT_SIZE_BYTES = MAX_ATTACHMENT_SIZE_MB * 1024 * 1024
+
 export const openFile = () => {
     ipcMain.handle('openFile', async function (event, path) {
         try {
@@ -83,6 +86,13 @@ export const getAttachmentpath = () => {
             })
             if (!rs.canceled) {
                 let nameFileArr = rs.filePaths.toString()
+                const stats = await fs.promises.stat(nameFileArr)
+                if (stats.size > MAX_ATTACHMENT_SIZE_BYTES) {
+                    return {
+                        success: false,
+                        message: `Attachment file size must be ${MAX_ATTACHMENT_SIZE_MB} MB or smaller`
+                    }
+                }
                 return {
                     success: true,
                     message: '',

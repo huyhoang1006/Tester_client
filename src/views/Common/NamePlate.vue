@@ -139,6 +139,9 @@ export default {
         async upload() {
             const rs = await window.electronAPI.getAttachmentpath('image')
             if (!rs.success || !rs.path) {
+                if (rs.message) {
+                    this.$message.error(rs.message)
+                }
                 return
             }
             if (!this.isImage(rs.path)) {

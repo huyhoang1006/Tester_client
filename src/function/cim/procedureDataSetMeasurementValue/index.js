@@ -41,6 +41,34 @@ export const insertProcedureDataSetMeasurementValueTransaction = async (info, db
     });
 };
 
+export const insertProcedureDataSetMeasurementValuesTransaction = async (items = [], dbsql) => {
+    if (!items || items.length === 0) {
+        return { success: true, data: [], message: 'Insert completed' };
+    }
+
+    const stmt = dbsql.prepare(
+        `INSERT INTO procedure_dataset_measurement_value(
+            procedure_dataset_id,
+            measurement_value_id
+        ) VALUES (?, ?)
+        ON CONFLICT(procedure_dataset_id, measurement_value_id) DO NOTHING`
+    );
+
+    try {
+        for (const item of items) {
+            await runStatement(stmt, [
+                item.procedure_dataset_id,
+                item.measurement_value_id
+            ]);
+        }
+        return { success: true, data: items, message: 'Insert completed' };
+    } catch (err) {
+        return Promise.reject({ success: false, err, message: 'Insert failed' });
+    } finally {
+        await finalizeStatement(stmt);
+    }
+};
+
 // Cập nhật procedureDataSetMeasurementValue (transaction)
 export const updateProcedureDataSetMeasurementValueTransaction = async (
     old_procedure_dataset_id,
@@ -92,5 +120,23 @@ export const deleteProcedureDataSetMeasurementValueTransaction = async (
                 });
             }
         );
+    });
+};
+
+const runStatement = (stmt, params) => {
+    return new Promise((resolve, reject) => {
+        stmt.run(params, function (err) {
+            if (err) return reject(err);
+            return resolve(this);
+        });
+    });
+};
+
+const finalizeStatement = (stmt) => {
+    return new Promise((resolve, reject) => {
+        stmt.finalize((err) => {
+            if (err) return reject(err);
+            return resolve();
+        });
     });
 };

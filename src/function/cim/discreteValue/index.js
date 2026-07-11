@@ -129,6 +129,44 @@ export const insertDiscreteValueTransaction = async (discreteValue, dbsql) => {
     })
 }
 
+export const insertDiscreteValuesTransaction = async (discreteValues = [], dbsql) => {
+    if (!discreteValues || discreteValues.length === 0) {
+        return { success: true, data: [], message: 'Insert discreteValues completed' }
+    }
+
+    try {
+        const mvResult = await measurementValueFunc.insertMeasurementValuesTransaction(discreteValues, dbsql)
+        if (!mvResult.success) {
+            return Promise.reject({ success: false, message: 'Insert measurementValues failed', err: mvResult.err })
+        }
+
+        const stmt = dbsql.prepare(
+            `INSERT INTO discrete_value(
+                mrid, value, discrete
+            ) VALUES (?, ?, ?)
+            ON CONFLICT(mrid) DO UPDATE SET
+                value = excluded.value,
+                discrete = excluded.discrete`
+        )
+
+        try {
+            for (const discreteValue of discreteValues) {
+                await runStatement(stmt, [
+                    discreteValue.mrid,
+                    discreteValue.value,
+                    discreteValue.discrete
+                ])
+            }
+        } finally {
+            await finalizeStatement(stmt)
+        }
+
+        return { success: true, data: discreteValues, message: 'Insert discreteValues completed' }
+    } catch (err) {
+        return Promise.reject({ success: false, err, message: 'Insert discreteValues failed' })
+    }
+}
+
 // Cập nhật discreteValue
 export const updateDiscreteValueByIdTransaction = async (mrid, discreteValue, dbsql) => {
     return new Promise(async (resolve, reject) => {
@@ -173,5 +211,23 @@ export const deleteDiscreteValueByIdTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete discreteValue failed' })
         }
+    })
+}
+
+const runStatement = (stmt, params) => {
+    return new Promise((resolve, reject) => {
+        stmt.run(params, function (err) {
+            if (err) return reject(err)
+            return resolve(this)
+        })
+    })
+}
+
+const finalizeStatement = (stmt) => {
+    return new Promise((resolve, reject) => {
+        stmt.finalize((err) => {
+            if (err) return reject(err)
+            return resolve()
+        })
     })
 }

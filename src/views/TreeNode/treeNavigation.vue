@@ -322,6 +322,11 @@ import uploadNodeMixin from './Client/mixin/Upload/index.js';
 import downloadNode from './Server/mixin/Download/downloadNode.js';
 import ClientTreePanel from './Client/ClientTree/index.vue'
 import ServerTreePanel from './Server/ServerTree/index.vue'
+import {
+    clearRestoreAfterLogin,
+    loadWorkspaceState,
+    saveWorkspaceState,
+} from '@/utils/workspaceRestore'
 export default {
     name: 'TreeNavigation',
     components: {
@@ -701,11 +706,211 @@ export default {
     mounted() {
         window.addEventListener("keydown", this.handleKeyDown);
         this.$nextTick(async () => {
-            await this.showLocationRoot();
-            await this.showOwnerServerRoot();
+            const restored = await this.restoreWorkspaceState();
+            if (!restored) {
+                await this.showLocationRoot();
+            }
         });
     },
+    watch: {
+        clientSlide() {
+            this.persistWorkspaceState()
+        },
+        activeTab: {
+            handler() {
+                this.persistWorkspaceState()
+            },
+            deep: true
+        },
+        activeTabClient: {
+            handler() {
+                this.persistWorkspaceState()
+            },
+            deep: true
+        },
+        tabs: {
+            handler() {
+                this.persistWorkspaceState()
+            },
+            deep: true
+        },
+        tabsClient: {
+            handler() {
+                this.persistWorkspaceState()
+            },
+            deep: true
+        },
+        selectedNodes: {
+            handler() {
+                this.persistWorkspaceState()
+            },
+            deep: true
+        },
+        organisationClientList: {
+            handler() {
+                this.persistWorkspaceState()
+            },
+            deep: true
+        },
+        ownerServerList: {
+            handler() {
+                this.persistWorkspaceState()
+            },
+            deep: true
+        }
+    },
     methods: {
+        getWorkspaceStatePayload() {
+            return {
+                side: this.clientSlide ? 'client' : 'server',
+                activeClientTab: this.activeTabClient,
+                activeServerTab: this.activeTab,
+                tabsClient: this.tabsClient,
+                tabs: this.tabs,
+                selectedNodes: this.selectedNodes,
+                expandedClientIds: this.collectExpandedNodeIds(this.organisationClientList),
+                expandedServerIds: this.collectExpandedNodeIds(this.ownerServerList)
+            }
+        },
+        persistWorkspaceState() {
+            saveWorkspaceState(this.getWorkspaceStatePayload())
+        },
+        getRestoreNodeKey(node) {
+            if (!node) return null
+            return node.mrid || node.id || null
+        },
+        getRestoreTabsWithoutActive(tabs, activeTab) {
+            if (!Array.isArray(tabs)) return []
+
+            const activeKey = this.getRestoreNodeKey(activeTab)
+            return activeKey
+                ? tabs.filter((tab) => this.getRestoreNodeKey(tab) !== activeKey)
+                : tabs
+        },
+        collectExpandedNodeIds(nodes) {
+            const ids = []
+            const walk = (items) => {
+                if (!Array.isArray(items)) return
+                items.forEach((node) => {
+                    const key = this.getRestoreNodeKey(node)
+                    if (node && node.expanded && key) {
+                        ids.push(key)
+                    }
+                    walk(node.children)
+                })
+            }
+            walk(nodes)
+            return ids
+        },
+        async restoreExpandedNodes(nodes, expandedIds, fetcher) {
+            const pending = new Set(Array.isArray(expandedIds) ? expandedIds : [])
+            let guard = 0
+            let progressed = true
+
+            while (pending.size > 0 && progressed && guard < 20) {
+                progressed = false
+                guard += 1
+
+                const candidates = []
+                const walk = (items) => {
+                    if (!Array.isArray(items)) return
+                    items.forEach((node) => {
+                        const key = this.getRestoreNodeKey(node)
+                        if (key && pending.has(key)) {
+                            candidates.push(node)
+                        }
+                        walk(node.children)
+                    })
+                }
+
+                walk(nodes)
+
+                for (const node of candidates) {
+                    if (node.mode !== 'job') {
+                        await fetcher(node)
+                        this.$set(node, 'expanded', true)
+                    }
+                    pending.delete(this.getRestoreNodeKey(node))
+                    progressed = true
+                }
+            }
+        },
+        getRestoredNode(tab, nodes) {
+            const key = this.getRestoreNodeKey(tab)
+            if (!key) return tab
+            return this.findNodeByIdOrMrid(key, nodes) || tab
+        },
+        inferJobFromAsset(assetData) {
+            if (!assetData) return ''
+            return assetData.asset || assetData.kind || assetData.asset_kind || assetData.assetKind || assetData.asset_type || assetData.assetType || assetData.type || ''
+        },
+        async hydrateRestoredJobTab(tab) {
+            if (!tab || tab.mode !== 'job' || tab.job || !tab.parentId) return tab
+
+            try {
+                const assetResult = await window.electronAPI.getAssetByMrid(tab.parentId)
+                if (assetResult && assetResult.success && assetResult.data) {
+                    const job = this.inferJobFromAsset(assetResult.data)
+                    if (job) {
+                        return {
+                            ...tab,
+                            job
+                        }
+                    }
+                }
+            } catch (error) {
+                console.warn('Cannot infer restored job type:', error)
+            }
+
+            return tab
+        },
+        async getRestoredTabs(tabs, activeTab, nodes) {
+            const restoredTabs = this.getRestoreTabsWithoutActive(tabs, activeTab).map((tab) => this.getRestoredNode(tab, nodes))
+            const hydratedTabs = await Promise.all(restoredTabs.map((tab) => this.hydrateRestoredJobTab(tab)))
+            return hydratedTabs.map((tab) => ({
+                ...tab,
+                _needsRestoreLoad: true
+            }))
+        },
+        async restoreWorkspaceState() {
+            const state = loadWorkspaceState()
+            clearRestoreAfterLogin()
+
+            if (!state) return false
+
+            try {
+                const restoreServer = state.side === 'server'
+                this.clientSlide = !restoreServer
+
+                if (restoreServer) {
+                    await this.showOwnerServerRoot()
+                    await this.restoreExpandedNodes(this.ownerServerList, state.expandedServerIds, this.fetchChildrenServer)
+                    const serverTab = state.activeServerTab || (Array.isArray(state.tabs) ? state.tabs[state.tabs.length - 1] : null)
+                    const restoredServerTab = await this.hydrateRestoredJobTab(this.getRestoredNode(serverTab, this.ownerServerList))
+                    this.tabs = await this.getRestoredTabs(state.tabs, restoredServerTab, this.ownerServerList)
+                    if (restoredServerTab && (restoredServerTab.mrid || restoredServerTab.id)) {
+                        await this.showData(restoredServerTab)
+                        await this.showPropertiesData(restoredServerTab)
+                    }
+                } else {
+                    await this.showLocationRoot()
+                    await this.restoreExpandedNodes(this.organisationClientList, state.expandedClientIds, this.fetchChildren)
+                    const clientTab = state.activeClientTab || (Array.isArray(state.tabsClient) ? state.tabsClient[state.tabsClient.length - 1] : null)
+                    const restoredClientTab = await this.hydrateRestoredJobTab(this.getRestoredNode(clientTab, this.organisationClientList))
+                    this.tabsClient = await this.getRestoredTabs(state.tabsClient, restoredClientTab, this.organisationClientList)
+                    if (restoredClientTab && (restoredClientTab.mrid || restoredClientTab.id)) {
+                        await this.showDataClient(restoredClientTab)
+                        await this.showPropertiesDataClient(restoredClientTab)
+                    }
+                }
+
+                this.persistWorkspaceState()
+                return true
+            } catch (error) {
+                console.error('Cannot restore workspace state:', error)
+                return false
+            }
+        },
         // After Word/Excel/JSON import finishes, reload the client tree so newly
         // imported nodes appear immediately (no manual right-click Refresh needed).
         async handleImportedRefresh() {
@@ -798,12 +1003,16 @@ export default {
         serverSwap(serverSign) {
             if (serverSign == true) {
                 this.clientSlide = false
-                // if (this.ownerServerList.length === 0) {
-                //     this.showOwnerServerRoot()
-                // }
+                if (this.ownerServerList.length === 0) {
+                    this.showOwnerServerRoot()
+                }
             } else {
                 this.clientSlide = true
+                if (this.organisationClientList.length === 0) {
+                    this.showLocationRoot()
+                }
             }
+            this.persistWorkspaceState()
         },
 
         mappingProperties(data) {

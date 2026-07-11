@@ -198,6 +198,7 @@ import Reactor from '@/views/AssetView/Reactor/index.vue'
 import Transformer from '@/views/AssetView/Transformer/index.vue'
 import Icon from '@/views/Common/Icon.vue'
 import * as SurgeArresterServerMapper from '@/views/Mapping/ServerToDTO/SurgeArrester/index.js'
+import { startLoading } from '@/utils/loading'
 
 export default {
     name: "Tabs",
@@ -286,7 +287,7 @@ export default {
             });
         },
 
-        handleReload(tab, index, ...args) {
+        async handleReload(tab, index, ...args) {
             let savedData
             if (args.length === 1) {
                 const eventData = args[0]
@@ -295,14 +296,29 @@ export default {
                 const eventData = args[1]
                 savedData = eventData?.savedData
             }
-            this.loadData(tab, index, savedData)
+            await this.loadData(tab, index, savedData)
         },
 
         async loadData(tab, index, savedData) {
-            if (this.side === 'client') {
-                await this.loadDataClient(tab, index, savedData)
-            } else {
-                await this.loadDataServer(tab, index, savedData)
+            const shouldShowLoading = !this.$store.state.loading.active;
+            const loading = shouldShowLoading
+                ? startLoading(this, {
+                    action: 'load',
+                    customText: 'Loading tab data...',
+                    type: tab && tab.mode === 'job' ? 'heavy' : 'default'
+                })
+                : null;
+
+            try {
+                if (this.side === 'client') {
+                    await this.loadDataClient(tab, index, savedData)
+                } else {
+                    await this.loadDataServer(tab, index, savedData)
+                }
+            } finally {
+                if (loading) {
+                    await loading.close();
+                }
             }
         },
 
@@ -1000,6 +1016,7 @@ export default {
             this.activeTab = tab;
             this.indexTab = index;
             this.$emit('input', tab);
+            await this.loadRestoredTabIfNeeded(tab, index);
 
             this.$nextTick(() => {
                 const id = tab.mrid || tab.id;
@@ -1008,6 +1025,19 @@ export default {
                     comp.loadMapForView();
                 }
             });
+        },
+        async loadRestoredTabIfNeeded(tab, index) {
+            if (!tab || !tab._needsRestoreLoad || tab._restoreLoading) return;
+
+            this.$set(tab, '_restoreLoading', true);
+            try {
+                await this.loadData(tab, index);
+                this.$delete(tab, '_needsRestoreLoad');
+            } catch (error) {
+                console.error('Error loading restored tab:', error);
+            } finally {
+                this.$delete(tab, '_restoreLoading');
+            }
         },
         compareTab(tab1, tab2) {
             if (!tab1 || !tab2) return false;
@@ -1083,13 +1113,23 @@ export default {
                 else if (tab.job === 'Power cable') return 'PowerCableJob'
             }
         },
-        saveCtrlS() {
+        async saveCtrlS() {
             try {
                 if (this.activeTab) {
                     const id = this.activeTab.mrid || this.activeTab.id;
                     const comp = this.getComponentRef(id);
                     if (comp && comp.saveCtrS) {
-                        comp.saveCtrS();
+                        const { close } = startLoading(this, {
+                            action: 'save',
+                            type: this.activeTab.mode === 'job' ? 'heavy' : 'default'
+                        });
+
+                        try {
+                            await this.$nextTick();
+                            await comp.saveCtrS();
+                        } finally {
+                            await close();
+                        }
                     }
                 } else {
                     this.$message.error("Please select a tab to save data.")

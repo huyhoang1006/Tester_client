@@ -156,7 +156,7 @@ export default {
                         message: 'Attachment completed'
                     })
                 } else {
-                    this.$message.error("Attachment cannot completed")
+                    this.$message.error(rs.message || "Attachment cannot completed")
                 }
             } catch (error) {
                 console.log(error)
