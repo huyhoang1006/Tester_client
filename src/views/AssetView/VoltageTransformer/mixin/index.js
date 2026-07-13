@@ -52,6 +52,10 @@ export default {
         async saveCtrS() {
             const data = await this.saveAsset()
             if (data.success) {
+                if (data.data) {
+                    const dto = voltageTransformerMapping.mapEntityToDto(data.data)
+                    this.loadData(dto)
+                }
                 this.$message.success("Asset saved successfully")
                 this.$emit('reload', { savedData: this.voltageTransformer })
             } else {

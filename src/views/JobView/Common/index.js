@@ -346,6 +346,86 @@ export const compare = (value, operator, threshold) => {
   }
 }
 
+const isEmptyAssessmentValue = (value) => {
+  return value === null || value === undefined || value === ''
+}
+
+export const evaluateAssessmentGroup = (group, measurementMap, options = {}) => {
+  const results = []
+  const conditions = group.conditions || []
+  const children = group.children || []
+
+  for (let i = 0; i < conditions.length; i++) {
+    const cond = conditions[i]
+    if (!cond || !cond.measurement_id) continue
+    if (!Object.prototype.hasOwnProperty.call(measurementMap, cond.measurement_id)) continue
+
+    const value = measurementMap[cond.measurement_id]
+    if (isEmptyAssessmentValue(value) || isEmptyAssessmentValue(cond.threshold)) return null
+
+    const compareValue = options.absolute ? Math.abs(parseFloat(value)) : value
+    results.push(compare(compareValue, cond.operator, cond.threshold))
+  }
+
+  for (let i = 0; i < children.length; i++) {
+    const childResult = evaluateAssessmentGroup(children[i], measurementMap, options)
+    if (childResult === null) return null
+    if (childResult !== 'not_applicable') results.push(childResult)
+  }
+
+  if (results.length === 0) return 'not_applicable'
+
+  const logic = (group.logic || 'AND').toUpperCase()
+  if (logic === 'OR') return results.some(Boolean)
+  return results.every(Boolean)
+}
+
+export const collectAssessmentResults = (assessmentStandard, measurementMap, options = {}) => {
+  let defaultResult = null
+  let hasNull = false
+  let hasApplicableRule = false
+  const passedResults = []
+
+  for (let i = 0; i < ((assessmentStandard && assessmentStandard.tree) || []).length; i++) {
+    const root = assessmentStandard.tree[i]
+    if (root.is_default) {
+      defaultResult = root.result
+      continue
+    }
+
+    const pass = evaluateAssessmentGroup(root, measurementMap, options)
+    if (pass === 'not_applicable') continue
+
+    hasApplicableRule = true
+    if (pass === null) hasNull = true
+    else if (pass === true) passedResults.push(root.result)
+  }
+
+  return {
+    passedResults,
+    hasNull,
+    defaultResult,
+    hasApplicableRule
+  }
+}
+
+export const resolveAssessmentResult = (assessmentStandard, measurementMap, options = {}) => {
+  const {
+    passedResults,
+    hasNull,
+    defaultResult,
+    hasApplicableRule
+  } = collectAssessmentResults(assessmentStandard, measurementMap, options)
+
+  if (!hasApplicableRule) return ''
+  if (hasNull && passedResults.length === 0) return ''
+  if (passedResults.includes('Fail')) return 'Fail'
+  if (passedResults.includes('Pass')) return 'Pass'
+  if (defaultResult === 'Pass') return 'Pass'
+  if (defaultResult) return 'Fail'
+  return ''
+}
+
 export const traverseAndFillMrid = async (obj) => {
   if (Array.isArray(obj)) {
     for (const item of obj) {

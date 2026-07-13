@@ -910,13 +910,11 @@ export default {
             var rows = this.testData && this.testData.table && this.testData.table.table1
                 ? this.testData.table.table1 : []
             rows.forEach(function (e) {
-                var result = 'Pass'
-                var r1 = this.assessTiming(e.opening_time ? e.opening_time.value : '', 0)
-                if (r1 === 'Fail') { result = 'Fail' }
-                else if (r1 === null) { result = '' }
-                e.assessment.value = result
+                e.assessment.value = this.assessTimingRow([
+                    this.assessTiming(e.opening_time ? e.opening_time.value : '', 0)
+                ])
             }.bind(this))
-            this.$message.success('Calculating successfully')
+            this.notifyAssessmentCalculated()
         },
         clear() {
             var rows = this.testData && this.testData.table && this.testData.table.table1 ? this.testData.table.table1 : []

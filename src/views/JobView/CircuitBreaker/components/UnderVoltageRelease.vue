@@ -190,7 +190,7 @@ export default {
                 }
                 item.assessment.value = result
             }.bind(this))
-            this.$message.success('Calculating successfully')
+            this.notifyAssessmentCalculated()
         },
         clear() {
             this.testData.table.table1.forEach(row => {

@@ -204,7 +204,8 @@ export const mapServerToDto = (serverData) => {
     dto.properties.comment = assetInfo.description || ''
 
     // ─── 3. Winding configuration ─────────────────────────────────────────────
-    dto.winding_configuration.phases = PHASES_MAP[tr.phases] || ''
+    dto.winding_configuration.phases = PHASES_MAP[tr.phases] || str(tr.numberOfPhase || assetInfo.numberOfPhase)
+    dto.winding_configuration.phase = tr.phase || assetInfo.phase || ''
 
     // Vector group:
     // Ưu tiên dùng các field tách sẵn server trả (vectorGroupPrim/Sec/Tert...)
@@ -612,6 +613,8 @@ export const mapDtoToServer = (dto, ownerType) => {
         manufacturingYear: numT(p.manufacturer_year),
         country: p.country_of_origin || null,
         apparatusId: p.apparatus_id || null,
+        phase: wc.phase || null,
+        numberOfPhase: numT(wc.phases),
         description: p.comment || null
     }
 
@@ -620,6 +623,8 @@ export const mapDtoToServer = (dto, ownerType) => {
     const transformer = {
         assetType: ASSET_TYPE_TO_SERVER[p.type] || p.type || null,
         phases: PHASES_TO_SERVER[wc.phases] || wc.phases || null,
+        phase: wc.phase || null,
+        numberOfPhase: numT(wc.phases),
 
         // vector group: ưu tiên data parsed, fallback custom/unsupported
         vectorGroup: wc.vector_group_data || wc.vector_group_custom || wc.unsupported_vector_group || null,
@@ -647,6 +652,7 @@ export const mapDtoToServer = (dto, ownerType) => {
         basePowerUnit: joinUnitT(im.zero_sequence_impedance?.base_power?.data?.unit),
         baseVoltage: numT(im.zero_sequence_impedance?.base_voltage?.data?.value),
         baseVoltageUnit: joinUnitT(im.zero_sequence_impedance?.base_voltage?.data?.unit),
+        zeroSequence: numT(im.zero_sequence_impedance?.zero_percent?.zero?.data?.value),
         zeroSequenceUnit: im.zero_sequence_impedance?.zero_percent?.zero?.data?.unit || '%',
         primaryZeroSequence: numT(im.zero_sequence_impedance?.zero_percent?.prim?.data?.value),
         secondaryZeroSequence: numT(im.zero_sequence_impedance?.zero_percent?.sec?.data?.value)

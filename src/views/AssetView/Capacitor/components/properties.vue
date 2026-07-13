@@ -40,9 +40,6 @@
                             <el-form-item label="Asset ID">
                                 <el-input v-model="propertiesData.apparatus_id"></el-input>
                             </el-form-item>
-                            <el-form-item label="Feeder">
-                                <el-input v-model="propertiesData.feeder"></el-input>
-                            </el-form-item>
                         </el-form>
                     </div>
                 </section>

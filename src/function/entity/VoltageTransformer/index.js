@@ -9,9 +9,9 @@ import { insertProductAssetModelTransaction, getProductAssetModelById, deletePro
 import { insertAssetTransaction, getAssetById, deleteAssetByIdTransaction } from '@/function/cim/asset'
 import { insertOldPotentialTransformerTransaction, getOldPotentialTransformerInfoById, deleteOldPotentialTransformerInfoTransaction } from '@/function/cim/OldPotentialTransformerInfo/index.js'
 import { insertPotentialTransformerTable, deletePotentialTransformerTableByPotentialTransformerInfoId, getPotentialTransformerTableByPotentialTransformerInfoId } from '@/function/cim/PotentialTransformerTable/index.js'
-import { insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction, deleteAssetPsrByIdTransaction } from '@/function/entity/assetPsr'
+import { insertAssetPsrTransaction, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from '@/function/entity/assetPsr'
 import VoltageTransformerEntity from '@/views/Flatten/VoltageTransformer'
-import { getAssetInfoById , deleteAssetInfoByIdTransaction } from '@/function/cim/assetInfo'
+import { getAssetInfoById } from '@/function/cim/assetInfo'
 
 
 /**
@@ -28,11 +28,11 @@ export const insertVoltageTransformerEntity = async (old_entity, entity) => {
             }
             return result;
         } else {
-            backupAllFilesInDir(null, null, entity.OldPotentialTransformerInfo.mrid);
-            const syncResult = syncFilesWithDeletion(JSON.parse(entity.attachment.path), null, entity.OldPotentialTransformerInfo.mrid);
+            backupAllFilesInDir(null, null, entity.asset.mrid);
+            const syncResult = syncFilesWithDeletion(JSON.parse(entity.attachment.path), null, entity.asset.mrid);
             if (!syncResult.success) {
-                restoreFiles(null, null, entity.OldPotentialTransformerInfo.mrid);
-                deleteBackupFiles(null, entity.OldPotentialTransformerInfo.mrid);
+                restoreFiles(null, null, entity.asset.mrid);
+                deleteBackupFiles(null, entity.asset.mrid);
                 const result = {
                     success: false,
                     error: new Error("MRID is required for Surge Arrester Entity"),
@@ -92,7 +92,7 @@ export const insertVoltageTransformerEntity = async (old_entity, entity) => {
             }
 
             //productAssetModel
-            const productAssetModelResult = await insertProductAssetModelTransaction(entity.productAssetModel, db);
+            await insertProductAssetModelTransaction(entity.productAssetModel, db);
 
             //oldPotentialTransformerInfo
             await insertOldPotentialTransformerTransaction(entity.OldPotentialTransformerInfo, db);
@@ -131,14 +131,22 @@ export const insertVoltageTransformerEntity = async (old_entity, entity) => {
             for (const capacitance of toDeleteCapacitance) {
                 await deleteCapacitanceByIdTransaction(capacitance.mrid, db);
             }
+
+            if (entity.attachment && entity.attachment.id) {
+                entity.attachment.path = JSON.stringify(syncResult.data || []);
+                entity.attachment.type = entity.attachment.type || 'asset';
+                entity.attachment.id_foreign = entity.asset.mrid;
+                await uploadAttachmentTransaction(entity.attachment, db);
+            }
+
             await runAsync('COMMIT');
-            deleteBackupFiles(null, entity.OldPotentialTransformerInfo.mrid);
+            deleteBackupFiles(null, entity.asset.mrid);
             return { success: true, data: entity, message: 'Voltage Transformer entity inserted successfully' };
 
         }
     } catch (error) {
-        restoreFiles(null, null, entity.OldPotentialTransformerInfo.mrid);
-        deleteBackupFiles(null, entity.OldPotentialTransformerInfo.mrid);
+        restoreFiles(null, null, entity.asset.mrid);
+        deleteBackupFiles(null, entity.asset.mrid);
         console.error('Error retrieving voltage transformer entity:', error);
         await runAsync('ROLLBACK');
         return { success: false, error, message: 'Error retrieving voltage transformer entity' };

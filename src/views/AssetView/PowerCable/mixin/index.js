@@ -52,6 +52,10 @@ export default {
             const data = await this.saveAsset()
             console.log('[POWER_CABLE] saveAsset result:', data)
             if (data.success) {
+                if (data.data) {
+                    const dto = powerCableMapping.mapEntityToDto(data.data)
+                    this.loadData(dto)
+                }
                 this.$message.success("Asset saved successfully")
 
                 console.log('[POWER_CABLE] Emitting reload event with saved data')

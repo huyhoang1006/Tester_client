@@ -71,18 +71,11 @@ export default {
         }
     },
     watch : {
-        rowData : {
-            deep : true,
-            immediate : true,
-            handler() {
-                this.$emit('data-attachment', this.rowData)
-            }
-        },
         attachment_ : {
             deep : true,
             immediate : true,
             handler(value) {
-                this.rowData = value || []
+                this.rowData = Array.isArray(value) ? [...value] : []
                 if (this.rowCurrent !== '' && !this.rowData[this.rowCurrent]) {
                     this.rowCurrent = ''
                 }
@@ -104,6 +97,7 @@ export default {
                     try {
                         if(row !== '') {
                             this.rowData.splice(row, 1)
+                            this.emitAttachment()
                             this.$message({
                                 type: 'success',
                                 message: 'Delete attachment completed'
@@ -143,7 +137,7 @@ export default {
             try {
                 const rs = await window.electronAPI.getAttachmentpath()
                 if (rs.success) {
-                    if(this.rowData.map(e => e.path.split(/[/\\]/).pop()).includes(rs.path.split(/[/\\]/).pop())) {
+                    if(this.rowData.map(e => String(e.path || '').split(/[/\\]/).pop()).includes(rs.path.split(/[/\\]/).pop())) {
                         this.$message.error("Name file exists, please choose another file")
                         return
                     }
@@ -151,6 +145,7 @@ export default {
                         path : rs.path
                     }
                     this.rowData.push(row)
+                    this.emitAttachment()
                     this.$message({
                         type: 'success',
                         message: 'Attachment completed'
@@ -162,6 +157,9 @@ export default {
                 console.log(error)
                 this.$message.error("Some error occurred when uploading attachment")
             }
+        },
+        emitAttachment() {
+            this.$emit('data-attachment', this.rowData)
         },
         async openFile() {
             if(this.rowCurrent !== '') {

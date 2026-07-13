@@ -272,48 +272,11 @@ export default {
                     var _abs_delta_c_percent = parseFloat(measurementMap[row.delta_c_percent.measurement_id])
                     if (!isNaN(_abs_delta_c_percent)) measurementMap[row.delta_c_percent.measurement_id] = Math.abs(_abs_delta_c_percent)
                 }
-                var passedResults = []
-                var hasNull = false
-                var defaultResult = null
-                for (var ri = 0; ri < assessmentStandard.tree.length; ri++) {
-                    var root = assessmentStandard.tree[ri]
-                    if (root.is_default) { defaultResult = root.result; continue }
-                    var pass = this.evaluateGroup(root, measurementMap)
-                    if (pass === null) hasNull = true
-                    else if (pass === true) passedResults.push(root.result)
-                }
-                var finalResult
-                if (hasNull && passedResults.length === 0) finalResult = ''
-                else if (passedResults.includes('Fail'))  finalResult = 'Fail'
-                else if (passedResults.includes('Pass'))  finalResult = 'Pass'
-                else if (defaultResult === 'Pass')        finalResult = 'Pass'
-                else if (defaultResult)                   finalResult = 'Fail'
-                else                                      finalResult = ''
-                row.assessment.value = finalResult
+                row.assessment.value = common.resolveAssessmentResult(assessmentStandard, measurementMap)
             }
         },
         evaluateGroup(group, measurementMap) {
-            for (var ci = 0; ci < (group.conditions || []).length; ci++) {
-                var cond = group.conditions[ci]
-                var value = measurementMap[cond.measurement_id]
-                if (value === null || value === undefined || value === '') return null
-                if (cond.threshold === null || cond.threshold === undefined || cond.threshold === '') return null
-            }
-            for (var chi = 0; chi < (group.children || []).length; chi++) {
-                if (this.evaluateGroup(group.children[chi], measurementMap) === null) return null
-            }
-            var results = []
-            for (var ci2 = 0; ci2 < (group.conditions || []).length; ci2++) {
-                var cond2 = group.conditions[ci2]
-                results.push(common.compare(measurementMap[cond2.measurement_id], cond2.operator, cond2.threshold))
-            }
-            for (var chi2 = 0; chi2 < (group.children || []).length; chi2++) {
-                results.push(this.evaluateGroup(group.children[chi2], measurementMap))
-            }
-            if (results.length === 0) return null
-            var logic = (group.logic || 'AND').toUpperCase()
-            if (logic === 'OR') return results.some(function(x) { return x })
-            return results.every(function(x) { return x })
+            return common.evaluateAssessmentGroup(group, measurementMap)
         },
         clear() {
             if (this.testData.table && this.testData.table.table1) {

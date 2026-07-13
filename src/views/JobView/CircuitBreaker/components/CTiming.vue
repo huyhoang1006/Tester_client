@@ -1254,29 +1254,21 @@ export default {
                 var tableKey = entry.key
                 var rows = entry.rows
                 rows.forEach(function (e, index) {
-                    var result = 'Pass'
+                    var results = []
                     // closing_sync_between_phase [5] - only first row of each phase group
-                    if (index % (iPerPhase * nPhases) === 0) {
-                        var r1 = this.assessTiming(e.closing_sync_between_phase ? e.closing_sync_between_phase.value : '', 5)
-                        if (r1 === 'Fail') { result = 'Fail' }
-                        else if (r1 === null) { result = '' }
+                    if (nPhases > 1 && index % (iPerPhase * nPhases) === 0) {
+                        results.push(this.assessTiming(e.closing_sync_between_phase ? e.closing_sync_between_phase.value : '', 5))
                     }
                     // closing_sync_between_interrupter [4]
-                    if (result !== 'Fail' && iPerPhase > 1 && index % iPerPhase === 0) {
-                        var r2 = this.assessTiming(e.closing_sync_between_interrupter ? e.closing_sync_between_interrupter.value : '', 4)
-                        if (r2 === 'Fail') { result = 'Fail' }
-                        else if (r2 === null && result === 'Pass') { result = '' }
+                    if (iPerPhase > 1 && index % iPerPhase === 0) {
+                        results.push(this.assessTiming(e.closing_sync_between_interrupter ? e.closing_sync_between_interrupter.value : '', 4))
                     }
                     // closing_time [3]
-                    if (result !== 'Fail') {
-                        var r3 = this.assessTiming(e.closing_time ? e.closing_time.value : '', 3)
-                        if (r3 === 'Fail') { result = 'Fail' }
-                        else if (r3 === null && result === 'Pass') { result = '' }
-                    }
-                    this.testData.table[tableKey][index].assessment.value = result
+                    results.push(this.assessTiming(e.closing_time ? e.closing_time.value : '', 3))
+                    this.testData.table[tableKey][index].assessment.value = this.assessTimingRow(results)
                 }.bind(this))
             }.bind(this))
-            this.$message.success('Calculating successfully')
+            this.notifyAssessmentCalculated()
         },
         clear() {
             this.getTableEntries().forEach(function (entry) {

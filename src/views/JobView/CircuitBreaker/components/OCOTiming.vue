@@ -1090,36 +1090,20 @@ export default {
                 var tableKey = entry.key
                 var rows = entry.rows
                 rows.forEach(function (e, index) {
-                    var result = 'Pass'
-                    if (index % (iPerPhase * nPhases) === 0) {
-                        var r1 = this.assessTiming(e.opening_sync_between_phase ? e.opening_sync_between_phase.value : '', 2)
-                        if (r1 === 'Fail') { result = 'Fail' }
-                        else if (r1 === null) { result = '' }
+                    var results = []
+                    if (nPhases > 1 && index % (iPerPhase * nPhases) === 0) {
+                        results.push(this.assessTiming(e.opening_sync_between_phase ? e.opening_sync_between_phase.value : '', 2))
                     }
-                    if (result !== 'Fail' && iPerPhase > 1 && index % iPerPhase === 0) {
-                        var r2 = this.assessTiming(e.opening_sync_between_interrupter ? e.opening_sync_between_interrupter.value : '', 1)
-                        if (r2 === 'Fail') { result = 'Fail' }
-                        else if (r2 === null && result === 'Pass') { result = '' }
+                    if (iPerPhase > 1 && index % iPerPhase === 0) {
+                        results.push(this.assessTiming(e.opening_sync_between_interrupter ? e.opening_sync_between_interrupter.value : '', 1))
                     }
-                    if (result !== 'Fail') {
-                        var r3 = this.assessTiming(e.opening_time ? e.opening_time.value : '', 0)
-                        if (r3 === 'Fail') { result = 'Fail' }
-                        else if (r3 === null && result === 'Pass') { result = '' }
-                    }
-                    if (result !== 'Fail') {
-                        var r4 = this.assessTiming(e.open_close_time ? e.open_close_time.value : '', 7)
-                        if (r4 === 'Fail') { result = 'Fail' }
-                        else if (r4 === null && result === 'Pass') { result = '' }
-                    }
-                    if (result !== 'Fail') {
-                        var r5 = this.assessTiming(e.closing_time ? e.closing_time.value : '', 3)
-                        if (r5 === 'Fail') { result = 'Fail' }
-                        else if (r5 === null && result === 'Pass') { result = '' }
-                    }
-                    this.testData.table[tableKey][index].assessment.value = result
+                    results.push(this.assessTiming(e.opening_time ? e.opening_time.value : '', 0))
+                    results.push(this.assessTiming(e.open_close_time ? e.open_close_time.value : '', 7))
+                    results.push(this.assessTiming(e.closing_time ? e.closing_time.value : '', 3))
+                    this.testData.table[tableKey][index].assessment.value = this.assessTimingRow(results)
                 }.bind(this))
             }.bind(this))
-            this.$message.success('Calculating successfully')
+            this.notifyAssessmentCalculated()
         },
 
         clear() {

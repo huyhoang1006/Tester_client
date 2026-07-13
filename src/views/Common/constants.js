@@ -975,7 +975,7 @@ export const FEATURE_TREE = {
             type: { label: 'Asset type', value: 'type' }, serial_no: { label: 'Serial no.', value: 'serial_no' },
             manufacturer: { label: 'Manufacturer', value: 'manufacturer' }, manufacturer_type: { label: 'Manufacturer type', value: 'manufacturer_type' },
             manufacturing_year: { label: 'Manufacturing year', value: 'manufacturing_year' }, country_of_origin: { label: 'Country of origin', value: 'country_of_origin' },
-            apparatus_id: { label: 'Apparatus ID', value: 'apparatus_id' }, feeder: { label: 'Feeder', value: 'feeder' }, comment: { label: 'Comment', value: 'comment' }
+            apparatus_id: { label: 'Apparatus ID', value: 'apparatus_id' }, comment: { label: 'Comment', value: 'comment' }
         }},
         ReactorRatingDto: { label: 'Ratings', children: {
             rated_voltage: { label: 'Rated voltage', value: 'rated_voltage' }, rated_frequency: { label: 'Rated frequency', value: 'rated_frequency' },
@@ -997,7 +997,6 @@ export const FEATURE_TREE = {
             manufacturing_year: { label: 'Manufacturing year', value: 'manufacturing_year' },
             country_of_origin:  { label: 'Country of origin',  value: 'country_of_origin' },
             apparatus_id:       { label: 'Apparatus ID',       value: 'apparatus_id' },
-            feeder:             { label: 'Feeder',             value: 'feeder' },
             comment:            { label: 'Comment',             value: 'comment' }
         }},
         configsData: { label: 'Configuration', children: {
@@ -1039,7 +1038,6 @@ export const FEATURE_TREE = {
             manufacturing_year: { label: 'Manufacturing year', value: 'manufacturing_year' },
             country_of_origin:  { label: 'Country of origin',  value: 'country_of_origin' },
             apparatus_id:       { label: 'Apparatus ID',       value: 'apparatus_id' },
-            feeder:             { label: 'Feeder',             value: 'feeder' },
             comment:            { label: 'Comment',             value: 'comment' }
         }},
         RatingsDto: { label: 'Ratings', children: {

@@ -372,7 +372,7 @@ export default {
                 }
                 item.assessment.value = result
             }.bind(this))
-            this.$message.success('Calculating successfully')
+            this.notifyAssessmentCalculated()
         },
 
         clear() {

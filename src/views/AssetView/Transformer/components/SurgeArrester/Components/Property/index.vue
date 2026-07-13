@@ -11,7 +11,12 @@
                 </el-col>
                 <el-col :xs="24" :sm="12" :md="6">
                     <el-form-item label="Manufacturer">
-                        <el-input v-model="propertiesData.manufacturer" placeholder="Manufacturer"></el-input>
+                        <el-select class="w-100" clearable filterable placeholder="Select"
+                            v-model="propertiesData.manufacturer">
+                            <el-option v-for="manufacturer in manufacturerList" :key="manufacturer"
+                                :label="manufacturer" :value="manufacturer">
+                            </el-option>
+                        </el-select>
                     </el-form-item>
                 </el-col>
                 <el-col :xs="24" :sm="12" :md="6">
@@ -31,6 +36,8 @@
 </template>
 
 <script>
+import MANUFACTURER_MAP from '@/views/ConstantAsset/manufacturer.js'
+
 export default {
     name: 'property',
     props: {
@@ -47,6 +54,7 @@ export default {
     data() {
         return {
             labelPosition: 'top',
+            manufacturerList: MANUFACTURER_MAP['TransformerDataDto'] || [],
         }
     },
 }

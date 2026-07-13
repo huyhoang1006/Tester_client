@@ -22,6 +22,7 @@
                             <col style="width: 120px" />
                             <col style="width: 120px" />
                             <col style="width: 220px" />
+                            <col style="width: 74px" />
                         </colgroup>
                         <thead>
                             <tr>
@@ -40,6 +41,7 @@
                                 <th>DF (C2)</th>
                                 <th>Cap. (C2)</th>
                                 <th class="insulation-type-col">Insulation type</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -58,7 +60,12 @@
                                     <el-input size="mini" v-model="item.serial_no"></el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="item.manufacturer"></el-input>
+                                    <el-select class="w-100" clearable filterable placeholder="Select" size="mini"
+                                        v-model="item.manufacturer">
+                                        <el-option v-for="manufacturer in manufacturerList" :key="manufacturer"
+                                            :label="manufacturer" :value="manufacturer">
+                                        </el-option>
+                                    </el-select>
                                 </td>
                                 <td>
                                     <el-input size="mini" v-model="item.manufacturer_type"></el-input>
@@ -119,6 +126,19 @@
                                         </el-option>
                                     </el-select>
                                 </td>
+                                <td>
+                                    <div class="row-actions">
+                                        <el-tooltip content="Copy row" placement="top">
+                                            <el-button icon="el-icon-document-copy" size="mini" type="text"
+                                                @click="copyBushingRow(item)"></el-button>
+                                        </el-tooltip>
+                                        <el-tooltip content="Paste row" placement="top">
+                                            <el-button icon="el-icon-document" size="mini" type="text"
+                                                :disabled="!copiedBushingRow"
+                                                @click="pasteBushingRow(item)"></el-button>
+                                        </el-tooltip>
+                                    </div>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -147,6 +167,7 @@
                             <col style="width: 120px" />
                             <col style="width: 120px" />
                             <col style="width: 220px" />
+                            <col style="width: 74px" />
                         </colgroup>
                         <thead>
                             <tr>
@@ -165,6 +186,7 @@
                                 <th>DF (C2)</th>
                                 <th>Cap. (C2)</th>
                                 <th class="insulation-type-col">Insulation type</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -183,7 +205,12 @@
                                     <el-input size="mini" v-model="item.serial_no"></el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="item.manufacturer"></el-input>
+                                    <el-select class="w-100" clearable filterable placeholder="Select" size="mini"
+                                        v-model="item.manufacturer">
+                                        <el-option v-for="manufacturer in manufacturerList" :key="manufacturer"
+                                            :label="manufacturer" :value="manufacturer">
+                                        </el-option>
+                                    </el-select>
                                 </td>
                                 <td>
                                     <el-input size="mini" v-model="item.manufacturer_type"></el-input>
@@ -242,6 +269,19 @@
                                         <el-option v-for="option in insulationKindList" :key="option.value"
                                             :label="option.label" :value="option.value"> </el-option>
                                     </el-select>
+                                </td>
+                                <td>
+                                    <div class="row-actions">
+                                        <el-tooltip content="Copy row" placement="top">
+                                            <el-button icon="el-icon-document-copy" size="mini" type="text"
+                                                @click="copyBushingRow(item)"></el-button>
+                                        </el-tooltip>
+                                        <el-tooltip content="Paste row" placement="top">
+                                            <el-button icon="el-icon-document" size="mini" type="text"
+                                                :disabled="!copiedBushingRow"
+                                                @click="pasteBushingRow(item)"></el-button>
+                                        </el-tooltip>
+                                    </div>
                                 </td>
                             </tr>
                         </tbody>
@@ -271,6 +311,7 @@
                             <col style="width: 120px" />
                             <col style="width: 120px" />
                             <col style="width: 220px" />
+                            <col style="width: 74px" />
                         </colgroup>
                         <thead>
                             <tr>
@@ -289,6 +330,7 @@
                                 <th>DF (C2)</th>
                                 <th>Cap. (C2)</th>
                                 <th class="insulation-type-col">Insulation type</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -307,7 +349,12 @@
                                     <el-input size="mini" v-model="item.serial_no"></el-input>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="item.manufacturer"></el-input>
+                                    <el-select class="w-100" clearable filterable placeholder="Select" size="mini"
+                                        v-model="item.manufacturer">
+                                        <el-option v-for="manufacturer in manufacturerList" :key="manufacturer"
+                                            :label="manufacturer" :value="manufacturer">
+                                        </el-option>
+                                    </el-select>
                                 </td>
                                 <td>
                                     <el-input size="mini" v-model="item.manufacturer_type"></el-input>
@@ -367,6 +414,19 @@
                                             :label="option.label" :value="option.value"> </el-option>
                                     </el-select>
                                 </td>
+                                <td>
+                                    <div class="row-actions">
+                                        <el-tooltip content="Copy row" placement="top">
+                                            <el-button icon="el-icon-document-copy" size="mini" type="text"
+                                                @click="copyBushingRow(item)"></el-button>
+                                        </el-tooltip>
+                                        <el-tooltip content="Paste row" placement="top">
+                                            <el-button icon="el-icon-document" size="mini" type="text"
+                                                :disabled="!copiedBushingRow"
+                                                @click="pasteBushingRow(item)"></el-button>
+                                        </el-tooltip>
+                                    </div>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -379,6 +439,7 @@
 <script>
 /* eslint-disable */
 import BushingDto from '@/views/Dto/Bushing';
+import MANUFACTURER_MAP from '@/views/ConstantAsset/manufacturer.js';
 import { BushingInsulationKind } from '@/views/Enum/BushingInsulationKind';
 export default {
     name: 'Bushing',
@@ -415,6 +476,8 @@ export default {
                 }
             ],
             bushing_data_default: new BushingDto(),
+            copiedBushingRow: null,
+            manufacturerList: MANUFACTURER_MAP['TransformerDataDto'] || [],
         }
     },
     props: {
@@ -430,6 +493,65 @@ export default {
         }
     },
     methods: {
+        cloneBushingRow(row) {
+            return JSON.parse(JSON.stringify(row || {}));
+        },
+        copyBushingRow(row) {
+            this.copiedBushingRow = this.cloneBushingRow(row);
+            this.$message.success('Copied bushing row');
+        },
+        pasteBushingRow(row) {
+            if (!this.copiedBushingRow) {
+                this.$message.warning('Copy a bushing row first');
+                return;
+            }
+
+            const preservedValues = {
+                mrid: row.mrid,
+                assetInfoId: row.assetInfoId,
+                productAssetModelId: row.productAssetModelId,
+                lifecycleDateId: row.lifecycleDateId,
+                pos: row.pos,
+                insulation_level: row.insulation_level && row.insulation_level.mrid,
+                voltage_l_ground: row.voltage_l_ground && row.voltage_l_ground.mrid,
+                max_system_voltage: row.max_system_voltage && row.max_system_voltage.mrid,
+                rate_current: row.rate_current && row.rate_current.mrid,
+                df_c1: row.df_c1 && row.df_c1.mrid,
+                cap_c1: row.cap_c1 && row.cap_c1.mrid,
+                df_c2: row.df_c2 && row.df_c2.mrid,
+                cap_c2: row.cap_c2 && row.cap_c2.mrid
+            };
+            const nextRow = this.cloneBushingRow(this.copiedBushingRow);
+
+            Object.keys(nextRow).forEach((key) => {
+                if (key !== 'pos') {
+                    this.$set(row, key, nextRow[key]);
+                }
+            });
+
+            this.$set(row, 'mrid', preservedValues.mrid);
+            this.$set(row, 'assetInfoId', preservedValues.assetInfoId);
+            this.$set(row, 'productAssetModelId', preservedValues.productAssetModelId);
+            this.$set(row, 'lifecycleDateId', preservedValues.lifecycleDateId);
+            this.$set(row, 'pos', preservedValues.pos);
+
+            [
+                'insulation_level',
+                'voltage_l_ground',
+                'max_system_voltage',
+                'rate_current',
+                'df_c1',
+                'cap_c1',
+                'df_c2',
+                'cap_c2'
+            ].forEach((key) => {
+                if (row[key]) {
+                    this.$set(row[key], 'mrid', preservedValues[key]);
+                }
+            });
+
+            this.$message.success('Pasted bushing row');
+        }
     },
 }
 </script>
@@ -457,6 +579,23 @@ export default {
     color: #606266;
     font-size: 12px !important;
     font-weight: 600;
+}
+
+.row-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+}
+
+.row-actions ::v-deep(.el-button) {
+    padding: 2px 0;
+    color: #0b2f9f;
+}
+
+.row-actions ::v-deep(.el-button.is-disabled) {
+    color: #c0c4cc;
 }
 
 ::v-deep(.el-input),

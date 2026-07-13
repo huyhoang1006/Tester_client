@@ -9,7 +9,6 @@ class PropertiesDto {
         this.manufacturing_year = '';
         this.country_of_origin = '';
         this.apparatus_id = '';
-        this.feeder = '';
         this.comment = '';
     }
 }

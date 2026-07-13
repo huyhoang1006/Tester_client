@@ -301,7 +301,7 @@ export default {
 
                 for (const root of assessmentStandard.tree) {
                     const pass = this.evaluateGroup(root, measurementMap)
-                    if (pass) {
+                    if (pass === true) {
                         passedResults.push(root.result)
                     }
                 }
@@ -318,68 +318,7 @@ export default {
             }
         },
         evaluateGroup(group, measurementMap) {
-
-            const results = []
-
-            // ===== evaluate conditions =====
-
-            for (const condition of (group.conditions || [])) {
-
-                const value = measurementMap[
-                    condition.measurement_id
-                ]
-
-                if (
-                    value === null ||
-                    value === undefined ||
-                    value === ''
-                ) {
-                    return null
-                }
-
-                const pass = common.compare(
-                    value,
-                    condition.operator,
-                    condition.threshold
-                )
-
-                results.push(pass)
-            }
-
-            // ===== evaluate children =====
-
-            for (const child of (group.children || [])) {
-
-                const childPass = this.evaluateGroup(
-                    child,
-                    measurementMap
-                )
-
-                // child chưa đủ data
-                if (childPass === null) {
-                    return null
-                }
-
-                results.push(childPass)
-            }
-
-            // ===== empty =====
-
-            if (results.length === 0) {
-                return false
-            }
-
-            // ===== logic =====
-
-            const logic = (group.logic || 'AND')
-                .toUpperCase()
-
-            if (logic === 'OR') {
-
-                return results.some(x => x)
-            }
-
-            return results.every(x => x)
+            return common.evaluateAssessmentGroup(group, measurementMap)
         },
         clear() {
             if (!this.testData.table.table1) {

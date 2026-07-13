@@ -13,6 +13,7 @@ export default {
         return {
             openAssessmentDialog: false,
             backupLimits: null,
+            suppressAssessmentCalculateMessage: false,
         }
     },
 
@@ -74,6 +75,22 @@ export default {
             return hasEmpty ? '' : 'Pass'
         },
 
+        notifyAssessmentCalculated() {
+            if (!this.suppressAssessmentCalculateMessage) {
+                this.$message.success('Calculating successfully')
+            }
+        },
+
+        recalculateAssessmentAfterSettingsSave() {
+            if (typeof this.calculator !== 'function') return
+            this.suppressAssessmentCalculateMessage = true
+            try {
+                this.calculator()
+            } finally {
+                this.suppressAssessmentCalculateMessage = false
+            }
+        },
+
         // ─── dialog ───────────────────────────────────────────────────────────
         openAssessmentSettings() {
             this.backupLimits = JSON.parse(JSON.stringify(this.assetData.assessmentLimits))
@@ -88,6 +105,8 @@ export default {
                 sectionKeys:      this.assessmentSectionKeys || null,
             })
             if (result.success) {
+                this.backupLimits = JSON.parse(JSON.stringify(this.assetData.assessmentLimits))
+                this.recalculateAssessmentAfterSettingsSave()
                 this.$message.success('Update successfully')
                 this.openAssessmentDialog = false
             } else {

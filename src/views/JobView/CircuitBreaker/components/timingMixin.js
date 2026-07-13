@@ -23,6 +23,7 @@ export default {
     data() {
         return {
             backupAsset_: null,
+            suppressAssessmentCalculateMessage: false,
         }
     },
 
@@ -96,6 +97,35 @@ export default {
         },
 
         // ─── Reverse normalize: write asset_ values back into assetData.assessmentLimits ─
+        assessTimingRow(results) {
+            var hasEmpty = false
+            var hasApplicable = false
+            for (var i = 0; i < results.length; i++) {
+                if (results[i] === undefined) continue
+                hasApplicable = true
+                if (results[i] === 'Fail') return 'Fail'
+                if (results[i] === null || results[i] === '') hasEmpty = true
+            }
+            if (!hasApplicable) return ''
+            return hasEmpty ? '' : 'Pass'
+        },
+
+        notifyAssessmentCalculated() {
+            if (!this.suppressAssessmentCalculateMessage) {
+                this.$message.success('Calculating successfully')
+            }
+        },
+
+        recalculateAssessmentAfterSettingsSave() {
+            if (typeof this.calculator !== 'function') return
+            this.suppressAssessmentCalculateMessage = true
+            try {
+                this.calculator()
+            } finally {
+                this.suppressAssessmentCalculateMessage = false
+            }
+        },
+
         // Needed before saving to DB (assetData.assessmentLimits has all unit MRIDs)
         reverseNormalizeToAssessmentLimits() {
             var al     = this.assetData && this.assetData.assessmentLimits ? this.assetData.assessmentLimits : null
@@ -221,6 +251,7 @@ export default {
             var dataTemp = JSON.parse(JSON.stringify(this.asset_ || {}))
             this.backupAsset_ = dataTemp
             if (result.success) {
+                this.recalculateAssessmentAfterSettingsSave()
                 this.$message.success('Update successfully')
                 this.openAssessmentDialog = false
             } else {

@@ -18,7 +18,12 @@
                                 <el-input v-model="tapChangersData.serial_no"></el-input>
                             </el-form-item>
                             <el-form-item label="Manufacturer">
-                                <el-input v-model="tapChangersData.manufacturer"></el-input>
+                                <el-select class="w-100" clearable filterable placeholder="Select"
+                                    v-model="tapChangersData.manufacturer">
+                                    <el-option v-for="manufacturer in manufacturerList" :key="manufacturer"
+                                        :label="manufacturer" :value="manufacturer">
+                                    </el-option>
+                                </el-select>
                             </el-form-item>
                             <el-form-item label="Manufacturer type">
                                 <el-input v-model="tapChangersData.manufacturer_type"></el-input>
@@ -134,7 +139,12 @@
                                 <el-input v-model="tapChangersData.serial_no"></el-input>
                             </el-form-item>
                             <el-form-item label="Manufacturer">
-                                <el-input v-model="tapChangersData.manufacturer"></el-input>
+                                <el-select class="w-100" clearable filterable placeholder="Select"
+                                    v-model="tapChangersData.manufacturer">
+                                    <el-option v-for="manufacturer in manufacturerList" :key="manufacturer"
+                                        :label="manufacturer" :value="manufacturer">
+                                    </el-option>
+                                </el-select>
                             </el-form-item>
                             <el-form-item label="Manufacturer type">
                                 <el-input v-model="tapChangersData.manufacturer_type"></el-input>
@@ -253,6 +263,7 @@
 
 <script>
 import CalculateTapchanger from './CalculateTapchanger/index.vue'
+import MANUFACTURER_MAP from '@/views/ConstantAsset/manufacturer.js'
 
 export default {
     name: 'TapChanger',
@@ -291,7 +302,6 @@ export default {
                     manufacturing_year: '',
                     asset_system_code: '',
                     apparatus_id: '',
-                    feeder: '',
                     date_of_warehouse_receipt: '',
                     date_of_delivery: '',
                     date_of_production_order: '',
@@ -303,6 +313,7 @@ export default {
     data() {
         return {
             labelWidth: `${120}px`,
+            manufacturerList: MANUFACTURER_MAP['TransformerDataDto'] || [],
             openDialog: false
         }
     },

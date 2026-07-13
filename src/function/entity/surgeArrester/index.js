@@ -1,6 +1,4 @@
 import db from '../../datacontext/index'
-import path from 'path'
-import * as attachmentContext from '../../attachmentcontext/index'
 import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction, deleteDirectory } from '@/function/entity/attachment'
 import { insertSurgeArresterTransaction, getSurgeArresterById, getSurgeArresterByAssetId, deleteSurgeArresterTransaction } from '@/function/cim/surgeArrester';
 import { insertVoltageTransaction, getVoltageById, deleteVoltageByIdTransaction } from '@/function/cim/voltage';
@@ -118,14 +116,9 @@ export const insertSurgeArresterEntity = async (old_entity, entity) => {
             }
 
             if (entity.attachment.id && Array.isArray(JSON.parse(entity.attachment.path))) {
-                const pathData = JSON.parse(entity.attachment.path);
-                const newPath = []
-                for (let i = 0; i < pathData.length; i++) {
-                    const namefile = path.basename(pathData[i].path);
-                    pathData[i].path = path.join(attachmentContext.getAttachmentDir(), entity.surgeArrester.mrid, namefile);
-                    newPath.push(pathData[i]);
-                }
-                entity.attachment.path = JSON.stringify(newPath);
+                entity.attachment.path = JSON.stringify(syncResult.data || []);
+                entity.attachment.type = entity.attachment.type || 'asset';
+                entity.attachment.id_foreign = entity.surgeArrester.mrid;
                 await uploadAttachmentTransaction(entity.attachment, db);
             }
 

@@ -35,6 +35,12 @@ const STANDARD_TO_SERVER = {
     'ANSIC931':  'ANSI_C93_1',
 }
 
+const toNumberOrNull = (value) => {
+    if (value === null || value === undefined || value === '') return null
+    const parsed = Number(value)
+    return Number.isNaN(parsed) ? null : parsed
+}
+
 // ─── Mapper ──────────────────────────────────────────────────────────────────
 
 export const mapServerToDto = (serverData) => {
@@ -71,6 +77,8 @@ export const mapServerToDto = (serverData) => {
     dto.properties.manufacturing_year = info.manufacturingYear
         ? String(info.manufacturingYear)
         : '';
+    dto.config.phase = info.phase || '';
+    dto.config.number_of_phase = info.numberOfPhase ?? '';
 
     // 3. Ratings
     dto.ratings.standard = (core.standard || '').replace(/_/g, '');
@@ -165,6 +173,8 @@ export const mapDtoToServer = (dto) => {
                 type:              ASSET_TYPE_TO_SERVER[dto.properties?.asset_type] || dto.properties?.asset_type || null,
                 kind:              dto.properties?.kind              || null,
                 serial_no:         dto.properties?.serial_no         || null,
+                phase:             dto.config?.phase                 || null,
+                numberOfPhase:     toNumberOrNull(dto.config?.number_of_phase),
                 manufacturer:      dto.properties?.manufacturer      || null,
                 manufacturer_type: dto.properties?.manufacturer_type || null,
                 manufacturer_year: dto.properties?.manufacturing_year
@@ -192,9 +202,11 @@ export const mapDtoToServer = (dto) => {
 
                 rated_frequency: {
                     mrid:  dto.ratings?.rated_frequency?.mrid || null,
-                    value: dto.ratings?.rated_frequency?.value
-                        ? parseFloat(dto.ratings.rated_frequency.value)
-                        : null,
+                    value: toNumberOrNull(
+                        dto.ratings?.rated_frequency?.value === 'Custom'
+                            ? dto.ratings?.rated_frequency_custom
+                            : dto.ratings?.rated_frequency?.value
+                    ),
                     unit:  dto.ratings?.rated_frequency?.unit || null,
                 },
 
@@ -211,21 +223,19 @@ export const mapDtoToServer = (dto) => {
 
                 c1: {
                     mrid:  dto.ratings?.c1?.mrid || null,
-                    value: dto.ratings?.c1?.value ? parseFloat(dto.ratings.c1.value) : null,
+                    value: toNumberOrNull(dto.ratings?.c1?.value),
                     unit:  dto.ratings?.c1?.unit || null,
                 },
 
                 c2: {
                     mrid:  dto.ratings?.c2?.mrid || null,
-                    value: dto.ratings?.c2?.value ? parseFloat(dto.ratings.c2.value) : null,
+                    value: toNumberOrNull(dto.ratings?.c2?.value),
                     unit:  dto.ratings?.c2?.unit || null,
                 },
 
                 rated_voltage: {
                     mrid:  dto.ratings?.rated_voltage?.mrid || null,
-                    value: dto.ratings?.rated_voltage?.value
-                        ? parseFloat(dto.ratings.rated_voltage.value)
-                        : null,
+                    value: toNumberOrNull(dto.ratings?.rated_voltage?.value),
                     unit:  dto.ratings?.rated_voltage?.unit || null,
                 },
             },
@@ -258,16 +268,14 @@ export const mapDtoToServer = (dto) => {
 
                     usr_rated_voltage: {
                         mrid:       vt.usr_rated_voltage?.mrid || null,
-                        value:      vt.usr_rated_voltage?.value
-                            ? parseFloat(vt.usr_rated_voltage.value) : null,
+                        value:      toNumberOrNull(vt.usr_rated_voltage?.value),
                         unit:       vt.usr_rated_voltage?.unit       || null,
                         multiplier: vt.usr_rated_voltage?.multiplier || null,
                     },
 
                     rated_burden: {
                         mrid:       vt.rated_burden?.mrid || null,
-                        value:      vt.rated_burden?.value
-                            ? parseFloat(vt.rated_burden.value) : null,
+                        value:      toNumberOrNull(vt.rated_burden?.value),
                         unit:       vt.rated_burden?.unit       || null,
                         multiplier: vt.rated_burden?.multiplier || null,
                     },
@@ -275,11 +283,11 @@ export const mapDtoToServer = (dto) => {
                     // DTO rated_power_factor là number 7 → map vào value
                     rated_power_factor: {
                         mrid:       null,
-                        value:      typeof vt.rated_power_factor === 'number'
-                            ? vt.rated_power_factor
-                            : (vt.rated_power_factor?.value
-                                ? parseFloat(vt.rated_power_factor.value)
-                                : null),
+                        value:      toNumberOrNull(
+                            typeof vt.rated_power_factor === 'object'
+                                ? vt.rated_power_factor?.value
+                                : vt.rated_power_factor
+                        ),
                         unit:       vt.rated_power_factor?.unit       || null,
                         multiplier: vt.rated_power_factor?.multiplier || null,
                     },

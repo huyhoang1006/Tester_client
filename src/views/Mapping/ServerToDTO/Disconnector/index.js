@@ -158,7 +158,6 @@ export const mapDtoToServer = (dto, ownerType) => {
             manufacturingYear: numD(p.manufacturing_year),
             country: p.country_of_origin || null, // TÊN nước (không phải id)
             apparatusId: p.apparatus_id || null,
-            feeder: p.feeder || null,
             description: p.comment || null
         },
 

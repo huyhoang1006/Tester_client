@@ -1,23 +1,21 @@
 import db from '../../datacontext/index'
-import path from 'path'
-import * as attachmentContext from '../../attachmentcontext/index'
-import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction, deleteDirectory } from '@/function/entity/attachment'
-import { insertVoltageTransaction, getVoltageById, deleteVoltageByIdTransaction, getVoltageByIds } from '@/function/cim/voltage';
+import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType } from '@/function/entity/attachment'
+import { insertVoltageTransaction, deleteVoltageByIdTransaction, getVoltageByIds } from '@/function/cim/voltage';
 import { insertCurrentFlowTransaction, getCurrentFlowByIds, deleteCurrentFlowByIdTransaction } from '@/function/cim/currentFlow';
 import { insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction } from '@/function/cim/lifecycleDate';
 import { insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction } from '@/function/cim/productAssetModel';
-import { insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from '@/function/entity/assetPsr'
-import { insertLengthTransaction, getLengthById, getLengthByIds, deleteLengthByIdTransaction } from '@/function/cim/length'
-import { insertAreaTransaction, getAreaById, getAreaByIds, deleteAreaByIdTransaction } from '@/function/cim/area';
-import { insertFrequencyTransaction, getFrequencyById, getFrequencyByIds, deleteFrequencyByIdTransaction } from '@/function/cim/frequency';
-import { insertTemperatureTransaction, getTemperatureById, getTemperatureByIds, deleteTemperatureByIdTransaction } from '@/function/cim/temperature';
+import { insertAssetPsrTransaction, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from '@/function/entity/assetPsr'
+import { insertLengthTransaction, getLengthByIds, deleteLengthByIdTransaction } from '@/function/cim/length'
+import { insertAreaTransaction, getAreaByIds, deleteAreaByIdTransaction } from '@/function/cim/area';
+import { insertFrequencyTransaction, getFrequencyByIds, deleteFrequencyByIdTransaction } from '@/function/cim/frequency';
+import { insertTemperatureTransaction, getTemperatureByIds, deleteTemperatureByIdTransaction } from '@/function/cim/temperature';
 import { getAssetById, insertAssetTransaction, deleteAssetByIdTransaction } from '@/function/cim/asset';
 import { getConcentricNeutralCableInfoById, insertConcentricNeutralCableInfoTransaction, deleteConcentricNeutralCableInfoTransaction } from '@/function/cim/concentricNeutralCableInfo';
-import { insertJointCableInfoTransaction, getJointCableInfoById, getJointCableInfoByCableInfoId, deleteJointCableInfoById } from '@/function/cim/jointCableInfo';
-import { insertOldCableInfoTransaction, getOldCableInfoById, getOldCableInfoByCableInfoId, deleteOldCableInfoTransaction } from '@/function/cim/oldCableInfo';
-import { insertSheathVoltageLimiterTransaction, getSheathVoltageLimiterById, getSheathVoltageLimiterByCableInfoId, deleteSheathVoltageLimiterTransaction } from '@/function/cim/sheathVoltageLimiter';
-import { insertTerminalCableInfoTransaction, getTerminalCableInfoById, getTerminalCableInfoByCableInfoId, deleteTerminalCableInfoTransaction } from '@/function/cim/terminalCableInfo';
-import { insertSecondsTransaction, getSecondById, getSecondByIds, deleteSecondsByIdTransaction } from '@/function/cim/seconds';
+import { insertJointCableInfoTransaction, getJointCableInfoByCableInfoId } from '@/function/cim/jointCableInfo';
+import { insertOldCableInfoTransaction, getOldCableInfoByCableInfoId } from '@/function/cim/oldCableInfo';
+import { insertSheathVoltageLimiterTransaction, getSheathVoltageLimiterByCableInfoId } from '@/function/cim/sheathVoltageLimiter';
+import { insertTerminalCableInfoTransaction, getTerminalCableInfoByCableInfoId } from '@/function/cim/terminalCableInfo';
+import { insertSecondsTransaction, getSecondByIds, deleteSecondsByIdTransaction } from '@/function/cim/seconds';
 import PowerCableEntity from '@/views/Flatten/PowerCable/index'
 
 export const insertPowerCableEntity = async (old_entity, entity) => {
@@ -133,14 +131,9 @@ export const insertPowerCableEntity = async (old_entity, entity) => {
 
             //attachment
             if (entity.attachment.id && Array.isArray(JSON.parse(entity.attachment.path))) {
-                const pathData = JSON.parse(entity.attachment.path);
-                const newPath = []
-                for (let i = 0; i < pathData.length; i++) {
-                    const namefile = path.basename(pathData[i].path);
-                    pathData[i].path = path.join(attachmentContext.getAttachmentDir(), entity.asset.mrid, namefile);
-                    newPath.push(pathData[i]);
-                }
-                entity.attachment.path = JSON.stringify(newPath);
+                entity.attachment.path = JSON.stringify(syncResult.data || []);
+                entity.attachment.type = entity.attachment.type || 'asset';
+                entity.attachment.id_foreign = entity.asset.mrid;
                 await uploadAttachmentTransaction(entity.attachment, db);
             }
 

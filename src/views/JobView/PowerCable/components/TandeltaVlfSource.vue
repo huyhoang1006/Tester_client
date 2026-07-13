@@ -336,17 +336,22 @@ export default {
                 // Evaluate
                 var passedResults = []
                 var hasNull = false
+                var hasApplicableRule = false
                 var defaultResult = null
                 for (var ri = 0; ri < assessmentStandard.tree.length; ri++) {
                     var root = assessmentStandard.tree[ri]
                     if (root.is_default) { defaultResult = root.result; continue }
                     var pass = this.evaluateGroup(root, measurementMap)
+                    if (pass === 'not_applicable') continue
+                    hasApplicableRule = true
                     if (pass === null) hasNull = true
                     else if (pass === true) passedResults.push(root.result)
                 }
 
                 var finalResult
-                if (hasNull && passedResults.length === 0) {
+                if (!hasApplicableRule) {
+                    finalResult = ''
+                } else if (hasNull && passedResults.length === 0) {
                     finalResult = ''
                 } else if (passedResults.some(function(r) { return r === 'Fail' || r === 'Action Required' })) {
                     finalResult = 'Fail'
@@ -365,25 +370,7 @@ export default {
             }
         },
         evaluateGroup(group, measurementMap) {
-            for (const condition of (group.conditions || [])) {
-                const value = measurementMap[condition.measurement_id]
-                if (value === null || value === undefined || value === '') return null
-                if (condition.threshold === null || condition.threshold === undefined || condition.threshold === '') return null
-            }
-            for (const child of (group.children || [])) {
-                if (this.evaluateGroup(child, measurementMap) === null) return null
-            }
-            const results = []
-            for (const condition of (group.conditions || [])) {
-                results.push(common.compare(measurementMap[condition.measurement_id], condition.operator, condition.threshold))
-            }
-            for (const child of (group.children || [])) {
-                results.push(this.evaluateGroup(child, measurementMap))
-            }
-            if (results.length === 0) return null
-            const logic = (group.logic || 'AND').toUpperCase()
-            if (logic === 'OR') return results.some(x => x)
-            return results.every(x => x)
+            return common.evaluateAssessmentGroup(group, measurementMap)
         },
         clear() {
             if (this.testData.table && this.testData.table.table1) {

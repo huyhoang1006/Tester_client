@@ -105,7 +105,7 @@ export const importService = {
   _applyProps(entity, lvm) {
     const propKeys = ['type','kind','serial_no','manufacturer','manufacturer_type',
                       'manufacturer_year','model','country_of_origin','apparatus_id',
-                      'feeder','comment']
+                      'comment']
     const target = entity.properties || entity
     propKeys.forEach(k => { if (lvm[k] !== undefined) target[k] = lvm[k] })
   },

@@ -237,7 +237,9 @@ export const syncFilesWithDeletion = (srcList, destDir, fatherMrid) => {
         // ✅ Chuẩn hóa srcList
         if (!Array.isArray(srcList)) srcList = [];
 
-        const srcFileNames = srcList.map(item => path.basename(item.path));
+        const srcFileNames = srcList
+            .filter(item => item && item.path)
+            .map(item => path.basename(item.path));
         const existingItems = fs.readdirSync(destDir);
 
         // ✅ Nếu srcList rỗng → xóa hết file
@@ -253,6 +255,9 @@ export const syncFilesWithDeletion = (srcList, destDir, fatherMrid) => {
 
         // copy file mới (nếu có)
         for (const item of srcList) {
+            if (!item || !item.path) {
+                continue;
+            }
             const fileName = path.basename(item.path);
             const destPath = path.join(destDir, fileName);
 
@@ -261,9 +266,15 @@ export const syncFilesWithDeletion = (srcList, destDir, fatherMrid) => {
                 continue;
             }
 
-            fs.copyFileSync(item.path, destPath);
+            if (path.resolve(item.path) !== path.resolve(destPath)) {
+                fs.copyFileSync(item.path, destPath);
+            }
             result.copiedFiles.push(fileName);
-            result.data.push({ path: destPath });
+            result.data.push({
+                ...item,
+                path: destPath,
+                name: item.name || fileName
+            });
         }
 
         result.success = true;

@@ -14,6 +14,9 @@ import * as circuitBreakerJobAPI from '@/api/demo/CircuitBreakerJob.js'
 import * as surgeArresterJobAPI from '@/api/demo/SurgeArresterJob.js'
 import * as disconnectorJobAPI from '@/api/demo/DisconnectorJob.js'
 import * as transformerJobAPI from '@/api/demo/TransformerJob.js'
+import * as voltageLevelAPI from '@/api/demo/VoltageLevel.js'
+import * as substationAPI from '@/api/demo/Substation.js'
+import * as bayAPI from '@/api/demo/Bay.js'
 
 // ─── Entity ↔ DTO mappers ─────────────────────────────────────────────────────
 import * as voltageTransformerMapping from '@/views/Mapping/VoltageTransformer/index.js'
@@ -60,7 +63,6 @@ import * as transformerJobMappingServer from '@/views/Mapping/ServerToDTO/Transf
  *  - entity → DTO → payload server (mapEntityToDto → mapDtoToServer)
  *  - ownerType resolve từ parentNode.mode (bay → BAY, substation → SUBSTATION, voltageLevel → VOLTAGE_LEVEL)
  *  - Asset thiết bị (VT/CT/CB/Disconnector/SurgeArrester) gửi node.parentId trực tiếp.
- *  - Transformer cần numericOwnerId (resolve qua findBayNumericIdGlobal / resolveSubstationNumericId).
  */
 export default {
     methods: {
@@ -82,7 +84,6 @@ export default {
 
                 console.log('[Upload Substation] Response:', response)
                 this.$message.success(`Upload Substation "${node.name}" successfully!`)
-                if (this.clientSlide) await this.showLocationRoot()
             } catch (error) {
                 this._handleUploadError(error, 'Substation')
             }
@@ -94,15 +95,19 @@ export default {
                 if (!entityRes.success || !entityRes.data) throw new Error('Local voltage level data not found.')
                 if (!node.parentId) throw new Error('Cannot upload voltage level without parent substation.')
 
+                const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                if (!parentNode) throw new Error('Parent node not found in Client Tree')
+                if (parentNode?.mode !== 'substation') {
+                    throw new Error(`VoltageLevel parent must be Substation. Current parent mode: ${parentNode?.mode}`)
+                }
+
+                const signParent = await this.checkParentBeforUpload(node.parentId, parentNode?.mode)
+                if (!signParent) return
+
                 const serverPayload = mapVoltageLevelEntityToServer(entityRes.data, null)
-
-                const numericOwnerId = await this._resolveNumericOwnerId(node.parentId, 'SUBSTATION')
-                if (!numericOwnerId) throw new Error('Cannot find parent Substation on Server. Upload Substation first.')
-
-                const response = await demoAPI.createVoltageLevel(serverPayload, numericOwnerId)
+                const response = await voltageLevelAPI.createVoltageLevel(serverPayload, node.parentId)
                 console.log('[Upload VoltageLevel] Response:', response)
                 this.$message.success(`Upload VoltageLevel "${node.name}" successfully!`)
-                if (this.clientSlide) await this.showLocationRoot()
             } catch (error) {
                 this._handleUploadError(error, 'VoltageLevel')
             }
@@ -113,36 +118,22 @@ export default {
                 const entityRes = await window.electronAPI.getBayEntityByMrid(node.mrid)
                 if (!entityRes.success || !entityRes.data) throw new Error('Local bay data not found.')
                 if (!node.parentId) throw new Error('Cannot upload bay without parent.')
-
                 const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
-                const substationId = parentNode?.parentId
-
-                let ownerType = ''
-                let numericOwnerId = null
-
-                if (parentNode?.mode === 'voltageLevel') {
-                    ownerType = 'VOLTAGE_LEVEL'
-                    numericOwnerId = await this.resolveVoltageLevelNumericId(node.parentId, substationId)
-                } else if (parentNode?.mode === 'substation') {
-                    ownerType = 'SUBSTATION'
-                    numericOwnerId = await this.resolveSubstationNumericId(node.parentId)
+                if(!parentNode) throw new Error('Parent node not found in Client Tree')
+                const signParent = await this.checkParentBeforUpload(node.parentId, parentNode?.mode)
+                if(!signParent) {
+                    return;
+                } else {
+                    let ownerType = this.normalizeOwnerType(parentNode?.mode)
+                    if(!ownerType) {
+                        throw new Error(`Cannot resolve ownerType for parent node with mode: ${parentNode?.mode}`)
+                    } else {
+                        const serverPayload = mapBayEntityToServer(entityRes.data)
+                        const response = await bayAPI.createBay(serverPayload, node.parentId, ownerType)
+                        console.log('[Upload Bay] Response:', response)
+                        this.$message.success(`Upload Bay "${node.name}" successfully!`)
+                    }
                 }
-
-                // Fallback: parentId đã là numeric
-                if (!numericOwnerId && /^\d+$/.test(String(node.parentId))) {
-                    numericOwnerId = parseInt(node.parentId)
-                    ownerType = parentNode?.mode === 'voltageLevel' ? 'VOLTAGE_LEVEL' : 'SUBSTATION'
-                }
-                if (!numericOwnerId || !ownerType) {
-                    throw new Error(`Cannot find Numeric ID for parent (UUID: ${node.parentId}). Upload parent first.`)
-                }
-
-                const serverPayload = mapBayEntityToServer(entityRes.data)
-                const response = await demoAPI.createBay(serverPayload, numericOwnerId, ownerType)
-
-                console.log('[Upload Bay] Response:', response)
-                this.$message.success(`Upload Bay "${node.name}" successfully!`)
-                if (this.clientSlide) await this.showLocationRoot()
             } catch (error) {
                 this._handleUploadError(error, 'Bay')
             }
@@ -166,12 +157,14 @@ export default {
                 const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
                 if (!parentNode) throw new Error('Parent node not found in Client Tree')
 
+                const signParent = await this.checkParentBeforUpload(node.parentId, parentNode?.mode)
+                if (!signParent) return
                 const ownerType = this._resolveOwnerType(parentNode)
-                const numericOwnerId = await this.resolveServerParentId(node.parentId, ownerType)
-                if (!numericOwnerId) throw new Error(`Cannot find Numeric ID for parent (UUID: ${node.parentId}).`)
+                if (!ownerType) throw new Error(`Cannot resolve ownerType for parent node with mode: ${parentNode?.mode}`)
 
-                const response = await demoAPI.createPowerCableCim(serverPayload, numericOwnerId, ownerType)
-                if (response) this.$message.success(`Upload PowerCable successfully to ${ownerType} ID: ${numericOwnerId}`)
+                const response = await demoAPI.createPowerCableCim(serverPayload, node.parentId, ownerType)
+                console.log('[Upload PowerCable] Response:', response)
+                this.$message.success(`Upload PowerCable successfully to ${ownerType} ID: ${node.parentId}`)
             } catch (error) {
                 this._handleUploadError(error, 'PowerCable')
             }
@@ -184,6 +177,9 @@ export default {
                 if (!node.parentId) throw new Error('Cannot upload transformer without parent.')
 
                 const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                if (!parentNode) throw new Error('Parent node not found in Client Tree')
+                const signParent = await this.checkParentBeforUpload(node.parentId, parentNode?.mode)
+                if (!signParent) return
                 const ownerType = this._resolveOwnerType(parentNode)
 
                 const dto = transformerMapping.transformerEntityToDto(entityRes.data)
@@ -193,7 +189,6 @@ export default {
 
                 console.log('[Upload Transformer] Response:', response)
                 this.$message.success(`Upload Transformer "${node.name}" successfully!`)
-                if (this.clientSlide) await this.showLocationRoot()
             } catch (error) {
                 this._handleUploadError(error, 'Transformer')
             }
@@ -210,7 +205,11 @@ export default {
                 if (!node.parentId) throw new Error('Cannot upload voltage transformer without parent.')
 
                 const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                if (!parentNode) throw new Error('Parent node not found in Client Tree')
+                const signParent = await this.checkParentBeforUpload(node.parentId, parentNode?.mode)
+                if (!signParent) return
                 const ownerType = this._resolveOwnerType(parentNode)
+                if (!ownerType) throw new Error(`Cannot resolve ownerType for parent node with mode: ${parentNode?.mode}`)
 
                 const dto = voltageTransformerMapping.mapEntityToDto(entityRes.data)
                 const serverPayload = voltageTransformerMappingServer.mapDtoToServer(dto, ownerType)
@@ -218,7 +217,6 @@ export default {
 
                 console.log('[Upload Voltage Transformer] Response:', response)
                 this.$message.success(`Upload Voltage Transformer "${node.name}" successfully!`)
-                if (this.clientSlide) await this.showLocationRoot()
             } catch (error) {
                 this._handleUploadError(error, 'Voltage Transformer')
             }
@@ -231,7 +229,11 @@ export default {
                 if (!node.parentId) throw new Error('Cannot upload current transformer without parent.')
 
                 const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
-                const ownerType = this._resolveOwnerType(parentNode)
+                if (!parentNode) throw new Error('Parent node not found in Client Tree')
+                const signParent = await this.checkParentBeforUpload(node.parentId, parentNode?.mode)
+                if (!signParent) return
+                const ownerType = this.normalizeOwnerType(parentNode?.mode)
+                if (!ownerType) throw new Error(`Cannot resolve ownerType for parent node with mode: ${parentNode?.mode}`)
 
                 const dto = currentTransformerMapping.mapEntityToDto(entityRes.data)
                 const serverPayload = currentTransformerMappingServer.mapDtoToServer(dto, ownerType)
@@ -240,7 +242,6 @@ export default {
 
                 console.log('[Upload Current Transformer] Response:', response)
                 this.$message.success(`Upload Current Transformer "${node.name}" successfully!`)
-                if (this.clientSlide) await this.showLocationRoot()
             } catch (error) {
                 this._handleUploadError(error, 'Current Transformer')
             }
@@ -253,7 +254,11 @@ export default {
                 if (!node.parentId) throw new Error('Cannot upload circuit breaker without parent.')
 
                 const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
-                const ownerType = this._resolveOwnerType(parentNode)
+                if (!parentNode) throw new Error('Parent node not found in Client Tree')
+                const signParent = await this.checkParentBeforUpload(node.parentId, parentNode?.mode)
+                if (!signParent) return
+                const ownerType = this.normalizeOwnerType(parentNode?.mode)
+                if (!ownerType) throw new Error(`Cannot resolve ownerType for parent node with mode: ${parentNode?.mode}`)
 
                 const dto = circuitBreakerMapping.mapEntityToDto(entityRes.data)
                 const serverPayload = circuitBreakerMappingServer.mapDtoToServer(dto, ownerType)
@@ -261,7 +266,6 @@ export default {
 
                 console.log('[Upload Circuit Breaker] Response:', response)
                 this.$message.success(`Upload Circuit Breaker "${node.name}" successfully!`)
-                if (this.clientSlide) await this.showLocationRoot()
             } catch (error) {
                 this._handleUploadError(error, 'Circuit Breaker')
             }
@@ -274,15 +278,17 @@ export default {
                 if (!node.parentId) throw new Error('Cannot upload disconnector without parent.')
 
                 const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                if (!parentNode) throw new Error('Parent node not found in Client Tree')
+                const signParent = await this.checkParentBeforUpload(node.parentId, parentNode?.mode)
+                if (!signParent) return
                 const ownerType = this._resolveOwnerType(parentNode)
 
                 const dto = disconnectorMapping.disconnectorEntityToDto(entityRes.data)
                 const serverPayload = disconnectorMappingServer.mapDtoToServer(dto, ownerType)
-                const response = await disconnectorAPI.createDisconnector(serverPayload, node.parentId, ownerType)
+                const response = await disconnectorAPI.createDisconnector(serverPayload)
 
                 console.log('[Upload Disconnector] Response:', response)
                 this.$message.success(`Upload Disconnector "${node.name}" successfully!`)
-                if (this.clientSlide) await this.showLocationRoot()
             } catch (error) {
                 this._handleUploadError(error, 'Disconnector')
             }
@@ -295,6 +301,9 @@ export default {
                 if (!node.parentId) throw new Error('Cannot upload surge arrester without parent.')
 
                 const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                if (!parentNode) throw new Error('Parent node not found in Client Tree')
+                const signParent = await this.checkParentBeforUpload(node.parentId, parentNode?.mode)
+                if (!signParent) return
                 const ownerType = this._resolveOwnerType(parentNode)
 
                 const dto = surgeArresterMapping.surgeArresterEntityToDto(entityRes.data)
@@ -303,7 +312,6 @@ export default {
 
                 console.log('[Upload Surge Arrester] Response:', response)
                 this.$message.success(`Upload Surge Arrester "${node.name}" successfully!`)
-                if (this.clientSlide) await this.showLocationRoot()
             } catch (error) {
                 this._handleUploadError(error, 'Surge Arrester')
             }
@@ -328,7 +336,6 @@ export default {
 
                 console.log('[Upload Voltage Transformer Job] Response:', response)
                 this.$message.success(`Upload Voltage Transformer Job "${node.name}" successfully!`)
-                if (this.clientSlide) await this.showLocationRoot()
             } catch (error) {
                 this._handleUploadError(error, 'Voltage Transformer Job')
             }
@@ -349,7 +356,6 @@ export default {
 
                 console.log('[Upload Current Transformer Job] Response:', response)
                 this.$message.success(`Upload Current Transformer Job "${node.name}" successfully!`)
-                if (this.clientSlide) await this.showLocationRoot()
             } catch (error) {
                 this._handleUploadError(error, 'Current Transformer Job')
             }
@@ -371,7 +377,6 @@ export default {
 
                 console.log('[Upload Circuit Breaker Job] Response:', response)
                 this.$message.success(`Upload Circuit Breaker Job "${node.name}" successfully!`)
-                if (this.clientSlide) await this.showLocationRoot()
             } catch (error) {
                 this._handleUploadError(error, 'Circuit Breaker Job')
             }
@@ -393,7 +398,6 @@ export default {
 
                 console.log('[Upload Surge Arrester Job] Response:', response)
                 this.$message.success(`Upload Surge Arrester Job "${node.name}" successfully!`)
-                if (this.clientSlide) await this.showLocationRoot()
             } catch (error) {
                 this._handleUploadError(error, 'Surge Arrester Job')
             }
@@ -415,7 +419,6 @@ export default {
 
                 console.log('[Upload Disconnector Job] Response:', response)
                 this.$message.success(`Upload Disconnector Job "${node.name}" successfully!`)
-                if (this.clientSlide) await this.showLocationRoot()
             } catch (error) {
                 this._handleUploadError(error, 'Disconnector Job')
             }
@@ -438,7 +441,6 @@ export default {
 
                 console.log('[Upload Transformer Job] Response:', response)
                 this.$message.success(`Upload Transformer Job "${node.name}" successfully!`)
-                if (this.clientSlide) await this.showLocationRoot()
             } catch (error) {
                 this._handleUploadError(error, 'Transformer Job')
             }
@@ -459,19 +461,6 @@ export default {
         },
 
         /** Resolve numericOwnerId theo ownerType (fallback nếu parentId đã là số) */
-        async _resolveNumericOwnerId(parentId, ownerType) {
-            let numericId = null
-            if (ownerType === 'SUBSTATION') {
-                numericId = await this.resolveSubstationNumericId(parentId)
-            } else if (ownerType === 'BAY') {
-                numericId = await this.findBayNumericIdGlobal(parentId)
-            }
-            if (!numericId && /^\d+$/.test(String(parentId))) {
-                numericId = parseInt(parentId)
-            }
-            return numericId
-        },
-
         /** Xử lý lỗi upload thống nhất */
         _handleUploadError(error, assetName = '') {
             const prefix = assetName ? `[Upload ${assetName}]` : '[Upload]'
@@ -486,5 +475,41 @@ export default {
                 this.$message.error(error.message || 'Error during upload')
             }
         },
+
+        async checkParentBeforUpload(parentId, parentType) {
+            let parentNode = null
+            if (!parentId || !parentType) {
+                this.$message.error(`Cannot upload ${parentType} without parent.`)
+                return false
+            }
+            if (parentType === 'voltageLevel') {
+                parentNode = await voltageLevelAPI.getVoltageLevelById(parentId)
+                if (!parentNode) {
+                    this.$message.error(`Parent Voltage Level with ID ${parentId} not found on server.`)
+                    return false
+                }
+            } else if (parentType === 'substation') {
+                parentNode = await substationAPI.getSubstationById(parentId)
+                if (!parentNode) {
+                    this.$message.error(`Parent Substation with ID ${parentId} not found on server.`)
+                    return false
+                }
+            } else if (parentType === 'bay') {
+                parentNode = await bayAPI.getBayById(parentId)
+                if (!parentNode) {
+                    this.$message.error(`Parent Bay with ID ${parentId} not found on server.`)
+                    return false
+                }
+            }
+
+            return true
+        },
+
+        normalizeOwnerType(ownerType) {
+            if(ownerType === 'bay') return 'Bay'
+            if(ownerType === 'voltageLevel') return 'Voltage level'
+            if(ownerType === 'substation') return 'Substation'
+            return null
+        }
     }
 }

@@ -568,7 +568,7 @@ export var deepImportService = {
         dto.properties.serial_no    = this._getField(data, ASSET_REQ_FIELD) || ''
         dto.properties.apparatus_id = this._getField(data,'apparatus_id') || ''
         this._fillDtoFlat(dto.properties, data, ['type','manufacturer','manufacturer_type',
-          'manufacturer_year','model','country_of_origin','feeder','comment'])
+          'manufacturer_year','model','country_of_origin','comment'])
       }
 
       // CRITICAL: TẤT CẢ asset CRUD gọi JSON.parse(entity.attachment.path) ngay đầu

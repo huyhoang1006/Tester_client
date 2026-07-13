@@ -204,39 +204,25 @@ export default {
                 })
                 const passedResults = []
                 let hasNull = false
+                let hasApplicableRule = false
                 let defaultResult = null
                 for (const root of assessmentStandard.tree) {
                     if (root.is_default) { defaultResult = root.result; continue }
                     const pass = this.evaluateGroup(root, measurementMap)
+                    if (pass === 'not_applicable') continue
+                    hasApplicableRule = true
                     if (pass === null) hasNull = true
                     else if (pass === true) passedResults.push(root.result)
                 }
-                if (hasNull) row.assessment.value = ''
+                if (!hasApplicableRule) row.assessment.value = ''
+                else if (hasNull) row.assessment.value = ''
                 else if (passedResults.includes('Fail')) row.assessment.value = 'Fail'
                 else if (passedResults.includes('Pass')) row.assessment.value = 'Pass'
                 else row.assessment.value = defaultResult ?? ''
             }
         },
         evaluateGroup(group, measurementMap) {
-            for (const condition of (group.conditions || [])) {
-                const value = measurementMap[condition.measurement_id]
-                if (value === null || value === undefined || value === '') return null
-                if (condition.threshold === null || condition.threshold === undefined || condition.threshold === '') return null
-            }
-            for (const child of (group.children || [])) {
-                if (this.evaluateGroup(child, measurementMap) === null) return null
-            }
-            const results = []
-            for (const condition of (group.conditions || [])) {
-                results.push(common.compare(measurementMap[condition.measurement_id], condition.operator, condition.threshold))
-            }
-            for (const child of (group.children || [])) {
-                results.push(this.evaluateGroup(child, measurementMap))
-            }
-            if (results.length === 0) return null
-            const logic = (group.logic || 'AND').toUpperCase()
-            if (logic === 'OR') return results.some(x => x)
-            return results.every(x => x)
+            return common.evaluateAssessmentGroup(group, measurementMap)
         },
         clear() {
             if (this.testData.table && this.testData.table.table1) {

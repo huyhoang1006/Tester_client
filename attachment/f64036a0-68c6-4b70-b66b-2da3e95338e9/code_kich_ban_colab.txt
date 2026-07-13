@@ -1,0 +1,795 @@
+node 1
+from google.colab import drive
+
+MOUNT_POINT = '/content/drive'
+
+# Cách chuẩn: Chỉ cần truyền thêm force_remount=True
+# Colab sẽ tự động unmount an toàn và mount lại cho bạn
+try:
+    drive.mount(MOUNT_POINT, force_remount=True)
+    print("✅ Đã mount Google Drive thành công!")
+except Exception as e:
+    print(f"❌ Lỗi: {e}")
+node 2
+import xml.etree.ElementTree as ET
+import matplotlib.pyplot as plt
+import collections
+import math
+
+def draw_cim_ultimate_topology(xml_file):
+    ns = {
+        'cim': 'http://iec.ch/TC57/CIM100#',
+        'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'
+    }
+
+    try:
+        tree = ET.parse(xml_file)
+        root = tree.getroot()
+        print("✅ Đã đọc file XML. Bắt đầu kết xuất toàn bộ Object CIM lên bản đồ...")
+    except Exception as e:
+        print(f"❌ Lỗi đọc file: {e}")
+        return
+
+    # =========================================================
+    # BƯỚC 1: TẠO CHỈ MỤC DỮ LIỆU
+    # =========================================================
+    location_points = collections.defaultdict(list)
+    for pp in root.findall('.//cim:PositionPoint', ns):
+        loc_ref = pp.find('cim:PositionPoint.Location', ns).get(f"{{{ns['rdf']}}}resource").replace('urn:uuid:', '')
+        x = float(pp.find('cim:PositionPoint.xPosition', ns).text)
+        y = float(pp.find('cim:PositionPoint.yPosition', ns).text)
+        seq = int(pp.find('cim:PositionPoint.sequenceNumber', ns).text)
+        location_points[loc_ref].append((seq, x, y))
+
+    for loc in location_points:
+        location_points[loc].sort(key=lambda k: k[0])
+
+    node_db = {}
+    for node in root.findall('.//cim:ConnectivityNode', ns):
+        nid = node.get(f"{{{ns['rdf']}}}about").replace('urn:uuid:', '')
+        name = node.find('cim:IdentifiedObject.name', ns).text
+        mrid = node.find('cim:IdentifiedObject.mRID', ns).text
+        node_db[nid] = {'name': name, 'mrid': mrid, 'pos': None}
+
+    equip_terminals = collections.defaultdict(list)
+    for term in root.findall('.//cim:Terminal', ns):
+        ce_elem = term.find('cim:Terminal.ConductingEquipment', ns)
+        if ce_elem is not None:
+            eq_id = ce_elem.get(f"{{{ns['rdf']}}}resource").replace('urn:uuid:', '')
+            equip_terminals[eq_id].append(term)
+
+    # =========================================================
+    # BƯỚC 2: GÁN TỌA ĐỘ CHO NODE
+    # =========================================================
+    all_equip_types = ['ACLineSegment', 'LoadBreakSwitch', 'PowerTransformer', 'EnergySource', 'LinearShuntCompensator', 'EnergyConsumer']
+    for eq_type in all_equip_types:
+        for item in root.findall(f'.//cim:{eq_type}', ns):
+            eq_id = item.get(f"{{{ns['rdf']}}}about").replace('urn:uuid:', '')
+            loc_elem = item.find('cim:PowerSystemResource.Location', ns)
+            if loc_elem is not None:
+                loc_id = loc_elem.get(f"{{{ns['rdf']}}}resource").replace('urn:uuid:', '')
+                if loc_id in location_points:
+                    pts = location_points[loc_id]
+                    eq_pos = (pts[0][1], pts[0][2])
+                    terms = equip_terminals.get(eq_id, [])
+                    for t in terms:
+                        nid = t.find('cim:Terminal.ConnectivityNode', ns).get(f"{{{ns['rdf']}}}resource").replace('urn:uuid:', '')
+                        if nid in node_db:
+                            if eq_type == 'ACLineSegment' and len(pts) >= 2:
+                                if t == terms[0]: node_db[nid]['pos'] = (pts[0][1], pts[0][2])
+                                elif len(terms) > 1 and t == terms[1]: node_db[nid]['pos'] = (pts[-1][1], pts[-1][2])
+                            elif node_db[nid]['pos'] is None:
+                                node_db[nid]['pos'] = eq_pos
+
+    # =========================================================
+    # BƯỚC 3: CÔNG CỤ VẼ
+    # =========================================================
+    plt.figure(figsize=(28, 26))
+    ax = plt.gca()
+    occupied_positions = []
+    MIN_DIST = 60.0
+
+    def get_smart_coords(original_x, original_y, is_load=False):
+        shifts = [(0, -60), (0, 60), (50, 0), (-50, 0), (0, 100), (0, -100)] if is_load else [(0, 70), (0, -70), (-70, 0), (70, 0), (60, 60), (-60, 60)]
+        for dx, dy in shifts:
+            test_x = original_x + dx
+            test_y = original_y + dy
+            collision = False
+            for (ox, oy, r) in occupied_positions:
+                if math.sqrt((test_x - ox)**2 + (test_y - oy)**2) < MIN_DIST: collision = True; break
+            if not collision:
+                occupied_positions.append((test_x, test_y, MIN_DIST))
+                return test_x, test_y, True
+        return original_x + 40, original_y + 40, True
+
+    def get_terminal_offset(node_p, target_p):
+        if not node_p or not target_p: return node_p
+        x1, y1 = node_p
+        x2, y2 = target_p
+        l = math.sqrt((x2-x1)**2 + (y2-y1)**2)
+        if l == 0: return (x1, y1)
+        r = min(l * 0.15, 35.0) / l
+        return (x1 + (x2-x1)*r, y1 + (y2-y1)*r)
+
+    # =========================================================
+    # BƯỚC 4: THỂ HIỆN TẤT CẢ LÊN BẢN ĐỒ
+    # =========================================================
+
+    # 4A. ĐƯỜNG DÂY
+    line_terminals = []
+    for line in root.findall('.//cim:ACLineSegment', ns):
+        eq_id = line.get(f"{{{ns['rdf']}}}about").replace('urn:uuid:', '')
+        loc_elem = line.find('cim:PowerSystemResource.Location', ns)
+        if loc_elem is not None:
+            loc_id = loc_elem.get(f"{{{ns['rdf']}}}resource").replace('urn:uuid:', '')
+            if loc_id in location_points:
+                pts = location_points[loc_id]
+                coords = [(p[1], p[2]) for p in pts]
+                xs, ys = zip(*coords)
+                plt.plot(xs, ys, color='#7F8C8D', linewidth=1.5, zorder=1, alpha=0.8)
+
+                # Tách Terminal
+                line_terminals.append(get_terminal_offset(coords[0], coords[-1]))
+                if len(coords) >= 2:
+                    line_terminals.append(get_terminal_offset(coords[-1], coords[0]))
+
+    # 4B. NÚT (NODE)
+    for nid, info in node_db.items():
+        if info['pos']:
+            nx, ny = info['pos']
+            plt.scatter(nx, ny, c='black', marker='o', s=30, zorder=5)
+            occupied_positions.append((nx, ny, 20))
+            if len(info['name']) < 10:
+                plt.text(nx+12, ny+8, info['name'], fontsize=9, color='black', fontweight='bold', zorder=6)
+
+    # 4C. THIẾT BỊ TỔNG HỢP (KÈM DỮ LIỆU ĐỘNG)
+    def plot_device(cim_type, edge_color, marker, label_prefix, size=100, is_load=False):
+        for item in root.findall(f'.//cim:{cim_type}', ns):
+            name = item.find('cim:IdentifiedObject.name', ns).text
+            eq_id = item.get(f"{{{ns['rdf']}}}about").replace('urn:uuid:', '')
+            terms = equip_terminals.get(eq_id, [])
+            if not terms: continue
+
+            n1 = terms[0].find('cim:Terminal.ConnectivityNode', ns).get(f"{{{ns['rdf']}}}resource").replace('urn:uuid:', '')
+            if node_db[n1]['pos'] is None: continue
+
+            orig_x, orig_y = node_db[n1]['pos']
+            new_x, new_y, shifted = get_smart_coords(orig_x, orig_y, is_load)
+
+            if shifted:
+                ls = '--' if is_load else ':'
+                plt.plot([orig_x, new_x], [orig_y, new_y], color='black', linestyle=ls, linewidth=1.0, alpha=0.5, zorder=2)
+
+            # --- KIỂM TRA THUỘC TÍNH VẬT LÝ CHI TIẾT ---
+            face_color = edge_color
+            extra_text = ""
+
+            # Kiểm tra trạng thái đóng/cắt (Switch)
+            if cim_type == 'LoadBreakSwitch':
+                norm_open = item.find('cim:Switch.normalOpen', ns)
+                if norm_open is not None and norm_open.text.lower() == 'true':
+                    face_color = 'white'  # Công tắc MỞ -> Rỗng ruột
+                    extra_text = "OPEN"
+
+            # Lấy Công suất P, Q của Tải (Load)
+            if cim_type == 'EnergyConsumer':
+                p_elem = item.find('cim:EnergyConsumer.p', ns)
+                q_elem = item.find('cim:EnergyConsumer.q', ns)
+                p_val = int(float(p_elem.text)/1000) if p_elem is not None else 0
+                q_val = int(float(q_elem.text)/1000) if q_elem is not None else 0
+                extra_text = f"P:{p_val} Q:{q_val}"
+
+            # Vẽ Thiết bị
+            plt.scatter(new_x, new_y, facecolors=face_color, edgecolors=edge_color, marker=marker, s=size,
+                        zorder=10, linewidths=1.5, label=label_prefix)
+
+            # Gắn nhãn tên & Thuộc tính phụ
+            if not is_load:
+                plt.text(new_x, new_y+35, name, fontsize=8, color=edge_color, fontweight='bold', ha='center', zorder=11)
+
+            if extra_text:
+                txt_color = 'red' if extra_text == "OPEN" else '#555555'
+                fw = 'bold' if extra_text == "OPEN" else 'normal'
+                y_offset = -35 if is_load else 55
+                plt.text(new_x, new_y+y_offset, extra_text, fontsize=7, color=txt_color, fontweight=fw, ha='center', zorder=11)
+
+            # Cực Terminal gắn thiết bị
+            plt.scatter(new_x-12, new_y, c='#D35400', marker='x', s=25, linewidths=1.2, zorder=11)
+
+    print("   - Đang phân tích và vẽ Thiết bị, Phụ tải, Tụ bù, Công tắc (Kèm trạng thái)...")
+    plot_device('EnergySource', 'purple', '*', 'Nguồn (Source)', 350)
+    plot_device('PowerTransformer', 'blue', '^', 'Biến áp (Trafo)', 180)
+    plot_device('LoadBreakSwitch', 'red', 's', 'Công tắc (Switch)', 150)
+    plot_device('LinearShuntCompensator', 'green', 'D', 'Tụ bù (Capacitor)', 140)
+    plot_device('EnergyConsumer', '#E67E22', 'v', 'Phụ tải (Load)', 120, True)
+
+    # Vẽ Terminal trên dây
+    if line_terminals:
+        lx, ly = zip(*line_terminals)
+        plt.scatter(lx, ly, c='#D35400', marker='x', s=35, linewidths=1.5, zorder=6, label='Cực kết nối (Terminal)')
+
+    # Cấu hình Layout
+    plt.title("IEEE 123-Bus: BẢN ĐỒ OBJECT CIM TOÀN DIỆN\n(Hiển thị Công suất P, Q của Tải & Trạng thái Đóng/Mở của Công tắc)", fontsize=22, fontweight='bold', pad=20)
+    plt.xlabel("Tọa độ Không gian X", fontsize=14)
+    plt.ylabel("Tọa độ Không gian Y", fontsize=14)
+    plt.grid(True, linestyle='--', alpha=0.4)
+
+    # Gộp Legend
+    plt.scatter([], [], c='black', marker='o', s=40, label='Nút (Node)')
+    handles, labels = plt.gca().get_legend_handles_labels()
+    by_label = dict(zip(labels, handles))
+    plt.legend(by_label.values(), by_label.keys(), loc='upper left', shadow=True, fancybox=True, fontsize=12)
+
+    plt.axis('equal')
+    plt.tight_layout()
+
+    output_file = 'IEEE123_Ultimate_Objects.png'
+    plt.savefig(output_file, dpi=300)
+    print(f"✅ Hoàn hảo! Toàn bộ Object đã lên hình. Lưu tại: {output_file}")
+    plt.show()
+
+# --- CHẠY CODE ---
+draw_cim_ultimate_topology('/content/drive/MyDrive/AT_energy/IEEE123.xml')
+node 3
+# ==============================================================================
+# BƯỚC 1: CÀI ĐẶT MÔI TRƯỜNG VÀ THƯ VIỆN
+# ==============================================================================
+print("⏳ Đang cài đặt thư viện cần thiết...")
+!pip install -q opendssdirect.py
+!pip install -q torch-geometric
+
+import os
+import xml.etree.ElementTree as ET
+import collections
+import numpy as np
+import matplotlib.pyplot as plt
+import math
+import torch
+import torch.nn.functional as F
+from torch_geometric.data import Data
+from torch_geometric.loader import DataLoader
+from torch_geometric.nn import GCNConv
+import opendssdirect as dss
+
+# --- CẤU HÌNH ĐƯỜNG DẪN (Giữ nguyên theo máy của bạn) ---
+XML_FILE = '/content/drive/MyDrive/AT_energy/IEEE123.xml'
+DSS_FILE = '/content/drive/MyDrive/AT_energy/IEEE123_Auto.dss'
+SAVE_DIR = '/content/drive/MyDrive/AT_energy/GNN_Model/'
+BEST_MODEL_PATH = os.path.join(SAVE_DIR, 'best_gnn_model.pth')
+
+os.makedirs(SAVE_DIR, exist_ok=True)
+
+# --- SIÊU THAM SỐ (ĐÃ ĐƯỢC TỐI ƯU HÓA) ---
+NUM_SAMPLES = 1500  # Số kịch bản Tải
+EPOCHS = 300        # Tăng số vòng học lên 300 để AI hội tụ sâu hơn
+LR = 0.001          # Giảm tốc độ học (Learning rate) để tránh AI bị "trượt" qua điểm tối ưu
+
+ns = {'cim': 'http://iec.ch/TC57/CIM100#', 'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'}
+if not os.path.exists(XML_FILE):
+    raise FileNotFoundError(f"❌ Không tìm thấy file XML tại {XML_FILE}")
+print("✅ Cài đặt xong môi trường.")
+
+# ==============================================================================
+# BƯỚC 2 & 3: ĐỌC DỮ LIỆU CIM & TẠO ĐỒ THỊ AI
+# ==============================================================================
+def parse_cim_and_build_system(xml_path, dss_path):
+    print("🔍 Đang bóc tách XML để trích xuất Đặc trưng (X) và Topology (A)...")
+    tree = ET.parse(xml_path)
+    root = tree.getroot()
+
+    node_name_to_idx = {}
+    node_uuid_to_name = {}
+    nodes = root.findall('.//cim:ConnectivityNode', ns)
+    for idx, n in enumerate(nodes):
+        uuid = n.get(f"{{{ns['rdf']}}}about").replace('urn:uuid:', '')
+        name = n.find('cim:IdentifiedObject.name', ns).text
+        node_name_to_idx[name] = idx
+        node_uuid_to_name[uuid] = name
+
+    equip_terminals = collections.defaultdict(list)
+    for term in root.findall('.//cim:Terminal', ns):
+        ce = term.find('cim:Terminal.ConductingEquipment', ns)
+        if ce is not None:
+            eq_id = ce.get(f"{{{ns['rdf']}}}resource").replace('urn:uuid:', '')
+            equip_terminals[eq_id].append(term)
+
+    edges = []
+
+    with open(dss_path, 'w') as f:
+        f.write("Clear\n")
+        f.write("New Circuit.IEEE123 Bus1=150 Basekv=4.16 pu=1.00 angle=0 frequency=60 phases=3\n")
+        f.write("New Linecode.1  nphases=3 R1=0.4576 X1=1.0780 R0=1.5569 X0=3.2723 Units=kft\n")
+        f.write("New Linecode.Switch nphases=3 R1=0.001 X1=0.001 R0=0.001 X0=0.001 Units=kft\n")
+
+        # ACLineSegment
+        for line in root.findall('.//cim:ACLineSegment', ns):
+            name = line.find('cim:IdentifiedObject.name', ns).text
+            line_id = line.get(f"{{{ns['rdf']}}}about").replace('urn:uuid:', '')
+            terms = equip_terminals.get(line_id, [])
+            if len(terms) >= 2:
+                n1 = terms[0].find('cim:Terminal.ConnectivityNode', ns).get(f"{{{ns['rdf']}}}resource").replace('urn:uuid:', '')
+                n2 = terms[1].find('cim:Terminal.ConnectivityNode', ns).get(f"{{{ns['rdf']}}}resource").replace('urn:uuid:', '')
+                name1, name2 = node_uuid_to_name.get(n1), node_uuid_to_name.get(n2)
+                f.write(f"New Line.{name} Bus1={name1} Bus2={name2} Phases=3 Length=100 Units=ft Linecode=1\n")
+                if name1 in node_name_to_idx and name2 in node_name_to_idx:
+                    edges.append([node_name_to_idx[name1], node_name_to_idx[name2]])
+                    edges.append([node_name_to_idx[name2], node_name_to_idx[name1]])
+
+        # LoadBreakSwitch (Động học đồ thị)
+        for sw in root.findall('.//cim:LoadBreakSwitch', ns):
+            name = sw.find('cim:IdentifiedObject.name', ns).text
+            sw_id = sw.get(f"{{{ns['rdf']}}}about").replace('urn:uuid:', '')
+            is_open_elem = sw.find('cim:Switch.normalOpen', ns)
+            is_open = is_open_elem.text.lower() == 'true' if is_open_elem is not None else False
+            terms = equip_terminals.get(sw_id, [])
+            if len(terms) >= 2:
+                n1 = terms[0].find('cim:Terminal.ConnectivityNode', ns).get(f"{{{ns['rdf']}}}resource").replace('urn:uuid:', '')
+                n2 = terms[1].find('cim:Terminal.ConnectivityNode', ns).get(f"{{{ns['rdf']}}}resource").replace('urn:uuid:', '')
+                name1, name2 = node_uuid_to_name.get(n1), node_uuid_to_name.get(n2)
+                f.write(f"New Line.SW_{name} Bus1={name1} Bus2={name2} Switch=y Phases=3 Linecode=Switch Length=0.001\n")
+                if is_open:
+                    f.write(f"Open Line.SW_{name} \n")
+                else:
+                    if name1 in node_name_to_idx and name2 in node_name_to_idx:
+                        edges.append([node_name_to_idx[name1], node_name_to_idx[name2]])
+                        edges.append([node_name_to_idx[name2], node_name_to_idx[name1]])
+
+        # EnergyConsumer
+        for load in root.findall('.//cim:EnergyConsumer', ns):
+            name = load.find('cim:IdentifiedObject.name', ns).text
+            lid = load.get(f"{{{ns['rdf']}}}about").replace('urn:uuid:', '')
+            p = float(load.find('cim:EnergyConsumer.p', ns).text) / 1000.0
+            q = float(load.find('cim:EnergyConsumer.q', ns).text) / 1000.0
+            terms = equip_terminals.get(lid, [])
+            if len(terms) > 0:
+                n = terms[0].find('cim:Terminal.ConnectivityNode', ns).get(f"{{{ns['rdf']}}}resource").replace('urn:uuid:', '')
+                bus = node_uuid_to_name.get(n, n)
+                f.write(f"New Load.{name} Bus1={bus}.1 Phases=1 kV=2.4 kW={p} kvar={q} Model=1\n")
+
+        f.write("\nSet Voltagebases=[4.16, 0.48]\nCalcVoltageBases\nSolve\n")
+
+    edge_index = torch.tensor(edges, dtype=torch.long).t().contiguous()
+    print(f"✅ Xây dựng thành công Đồ thị: {len(node_name_to_idx)} Nodes, {len(edges)//2} Edges.")
+    return node_name_to_idx, edge_index
+
+node_map, edge_index = parse_cim_and_build_system(XML_FILE, DSS_FILE)
+
+# ==============================================================================
+# BƯỚC 4: MONTE CARLO - PHYSICS-INFORMED DATA GENERATION
+# ==============================================================================
+print(f"🚀 Bắt đầu chạy {NUM_SAMPLES} kịch bản Tải...")
+dss.Text.Command(f'Compile "{DSS_FILE}"')
+
+load_names = dss.Loads.AllNames()
+base_loads = {}
+for ln in load_names:
+    dss.Loads.Name(ln)
+    base_loads[ln] = {'p': dss.Loads.kW(), 'q': dss.Loads.kvar()}
+
+dataset = []
+all_sim_buses = dss.Circuit.AllBusNames()
+num_nodes = len(node_map)
+
+for i in range(NUM_SAMPLES):
+    X_features = torch.zeros((num_nodes, 2), dtype=torch.float)
+    # Tinh chỉnh độ dao động tải (Thực tế hơn: 70% đến 125%)
+    global_scale = np.random.uniform(0.7, 1.25)
+
+    for ln in load_names:
+        dss.Loads.Name(ln)
+        scale = global_scale * np.random.uniform(0.9, 1.1)
+        new_p = base_loads[ln]['p'] * scale
+        new_q = base_loads[ln]['q'] * scale
+
+        dss.Loads.kW(new_p)
+        dss.Loads.kvar(new_q)
+
+        bus_raw = dss.CktElement.BusNames()[0]
+        bus = bus_raw.split('.')[0]
+
+        if bus in node_map:
+            idx = node_map[bus]
+            X_features[idx, 0] += new_p / 1000.0
+            X_features[idx, 1] += new_q / 1000.0
+
+    dss.Solution.Solve()
+
+    if dss.Solution.Converged():
+        Y_targets = torch.zeros((num_nodes, 1), dtype=torch.float)
+
+        for b_name in all_sim_buses:
+            if b_name in node_map:
+                idx = node_map[b_name]
+                dss.Circuit.SetActiveBus(b_name)
+                v_complex = dss.Bus.PuVoltage()
+                mags = []
+                if len(v_complex) >= 2:
+                    for k in range(0, len(v_complex), 2):
+                        mag = math.sqrt(v_complex[k]**2 + v_complex[k+1]**2)
+                        mags.append(mag)
+
+                # CHÌA KHÓA MẠNH NHẤT: Bắt AI học ĐỘ SỤT ÁP (Delta V) thay vì học V
+                if mags:
+                    v_mean = sum(mags)/len(mags)
+                    Y_targets[idx, 0] = 1.0 - v_mean
+                else:
+                    Y_targets[idx, 0] = 0.0
+
+        dataset.append(Data(x=X_features, edge_index=edge_index, y=Y_targets))
+
+print(f"✅ Đã tạo xong tập dữ liệu {len(dataset)} đồ thị.")
+
+# ==============================================================================
+# BƯỚC 5: MẠNG NƠ-RON ĐỒ THỊ SÂU (DEEP GCN)
+# ==============================================================================
+# Tăng cường 4 lớp (Nhìn xa 4 bậc) và tăng số nơ-ron lên 128
+class PhysicsAwareGCN(torch.nn.Module):
+    def __init__(self):
+        super(PhysicsAwareGCN, self).__init__()
+        self.conv1 = GCNConv(2, 128)
+        self.conv2 = GCNConv(128, 128)
+        self.conv3 = GCNConv(128, 64)
+        self.conv4 = GCNConv(64, 32)
+        self.out = torch.nn.Linear(32, 1)
+
+    def forward(self, data):
+        x, edge_index = data.x, data.edge_index
+        x = F.relu(self.conv1(x, edge_index))
+        x = F.relu(self.conv2(x, edge_index))
+        x = F.relu(self.conv3(x, edge_index))
+        x = F.relu(self.conv4(x, edge_index))
+        x = self.out(x)
+        return x
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model = PhysicsAwareGCN().to(device)
+optimizer = torch.optim.Adam(model.parameters(), lr=LR)
+criterion = torch.nn.MSELoss()
+
+train_size = int(0.8 * len(dataset))
+train_dataset = dataset[:train_size]
+test_dataset  = dataset[train_size:]
+
+train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+test_loader  = DataLoader(test_dataset, batch_size=32, shuffle=False)
+
+print("\n🧠 AI Bắt đầu học (Training)...")
+train_loss_history, val_loss_history = [], []
+best_val_loss = float("inf")
+
+for epoch in range(EPOCHS):
+    model.train()
+    total_train_loss = 0
+    for batch in train_loader:
+        batch = batch.to(device)
+        optimizer.zero_grad()
+        out = model(batch)
+        loss = criterion(out, batch.y)
+        loss.backward()
+        optimizer.step()
+        total_train_loss += loss.item()
+
+    avg_train_loss = total_train_loss / len(train_loader)
+    train_loss_history.append(avg_train_loss)
+
+    model.eval()
+    total_val_loss = 0
+    with torch.no_grad():
+        for batch in test_loader:
+            batch = batch.to(device)
+            out = model(batch)
+            loss = criterion(out, batch.y)
+            total_val_loss += loss.item()
+
+    avg_val_loss = total_val_loss / len(test_loader)
+    val_loss_history.append(avg_val_loss)
+
+    if avg_val_loss < best_val_loss:
+        best_val_loss = avg_val_loss
+        torch.save(model.state_dict(), BEST_MODEL_PATH)
+
+    if (epoch+1) % 20 == 0:
+        print(f"Epoch {epoch+1:03d}/{EPOCHS} | Train Loss: {avg_train_loss:.7f} | Val Loss: {avg_val_loss:.7f}")
+
+print(f"\n🎉 Học xong! Mô hình ĐỈNH NHẤT được lưu tại: {BEST_MODEL_PATH}")
+
+# ==============================================================================
+# BƯỚC 6: ĐÁNH GIÁ (TESTING) VÀ TÍNH CHỈ SỐ R-SQUARED (R²)
+# ==============================================================================
+model.load_state_dict(torch.load(BEST_MODEL_PATH))
+model.eval()
+
+preds, actuals = [], []
+with torch.no_grad():
+    for batch in test_loader:
+        batch = batch.to(device)
+        out = model(batch)
+        preds.append(out.cpu().numpy().flatten())
+        actuals.append(batch.y.cpu().numpy().flatten())
+
+preds = np.concatenate(preds)
+actuals = np.concatenate(actuals)
+
+# --- QUY ĐỔI NGƯỢC TỪ ĐỘ SỤT ÁP (DELTA V) VỀ LẠI ĐIỆN ÁP THỰC TẾ (P.U) ---
+preds = 1.0 - preds
+actuals = 1.0 - actuals
+
+# 1. Tính sai số RMSE
+rmse = np.sqrt(np.mean((preds - actuals)**2))
+
+# 2. Tính hệ số xác định R² (R-squared)
+ss_res = np.sum((actuals - preds) ** 2)
+ss_tot = np.sum((actuals - np.mean(actuals)) ** 2)
+r2 = 1 - (ss_res / ss_tot)
+
+print(f"\n🏆 KẾT QUẢ ĐÁNH GIÁ TRÊN TẬP TEST:")
+print(f"   - RMSE: {rmse:.5f} p.u (Kỳ vọng < 0.01)")
+print(f"   - R²  : {r2:.4f} (Kỳ vọng > 0.90)")
+
+# ==================== VẼ BIỂU ĐỒ ====================
+plt.figure(figsize=(14, 5))
+
+# Biểu đồ Loss
+plt.subplot(1, 2, 1)
+plt.plot(train_loss_history, label='Train Loss', color='#3498DB', linewidth=2)
+plt.plot(val_loss_history, label='Validation Loss', color='#E74C3C', linestyle='--', linewidth=2)
+plt.title('Đường cong Hội tụ của GNN (Loss)', fontsize=14, fontweight='bold')
+plt.xlabel('Epochs')
+plt.ylabel('MSE Loss')
+plt.legend()
+plt.grid(True, linestyle=':', alpha=0.6)
+
+# Biểu đồ Scatter
+plt.subplot(1, 2, 2)
+indices = np.random.choice(len(preds), min(1000, len(preds)), replace=False)
+plt.scatter(actuals[indices], preds[indices], alpha=0.5, s=15, color='#2ECC71')
+
+min_val, max_val = min(actuals[indices]), max(actuals[indices])
+plt.plot([min_val, max_val], [min_val, max_val], 'r--', linewidth=2, label='Hoàn hảo (y=x)')
+
+plt.title(f'Dự báo vs Thực tế\nRMSE={rmse:.5f} | R²={r2:.4f}', fontsize=14, fontweight='bold')
+plt.xlabel('Điện áp thực tế (OpenDSS - p.u)')
+plt.ylabel('Điện áp dự báo (Physics-Aware GNN - p.u)')
+plt.legend()
+plt.grid(True, linestyle=':', alpha=0.6)
+
+plt.tight_layout()
+result_img = os.path.join(SAVE_DIR, 'GNN_Results_Final.png')
+plt.savefig(result_img, dpi=300)
+print(f"✅ Ảnh kết quả báo cáo đã lưu tại: {result_img}")
+plt.show()
+node 4
+# ==============================================================================
+# BƯỚC 1: CÀI ĐẶT ĐẦY ĐỦ THƯ VIỆN
+# ==============================================================================
+print("⏳ Đang cài đặt thư viện cho API Server...")
+!pip install -q fastapi uvicorn pyngrok nest_asyncio python-multipart
+!pip install -q torch-geometric
+
+import os
+import torch
+import torch.nn.functional as F
+from torch_geometric.data import Data
+from torch_geometric.nn import GCNConv
+import uvicorn
+import nest_asyncio
+import asyncio
+import xml.etree.ElementTree as ET
+import collections
+import numpy as np
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import List
+from pyngrok import ngrok
+
+# ==============================================================================
+# BƯỚC 2: CẤU HÌNH & LOAD MODEL (Khớp với file Train)
+# ==============================================================================
+# ⚠️ Đảm bảo đường dẫn này khớp với nơi lưu Model lúc Train
+BASE_DIR = '/content/drive/MyDrive/AT_energy/'
+XML_FILE = os.path.join(BASE_DIR, 'IEEE123.xml')
+SAVE_DIR = os.path.join(BASE_DIR, 'GNN_Model')
+MODEL_PATH = os.path.join(SAVE_DIR, 'best_gnn_model.pth')
+
+if not os.path.exists(MODEL_PATH):
+    raise FileNotFoundError(f"❌ Không tìm thấy file Model tại {MODEL_PATH}. Hãy chắc chắn bạn đã Train trước đó!")
+
+# --- 1. ĐỊNH NGHĨA KIẾN TRÚC MẠNG (Phải y hệt lúc Train) ---
+class PhysicsAwareGCN(torch.nn.Module):
+    def __init__(self):
+        super(PhysicsAwareGCN, self).__init__()
+        self.conv1 = GCNConv(2, 128)
+        self.conv2 = GCNConv(128, 128)
+        self.conv3 = GCNConv(128, 64)
+        self.conv4 = GCNConv(64, 32)
+        self.out = torch.nn.Linear(32, 1)
+
+    def forward(self, data):
+        x, edge_index = data.x, data.edge_index
+        x = F.relu(self.conv1(x, edge_index))
+        x = F.relu(self.conv2(x, edge_index))
+        x = F.relu(self.conv3(x, edge_index))
+        x = F.relu(self.conv4(x, edge_index))
+        x = self.out(x)
+        return x
+
+# --- 2. HÀM TÁI TẠO CẤU TRÚC ĐỒ THỊ TỪ XML ---
+def load_graph_structure(xml_path):
+    print("🔄 Đang đọc cấu trúc đồ thị từ XML...")
+    ns = {'cim': 'http://iec.ch/TC57/CIM100#', 'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'}
+    tree = ET.parse(xml_path)
+    root = tree.getroot()
+
+    node_name_to_idx = {}
+    node_uuid_to_name = {}
+    nodes = root.findall('.//cim:ConnectivityNode', ns)
+    for idx, n in enumerate(nodes):
+        uuid = n.get(f"{{{ns['rdf']}}}about").replace('urn:uuid:', '')
+        name = n.find('cim:IdentifiedObject.name', ns).text
+        node_name_to_idx[name] = idx
+        node_uuid_to_name[uuid] = name
+
+    equip_terminals = collections.defaultdict(list)
+    for term in root.findall('.//cim:Terminal', ns):
+        ce = term.find('cim:Terminal.ConductingEquipment', ns)
+        if ce is not None:
+            eq_id = ce.get(f"{{{ns['rdf']}}}resource").replace('urn:uuid:', '')
+            equip_terminals[eq_id].append(term)
+
+    edges = []
+    # Quét đường dây
+    for line in root.findall('.//cim:ACLineSegment', ns):
+        line_id = line.get(f"{{{ns['rdf']}}}about").replace('urn:uuid:', '')
+        terms = equip_terminals.get(line_id, [])
+        if len(terms) >= 2:
+            n1 = terms[0].find('cim:Terminal.ConnectivityNode', ns).get(f"{{{ns['rdf']}}}resource").replace('urn:uuid:', '')
+            n2 = terms[1].find('cim:Terminal.ConnectivityNode', ns).get(f"{{{ns['rdf']}}}resource").replace('urn:uuid:', '')
+            name1, name2 = node_uuid_to_name.get(n1), node_uuid_to_name.get(n2)
+            if name1 in node_name_to_idx and name2 in node_name_to_idx:
+                edges.append([node_name_to_idx[name1], node_name_to_idx[name2]])
+                edges.append([node_name_to_idx[name2], node_name_to_idx[name1]])
+
+    # Quét Switch (Lọc công tắc hở)
+    for sw in root.findall('.//cim:LoadBreakSwitch', ns):
+        sw_id = sw.get(f"{{{ns['rdf']}}}about").replace('urn:uuid:', '')
+        is_open_elem = sw.find('cim:Switch.normalOpen', ns)
+        is_open = is_open_elem.text.lower() == 'true' if is_open_elem is not None else False
+        if not is_open:
+            terms = equip_terminals.get(sw_id, [])
+            if len(terms) >= 2:
+                n1 = terms[0].find('cim:Terminal.ConnectivityNode', ns).get(f"{{{ns['rdf']}}}resource").replace('urn:uuid:', '')
+                n2 = terms[1].find('cim:Terminal.ConnectivityNode', ns).get(f"{{{ns['rdf']}}}resource").replace('urn:uuid:', '')
+                name1, name2 = node_uuid_to_name.get(n1), node_uuid_to_name.get(n2)
+                if name1 in node_name_to_idx and name2 in node_name_to_idx:
+                    edges.append([node_name_to_idx[name1], node_name_to_idx[name2]])
+                    edges.append([node_name_to_idx[name2], node_name_to_idx[name1]])
+
+    # Quét Biến áp
+    for tf in root.findall('.//cim:PowerTransformer', ns):
+        tf_id = tf.get(f"{{{ns['rdf']}}}about").replace('urn:uuid:', '')
+        terms = equip_terminals.get(tf_id, [])
+        if len(terms) >= 2:
+            n1 = terms[0].find('cim:Terminal.ConnectivityNode', ns).get(f"{{{ns['rdf']}}}resource").replace('urn:uuid:', '')
+            n2 = terms[1].find('cim:Terminal.ConnectivityNode', ns).get(f"{{{ns['rdf']}}}resource").replace('urn:uuid:', '')
+            name1, name2 = node_uuid_to_name.get(n1), node_uuid_to_name.get(n2)
+            if name1 in node_name_to_idx and name2 in node_name_to_idx:
+                edges.append([node_name_to_idx[name1], node_name_to_idx[name2]])
+                edges.append([node_name_to_idx[name2], node_name_to_idx[name1]])
+
+    edge_index = torch.tensor(edges, dtype=torch.long).t().contiguous()
+    return node_name_to_idx, edge_index
+
+# --- 3. LOAD MODEL VÀO BỘ NHỚ ---
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+node_map, edge_tensor = load_graph_structure(XML_FILE)
+edge_tensor = edge_tensor.to(device)
+idx_to_name = {v: k for k, v in node_map.items()}
+num_nodes = len(node_map)
+
+model = PhysicsAwareGCN().to(device)
+model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
+model.eval()
+print(f"✅ GNN Model siêu chính xác đã khởi động trên: {device}")
+
+# ==============================================================================
+# BƯỚC 3: XÂY DỰNG FASTAPI SERVER
+# ==============================================================================
+app = FastAPI(title="Smart Grid Physics-Aware AI API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+class LoadInput(BaseModel):
+    name: str  # VD: "s48a", "Load_50"
+    p: float   # kW
+    q: float   # kVAr
+
+class PredictionRequest(BaseModel):
+    loads: List[LoadInput]
+
+@app.get("/")
+def home():
+    return {"status": "active", "model": "PhysicsAwareGCN_IEEE123", "accuracy": "RMSE 0.0004"}
+
+@app.post("/predict")
+def predict(request: PredictionRequest):
+    try:
+        # 1. Khởi tạo Ma trận X (Input P, Q = 0)
+        x_features = torch.zeros((num_nodes, 2), dtype=torch.float).to(device)
+
+        # 2. Đẩy dữ liệu Tải từ App vào Ma trận GNN
+        for load in request.loads:
+            # Lọc lấy con số trong tên tải để map về Bus (VD: 's48a' -> '48')
+            target_node = ''.join(filter(str.isdigit, load.name))
+
+            if target_node in node_map:
+                idx = node_map[target_node]
+                # Chuẩn hóa về MW và MVAr y như lúc Train
+                x_features[idx, 0] += load.p / 1000.0
+                x_features[idx, 1] += load.q / 1000.0
+
+        # 3. Đóng gói thành Graph
+        data = Data(x=x_features, edge_index=edge_tensor)
+
+        # 4. AI DỰ ĐOÁN (Chỉ mất < 1 ms)
+        with torch.no_grad():
+            delta_v = model(data).cpu().numpy().flatten()
+
+        # 5. GIẢI MÃ VẬT LÝ: Điện áp thực = 1.0 - Sụt áp
+        voltage_pu = 1.0 - delta_v
+
+        # 6. Chuẩn bị JSON trả về cho App
+        result_map = {}
+        for i, v in enumerate(voltage_pu):
+            node_name = idx_to_name[i]
+
+            # Đánh giá cảnh báo
+            status = "Normal"
+            if v < 0.95: status = "Low Voltage (CẢNH BÁO SỤT ÁP)"
+            elif v > 1.05: status = "High Voltage (QUÁ ÁP)"
+
+            result_map[node_name] = {
+                "voltage_pu": round(float(v), 5),
+                "status": status
+            }
+
+        return {"status": "success", "nodes_predicted": len(voltage_pu), "data": result_map}
+
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+# ==============================================================================
+# BƯỚC 4: CHẠY NGROK & SERVER PUBLIC
+# ==============================================================================
+
+# ⚠️ THAY TOKEN CỦA BẠN VÀO ĐÂY
+NGROK_AUTH_TOKEN = "382OqTlPxsdM0YymGgPvTMMwBg0_pJfuRhHpB9jo1YYwN5di"
+
+try:
+    ngrok.set_auth_token(NGROK_AUTH_TOKEN)
+    # Xóa các tunnel cũ bị kẹt
+    for tunnel in ngrok.get_tunnels():
+        ngrok.disconnect(tunnel.public_url)
+
+    public_url = ngrok.connect(8000).public_url
+    print("="*60)
+    print(f"🚀 PUBLIC API ĐÃ SẴN SÀNG TẠI: {public_url}")
+    print("👉 Hãy dùng URL này để gọi từ Frontend/Postman của bạn.")
+    print("="*60)
+
+    nest_asyncio.apply()
+    config = uvicorn.Config(app, host="0.0.0.0", port=8000, log_level="warning")
+    server = uvicorn.Server(config)
+
+    async def start_server():
+        await server.serve()
+
+    asyncio.create_task(start_server())
+except Exception as e:
+    print(f"❌ Lỗi Ngrok: {e}")

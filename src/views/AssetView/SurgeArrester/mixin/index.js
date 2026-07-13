@@ -52,6 +52,10 @@ export default {
             const data = await this.saveAsset()
             console.log('[SURGE_ARRESTER] saveAsset result:', data)
             if (data.success) {
+                if (data.data) {
+                    const dto = Mapping.mapEntityToDto(data.data)
+                    this.loadData(dto)
+                }
                 this.$message.success("Asset saved successfully")
                 
                 console.log('[SURGE_ARRESTER] Emitting reload event with saved data')
