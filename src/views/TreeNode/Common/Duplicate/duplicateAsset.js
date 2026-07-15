@@ -1,3 +1,6 @@
+import MANUFACTURER_MAP from '@/views/ConstantAsset/manufacturer.js'
+import Vue from 'vue'
+
 export default {
     methods: {
         async processDuplicateAsset(node, apiGetEntity, mappingFunction, mixinObject, dataPropName, overrideParent = null) {
@@ -22,6 +25,239 @@ export default {
                 }
 
                 // Helper: sinh tên duplicate tiếp theo trong cùng parent
+                const cleanKey = (value) => String(value || '').trim()
+
+                const getAssetTypeField = (properties) => {
+                    if (properties && Object.prototype.hasOwnProperty.call(properties, 'asset_type')) return 'asset_type'
+                    return 'type'
+                }
+
+                const getAssetTypeValue = (properties) => {
+                    if (!properties) return ''
+                    return cleanKey(properties[getAssetTypeField(properties)])
+                }
+
+                const setAssetDuplicateKeys = (dtoData, values) => {
+                    if (!dtoData.properties) dtoData.properties = {}
+                    const properties = dtoData.properties
+                    properties.serial_no = cleanKey(values.serialNumber)
+                    properties.manufacturer = cleanKey(values.manufacturer)
+                    properties[getAssetTypeField(properties)] = cleanKey(values.assetType)
+                }
+
+                const getManufacturerOptions = () => {
+                    const mapKeyByAsset = {
+                        Transformer: 'TransformerDataDto',
+                        Bushing: 'BushingAssetDto',
+                        'Circuit breaker': 'CircuitBreakerDto',
+                        'Current transformer': 'CurrentTransformerDto',
+                        'Voltage transformer': 'VoltageTransformerDto',
+                        Disconnector: 'DisconnectorDTO',
+                        'Power cable': 'PowerCableDTO',
+                        'Surge arrester': 'SurgeArresterDto'
+                    }
+                    const list = MANUFACTURER_MAP[mapKeyByAsset[node.asset]] || []
+                    return Array.from(new Set(list.filter(Boolean)))
+                }
+
+                const getAssetTypeOptions = () => {
+                    const optionMap = {
+                        Transformer: [
+                            { label: 'Two-winding', value: 'Two-winding' },
+                            { label: 'Three-winding', value: 'Three-winding' },
+                            { label: 'Auto w/ tert', value: 'Auto w/ tert' },
+                            { label: 'Auto w/o tert', value: 'Auto w/o tert' }
+                        ],
+                        Bushing: [
+                            { label: 'With potential tap', value: 'With potential tap' },
+                            { label: 'With test tap', value: 'With test tap' },
+                            { label: 'Without tap', value: 'Without tap' }
+                        ],
+                        'Rotating machine': [
+                            { label: 'With potential tap', value: 'With potential tap' },
+                            { label: 'With test tap', value: 'With test tap' },
+                            { label: 'Without tap', value: 'Without tap' }
+                        ],
+                        'Voltage transformer': [
+                            { label: 'IVT', value: 'IVT' },
+                            { label: 'CVT / CCVT', value: 'CVTCCTV' }
+                        ],
+                        'Current transformer': [
+                            { label: 'Inductive', value: 'inductive' }
+                        ],
+                        Disconnector: [
+                            { label: 'Center-break disconnector', value: 'centerBreak' },
+                            { label: 'Double-break disconnector', value: 'doubleBreak' },
+                            { label: 'Horizontal knee disconnector', value: 'horizontalKnee' },
+                            { label: 'Pantograph disconnector', value: 'pantograph' },
+                            { label: 'Vertical-break disconnector', value: 'verticalBreak' }
+                        ],
+                        'Circuit breaker': [
+                            { label: 'Live tank SF6 breaker', value: 'LiveSF6' },
+                            { label: 'Minium oil breaker', value: 'MiniOil' },
+                            { label: 'Air-blast breaker', value: 'AirBlast' },
+                            { label: 'Dead tank SF6 breaker', value: 'DeadTankSF6' },
+                            { label: 'Dead tank oil breaker (OCB)', value: 'DeadTankOCB' },
+                            { label: 'Vacuum breaker', value: 'Vacuum' },
+                            { label: 'Generator circuit breaker (GCB)', value: 'GenCirGCB' },
+                            { label: 'Gas insulated switchgear (GIS)', value: 'GasInsuGIS' },
+                            { label: 'Miscellaneous', value: 'Miscell' }
+                        ]
+                    }
+                    return optionMap[node.asset] || []
+                }
+
+                const renderDuplicateFieldRow = (h, label, control) => h('div', {
+                    style: {
+                        marginTop: '12px'
+                    }
+                }, [
+                    h('span', {
+                        style: {
+                            display: 'block',
+                            color: '#5f6673',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            marginBottom: '6px'
+                        }
+                    }, label),
+                    control
+                ])
+
+                const renderDuplicateInput = (h, label, value, onInput) => renderDuplicateFieldRow(h, label, h('el-input', {
+                    props: {
+                        value,
+                        size: 'small',
+                        clearable: true,
+                        placeholder: label
+                    },
+                    style: {
+                        width: '100%'
+                    },
+                    on: {
+                        input: onInput
+                    }
+                }))
+
+                const renderManufacturerSelect = (h, value, options, onInput) => renderDuplicateFieldRow(h, 'Manufacturer', h('el-select', {
+                    props: {
+                        value,
+                        size: 'small',
+                        filterable: true,
+                        clearable: true,
+                        allowCreate: true,
+                        defaultFirstOption: true,
+                        placeholder: 'Select manufacturer',
+                        popperClass: 'duplicate-asset-select-dropdown'
+                    },
+                    style: { width: '100%' },
+                    on: {
+                        input: onInput
+                    }
+                }, options.map((item) => h('el-option', {
+                    key: item,
+                    props: {
+                        label: item,
+                        value: item
+                    }
+                }))))
+
+                const renderDuplicateSelect = (h, label, value, options, onInput) => renderDuplicateFieldRow(h, label, h('el-select', {
+                    props: {
+                        value,
+                        size: 'small',
+                        clearable: true,
+                        placeholder: `Select ${label.toLowerCase()}`,
+                        popperClass: 'duplicate-asset-select-dropdown'
+                    },
+                    style: { width: '100%' },
+                    on: {
+                        input: onInput
+                    }
+                }, options.map((item) => h('el-option', {
+                    key: item.value,
+                    props: {
+                        label: item.label,
+                        value: item.value
+                    }
+                }))))
+
+                const renderAssetTypeControl = (h, value, options, onInput) => {
+                    if (options.length > 0) {
+                        return renderDuplicateSelect(h, 'Asset type', value, options, onInput)
+                    }
+                    return renderDuplicateInput(h, 'Asset type', value, onInput)
+                }
+
+                const requestDuplicateAssetKeys = async (dtoData) => {
+                    if (!dtoData || !dtoData.properties) return true
+                    const h = this.$createElement
+                    const properties = dtoData.properties
+                    const oldSerial = cleanKey(properties.serial_no)
+                    const draft = Vue.observable({
+                        serialNumber: oldSerial ? `${oldSerial} - copy` : '',
+                        manufacturer: cleanKey(properties.manufacturer),
+                        assetType: getAssetTypeValue(properties)
+                    })
+                    const manufacturerOptions = getManufacturerOptions()
+                    const assetTypeOptions = getAssetTypeOptions()
+                    if (draft.manufacturer && !manufacturerOptions.includes(draft.manufacturer)) {
+                        manufacturerOptions.unshift(draft.manufacturer)
+                    }
+                    const DuplicateAssetForm = {
+                        data() {
+                            return { draft }
+                        },
+                        render(h) {
+                            return h('div', { style: { width: '430px', maxWidth: '100%' } }, [
+                                h('div', {
+                                    style: {
+                                        margin: '0 0 14px',
+                                        padding: '10px 12px',
+                                        color: '#4b5563',
+                                        background: '#f5f7fa',
+                                        border: '1px solid #e4e7ed',
+                                        borderRadius: '6px',
+                                        fontSize: '13px',
+                                        lineHeight: '20px'
+                                    }
+                                }, 'Please review the duplicated asset keys before saving.'),
+                                renderDuplicateInput(h, 'Serial number', this.draft.serialNumber, (value) => { this.draft.serialNumber = value }),
+                                renderManufacturerSelect(h, this.draft.manufacturer, manufacturerOptions, (value) => { this.draft.manufacturer = value }),
+                                renderAssetTypeControl(h, this.draft.assetType, assetTypeOptions, (value) => { this.draft.assetType = value })
+                            ])
+                        }
+                    }
+
+                    try {
+                        await this.$msgbox({
+                            title: 'Duplicate asset',
+                            message: h(DuplicateAssetForm),
+                            customClass: 'duplicate-asset-message-box',
+                            showCancelButton: true,
+                            confirmButtonText: 'Continue',
+                            cancelButtonText: 'Cancel',
+                            closeOnClickModal: false,
+                            closeOnPressEscape: false,
+                            beforeClose: (action, instance, done) => {
+                                if (action !== 'confirm') {
+                                    done()
+                                    return
+                                }
+                                if (!cleanKey(draft.serialNumber)) {
+                                    this.$message.error('Serial number is required.')
+                                    return
+                                }
+                                done()
+                            }
+                        })
+                        setAssetDuplicateKeys(dtoData, draft)
+                        return true
+                    } catch (error) {
+                        return false
+                    }
+                }
+
                 const getNextDuplicateLabel = (currentNode, parent) => {
                     const currentLabel = getDisplayLabel(currentNode).trim()
                     const base = getBaseLabel(currentLabel) || 'Unknown'
@@ -111,6 +347,16 @@ export default {
 
                 // 3. Map sang DTO & Clean dữ liệu (Xóa ID cũ)
                 const dto = mappingFunction(entityRes.data)
+                if (node.mode === 'asset') {
+                    const accepted = await requestDuplicateAssetKeys(dto)
+                    if (!accepted) {
+                        return {
+                            success: false,
+                            cancelled: true,
+                            message: 'Duplicate cancelled'
+                        }
+                    }
+                }
                 this.cleanDtoForDuplicate(dto)
 
                 // JOB: remap nhất quán TẤT CẢ id nội bộ. Sinh id mới cho mọi 'mrid' trong dto,
@@ -273,6 +519,15 @@ export default {
                 dto.attachment.id_foreign = primaryMrid || dto.properties?.mrid || null
                 dto.attachment.type = dto.attachment.type || 'asset'
                 dto.attachment.name = dto.attachment.name || null
+                let duplicatedAttachmentData = []
+                try {
+                    duplicatedAttachmentData = JSON.parse(dto.attachment.path || '[]')
+                    if (!Array.isArray(duplicatedAttachmentData)) {
+                        duplicatedAttachmentData = []
+                    }
+                } catch (e) {
+                    duplicatedAttachmentData = []
+                }
 
                 // Generate mrid cho ratings
                 if (dto.ratings) {
@@ -542,7 +797,7 @@ export default {
                     // organisationId: substation's checkOrganisation() does dto.organisationId = this.organisationId,
                     // so the parent org must be exposed on the context (parentNode = the org for a substation).
                     organisationId: (node.mode === 'substation') ? parentNode.mrid : this.organisationId,
-                    attachmentData: [],
+                    attachmentData: duplicatedAttachmentData,
                     ...mixinObject.methods,
                     $message: this.$message,
                     $store: this.$store,
@@ -563,10 +818,11 @@ export default {
 
                 // Copy các data khác từ mixin (nếu có)
                 Object.keys(defaultMixinData).forEach((k) => {
-                    if (k !== dataPropName && k !== dataPropName + 'Old') {
+                    if (k !== dataPropName && k !== dataPropName + 'Old' && k !== 'attachmentData') {
                         context[k] = defaultMixinData[k]
                     }
                 })
+                context.attachmentData = duplicatedAttachmentData
 
                 // --- KẾT THÚC PHẦN SỬA LỖI ---
 

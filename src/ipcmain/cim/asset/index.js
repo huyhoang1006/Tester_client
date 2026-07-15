@@ -56,6 +56,28 @@ export const getAssetByPsrIdAndKind = () => {
     })
 }
 
+export const checkAssetDuplicateByKeys = () => {
+    ipcMain.handle('checkAssetDuplicateByKeys', async function (event, keys) {
+        try {
+            const rs = await cimFunc.assetFunc.checkAssetDuplicateByKeys(keys)
+            return {
+                success: rs.success === true,
+                exists: !!rs.exists,
+                message: rs.message || "Success",
+                data: rs.data || null
+            }
+        } catch (error) {
+            console.log(error)
+            return {
+                error: error,
+                success: false,
+                exists: false,
+                message: (error && error.message) ? error.message : "Internal error",
+            }
+        }
+    })
+}
+
 export const updateAssetByMrid = () => {
     ipcMain.handle('updateAssetByMrid', async function (event, mrid, data) {
         try {
@@ -72,5 +94,6 @@ export const updateAssetByMrid = () => {
 export const active = () => {
     getAssetByMrid()
     getAssetByPsrIdAndKind()
+    checkAssetDuplicateByKeys()
     updateAssetByMrid()
 }

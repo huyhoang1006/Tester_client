@@ -1,6 +1,7 @@
 import SurgeArresterDto from '@/views/Dto/SurgeAsset/index.js';
 import uuid from '@/utils/uuid';
 import * as Mapping from '@/views/Mapping/SurgeArrester/index.js';
+import { ensureUniqueAssetBeforeSave } from "@/views/AssetView/mixin/assetDuplicateGuard";
 /* eslint-disable */
 export default {
     data() {
@@ -15,6 +16,7 @@ export default {
             try {
                 if (this.surge_arrester_data.properties.serial_no !== null && this.surge_arrester_data.properties.serial_no !== '') {
                     const data = JSON.parse(JSON.stringify(this.surge_arrester_data));
+                    if (!(await ensureUniqueAssetBeforeSave(this, data))) return { success: false, duplicate: true };
                     const result = this.checkSurgeArresterData(data);
                     const oldResult = this.checkSurgeArresterData(this.surge_arrester_data_old);
                     const resultEntity = Mapping.mapDtoToEntity(result);
@@ -51,6 +53,7 @@ export default {
             console.log('[SURGE_ARRESTER] saveCtrS called')
             const data = await this.saveAsset()
             console.log('[SURGE_ARRESTER] saveAsset result:', data)
+            if (data && data.duplicate) return
             if (data.success) {
                 if (data.data) {
                     const dto = Mapping.mapEntityToDto(data.data)

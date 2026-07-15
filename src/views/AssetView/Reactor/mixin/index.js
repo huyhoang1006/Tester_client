@@ -1,6 +1,7 @@
 import ReactorDTO from "@/views/Dto/Reactor"
 import uuid from "@/utils/uuid";
 import * as Mapping from "@/views/Mapping/Reactor"
+import { ensureUniqueAssetBeforeSave } from "@/views/AssetView/mixin/assetDuplicateGuard";
 export default {
     data() {
         return {
@@ -14,6 +15,7 @@ export default {
             try {
                 if (this.reactor.properties.serial_no !== null && this.reactor.properties.serial_no !== '') {
                     const data = JSON.parse(JSON.stringify(this.reactor));
+                    if (!(await ensureUniqueAssetBeforeSave(this, data))) return { success: false, duplicate: true };
                     const result = await this.checkReactorData(data);
                     const oldResult = await this.checkReactorData(this.reactorOld);
                     const resultEntity = Mapping.mapDtoToEntity(result);
@@ -52,6 +54,7 @@ export default {
             console.log('[REACTOR] saveCtrS called')
             const data = await this.saveAsset()
             console.log('[REACTOR] saveAsset result:', data)
+            if (data && data.duplicate) return
             if (data && data.success) {
                 if (data.data) {
                     const dto = Mapping.mapEntityToDto(data.data)

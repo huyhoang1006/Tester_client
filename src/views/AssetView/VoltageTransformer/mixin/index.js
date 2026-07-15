@@ -2,6 +2,7 @@
 import VoltageTransformerDto from "@/views/Dto/VoltageTransformer"
 import uuid from "@/utils/uuid";
 import * as voltageTransformerMapping from "@/views/Mapping/VoltageTransformer/index"
+import { ensureUniqueAssetBeforeSave } from "@/views/AssetView/mixin/assetDuplicateGuard";
 
 export default {
     data() {
@@ -17,6 +18,7 @@ export default {
             try {
                 if (this.voltageTransformer.properties.serial_no !== null && this.voltageTransformer.properties.serial_no !== '') {
                     const data = JSON.parse(JSON.stringify(this.voltageTransformer))
+                    if (!(await ensureUniqueAssetBeforeSave(this, data))) return { success: false, duplicate: true };
                     const result = await this.checkVoltageTransformerData(data)
                     const oldResult = JSON.parse(JSON.stringify(this.old_data))
                     const oldEntity = voltageTransformerMapping.mapDtoToEntity(oldResult)
@@ -51,6 +53,7 @@ export default {
         },
         async saveCtrS() {
             const data = await this.saveAsset()
+            if (data && data.duplicate) return
             if (data.success) {
                 if (data.data) {
                     const dto = voltageTransformerMapping.mapEntityToDto(data.data)

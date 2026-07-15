@@ -1,6 +1,7 @@
 import DisconnectorDTO from "@/views/Dto/Disconnector"
 import uuid from "@/utils/uuid";
 import * as Mapping from "@/views/Mapping/Disconnector"
+import { ensureUniqueAssetBeforeSave } from "@/views/AssetView/mixin/assetDuplicateGuard";
 export default {
     data() {
         return {
@@ -84,6 +85,7 @@ export default {
             try {
                 if (this.disconnector.properties.serial_no !== null && this.disconnector.properties.serial_no !== '') {
                     const data = JSON.parse(JSON.stringify(this.disconnector));
+                    if (!(await ensureUniqueAssetBeforeSave(this, data))) return { success: false, duplicate: true };
                     const result = this.checkDisconnectorData(data);
                     const resultEntity = Mapping.disconnectorDtoToEntity(result);
                     let rs = await window.electronAPI.insertDisconnectorEntity(resultEntity)
@@ -118,6 +120,7 @@ export default {
             console.log('[DISCONNECTOR] saveCtrS called')
             const data = await this.saveAsset()
             console.log('[DISCONNECTOR] saveAsset result:', data)
+            if (data && data.duplicate) return
             if (data && data.success) {
                 // Load back the saved entity so the UI shows exactly what was stored
                 if (data.data) {

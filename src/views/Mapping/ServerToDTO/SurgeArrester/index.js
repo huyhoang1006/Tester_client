@@ -2,6 +2,7 @@ import SurgeArresterDto from '@/views/Dto/SurgeAsset'
 import uuid from '@/utils/uuid'
 
 const str = (val) => (val !== null && val !== undefined ? String(val) : '')
+const toNumberOrNull = (val) => (val !== null && val !== undefined && val !== '' ? Number(val) : null)
 
 // Tách unit từ server "kV" → "k|V", "kA" → "k|A", giữ nguyên nếu đã có pipe hoặc không có multiplier
 const splitUnit = (raw, defaultUnit) => {
@@ -41,6 +42,8 @@ export const mapServerToDto = (serverData) => {
     dto.properties.country_of_origin = assetInfo.country || ''
     dto.properties.apparatus_id = assetInfo.apparatusId || ''
     dto.properties.comment = assetInfo.description || ''
+    dto.config.phase = assetInfo.phase || ''
+    dto.config.number_of_phase = assetInfo.numberOfPhase ?? ''
 
     // 3. Ratings
     dto.ratings.unitStack = ratingList.length || ''
@@ -136,7 +139,9 @@ export const mapDtoToServer = (dto, ownerType) => {
             manufacturingYear: numS(p.manufacturer_year),
             country: p.country_of_origin || null, // TÊN nước
             apparatusId: p.apparatus_id || null,
-            description: p.comment || null
+            description: p.comment || null,
+            phase: dto.config?.phase || null,
+            numberOfPhase: toNumberOrNull(dto.config?.number_of_phase)
         },
 
         surgeArrester: {

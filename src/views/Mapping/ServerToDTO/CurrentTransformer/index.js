@@ -104,6 +104,8 @@ export const mapServerToDto = (serverData) => {
     dto.properties.manufacturing_year = assetInfo.manufacturingYear
         ? String(assetInfo.manufacturingYear)
         : ''
+    dto.config.phase = assetInfo.phase || ''
+    dto.config.number_of_phase = assetInfo.numberOfPhase ?? ''
 
     // ─── Ratings ─────────────────────────────────────────────────────────────
     dto.ratings.standard = {
@@ -293,6 +295,8 @@ export const mapDtoToServer = (dto) => {
                 country_of_origin: dto.properties?.country_of_origin || null,
                 apparatus_id:      dto.properties?.apparatus_id      || null,
                 comment:           dto.properties?.comment           || null,
+                phase:             dto.config?.phase                 || null,
+                numberOfPhase:     toNumberOrNull(dto.config?.number_of_phase),
             },
 
             ratings: {
@@ -433,4 +437,10 @@ const num = (val) => {
 const str = (val) => {
     if (isBlank(val)) return null
     return String(val)
+}
+
+const toNumberOrNull = (val) => {
+    if (isBlank(val)) return null
+    const n = Number(val)
+    return Number.isNaN(n) ? null : n
 }

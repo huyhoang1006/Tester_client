@@ -2,6 +2,7 @@
 import uuid from "@/utils/uuid";
 import * as Mapping from "@/views/Mapping/Capacitor/index";
 import CapacitorDTO from "@/views/Dto/Capacitor";
+import { ensureUniqueAssetBeforeSave } from "@/views/AssetView/mixin/assetDuplicateGuard";
 export default {
     data() {
         return {
@@ -15,6 +16,7 @@ export default {
             try {
                 if (this.capacitor.properties.serial_no !== null && this.capacitor.properties.serial_no !== '') {
                     const data = JSON.parse(JSON.stringify(this.capacitor));
+                    if (!(await ensureUniqueAssetBeforeSave(this, data))) return { success: false, duplicate: true };
                     const result = await this.checkCapacitorData(data);
                     const oldResult = await this.checkCapacitorData(this.capacitorOld);
                     const resultEntity = Mapping.mapDtoToEntity(result);
@@ -49,6 +51,7 @@ export default {
 
         async saveCtrS() {
             const data = await this.saveAsset()
+            if (data && data.duplicate) return
             if (data && data.success) {
                 // Load back the saved entity so the UI shows exactly what was stored
                 if (data.data) {

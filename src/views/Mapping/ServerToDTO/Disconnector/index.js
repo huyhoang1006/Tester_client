@@ -56,6 +56,8 @@ export const mapServerToDto = (serverData) => {
     dto.properties.country_of_origin = assetInfo.country || ''
     dto.properties.apparatus_id = assetInfo.apparatusId || ''
     dto.properties.comment = assetInfo.description || ''
+    dto.config.phase = assetInfo.phase || ''
+    dto.config.number_of_phase = assetInfo.numberOfPhase ?? ''
 
     // 3. Ratings
     dto.ratings.rated_voltage = {
@@ -117,6 +119,7 @@ const ASSET_TYPE_TO_SERVER = {
 
 // số: '' / null → null, còn lại parseFloat
 const numD = (val) => (val !== null && val !== undefined && val !== '' ? parseFloat(val) : null)
+const toNumberOrNull = (val) => (val !== null && val !== undefined && val !== '' ? Number(val) : null)
 
 // unit DTO 'k|V' → server 'kV' (gộp lại, bỏ pipe). 'A' giữ nguyên.
 const joinUnit = (u) => {
@@ -158,7 +161,9 @@ export const mapDtoToServer = (dto, ownerType) => {
             manufacturingYear: numD(p.manufacturing_year),
             country: p.country_of_origin || null, // TÊN nước (không phải id)
             apparatusId: p.apparatus_id || null,
-            description: p.comment || null
+            description: p.comment || null,
+            phase: dto.config?.phase || null,
+            numberOfPhase: toNumberOrNull(dto.config?.number_of_phase)
         },
 
         core: {

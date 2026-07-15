@@ -73,7 +73,7 @@
                 <li v-if="isClient" @click="showEquipment">
                     <i class="fa-solid fa-screwdriver-wrench"></i> Show equipment
                 </li>
-                <li v-if="isClient" class="has-submenu">
+                <li v-if="isClient" class="has-submenu submenu-up">
                     <i class="fa-solid fa-file-export"></i> Export
                     <ul class="submenu">
                         <li @click="exportJSONOnlyNode"><i class="fa-solid fa-file-code"></i> Export JSON only node</li>
@@ -82,7 +82,7 @@
                         <li @click="exportWord"><i class="fa-solid fa-file-word"></i> Export to Word</li>
                     </ul>
                 </li>
-                <li v-if="isClient" class="has-submenu">
+                <li v-if="isClient" class="has-submenu submenu-up">
                     <i class="fa-solid fa-file-import"></i> Import
                     <ul class="submenu">
                         <li @click="importJSON"><i class="fa-solid fa-file-code"></i> Import from JSON</li>
@@ -464,5 +464,22 @@ export default {
 /* Nested submenu - submenu trong submenu */
 .submenu .has-submenu > .submenu {
     z-index: 1002;
+}
+
+.context-menu {
+    z-index: 20000;
+}
+
+.context-menu .has-submenu > .submenu {
+    z-index: 20001;
+}
+
+.context-menu .has-submenu.submenu-up > .submenu {
+    top: auto;
+    bottom: 0;
+}
+
+.context-menu .submenu .has-submenu > .submenu {
+    z-index: 20002;
 }
 </style>

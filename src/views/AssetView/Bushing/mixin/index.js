@@ -2,6 +2,7 @@
 import BushingAssetDto from "@/views/Dto/BushingAsset/index.js";
 import uuid from "@/utils/uuid";
 import * as Mapping from '@/views/Mapping/Bushing/index'
+import { ensureUniqueAssetBeforeSave } from "@/views/AssetView/mixin/assetDuplicateGuard";
 export default {
     data() {
         return {
@@ -14,6 +15,7 @@ export default {
             try {
                 if (this.bushing_data.properties.serial_no !== null && this.bushing_data.properties.serial_no !== '') {
                     const data = JSON.parse(JSON.stringify(this.bushing_data));
+                    if (!(await ensureUniqueAssetBeforeSave(this, data))) return { success: false, duplicate: true };
                     const result = this.checkBushingData(data);
                     const resultEntity = Mapping.mapDtoToEntity(result);
                     let rs = await window.electronAPI.insertBushingEntity(resultEntity)
@@ -46,6 +48,7 @@ export default {
 
         async saveCtrS() {
             const data = await this.saveAsset()
+            if (data && data.duplicate) return
             if (data.success) {
                 // Nạp lại entity vừa lưu để UI (attachment, mrid...) phản ánh đúng dữ liệu đã ghi
                 if (data.data) {

@@ -2,6 +2,7 @@
 import CurrentTransformerDto from "@/views/Dto/CurrentTransformer";
 import uuid from "@/utils/uuid";
 import * as CurrentTransformerMapping from "@/views/Mapping/CurrentTransformer";
+import { ensureUniqueAssetBeforeSave } from "@/views/AssetView/mixin/assetDuplicateGuard";
 export default {
     data() {
         return {
@@ -16,6 +17,7 @@ export default {
             try {
                 if (this.currentTransformer.properties.serial_no !== null && this.currentTransformer.properties.serial_no !== '') {
                     const data = JSON.parse(JSON.stringify(this.currentTransformer));
+                    if (!(await ensureUniqueAssetBeforeSave(this, data))) return { success: false, duplicate: true };
                     const result = await this.checkCurrentTransformerData(data)
                     console.log("result: ", result)
                     const oldResult = JSON.parse(JSON.stringify(this.old_data))
@@ -64,6 +66,7 @@ export default {
         async saveCtrS() {
             
             const data = await this.saveAsset()
+            if (data && data.duplicate) return
 
             if (data.success) {
                 // Nạp lại entity vừa lưu để UI (attachment...) phản ánh đúng dữ liệu đã ghi

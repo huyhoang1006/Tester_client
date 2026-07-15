@@ -143,6 +143,50 @@ export const getAssetByPsrIdAndKind = (psrId, kind) => {
 
 
 // Thêm mới asset
+export const checkAssetDuplicateByKeys = async ({ serialNumber, manufacturer, assetType, excludeMrid } = {}) => {
+    const serial = String(serialNumber || '').trim()
+    const maker = String(manufacturer || '').trim()
+    const type = String(assetType || '').trim()
+    const currentMrid = String(excludeMrid || '').trim()
+
+    if (!serial || !maker || !type) {
+        return { success: true, exists: false, data: null, message: 'Duplicate check skipped because key is incomplete' }
+    }
+
+    return new Promise((resolve, reject) => {
+        const query = `
+            SELECT
+                a.mrid,
+                a.serial_number,
+                a.type,
+                a.kind,
+                io.name AS apparatus_id,
+                pam.manufacturer
+            FROM asset a
+            LEFT JOIN identified_object io ON a.mrid = io.mrid
+            LEFT JOIN product_asset_model pam ON a.product_asset_model = pam.mrid
+            WHERE LOWER(TRIM(COALESCE(a.serial_number, ''))) = LOWER(TRIM(?))
+              AND LOWER(TRIM(COALESCE(pam.manufacturer, ''))) = LOWER(TRIM(?))
+              AND LOWER(TRIM(COALESCE(a.type, ''))) = LOWER(TRIM(?))
+              AND (? = '' OR a.mrid <> ?)
+            LIMIT 1
+        `
+
+        db.get(query, [serial, maker, type, currentMrid, currentMrid], (err, row) => {
+            if (err) {
+                return reject({ success: false, err, message: 'Check asset duplicate failed' })
+            }
+
+            return resolve({
+                success: true,
+                exists: !!row,
+                data: row || null,
+                message: row ? 'Asset already exists' : 'Asset is unique'
+            })
+        })
+    })
+}
+
 export const insertAsset = async (asset) => {
     return new Promise((resolve, reject) => {
         db.serialize(() => {
@@ -329,9 +373,9 @@ export const deleteAssetById = async (mrid) => {
 }
 
 export const insertAssetTransaction = (asset, dbsql) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            const identifiedResult = await IdentifiedObjectFunc.insertIdentifiedObjectTransaction(asset, dbsql)
+    return new Promise((resolve, reject) => {
+        IdentifiedObjectFunc.insertIdentifiedObjectTransaction(asset, dbsql)
+            .then(identifiedResult => {
             if (!identifiedResult.success) {
                 return reject({ success: false, message: 'Insert identified object failed', err: identifiedResult.err })
             }
@@ -402,16 +446,17 @@ export const insertAssetTransaction = (asset, dbsql) => {
                     return resolve({ success: true, data: asset, message: 'Insert asset transaction completed' })
                 }
             )
-        } catch (err) {
-            return resolve({ success: false, err: err, message: 'Insert asset transaction failed' })
-        }
+            })
+            .catch(err => {
+                return resolve({ success: false, err: err, message: 'Insert asset transaction failed' })
+            })
     })
 }
 
 export const updateAssetTransaction = (mrid, asset, dbsql) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            const identifiedResult = await IdentifiedObjectFunc.updateIdentifiedObjectByIdTransaction(mrid, asset, dbsql)
+    return new Promise((resolve, reject) => {
+        IdentifiedObjectFunc.updateIdentifiedObjectByIdTransaction(mrid, asset, dbsql)
+            .then(identifiedResult => {
             if (!identifiedResult.success) {
                 return reject({ success: false, message: 'Update identified object failed', err: identifiedResult.err })
             }
@@ -474,9 +519,10 @@ export const updateAssetTransaction = (mrid, asset, dbsql) => {
                     return resolve({ success: true, data: asset, message: 'Update asset transaction completed' })
                 }
             )
-        } catch (err) {
-            return resolve({ success: false, err: err, message: 'Update asset transaction failed' })
-        }
+            })
+            .catch(err => {
+                return resolve({ success: false, err: err, message: 'Update asset transaction failed' })
+            })
     })
 }
 

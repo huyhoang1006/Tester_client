@@ -5,6 +5,7 @@ import * as transformerMapping from "@/views/Mapping/Transformer"
 import OldTransformerEndInfo from "@/views/Cim/OldTransformerEndInfo"
 import { WindingConnection } from "@/views/Enum/WindingConnection"
 import { PhaseCode } from "@/views/Enum/PhaseCode"
+import { ensureUniqueAssetBeforeSave } from "@/views/AssetView/mixin/assetDuplicateGuard";
 export default {
     data() {
         return {
@@ -85,6 +86,7 @@ export default {
             try {
                 if (this.transformerDto.properties.type && this.transformerDto.properties.kind && this.transformerDto.properties.serial_no) {
                     const data = JSON.parse(JSON.stringify(this.transformerDto));
+                    if (!(await ensureUniqueAssetBeforeSave(this, data))) return { success: false, duplicate: true };
                     const result = this.checkTransformerDto(data);
                     const oldResult = this.checkTransformerDto(this.oldTransformerDto);
                     const resultEntity = transformerMapping.transformerDtoToEntity(result);
@@ -160,6 +162,7 @@ export default {
 
         async saveCtrS() {
             const data = await this.saveAsset()
+            if (data && data.duplicate) return
             if (data && data.success) {
                 // Load back the saved entity so the UI shows exactly what was stored
                 if (data.data) {

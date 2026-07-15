@@ -1,6 +1,7 @@
 import circuitBreakerDto from "@/views/Dto/CircuitBreaker"
 import uuid from "@/utils/uuid";
 import * as Mapping from "@/views/Mapping/Breaker/index";
+import { ensureUniqueAssetBeforeSave } from "@/views/AssetView/mixin/assetDuplicateGuard";
 /* eslint-disable */
 export default {
     data() {
@@ -15,6 +16,7 @@ export default {
             try {
                 if (this.circuitBreakerDto.properties.serial_no !== null && this.circuitBreakerDto.properties.serial_no !== '') {
                     const data = JSON.parse(JSON.stringify(this.circuitBreakerDto));
+                    if (!(await ensureUniqueAssetBeforeSave(this, data))) return { success: false, duplicate: true };
                     const result = await this.checkBreakerData(data);
                     const oldResult = await this.checkBreakerData(this.oldCircuitBreakerDto);
                     const resultEntity = Mapping.mapDtoToEntity(result);
@@ -87,6 +89,7 @@ export default {
             console.log('[CIRCUIT_BREAKER] saveCtrS called')
             const data = await this.saveAsset()
             console.log('[CIRCUIT_BREAKER] saveAsset result:', data)
+            if (data && data.duplicate) return
             if (data && data.success) {
                 // Load back the saved entity so the UI shows exactly what was stored
                 if (data.data) {

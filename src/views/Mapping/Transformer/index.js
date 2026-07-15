@@ -335,6 +335,8 @@ export const transformerDtoToEntity = (dto) => {
             const shortCircuitTest = new ShortCircuitTest();
             shortCircuitTest.mrid = item.mrid || null;
             shortCircuitTest.energised_end = transformer_end_info_prim_id || null;
+            shortCircuitTest.energised_end_step = item.oltc_position !== '' && item.oltc_position !== null && item.oltc_position !== undefined ? item.oltc_position : null;
+            shortCircuitTest.grounded_end_step = item.detc_position !== '' && item.detc_position !== null && item.detc_position !== undefined ? item.detc_position : null;
 
             for (let j = 0; j < dto.shortCircuitTestTransformerEndInfo.length; j++) {
                 if (dto.shortCircuitTestTransformerEndInfo[j].short_circuit_test_id === item.mrid) {
@@ -385,6 +387,8 @@ export const transformerDtoToEntity = (dto) => {
             const shortCircuitTest = new ShortCircuitTest();
             shortCircuitTest.mrid = item.mrid || null;
             shortCircuitTest.energised_end = transformer_end_info_second_id || null;
+            shortCircuitTest.energised_end_step = item.oltc_position !== '' && item.oltc_position !== null && item.oltc_position !== undefined ? item.oltc_position : null;
+            shortCircuitTest.grounded_end_step = item.detc_position !== '' && item.detc_position !== null && item.detc_position !== undefined ? item.detc_position : null;
 
             for (let j = 0; j < dto.shortCircuitTestTransformerEndInfo.length; j++) {
                 if (dto.shortCircuitTestTransformerEndInfo[j].short_circuit_test_id === item.mrid) {
@@ -435,6 +439,8 @@ export const transformerDtoToEntity = (dto) => {
             const shortCircuitTest = new ShortCircuitTest();
             shortCircuitTest.mrid = item.mrid || null;
             shortCircuitTest.energised_end = transformer_end_info_prim_id || null;
+            shortCircuitTest.energised_end_step = item.oltc_position !== '' && item.oltc_position !== null && item.oltc_position !== undefined ? item.oltc_position : null;
+            shortCircuitTest.grounded_end_step = item.detc_position !== '' && item.detc_position !== null && item.detc_position !== undefined ? item.detc_position : null;
 
             for (let j = 0; j < dto.shortCircuitTestTransformerEndInfo.length; j++) {
                 if (dto.shortCircuitTestTransformerEndInfo[j].short_circuit_test_id === item.mrid) {
@@ -1008,6 +1014,8 @@ export const transformerEntityToDto = (entity) => {
             detc_position: ''
         }
         dataCircuitTest.mrid = shortCircuitTest.mrid || ''
+        dataCircuitTest.oltc_position = shortCircuitTest.energised_end_step !== null && shortCircuitTest.energised_end_step !== undefined ? shortCircuitTest.energised_end_step : ''
+        dataCircuitTest.detc_position = shortCircuitTest.grounded_end_step !== null && shortCircuitTest.grounded_end_step !== undefined ? shortCircuitTest.grounded_end_step : ''
         dataCircuitTest.short_circuit_impedances_uk.mrid = shortCircuitTest.voltage || ''
         for (const percent of entity.percent) {
             if (percent.mrid == shortCircuitTest.voltage) {

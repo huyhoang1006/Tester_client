@@ -184,7 +184,6 @@ export default {
 
                 const dto = transformerMapping.transformerEntityToDto(entityRes.data)
                 const serverPayload = transformerMappingServer.mapDtoToServer(dto, ownerType)
-                console.log(JSON.stringify(serverPayload))
                 const response = await transformerAPI.createTransformer(serverPayload)
 
                 console.log('[Upload Transformer] Response:', response)
@@ -232,15 +231,12 @@ export default {
                 if (!parentNode) throw new Error('Parent node not found in Client Tree')
                 const signParent = await this.checkParentBeforUpload(node.parentId, parentNode?.mode)
                 if (!signParent) return
-                const ownerType = this.normalizeOwnerType(parentNode?.mode)
+                const ownerType = this._resolveOwnerType(parentNode)
                 if (!ownerType) throw new Error(`Cannot resolve ownerType for parent node with mode: ${parentNode?.mode}`)
 
                 const dto = currentTransformerMapping.mapEntityToDto(entityRes.data)
                 const serverPayload = currentTransformerMappingServer.mapDtoToServer(dto, ownerType)
-                console.log('Current Transformer Payload:', JSON.stringify(serverPayload))
                 const response = await currentAPI.createCurrentTransformer(serverPayload, node.parentId, ownerType)
-
-                console.log('[Upload Current Transformer] Response:', response)
                 this.$message.success(`Upload Current Transformer "${node.name}" successfully!`)
             } catch (error) {
                 this._handleUploadError(error, 'Current Transformer')
@@ -257,7 +253,7 @@ export default {
                 if (!parentNode) throw new Error('Parent node not found in Client Tree')
                 const signParent = await this.checkParentBeforUpload(node.parentId, parentNode?.mode)
                 if (!signParent) return
-                const ownerType = this.normalizeOwnerType(parentNode?.mode)
+                const ownerType = this._resolveOwnerType(parentNode)
                 if (!ownerType) throw new Error(`Cannot resolve ownerType for parent node with mode: ${parentNode?.mode}`)
 
                 const dto = circuitBreakerMapping.mapEntityToDto(entityRes.data)
@@ -372,10 +368,8 @@ export default {
 
                 const dto = circuitBreakerJobMapping.JobEntityToDto(entityRes.data)
                 const serverPayload = circuitBreakerJobMappingServer.mapDtoToServer(dto, ownerType)
-                console.log('Circuit Breaker Job Payload:', JSON.stringify(serverPayload))
                 const response = await circuitBreakerJobAPI.createCircuitBreakerJob(serverPayload, node.parentId)
 
-                console.log('[Upload Circuit Breaker Job] Response:', response)
                 this.$message.success(`Upload Circuit Breaker Job "${node.name}" successfully!`)
             } catch (error) {
                 this._handleUploadError(error, 'Circuit Breaker Job')

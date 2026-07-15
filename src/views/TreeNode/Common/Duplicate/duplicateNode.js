@@ -182,7 +182,7 @@ export default {
                     if (action === 'cancel') includeChildren = false
                     else return // closed / ESC -> cancel
                 }
-            } else {
+            } else if (node.mode !== 'asset') {
                 try {
                     await this.$confirm(`Duplicate "${nodeName}"?`, 'Confirmation', {
                         confirmButtonText: 'Confirm',
@@ -215,6 +215,7 @@ export default {
             try {
                 if (includeChildren) {
                     const newRoot = await this._duplicateSubtree(node, null)
+                    if (newRoot && newRoot.cancelled) return
                     if (newRoot) this.$message.success('Duplicate successful!')
                     else this.$message.error('Failed to duplicate.')
                 } else {
@@ -223,6 +224,8 @@ export default {
                         this._insertDuplicatedNodeIntoTree(node, result.data)
                         this.progressDone = 1
                         this.$message.success('Duplicate successful!')
+                    } else if (result && result.cancelled) {
+                        return
                     } else {
                         this.$message.error((result && result.message) || 'Failed to duplicate.')
                     }
@@ -301,6 +304,7 @@ export default {
         // inside the job entity); standalone test nodes are skipped to avoid double-creating tests.
         async _duplicateSubtree(node, overrideParent) {
             const result = await this._duplicateSingle(node, overrideParent)
+            if (result && result.cancelled) return result
             if (!result || !result.success || !result.data) return null
             this.progressDone++
             this.progressName = result.data.name || node.name || ''

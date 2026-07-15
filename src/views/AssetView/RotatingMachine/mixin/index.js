@@ -2,6 +2,7 @@
 import uuid from "@/utils/uuid";
 import * as Mapping from "@/views/Mapping/RotatingMachine/index"
 import RotatingMachineDTO from "@/views/Dto/RotatingMachine";
+import { ensureUniqueAssetBeforeSave } from "@/views/AssetView/mixin/assetDuplicateGuard";
 export default {
     data() {
         return {
@@ -14,6 +15,7 @@ export default {
             try {
                 if (this.rotatingMachine.properties.serial_no !== null && this.rotatingMachine.properties.serial_no !== '') {
                     const data = JSON.parse(JSON.stringify(this.rotatingMachine));
+                    if (!(await ensureUniqueAssetBeforeSave(this, data))) return { success: false, duplicate: true };
                     const result = await this.checkRotatingMachineData(data);
                     const resultEntity = Mapping.mapDtoToEntity(result);
                     console.log("resultEntity", resultEntity)
@@ -49,6 +51,7 @@ export default {
             console.log('[ROTATING_MACHINE] saveCtrS called')
             const data = await this.saveAsset()
             console.log('[ROTATING_MACHINE] saveAsset result:', data)
+            if (data && data.duplicate) return
             if (data && data.success) {
                 // Load back the saved entity so the UI shows exactly what was stored
                 if (data.data) {

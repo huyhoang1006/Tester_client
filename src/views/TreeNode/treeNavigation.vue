@@ -1632,4 +1632,68 @@ body.duplicating-mode>.v-modal {
     visibility: hidden !important;
     opacity: 0 !important;
 }
+
+.duplicate-asset-message-box {
+    width: 500px;
+    max-width: calc(100vw - 32px);
+    border-radius: 8px;
+}
+
+.duplicate-asset-message-box .el-message-box__header {
+    padding: 20px 20px 8px;
+}
+
+.duplicate-asset-message-box .el-message-box__title {
+    color: #1f2933;
+    font-size: 19px;
+    font-weight: 500;
+}
+
+.duplicate-asset-message-box .el-message-box__content {
+    padding: 8px 20px 14px;
+}
+
+.duplicate-asset-message-box .el-message-box__message {
+    margin: 0;
+}
+
+.duplicate-asset-message-box .el-input__inner {
+    height: 34px;
+    line-height: 34px;
+    border-color: #8ea0b8;
+    border-radius: 4px;
+    color: #303842;
+}
+
+.duplicate-asset-message-box .el-input__inner:focus {
+    border-color: #0033a0;
+}
+
+.duplicate-asset-message-box .el-message-box__btns {
+    padding: 8px 20px 18px;
+}
+
+.duplicate-asset-message-box .el-button {
+    min-width: 86px;
+    border-radius: 4px;
+}
+
+.duplicate-asset-message-box .el-button--primary {
+    background: #0033a0;
+    border-color: #0033a0;
+}
+
+.duplicate-asset-select-dropdown {
+    border-radius: 6px;
+}
+
+.duplicate-asset-select-dropdown .el-select-dropdown__wrap {
+    max-height: 220px;
+}
+
+.duplicate-asset-select-dropdown .el-select-dropdown__item {
+    height: 32px;
+    line-height: 32px;
+    font-size: 13px;
+}
 </style>
