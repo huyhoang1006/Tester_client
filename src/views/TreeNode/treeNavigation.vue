@@ -1,23 +1,27 @@
 <template>
     <div class="explorer">
         <!-- Thanh công cụ -->
-        <div v-show="clientSlide" class="toolbar">
-            <TopBarClient :pathMapClient.sync="pathMapClient" :organisationClientList="organisationClientList"
-                @clear-selection="clearSelection" />
-        </div>
-        <div v-show="!clientSlide" class="toolbar">
-            <TopBarServer :pathMapServer="pathMapServer" @reset-all="resetAllServer" @path-click="resetPathServer" />
-        </div>
         <!-- Thanh điều hướng có thể kéo rộng/kéo hẹp -->
-        <div class="resizable-sidebar">
+        <div class="resizable-sidebar" :class="{ 'full-height': activeWorkspaceTab !== 'tree' }">
             <!-- Tree Toolbar: rail dọc bên trái, thu gọn được -->
             <TreeToolbar ref="treeToolBar"  :clientSlide="clientSlide" @add-command="handleAddCommand"
                 @dropdown-visible-change="handleDropdownVisibleChange" @asset-command="handleAssetCommand"
                 @import-command="handleImportCommand" @export-command="handleCommand" @open-node="handleOpenNode"
                 @duplicate="duplicateSelectedNodes" @upload="handleUploadNode" @download="handleDownloadNode"
                 @delete="handleDeleteNode" @fmeca="handleClickFmeca" @move="handleMoveNode" @openDropdown="openDropdown"
+                @explorer-tab="handleExplorerTab"
                 @show-equipment="handleShowEquipment" />
-            <ClientTreePanel ref="clientPanel" v-show="clientSlide" :organisationClientList="organisationClientList"
+
+            <div v-show="activeWorkspaceTab === 'tree'" class="tree-workspace">
+                <div v-show="clientSlide" class="toolbar">
+                    <TopBarClient :pathMapClient.sync="pathMapClient" :organisationClientList="organisationClientList"
+                        @clear-selection="clearSelection" />
+                </div>
+                <div v-show="!clientSlide" class="toolbar">
+                    <TopBarServer :pathMapServer="pathMapServer" @reset-all="resetAllServer" @path-click="resetPathServer" />
+                </div>
+                <div class="tree-workspace-body">
+            <ClientTreePanel ref="clientPanel" v-show="activeWorkspaceTab === 'tree' && clientSlide" :organisationClientList="organisationClientList"
                 :selectedNodes.sync="selectedNodes" @showLocationRoot="showLocationRoot" @show-addSubs="showAddSubs"
                 @double-click-node="doubleClickNode" @fetch-children="fetchChildren"
                 @show-properties="showPropertiesDataClient" @update-selection="updateSelection"
@@ -34,14 +38,16 @@
                 @duplicate-node="handleDuplicateFromContext"
                 @move-node="handleMoveFromContext" @import-json="handleImportJSONFromContext"
                 @show-zero-diagram="handleShowZeroDiagram"
-                @upload-node="handleUploadFromContext" @fmeca-node="handleFmecaFromContext"
+                @upload-node="handleUploadFromContext"
+                @upload-full-tree="handleUploadFullTreeFromContext"
+                @fmeca-node="handleFmecaFromContext"
                 @show-equipment="handleShowEquipment"
                 @import-excel="handleImportExcelFromContext" @import-word="handleImportWordFromContext"
                 @export-json-only-node="handleExportJsonOnlyNodeFromContext"
                 @export-json-full-tree="handleExportJsonFullTreeFromContext"
                 @show-data="showDataClient" @refresh-node="handleRefreshNode" />
 
-            <ServerTreePanel ref="serverPanel" v-show="!clientSlide" :ownerServerList="ownerServerList"
+            <ServerTreePanel ref="serverPanel" v-show="activeWorkspaceTab === 'tree' && !clientSlide" :ownerServerList="ownerServerList"
                 :selectedNodes.sync="selectedNodes" @showOwnerServerRoot="showOwnerServerRoot"
                 @fetch-children-server="fetchChildrenServer" @double-click-node-server="doubleClickNodeServer"
                 @show-properties="showPropertiesData" @update-selection="updateSelection"
@@ -50,13 +56,15 @@
                 @duplicate-node="handleDuplicateFromContext"
                 @move-node="handleMoveFromContext" @import-json="handleImportJSONFromContext"
                 @show-zero-diagram="handleShowZeroDiagram"
-                @download-node="handleDownloadFromContext" @fmeca-node="handleFmecaFromContext"
+                @download-node="handleDownloadFromContext"
+                @download-node-only="handleDownloadOnlyFromContext"
+                @fmeca-node="handleFmecaFromContext"
                 @delete-data="handleDeleteFromContextMenu"
                 @refresh-node="handleRefreshNode" />
 
-            <div @mousedown="startResizeClient" v-if="clientSlide" ref="resizerClient" class="resizer"></div>
-            <div @mousedown="startResizeServer" v-if="!clientSlide" ref="resizerServer" class="resizer"></div>
-            <div ref="contextDataServer" v-show="!clientSlide" class="context-data">
+            <div @mousedown="startResizeClient" v-if="activeWorkspaceTab === 'tree' && clientSlide" ref="resizerClient" class="resizer"></div>
+            <div @mousedown="startResizeServer" v-if="activeWorkspaceTab === 'tree' && !clientSlide" ref="resizerServer" class="resizer"></div>
+            <div ref="contextDataServer" v-show="activeWorkspaceTab === 'tree' && !clientSlide" class="context-data">
                 <div ref="contentData" class="content-data">
                     <div ref="content" class="content">
                         <div class="title-content"></div>
@@ -83,7 +91,7 @@
                     <LogBar :logData="logDataServer" @hideLogBar="hideLogBar"></LogBar>
                 </div>
             </div>
-            <ContextDataClient v-show="clientSlide" ref="contextDataClient" :activeTabClient="activeTabClient"
+            <ContextDataClient v-show="activeWorkspaceTab === 'tree' && clientSlide" ref="contextDataClient" :activeTabClient="activeTabClient"
                 :tabsClient="tabsClient" :propertiesSignClient.sync="propertiesSignClient"
                 :propertiesClient="propertiesClient" :assetPropertySignClient="assetPropertySignClient"
                 :assetPropertiesClient="assetPropertiesClient" :jobPropertySignClient="jobPropertySignClient"
@@ -92,6 +100,30 @@
                 @tab-changed="handleTabSelect" @remove-tab-client="removeTabClient"
                 @update-node-data="handleUpdateNodeData" @refresh-properties="handleRefreshPropertiesClient"
                 @reload-log-client="reloadLogClient" />
+                </div>
+            </div>
+
+            <div v-show="activeWorkspaceTab === 'testingEquipment'" class="testing-equipment-workspace">
+                <div v-if="!testingEquipmentDetailVisible" class="testing-equipment-list-shell">
+                    <TestingEquipmentList
+                        ref="testingEquipmentList"
+                        @open="openTestingEquipment"
+                        @create="openTestingEquipment(null)" />
+                </div>
+                <div v-else class="testing-equipment-detail-shell">
+                    <div class="testing-equipment-detail-bar">
+                        <button type="button" class="testing-equipment-back" @click="closeTestingEquipmentDetail">
+                            <i class="fa-solid fa-arrow-left"></i>
+                            Back to list
+                        </button>
+                    </div>
+                    <TestingEquipmentView
+                        ref="testingEquipmentView"
+                        :equipment="selectedTestingEquipment && !selectedTestingEquipment.mrid ? selectedTestingEquipment : null"
+                        :equipmentMrid="selectedEquipmentMrid"
+                        @saved="handleTestingEquipmentSaved" />
+                </div>
+            </div>
         </div>
 
         <!-- Dialog Components -->
@@ -220,12 +252,34 @@
             :done="progressDone"
             :total="progressTotal" />
 
-        <TestingEquipmentDialog
-            :visible="openTestingEquipmentDialog"
-            @update:visible="openTestingEquipmentDialog = $event"
-            :equipmentMrid="selectedEquipmentMrid"
-            @cancel="openTestingEquipmentDialog = false"
-            @saved="handleTestingEquipmentSaved" />
+        <el-dialog
+            title="Upload full tree"
+            :visible.sync="uploadFullTreeDialogVisible"
+            width="640px"
+            :close-on-click-modal="false"
+            custom-class="upload-full-tree-dialog">
+            <div class="upload-full-tree-note">
+                These nodes already exist on server. Choose how to handle each one before uploading.
+            </div>
+            <el-table :data="uploadFullTreeExistingNodes" size="mini" border class="upload-full-tree-table">
+                <el-table-column prop="name" label="Node" min-width="180" />
+                <el-table-column prop="typeLabel" label="Type" width="150" />
+                <el-table-column label="Action" width="210">
+                    <template slot-scope="scope">
+                        <el-radio-group v-model="uploadFullTreeDecisions[scope.row.key]" size="mini">
+                            <el-radio-button label="update">Update</el-radio-button>
+                            <el-radio-button label="skip">Skip</el-radio-button>
+                        </el-radio-group>
+                    </template>
+                </el-table-column>
+            </el-table>
+            <span slot="footer" class="dialog-footer">
+                <el-button size="small" @click="cancelUploadFullTree">Cancel</el-button>
+                <el-button size="small" type="primary" :loading="uploadFullTreeUploading" @click="confirmUploadFullTreeSelection">
+                    Upload
+                </el-button>
+            </span>
+        </el-dialog>
         
     </div>
 </template>
@@ -284,6 +338,8 @@ import mainMixin from './mixin/index.js'
 import Icon from '@/views/Common/Icon.vue'
 import Fmeca from '@/views/Fmeca'
 import Export from '@/views/Export/index.vue'
+import TestingEquipmentView from '@/views/TestingEquipment/index.vue'
+import TestingEquipmentList from '@/views/TestingEquipment/components/list.vue'
 
 // Import Dialog Components
 import {
@@ -311,8 +367,7 @@ import {
     ZeroDiagramDialog,
     ImportConflictDialog,
     ImportGraftDialog,
-    ImportProgressDialog,
-    TestingEquipmentDialog
+    ImportProgressDialog
 } from './dialogs'
 
 
@@ -373,6 +428,8 @@ export default {
         Icon,
         Fmeca,
         Export,
+        TestingEquipmentView,
+        TestingEquipmentList,
         // Dialog Components
         SubstationDialog,
         OrganisationDialog,
@@ -398,13 +455,15 @@ export default {
         ZeroDiagramDialog,
         ImportConflictDialog,
         ImportGraftDialog,
-        ImportProgressDialog,
-        TestingEquipmentDialog
+        ImportProgressDialog
     },
     data() {
         return {
-            openTestingEquipmentDialog: false,
+            activeWorkspaceTab: 'tree',
+            clientWorkspaceTab: 'tree',
             selectedEquipmentMrid: null,
+            selectedTestingEquipment: null,
+            testingEquipmentDetailVisible: false,
             conflictDialogVisible: false,
             pendingConflicts: [],       // conflicts[] đang chờ user quyết
             pendingImportContext: null, // { fileContent, targetNode } để chạy tiếp sau khi có quyết định
@@ -468,6 +527,11 @@ export default {
             nodeToDownloadData: null, // Lưu dữ liệu DTO từ server về
             selectedDownloadTargetNode: null, // Node cha được chọn thủ công
             selectedDownloadTargetNodes: [], // Lưu valid parent types để dùng trong fetchChildrenForMove
+            uploadFullTreeDialogVisible: false,
+            uploadFullTreeExistingNodes: [],
+            uploadFullTreeChain: [],
+            uploadFullTreeDecisions: {},
+            uploadFullTreeUploading: false,
             signZeroDiagram: false, // Biến điều khiển ẩn hiện dialog
             nodeForZeroDiagram: null, // Biến lưu node đang chọn
             isEditMode: false,
@@ -713,7 +777,18 @@ export default {
         });
     },
     watch: {
-        clientSlide() {
+        clientSlide(value) {
+            if (value) {
+                this.activeWorkspaceTab = this.clientWorkspaceTab || 'tree'
+                this.$nextTick(() => {
+                    if (this.$refs.treeToolBar) this.$refs.treeToolBar.activeTab = this.activeWorkspaceTab === 'testingEquipment' ? 'testingEquipment' : 'explorer'
+                })
+            } else {
+                this.activeWorkspaceTab = 'tree'
+                this.$nextTick(() => {
+                    if (this.$refs.treeToolBar) this.$refs.treeToolBar.activeTab = 'explorer'
+                })
+            }
             this.persistWorkspaceState()
         },
         activeTab: {
@@ -760,6 +835,13 @@ export default {
         }
     },
     methods: {
+        handleExplorerTab() {
+            this.activeWorkspaceTab = 'tree'
+            if (this.clientSlide) this.clientWorkspaceTab = 'tree'
+            this.signFmeca = false
+            this.openImportDialog = false
+            this.openExportDialog = false
+        },
         getWorkspaceStatePayload() {
             return {
                 side: this.clientSlide ? 'client' : 'server',
@@ -1305,8 +1387,88 @@ export default {
 .resizable-sidebar {
     display: flex;
     /* toolbar đã chuyển thành rail dọc nằm trong hàng này -> chỉ còn trừ topbar 30px */
-    height: calc(100% - 30px);
+    height: 100%;
     min-height: 0;
+}
+
+.tree-workspace {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+.tree-workspace-body {
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    display: flex;
+    box-sizing: border-box;
+}
+
+.resizable-sidebar.full-height {
+    height: 100%;
+}
+
+.testing-equipment-workspace {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    box-sizing: border-box;
+    background: #edf1f7;
+    overflow: hidden;
+}
+
+.testing-equipment-list-shell,
+.testing-equipment-detail-shell {
+    height: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow: auto;
+}
+
+.testing-equipment-list-shell {
+    padding: 16px;
+}
+
+.testing-equipment-detail-shell {
+    background: #edf1f7;
+}
+
+.testing-equipment-detail-bar {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    padding: 0 18px;
+    box-sizing: border-box;
+    background: #edf1f7;
+    border-bottom: 1px solid #d9e1ee;
+}
+
+.testing-equipment-back {
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid #8ea0b8;
+    border-radius: 4px;
+    background: #fff;
+    color: #303842;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.testing-equipment-back:hover {
+    border-color: #0033a0;
+    color: #0033a0;
+    background: #f4f7ff;
 }
 
 .resizer {
@@ -1695,5 +1857,38 @@ body.duplicating-mode>.v-modal {
     height: 32px;
     line-height: 32px;
     font-size: 13px;
+}
+
+.upload-full-tree-dialog {
+    border-radius: 8px;
+}
+
+.upload-full-tree-dialog .el-dialog__header {
+    padding: 18px 20px 10px;
+}
+
+.upload-full-tree-dialog .el-dialog__title {
+    color: #1f2933;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.upload-full-tree-dialog .el-dialog__body {
+    padding: 12px 20px 8px;
+}
+
+.upload-full-tree-note {
+    color: #606a76;
+    font-size: 13px;
+    line-height: 1.4;
+    margin-bottom: 12px;
+}
+
+.upload-full-tree-table {
+    width: 100%;
+}
+
+.upload-full-tree-dialog .el-radio-button__inner {
+    padding: 7px 14px;
 }
 </style>

@@ -1,6 +1,8 @@
 import * as coreUtils from './core-utils.js'
 
-export async function executeDownload(node, ctx) {
+export async function executeDownload(node, ctx, options = {}) {
+    const { includePath = true } = options
+
     // Gọi action 'start' để bật loading và kích hoạt Failsafe Timer
     ctx.$store.dispatch('loading/start', { 
         action: 'download', 
@@ -8,7 +10,9 @@ export async function executeDownload(node, ctx) {
     });
 
     try {
-        const chain = await coreUtils.buildOrgAncestors(node)
+        const chain = includePath
+            ? await coreUtils.buildOrgAncestors(node)
+            : await coreUtils.buildSingleNodeChain(node)
         const fullInfoChain = await coreUtils.fetchFullInfoForChain(chain)
         await coreUtils.downloadChainInfo(fullInfoChain, ctx)
         ctx.$message.success(`${node.aliasName || 'Data'} downloaded successfully!`)

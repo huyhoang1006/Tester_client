@@ -62,6 +62,25 @@ export async function buildOrgAncestors(node) {
 }
 
 //lấy full thông tin từ chuỗi
+export async function buildSingleNodeChain(node) {
+    const parentArr = Array.isArray(node.parentArr) ? node.parentArr : []
+    const lastParent = parentArr.length ? parentArr[parentArr.length - 1] : null
+    const parentId = node.parentId || lastParent?.mrid || lastParent?.id || constant.ROOT
+
+    const chain = [{
+        id: node.mrid || node.id,
+        mrid: node.mrid || node.id,
+        name: node.name || '',
+        aliasName: node.aliasName || '',
+        parentId: String(parentId),
+        _type: node.mode,
+        asset: node.asset || null,
+    }]
+
+    console.log('Built single node chain:', chain)
+    return chain
+}
+
 export async function fetchFullInfoForChain(chain) {
     const fullInfoChain =[]
     const strategies = {

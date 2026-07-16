@@ -20,7 +20,9 @@
 
             <contextMenu ref="contextMenu" side="server" @show-data="$emit('show-data', $event)"
                 @show-zero-diagram="$emit('show-zero-diagram', $event)"
-                @download-node="$emit('download-node', $event)" @fmeca-node="$emit('fmeca-node', $event)"
+                @download-node="$emit('download-node', $event)"
+                @download-node-only="$emit('download-node-only', $event)"
+                @fmeca-node="$emit('fmeca-node', $event)"
                 @delete-data="$emit('delete-data', $event)"
                 @export-json="$emit('export-json', $event)" @export-json-cim="$emit('export-json-cim', $event)"
                 @export-xml="$emit('export-xml', $event)" @export-excel="$emit('export-excel', $event)"
@@ -178,7 +180,7 @@ export default {
 
 .child-nav {
   overflow-y: hidden;
-  height: calc(100% - 80px);
+  height: 100%;
   box-sizing: border-box;
   overflow-x: hidden;
 }

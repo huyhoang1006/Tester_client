@@ -55,7 +55,34 @@ export const resolveMridPath = () => {
     })
 }
 
+export const replaceLocalMrid = () => {
+    ipcMain.handle('replaceLocalMrid', async function (event, { oldMrid, newMrid }) {
+        try {
+            const rs = await entityFunc.mRIDCheckFunc.replaceLocalMrid(oldMrid, newMrid)
+            if (rs.success === true) {
+                return {
+                    success: true,
+                    message: rs.message || "Success",
+                    data: rs.data
+                }
+            }
+            return {
+                success: false,
+                message: rs.message || "fail",
+                error: rs.error
+            }
+        } catch (error) {
+            return {
+                error: error,
+                success: false,
+                message: (error && error.message) ? error.message : "Internal error",
+            }
+        }
+    })
+}
+
 export const active = () => {
     checkMridsExist()
     resolveMridPath()
+    replaceLocalMrid()
 }

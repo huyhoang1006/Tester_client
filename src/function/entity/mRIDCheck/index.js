@@ -20,6 +20,29 @@ const safeGet = (sql, params = []) => new Promise((resolve) => {
     } catch (e) { resolve(null) }
 })
 
+const safeAll = (sql, params = []) => new Promise((resolve, reject) => {
+    try {
+        db.all(sql, params, (err, rows) => {
+            if (err) { reject(err); return }
+            resolve(rows || [])
+        })
+    } catch (e) { reject(e) }
+})
+
+const run = (sql, params = []) => new Promise((resolve, reject) => {
+    db.run(sql, params, function (err) {
+        if (err) { reject(err); return }
+        resolve(this)
+    })
+})
+
+const quoteIdent = (name) => `"${String(name).replace(/"/g, '""')}"`
+
+const isReplaceableColumn = (column) => {
+    const type = String(column.type || '').toUpperCase()
+    return !type.includes('BLOB')
+}
+
 // mode → { table, nameJoin/nameCol, parent: async (row)=>({mrid,mode})|null }
 const MRID_TABLES = {
     organisation: {
@@ -145,4 +168,62 @@ export const resolveMridPath = async (mrid, mode) => {
     }
 
     return { success: true, data: path }
+}
+
+export const replaceLocalMrid = async (oldMrid, newMrid) => {
+    if (!oldMrid || !newMrid) {
+        return { success: false, message: 'Missing old or new mrid' }
+    }
+    if (String(oldMrid) === String(newMrid)) {
+        return { success: true, data: { oldMrid, newMrid, updatedCells: 0 } }
+    }
+
+    const tables = await safeAll(
+        `SELECT name FROM sqlite_master
+         WHERE type = 'table'
+           AND name NOT LIKE 'sqlite_%'
+         ORDER BY name`
+    )
+
+    let updatedCells = 0
+
+    try {
+        await run('PRAGMA foreign_keys = OFF')
+        await run('BEGIN TRANSACTION')
+
+        for (const table of tables) {
+            const tableName = table.name
+            const columns = await safeAll(`PRAGMA table_info(${quoteIdent(tableName)})`)
+
+            for (const column of columns.filter(isReplaceableColumn)) {
+                const columnName = column.name
+                const result = await run(
+                    `UPDATE ${quoteIdent(tableName)}
+                     SET ${quoteIdent(columnName)} = ?
+                     WHERE ${quoteIdent(columnName)} = ?`,
+                    [String(newMrid), String(oldMrid)]
+                )
+                updatedCells += result.changes || 0
+            }
+        }
+
+        await run('COMMIT')
+        await run('PRAGMA foreign_keys = ON')
+        return {
+            success: true,
+            data: {
+                oldMrid: String(oldMrid),
+                newMrid: String(newMrid),
+                updatedCells
+            }
+        }
+    } catch (error) {
+        try { await run('ROLLBACK') } catch (rollbackError) { void rollbackError }
+        try { await run('PRAGMA foreign_keys = ON') } catch (pragmaError) { void pragmaError }
+        return {
+            success: false,
+            error,
+            message: error.message || 'Replace local mrid failed'
+        }
+    }
 }

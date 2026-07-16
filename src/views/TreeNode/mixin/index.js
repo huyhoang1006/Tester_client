@@ -1,15 +1,38 @@
 export default {
     methods: {
         async handleShowEquipment() {
-            this.openTestingEquipmentDialog = true
+            this.activeWorkspaceTab = 'testingEquipment'
+            this.clientWorkspaceTab = 'testingEquipment'
+            this.signFmeca = false
+            this.openImportDialog = false
+            this.openExportDialog = false
+            this.$nextTick(() => {
+                if (this.$refs.testingEquipmentList && this.$refs.testingEquipmentList.reload) {
+                    this.$refs.testingEquipmentList.reload()
+                }
+            })
         },
-        openTestingEquipment(mrid = null) {
-            this.selectedEquipmentMrid = mrid
-            this.openTestingEquipmentDialog = true
+        openTestingEquipment(equipment = null) {
+            this.activeWorkspaceTab = 'testingEquipment'
+            this.clientWorkspaceTab = 'testingEquipment'
+            this.selectedTestingEquipment = equipment
+            this.selectedEquipmentMrid = equipment && equipment.mrid ? equipment.mrid : null
+            this.testingEquipmentDetailVisible = true
+        },
+        closeTestingEquipmentDetail() {
+            this.testingEquipmentDetailVisible = false
+            this.selectedTestingEquipment = null
+            this.selectedEquipmentMrid = null
+            this.$nextTick(() => {
+                if (this.$refs.testingEquipmentList && this.$refs.testingEquipmentList.reload) {
+                    this.$refs.testingEquipmentList.reload()
+                }
+            })
         },
         handleTestingEquipmentSaved() {
-            this.openTestingEquipmentDialog = false
-            // sau này: reload danh sách thiết bị nếu cần
+            if (this.$refs.testingEquipmentList && this.$refs.testingEquipmentList.reload) {
+                this.$refs.testingEquipmentList.reload()
+            }
         },
     }
 }

@@ -585,6 +585,11 @@ const IMPEDANCE_TYPE_TO_SERVER = {
     sec_tert: 'SEC_TERT'
 }
 
+const textT = (val) => {
+    if (val === null || val === undefined) return null
+    const text = String(val).trim()
+    return text ? text : null
+}
 const numT = (val) => (val !== null && val !== undefined && val !== '' ? parseFloat(val) : null)
 const intT = (val) => (val !== null && val !== undefined && val !== '' ? parseInt(val, 10) : null)
 // unit DTO 'k|V'/'M|VA' → server 'kV'/'mVA' (gộp, bỏ pipe). '%' → server giữ hoặc 'PERCENT'
@@ -627,13 +632,13 @@ export const mapDtoToServer = (dto, ownerType) => {
         numberOfPhase: numT(wc.phases),
 
         // vector group: ưu tiên data parsed, fallback custom/unsupported
-        vectorGroup: wc.vector_group_data || wc.vector_group_custom || wc.unsupported_vector_group || null,
-        vectorGroupPrim: vg.prim || null,
-        vectorGroupSec: vg.sec?.i || null,
+        vectorGroup: textT(wc.vector_group_data) || textT(wc.vector_group_custom) || textT(wc.unsupported_vector_group),
+        vectorGroupPrim: textT(vg.prim),
+        vectorGroupSec: textT(vg.sec?.i),
         vectorGroupSecVal: intT(vg.sec?.value),
-        vectorGroupTertiary: vg.tert?.i || null,
+        vectorGroupTertiary: textT(vg.tert?.i),
         vectorGroupTertiaryVal: intT(vg.tert?.value),
-        vectorGroupTertiaryAccessibility: reversed(TERT_ACCESSIBILITY_MAP)[vg.tert?.accessible] || null,
+        vectorGroupTertiaryAccessibility: textT(reversed(TERT_ACCESSIBILITY_MAP)[vg.tert?.accessible]),
 
         // tần số: nếu Custom thì dùng custom_value
         ratedFrequency: numT(rt.rated_frequency?.value === 'Custom' ? rt.rated_frequency?.custom_value : rt.rated_frequency?.value),

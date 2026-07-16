@@ -127,15 +127,8 @@ export default {
                         } else if (nodeToMove.mode === 'substation') {
                             // ... (Code cũ của bạn)
                             // Lưu ý: Substation thường update Location refId
-                            const subData = await window.electronAPI.getSubstationByMrid(nodeToMove.mrid)
-                            if (subData.success && subData.data.location) {
-                                const locData = await window.electronAPI.getLocationByMrid(subData.data.location)
-                                if (locData.success) {
-                                    locData.data.refId = newParent.mrid
-                                    updateResult = await window.electronAPI.updateLocationByMrid(subData.data.location, locData.data)
-                                    success = updateResult.success
-                                }
-                            }
+                            updateResult = await window.electronAPI.moveSubstationToOrganisation(nodeToMove.mrid, newParent.mrid)
+                            success = updateResult.success
                         }
                         // ... (Voltage, Bay logic giữ nguyên) ...
                         else if (nodeToMove.mode === 'voltageLevel') {

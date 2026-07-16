@@ -129,7 +129,7 @@ export default {
 }
 
 #windows.logged-in #out-line {
-    flex: 0 0 20px;
+    flex: 0 0 22px;
     background-color: #012596;
     display: flex;
     align-items: center;
@@ -138,7 +138,7 @@ export default {
 }
 
 .retweet {
-    width: 40px;
+    width: 44px;
     height: 100%;
     background-color: #088f8f;
     display: flex;
@@ -159,8 +159,11 @@ export default {
 }
 
 .retweet span {
-    display: inline-block;
-    padding-bottom: 3px;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    padding-bottom: 0;
+    font-weight: 600;
 }
 
 .outline-right {

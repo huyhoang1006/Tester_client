@@ -84,9 +84,35 @@ export const deleteSubstationEntityByMrid = () => {
     })
 }
 
+export const moveSubstationToOrganisation = () => {
+    ipcMain.handle('moveSubstationToOrganisation', async function (event, substationId, organisationId) {
+        try {
+            const rs = await entityFunc.substationEntityFunc.moveSubstationToOrganisation(substationId, organisationId)
+            if (rs.success == true) {
+                return {
+                    success: true,
+                    message: "Success",
+                    data: rs.data
+                }
+            }
+            return {
+                success: false,
+                message: rs.message || "fail",
+            }
+        } catch (error) {
+            return {
+                error: error,
+                success: false,
+                message: (error && error.message) ? error.message : "Internal error",
+            }
+        }
+    })
+}
+
 
 export const active = () => {
     insertSubstationEntity()
     getSubstationEntityByMrid()
     deleteSubstationEntityByMrid()
+    moveSubstationToOrganisation()
 }

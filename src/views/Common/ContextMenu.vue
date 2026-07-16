@@ -52,11 +52,19 @@
                 <li @click="refresh">
                     <i class="fa-solid fa-rotate"></i> Refresh
                 </li>
-                <li v-if="isServer" @click="downloadNode">
+                <li v-if="isServer" class="has-submenu">
                     <i class="fa-solid fa-file-arrow-down"></i> Download
+                    <ul class="submenu">
+                        <li @click="downloadPathNode"><i class="fa-solid fa-diagram-project"></i> Download path node</li>
+                        <li @click="downloadOnlyNode"><i class="fa-solid fa-file-arrow-down"></i> Download only node</li>
+                    </ul>
                 </li>
-                <li v-if="isClient" @click="uploadNode">
+                <li v-if="isClient" class="has-submenu">
                     <i class="fa-solid fa-upload"></i> Upload
+                    <ul class="submenu">
+                        <li @click="uploadOnlyNode"><i class="fa-solid fa-file-arrow-up"></i> Upload only node</li>
+                        <li @click="uploadFullTree"><i class="fa-solid fa-sitemap"></i> Upload full tree</li>
+                    </ul>
                 </li>
                 <li @click="move">
                     <i class="fa-solid fa-arrows-up-down-left-right"></i> Move
@@ -312,11 +320,25 @@ export default {
             this.closeContextMenu()
         },
         uploadNode() {
+            this.uploadOnlyNode()
+        },
+        uploadOnlyNode() {
             this.$emit("upload-node", this.selectedNode)
             this.closeContextMenu()
         },
+        uploadFullTree() {
+            this.$emit("upload-full-tree", this.selectedNode)
+            this.closeContextMenu()
+        },
         downloadNode() {
+            this.downloadPathNode()
+        },
+        downloadPathNode() {
             this.$emit("download-node", this.selectedNode)
+            this.closeContextMenu()
+        },
+        downloadOnlyNode() {
+            this.$emit("download-node-only", this.selectedNode)
             this.closeContextMenu()
         },
         fmeca() {

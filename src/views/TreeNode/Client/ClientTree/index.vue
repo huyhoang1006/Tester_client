@@ -23,7 +23,9 @@
 
       <contextMenu ref="contextMenuClient" side="client" @delete-data="$emit('delete-data', $event)"
       @show-zero-diagram="$emit('show-zero-diagram', $event)"
-        @upload-node="$emit('upload-node', $event)" @fmeca-node="$emit('fmeca-node', $event)"
+        @upload-node="$emit('upload-node', $event)"
+        @upload-full-tree="$emit('upload-full-tree', $event)"
+        @fmeca-node="$emit('fmeca-node', $event)"
         @show-equipment="$emit('show-equipment')"
         @export-json-only-node="$emit('export-json-only-node', $event)"
         @export-json-full-tree="$emit('export-json-full-tree', $event)"
@@ -195,7 +197,7 @@ export default {
 .child-nav {
   overflow-y: hidden;
   overflow-x: hidden;
-  height: calc(100% - 80px);
+  height: 100%;
   box-sizing: border-box;
 }
 

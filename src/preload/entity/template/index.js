@@ -37,6 +37,8 @@ export const templatePreload = () => {
         exportWordWithData : (data) => ipcRenderer.invoke('exportWordWithData', data),
 
         pickExcelFileForImport: () => ipcRenderer.invoke('pickExcelFileForImport'),
+        pickTestingEquipmentColumnImportFile: (options) => ipcRenderer.invoke('pickTestingEquipmentColumnImportFile', options),
+        readTestingEquipmentColumnImportFile: (data) => ipcRenderer.invoke('readTestingEquipmentColumnImportFile', data),
     
         readExcelForImport: (data) => ipcRenderer.invoke('readExcelForImport', data),
 

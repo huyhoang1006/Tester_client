@@ -68,6 +68,56 @@ function parseCsv(text) {
     }
     return rows
 }
+
+const delimiterFromOption = (value) => {
+    if (value === 'tab') return '\t'
+    if (value === 'semicolon') return ';'
+    if (value === 'pipe') return '|'
+    if (value === 'comma') return ','
+    return null
+}
+
+const parseCsvWithFormatOptions = (text, options = {}) => {
+    const quote = options.textQualifier == null ? '"' : String(options.textQualifier)
+    const candidates = [',', ';', '\t', '|']
+    const parseWithDelimiter = (delimiter, sampleOnly = false) => {
+        const rows = []
+        let row = []
+        let cur = ''
+        let inQuote = false
+        const pushCell = () => { row.push(cur); cur = '' }
+        const pushRow = () => {
+            if (row.length || cur !== '') pushCell()
+            if (row.some(v => String(v || '').trim() !== '')) rows.push(row)
+            row = []
+            cur = ''
+        }
+        for (let i = 0; i < text.length; i++) {
+            const ch = text[i]
+            if (quote && ch === quote) {
+                if (inQuote && text[i + 1] === quote) { cur += quote; i++ }
+                else inQuote = !inQuote
+            } else if (ch === delimiter && !inQuote) {
+                pushCell()
+            } else if ((ch === '\n' || ch === '\r') && !inQuote) {
+                if (ch === '\r' && text[i + 1] === '\n') i++
+                pushRow()
+                if (sampleOnly && rows.length >= 20) return rows
+            } else {
+                cur += ch
+            }
+        }
+        if (cur !== '' || row.length) pushRow()
+        return rows
+    }
+    let delimiter = delimiterFromOption(options.delimiter)
+    if (!delimiter) {
+        delimiter = candidates
+            .map(item => ({ item, score: parseWithDelimiter(item, true).reduce((sum, row) => sum + Math.max(0, row.length - 1), 0) }))
+            .sort((a, b) => b.score - a.score)[0].item
+    }
+    return parseWithDelimiter(delimiter)
+}
  
 // ── HELPER: "A1" → { row: 0, col: 0 } ────────────────────────────────────────
 function cellAddressToIndex(addr) {
@@ -1111,6 +1161,95 @@ export const pickExcelFileForImport = () => {
     })
 }
 
+const readTestingEquipmentColumnImportPayload = async (filePath, options = {}) => {
+    const ext = path.extname(filePath).toLowerCase().replace('.', '')
+    const asText = (value) => {
+        if (value == null) return ''
+        if (value instanceof Date && !isNaN(value.getTime())) return value.toISOString().slice(0, 10)
+        return String(value)
+    }
+    const normalizeRows = (rows) => {
+        const normalized = (rows || []).map(row => (row || []).map(asText))
+        let end = normalized.length
+        while (end > 0 && normalized[end - 1].every(v => String(v || '').trim() === '')) end--
+        const trimmed = normalized.slice(0, end)
+        const maxCol = trimmed.reduce((max, row) => {
+            let last = row.length
+            while (last > 0 && String(row[last - 1] || '').trim() === '') last--
+            return Math.max(max, last)
+        }, 0)
+        return trimmed.map(row => {
+            const next = row.slice(0, maxCol)
+            while (next.length < maxCol) next.push('')
+            return next
+        })
+    }
+
+    let sheets = []
+    if (ext === 'csv') {
+        const text = fs.readFileSync(filePath, 'utf-8')
+        sheets = [{ name: path.basename(filePath, path.extname(filePath)), rows: normalizeRows(parseCsvWithFormatOptions(text, options)) }]
+    } else {
+        const XlsxPopulate = require('xlsx-populate')
+        const workbook = await XlsxPopulate.fromFileAsync(filePath)
+        sheets = workbook.sheets().map(sheet => {
+            let used = null
+            try { used = sheet.usedRange() } catch (e) { used = null }
+            const endRow = used ? used.endCell().rowNumber() : 0
+            const endCol = used ? used.endCell().columnNumber() : 0
+            const rows = []
+            for (let r = 1; r <= endRow; r++) {
+                const row = []
+                for (let c = 1; c <= endCol; c++) row.push(asText(sheet.cell(r, c).value()))
+                rows.push(row)
+            }
+            return { name: sheet.name(), rows: normalizeRows(rows) }
+        }).filter(sheet => sheet.rows.length)
+    }
+
+    return {
+        success: true,
+        filePath,
+        fileName: path.basename(filePath),
+        fileType: ext,
+        sheets
+    }
+}
+
+export const pickTestingEquipmentColumnImportFile = () => {
+    ipcMain.handle('pickTestingEquipmentColumnImportFile', async function (event, options = {}) {
+        void event
+        try {
+            const result = await dialog.showOpenDialog({
+                title: 'Select testing equipment Excel/CSV file',
+                filters: [
+                    { name: 'Excel / CSV', extensions: ['xlsx', 'xls', 'csv'] },
+                    { name: 'All Files', extensions: ['*'] }
+                ],
+                properties: ['openFile']
+            })
+            if (result.canceled || !result.filePaths.length) return { canceled: true }
+
+            const filePath = result.filePaths[0]
+            return readTestingEquipmentColumnImportPayload(filePath, options)
+        } catch (e) {
+            return { success: false, message: e.message }
+        }
+    })
+}
+
+export const readTestingEquipmentColumnImportFile = () => {
+    ipcMain.handle('readTestingEquipmentColumnImportFile', async function (event, data = {}) {
+        void event
+        try {
+            if (!data.filePath) return { success: false, message: 'No file selected' }
+            return readTestingEquipmentColumnImportPayload(data.filePath, data.options || {})
+        } catch (e) {
+            return { success: false, message: e.message }
+        }
+    })
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 // THÊM: pickWordFileForImport — đặt sau pickExcelFileForImport
 // ══════════════════════════════════════════════════════════════════════════════
@@ -2091,6 +2230,8 @@ export const active = () => {
     exportWordWithData()
     exportTemplateWithData()
     pickExcelFileForImport()
+    pickTestingEquipmentColumnImportFile()
+    readTestingEquipmentColumnImportFile()
     readExcelForImport()
     openFileTemplate()
     pickWordFileForImport()

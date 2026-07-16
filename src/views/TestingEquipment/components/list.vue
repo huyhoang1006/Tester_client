@@ -6,7 +6,9 @@
                 <span class="tl-search-ico">⌕</span>
                 <input class="tl-search-input" v-model="keyword"
                     placeholder="Search by name, model, serial no.…" />
-                <button v-if="keyword" class="tl-clear" @click="keyword = ''" title="Clear">✕</button>
+                <button v-if="keyword" class="tl-clear" @click="keyword = ''" title="Clear">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
             <div class="tl-toolbar-right">
                 <button class="tl-new-btn" @click="$emit('create')" title="Create a new testing equipment">
@@ -29,6 +31,9 @@
                         </button>
                         <button class="tl-dd-item" @click="chooseImport('excel')">
                             <i class="fa-solid fa-file-excel excel"></i> From Excel
+                        </button>
+                        <button class="tl-dd-item" @click="chooseImport('columnMapping')">
+                            <i class="fa-solid fa-table-columns excel"></i> From Excel/CSV Mapping
                         </button>
                         <button class="tl-dd-item" @click="chooseImport('word')">
                             <i class="fa-solid fa-file-word word"></i> From Word
@@ -129,6 +134,10 @@
             :mode="ioMode"
             :file-type="ioFileType"
             @imported="reload" />
+
+        <ColumnMappingImport
+            :visible.sync="columnMappingVisible"
+            @imported="reload" />
     </div>
 </template>
 
@@ -140,6 +149,7 @@ import * as Mapper from '@/views/Mapping/TestingEquipment'
 import uuid from '@/utils/uuid'
 import ImportConflictDialog from './importConflictDialog.vue'
 import TemplateImportExport from './templateImportExport.vue'
+import ColumnMappingImport from './columnMappingImport.vue'
 import ImportProgressDialog from '@/views/TreeNode/dialogs/ImportProgressDialog.vue'
 import { splitByDuplicate } from '../services/duplicateCheck'
 
@@ -147,7 +157,7 @@ const TE_JSON_VERSION = 'testing-equipment-json-v1'
 
 export default {
     name: 'TestingEquipmentList',
-    components: { ImportConflictDialog, TemplateImportExport, ImportProgressDialog },
+    components: { ImportConflictDialog, TemplateImportExport, ColumnMappingImport, ImportProgressDialog },
     props: {
         // danh sách thiết bị; mặc định rỗng, dữ liệu lấy từ DB qua reload()
         items: { type: Array, default: () => [] }
@@ -167,7 +177,8 @@ export default {
             // import/export theo template Excel/Word
             ioVisible: false,
             ioMode: 'export',      // 'import' | 'export'
-            ioFileType: 'excel'    // 'excel' | 'word'
+            ioFileType: 'excel',   // 'excel' | 'word'
+            columnMappingVisible: false
         }
     },
     created() {
@@ -207,6 +218,10 @@ export default {
         chooseImport(format) {
             this.closeMenu()
             if (format === 'json') return this.importJson()
+            if (format === 'columnMapping') {
+                this.columnMappingVisible = true
+                return
+            }
             this.openTemplateDialog('import', format)
         },
         chooseExport(format) {
@@ -567,9 +582,28 @@ export default {
 .tl-search-input {
     width: 100%; border: 1px solid var(--gray-200); border-radius: 9px;
     padding: 9px 32px 9px 32px; font-size: 13px; color: var(--gray-900); outline: none; background: #fff;
+    box-sizing: border-box;
 }
 .tl-search-input:focus { border-color: var(--blue-900); box-shadow: 0 0 0 3px rgba(11,47,134,0.08); }
-.tl-clear { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); border: none; background: transparent; color: var(--gray-400); cursor: pointer; font-size: 13px; }
+.tl-clear {
+    position: absolute;
+    right: 7px;
+    top: 50%;
+    width: 24px;
+    height: 24px;
+    transform: translateY(-50%);
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--gray-400);
+    cursor: pointer;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+.tl-clear:hover { background: var(--gray-100); color: var(--gray-600); }
 .tl-toolbar-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .tl-count { color: var(--gray-500); font-size: 12px; font-weight: 700; white-space: nowrap; }
 .tl-sync-btn {

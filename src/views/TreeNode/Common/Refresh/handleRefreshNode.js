@@ -15,6 +15,20 @@ export default {
         // Thêm flag refreshing cho node và tất cả children
         this.setRefreshingState(node, true)
 
+        if (!this.clientSlide) {
+          this.$set(node, '_childrenFetched', false)
+          this.$set(node, 'children', null)
+          await this.fetchChildrenServer(node)
+          this.$set(node, 'expanded', true)
+
+          setTimeout(() => {
+            this.setRefreshingState(node, false)
+          }, 500)
+
+          this.$message.success('Node refreshed successfully')
+          return
+        }
+
         // 1. Refresh chính node hiện tại - fetch lại thông tin từ database
         await this.refreshNodeData(node)
 

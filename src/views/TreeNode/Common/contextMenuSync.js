@@ -6,6 +6,10 @@ export default {
             this.selectedNodes = [node]
             this.handleUploadNode()
         },
+        handleUploadFullTreeFromContext(node) {
+            this.selectedNodes = [node]
+            this.handleUploadFullTreeNode()
+        },
         handleFmecaFromContext(node) {
             this.selectedNodes = [node]
             this.handleClickFmeca()
@@ -13,6 +17,10 @@ export default {
         handleDownloadFromContext(node) {
             this.selectedNodes = [node]
             this.handleDownloadNode()
+        },
+        handleDownloadOnlyFromContext(node) {
+            this.selectedNodes = [node]
+            this.handleDownloadOnlyNode()
         },
         handleImportExcelFromContext(node) {
             this.selectedNodes = [node]

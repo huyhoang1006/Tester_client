@@ -14,7 +14,12 @@ const splitUnit = (raw, defaultUnit) => {
     return u;
 };
 
-const unitLabel = (raw, defaultLabel) => raw || defaultLabel;
+const normalizeUnit = (raw, defaultUnit) => {
+    if (raw === 'PERCENT') return '%'
+    return raw || defaultUnit
+}
+
+const unitLabel = (raw, defaultLabel) => normalizeUnit(raw, defaultLabel);
 
 const ASSET_TYPE_MAP = {
     'WITH_POTENTIAL_TAP': 'With potential tap',
@@ -33,6 +38,50 @@ const INSUL_TYPE_MAP = {
     'COMPOSITE_DRY_TYPE':       'compositeDryType',
 };
 
+const reverseMap = (map) => Object.fromEntries(Object.entries(map).map(([key, value]) => [value, key]))
+
+const ASSET_TYPE_TO_SERVER = reverseMap(ASSET_TYPE_MAP)
+const INSUL_TYPE_TO_SERVER = reverseMap(INSUL_TYPE_MAP)
+
+const textT = (val) => {
+    if (val === null || val === undefined) return null
+    const text = String(val).trim()
+    return text ? text : null
+}
+
+const numT = (val) => {
+    if (val === null || val === undefined || val === '') return null
+    const value = Number(val)
+    return Number.isFinite(value) ? value : null
+}
+
+const intT = (val) => {
+    if (val === null || val === undefined || val === '') return null
+    const value = parseInt(val, 10)
+    return Number.isFinite(value) ? value : null
+}
+
+const idT = (val) => {
+    const text = textT(val)
+    return text && /^\d+$/.test(text) ? Number(text) : null
+}
+
+const joinUnit = (unit) => {
+    const text = textT(unit)
+    return text ? text.replace('|', '') : null
+}
+
+const toServerEnum = (value, knownMap = {}) => {
+    const text = textT(value)
+    if (!text) return null
+    if (knownMap[text]) return knownMap[text]
+    return text
+        .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+        .replace(/[^A-Za-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '')
+        .toUpperCase()
+}
+
 export const mapServerToDto = (serverData) => {
     const dto = new BushingAssetDto();
     if (!serverData) return dto;
@@ -45,12 +94,17 @@ export const mapServerToDto = (serverData) => {
     dto.properties.serial_no         = assetInfo.serialNo         || '';
     dto.properties.kind              = 'Bushing';
     dto.properties.type              = ASSET_TYPE_MAP[bushing.assetType] || bushing.assetType || '';
-    dto.properties.manufacturer      = assetInfo.manufacturerName || '';
+    dto.properties.manufacturer      = assetInfo.manufacturer || assetInfo.manufacturerName || '';
     dto.properties.manufacturer_type = assetInfo.manufacturerType || '';
     dto.properties.manufacturer_year = assetInfo.manufacturingYear ? String(assetInfo.manufacturingYear) : '';
-    dto.properties.country_of_origin = assetInfo.countryName      || '';
+    dto.properties.country_of_origin = assetInfo.country || assetInfo.countryName || '';
     dto.properties.apparatus_id      = assetInfo.apparatusId      || '';
     dto.properties.comment           = assetInfo.description      || '';
+
+    dto.configuration.number_of_phase = assetInfo.numberOfPhase !== null && assetInfo.numberOfPhase !== undefined
+        ? String(assetInfo.numberOfPhase)
+        : '';
+    dto.configuration.phase = assetInfo.phase || '';
 
     // 2. Bushing ratings — label hiển thị + unit format pipe
     dto.bushing.rated_frequency = {
@@ -81,7 +135,7 @@ export const mapServerToDto = (serverData) => {
     dto.bushing.df_c1 = {
         mrid: '', value: str(bushing.dfC1),
         label: unitLabel(bushing.dfC1Unit, '%'),
-        unit:  bushing.dfC1Unit || '%',
+        unit:  normalizeUnit(bushing.dfC1Unit, '%'),
     };
     dto.bushing.cap_c1 = {
         mrid: '', value: str(bushing.capC1),
@@ -91,7 +145,7 @@ export const mapServerToDto = (serverData) => {
     dto.bushing.df_c2 = {
         mrid: '', value: str(bushing.dfC2),
         label: unitLabel(bushing.dfC2Unit, '%'),
-        unit:  bushing.dfC2Unit || '%',
+        unit:  normalizeUnit(bushing.dfC2Unit, '%'),
     };
     dto.bushing.cap_c2 = {
         mrid: '', value: str(bushing.capC2),
@@ -107,3 +161,56 @@ export const mapServerToDto = (serverData) => {
 
     return dto;
 };
+
+export const mapDtoToServer = (dto, ownerType) => {
+    if (!dto) return null
+
+    const p = dto.properties || {}
+    const b = dto.bushing || {}
+    const c = dto.configuration || {}
+
+    return {
+        assetInfo: {
+            ownerId: idT(dto.psrId),
+            ownerType: textT(ownerType),
+            assetName: textT(p.apparatus_id) || textT(p.serial_no) || 'Bushing',
+            serialNo: textT(p.serial_no),
+            phase: textT(c.phase),
+            numberOfPhase: intT(c.number_of_phase),
+            manufacturer: textT(p.manufacturer),
+            manufacturerId: null,
+            manufacturerType: textT(p.manufacturer_type),
+            manufacturingYear: intT(p.manufacturer_year),
+            country: textT(p.country_of_origin),
+            countryOfOriginId: null,
+            apparatusId: textT(p.apparatus_id),
+            description: textT(p.comment)
+        },
+        bushing: {
+            id: idT(p.mrid),
+            winding: null,
+            assetType: toServerEnum(p.type, ASSET_TYPE_TO_SERVER),
+            assetInfoId: idT(dto.assetInfoId),
+            position: textT(c.phase),
+            ratedFrequency: numT(b.rated_frequency?.value),
+            ratedFrequencyUnit: joinUnit(b.rated_frequency?.unit) || 'Hz',
+            insulLevelLLL: numT(b.insulation_level?.value),
+            insulLevelUnit: joinUnit(b.insulation_level?.unit),
+            voltageLGround: numT(b.voltage_l_ground?.value),
+            voltageLGroundUnit: joinUnit(b.voltage_l_ground?.unit),
+            maxSystemVoltage: numT(b.max_system_voltage?.value),
+            maxSystemVoltageUnit: joinUnit(b.max_system_voltage?.unit),
+            ratedCurrent: numT(b.rated_current?.value),
+            ratedCurrentUnit: joinUnit(b.rated_current?.unit),
+            dfC1: numT(b.df_c1?.value),
+            dfC1Unit: joinUnit(b.df_c1?.unit),
+            capC1: numT(b.cap_c1?.value),
+            capC1Unit: joinUnit(b.cap_c1?.unit),
+            dfC2: numT(b.df_c2?.value),
+            dfC2Unit: joinUnit(b.df_c2?.unit),
+            capC2: numT(b.cap_c2?.value),
+            capC2Unit: joinUnit(b.cap_c2?.unit),
+            insulType: toServerEnum(b.insulation_type, INSUL_TYPE_TO_SERVER)
+        }
+    }
+}

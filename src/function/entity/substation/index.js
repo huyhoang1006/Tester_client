@@ -25,6 +25,107 @@ import ConfigurationEvent from '@/views/Cim/ConfigurationEvent'
 import uuid from '@/utils/uuid'
 import SubstationEntity from '@/views/Flatten/Substation'
 
+export const moveSubstationToOrganisation = async (substationId, organisationId) => {
+    if (!substationId || !organisationId) {
+        return { success: false, message: 'Missing substation or organisation id' }
+    }
+
+    return new Promise((resolve, reject) => {
+        db.serialize(() => {
+            db.run('BEGIN TRANSACTION')
+            db.get(
+                `SELECT s.mrid, psr.location
+                 FROM substation s
+                 LEFT JOIN power_system_resource psr ON psr.mrid = s.mrid
+                 WHERE s.mrid = ?`,
+                [substationId],
+                (subErr, substation) => {
+                if (subErr) {
+                    db.run('ROLLBACK')
+                    reject({ success: false, err: subErr, message: 'Get substation failed' })
+                    return
+                }
+                if (!substation) {
+                    db.run('ROLLBACK')
+                    resolve({ success: false, message: 'Substation not found' })
+                    return
+                }
+
+                db.run(
+                    'UPDATE organisation_psr SET organisation_id = ? WHERE psr_id = ?',
+                    [organisationId, substationId],
+                    function (psrErr) {
+                        if (psrErr) {
+                            db.run('ROLLBACK')
+                            reject({ success: false, err: psrErr, message: 'Update organisation_psr failed' })
+                            return
+                        }
+
+                        const updateLocation = (done) => {
+                            if (!substation.location) {
+                                done()
+                                return
+                            }
+                            db.run(
+                                'UPDATE organisation_location SET organisation_id = ? WHERE location_id = ?',
+                                [organisationId, substation.location],
+                                function (locErr) {
+                                    if (locErr) {
+                                        done(locErr)
+                                        return
+                                    }
+                                    done()
+                                }
+                            )
+                        }
+
+                        const updatePerson = (done) => {
+                            db.get('SELECT person_id FROM person_substation WHERE substation_id = ? LIMIT 1', [substationId], (personErr, personSubstation) => {
+                                if (personErr) {
+                                    done(personErr)
+                                    return
+                                }
+                                if (!personSubstation || !personSubstation.person_id) {
+                                    done()
+                                    return
+                                }
+                                db.run(
+                                    'UPDATE organisation_person SET organisation_id = ? WHERE person_id = ?',
+                                    [organisationId, personSubstation.person_id],
+                                    function (orgPersonErr) {
+                                        done(orgPersonErr)
+                                    }
+                                )
+                            })
+                        }
+
+                        updateLocation((locErr) => {
+                            if (locErr) {
+                                db.run('ROLLBACK')
+                                reject({ success: false, err: locErr, message: 'Update organisation_location failed' })
+                                return
+                            }
+                            updatePerson((personErr) => {
+                                if (personErr) {
+                                    db.run('ROLLBACK')
+                                    reject({ success: false, err: personErr, message: 'Update organisation_person failed' })
+                                    return
+                                }
+                                db.run('COMMIT')
+                                resolve({
+                                    success: true,
+                                    data: { substationId, organisationId },
+                                    message: 'Move substation completed'
+                                })
+                            })
+                        })
+                    }
+                )
+            })
+        })
+    })
+}
+
 export const insertSubstationEntity = async (entity) => {
     if (entity == null || typeof entity !== 'object') {
         return { success: false, error: new Error('Invalid entity data') };
@@ -366,7 +467,7 @@ export const deleteSubstationEntityById = async (data) => {
                 return { success: true, message: 'Substation entity deleted successfully' };
             } catch (err) {
                 await runSQL('ROLLBACK');
-                reject({ success: false, err, message: 'Substation entity deleted failed' });
+                return { success: false, err, message: 'Substation entity deleted failed' };
             }
         }
     } catch (error) {
