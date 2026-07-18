@@ -39,7 +39,9 @@ export default {
                 const transformer = dialogRef ? dialogRef.getTransformerRef() : null
                 if (transformer) {
                     transformerRef = transformer;
-                    const savePromise = transformer.saveAsset();
+                    const savePromise = this.clientSlide
+                        ? transformer.saveAsset()
+                        : this.saveAssetComponentToServer(transformer, 'Transformer');
 
                     let result;
                     if (timeoutValue > 0) {
@@ -82,21 +84,23 @@ export default {
                             }
                         } else {
                             // Thêm node mới vào cây (logic cũ)
-                            let newRows = []
-                            if (this.organisationClientList && this.organisationClientList.length > 0) {
-                                const apparatusId = data.asset.name || data.asset.apparatus_id
-                                const newRow = {
-                                    mrid: data.asset.mrid,
-                                    apparatus_id: apparatusId,
-                                    name: apparatusId || data.asset.serial_number || 'Unnamed Transformer',
-                                    serial_number: data.asset.serial_number,
-                                    parentId: this.parentOrganization.mrid,
-                                    parentName: this.parentOrganization.name,
-                                    parentArr: this.parentOrganization.parentArr || [],
-                                    mode: 'asset',
-                                    asset: 'Transformer',
-                                    type: data.asset.type
-                                }
+                            const apparatusId = data.asset.name || data.asset.apparatus_id
+                            const newRow = {
+                                mrid: data.asset.mrid,
+                                apparatus_id: apparatusId,
+                                name: apparatusId || data.asset.serial_number || 'Unnamed Transformer',
+                                serial_number: data.asset.serial_number,
+                                parentId: this.clientSlide ? this.parentOrganization.mrid : this.parentOrganization.id,
+                                parentName: this.parentOrganization.name,
+                                parentArr: this.parentOrganization.parentArr || [],
+                                mode: 'asset',
+                                asset: 'Transformer',
+                                type: data.asset.type
+                            }
+                            if (!this.clientSlide) {
+                                await this.refreshServerParentAfterCreate(newRow)
+                            } else if (this.organisationClientList && this.organisationClientList.length > 0) {
+                                let newRows = []
                                 newRows.push(newRow)
                                 const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
                                 if (node) {

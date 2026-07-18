@@ -38,7 +38,9 @@ export default {
                 const disconnector = dialogRef ? dialogRef.getDisconnectorRef() : null
                 if (disconnector) {
                     disconnectorRef = disconnector;
-                    const savePromise = disconnector.saveAsset();
+                    const savePromise = this.clientSlide
+                        ? disconnector.saveAsset()
+                        : this.saveAssetComponentToServer(disconnector, 'Disconnector');
 
                     let result;
                     if (timeoutValue > 0) {
@@ -79,20 +81,22 @@ export default {
                                 console.error('Error reloading form after save:', err);
                             }
                         } else {
-                            let newRows = []
-                            if (this.organisationClientList && this.organisationClientList.length > 0) {
-                                const apparatusId = assetData.name || assetData.apparatus_id
-                                const newRow = {
-                                    mrid: assetData.mrid,
-                                    apparatus_id: apparatusId,
-                                    name: apparatusId || assetData.serial_number || 'Unnamed Disconnector',
-                                    serial_number: assetData.serial_number,
-                                    parentId: this.parentOrganization.mrid,
-                                    parentName: this.parentOrganization.name,
-                                    parentArr: this.parentOrganization.parentArr || [],
-                                    mode: 'asset',
-                                    asset: 'Disconnector'
-                                }
+                            const apparatusId = assetData.name || assetData.apparatus_id
+                            const newRow = {
+                                mrid: assetData.mrid,
+                                apparatus_id: apparatusId,
+                                name: apparatusId || assetData.serial_number || 'Unnamed Disconnector',
+                                serial_number: assetData.serial_number,
+                                parentId: this.clientSlide ? this.parentOrganization.mrid : this.parentOrganization.id,
+                                parentName: this.parentOrganization.name,
+                                parentArr: this.parentOrganization.parentArr || [],
+                                mode: 'asset',
+                                asset: 'Disconnector'
+                            }
+                            if (!this.clientSlide) {
+                                await this.refreshServerParentAfterCreate(newRow)
+                            } else if (this.organisationClientList && this.organisationClientList.length > 0) {
+                                let newRows = []
                                 newRows.push(newRow)
                                 const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
                                 if (node) {

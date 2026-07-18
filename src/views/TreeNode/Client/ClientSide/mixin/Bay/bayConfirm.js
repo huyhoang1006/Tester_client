@@ -1,5 +1,6 @@
 import Vue from "vue"
 import { startLoading } from '@/utils/loading'
+import * as bayAPI from '@/api/demo/Bay'
 
 export default {
     methods: {
@@ -38,7 +39,9 @@ export default {
                 const bay = dialogRef ? dialogRef.getBayRef() : null
                 if (bay) {
                     bayRef = bay;
-                    const savePromise = bay.saveBay();
+                    const savePromise = this.clientSlide
+                        ? bay.saveBay()
+                        : this.saveBayToServer(bay);
 
                     let result;
                     if (timeoutValue > 0) {
@@ -54,16 +57,24 @@ export default {
 
                     if (success) {
                         saveSuccess = true;
-                        let newRows = []
-                        if (this.organisationClientList && this.organisationClientList.length > 0) {
-                            const newRow = {
-                                mrid: data.mrid,
-                                name: data.name || 'Unnamed Bay',
-                                parentId: this.parentOrganization.mrid,
-                                parentName: this.parentOrganization.name,
-                                parentArr: this.parentOrganization.parentArr || [],
-                                mode: 'bay'
+                        const serverId = this.extractUploadedServerId(data)
+                        const newRow = {
+                            mrid: data.mrid || serverId,
+                            name: data.name || 'Unnamed Bay',
+                            parentId: this.clientSlide ? this.parentOrganization.mrid : this.parentOrganization.id,
+                            parentName: this.parentOrganization.name,
+                            parentArr: this.parentOrganization.parentArr || [],
+                            mode: 'bay'
+                        }
+                        if (!this.clientSlide) {
+                            const parentNode = this.findNodeByIdOrMrid(newRow.parentId, this.ownerServerList)
+                            if (parentNode) {
+                                this.$set(parentNode, 'children', null)
+                                await this.fetchChildrenServer(parentNode)
+                                this.$set(parentNode, 'expanded', true)
                             }
+                        } else if (this.organisationClientList && this.organisationClientList.length > 0) {
+                            let newRows = []
                             newRows.push(newRow)
                             const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
                             if (node) {
@@ -108,6 +119,46 @@ export default {
             const bay = dialogRef ? dialogRef.getBayRef() : null
             if (bay) {
                 this.resetFormAfterSave(bay)
+            }
+        },
+
+        async saveBayToServer(bay, serverTab = null) {
+            const properties = bay?.properties || {}
+            const name = String(properties.name || '').trim()
+            if (!name) {
+                this.$message.error('Bay name cannot be empty')
+                return { success: false }
+            }
+
+            const parentId = this.parentOrganization?.id
+            const ownerType = this.normalizeOwnerTypeCode(this.parentOrganization?.mode)
+            if (!parentId || !ownerType) {
+                throw new Error('Cannot resolve bay parent on server')
+            }
+
+            const payload = {
+                mRID: serverTab?.id || serverTab?.mrid || null,
+                name,
+                aliasName: '',
+                description: properties.comment || '',
+                bayEnergyMeasFlag: Boolean(properties.bay_energy_meas_flag),
+                bayPowerMeasFlag: Boolean(properties.bay_power_meas_flag),
+                breakerConfiguration: properties.breaker_configuration || '',
+                busBarConfiguration: properties.bus_bar_configuration || '',
+                psrType: null,
+                assetDatasheet: null,
+                location: null
+            }
+
+            const response = await bayAPI.createBay(payload, parentId, ownerType)
+
+            return {
+                success: true,
+                data: {
+                    ...response,
+                    name,
+                    mrid: this.extractUploadedServerId(response)
+                }
             }
         },
 

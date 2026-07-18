@@ -15,16 +15,16 @@
                 <li v-if="isClient && this.selectedNode && this.selectedNode.mode == 'organisation'" @click="addOrganisation">
                     <i class="fa-solid fa-plus"></i> Add organisation
                 </li>
-                <li v-if="isClient && this.selectedNode && this.selectedNode.mode == 'organisation'" @click="addSubsInTree">
+                <li v-if="canTreeCrud && this.selectedNode && this.selectedNode.mode == 'organisation'" @click="addSubsInTree">
                     <i class="fa-solid fa-plus"></i> Add substation
                 </li>
-                <li v-if="isClient && this.selectedNode && this.selectedNode.mode == 'substation'" @click="addVoltageLevel">
+                <li v-if="canTreeCrud && this.selectedNode && this.selectedNode.mode == 'substation'" @click="addVoltageLevel">
                     <i class="fa-solid fa-plus"></i> Add voltage level
                 </li>
-                <li v-if="isClient && this.selectedNode && (this.selectedNode.mode == 'voltageLevel' || this.selectedNode.mode == 'substation')" @click="addBay">
+                <li v-if="canTreeCrud && this.selectedNode && (this.selectedNode.mode == 'voltageLevel' || this.selectedNode.mode == 'substation')" @click="addBay">
                     <i class="fa-solid fa-plus"></i> Add bay
                 </li>
-                <li class="has-submenu" v-if="isClient && this.selectedNode && (this.selectedNode.mode == 'bay' || this.selectedNode.mode == 'substation')">
+                <li class="has-submenu" v-if="canTreeCrud && this.selectedNode && (this.selectedNode.mode == 'bay' || this.selectedNode.mode == 'substation')">
                     <i class="fa-solid fa-plus"></i> Add asset
                     <ul class="submenu">
                         <li @click="addTransformer"><i class="fa-solid fa-bolt"></i> Add transformer</li>
@@ -35,9 +35,9 @@
                         <li @click="addSurgeArrester"><i class="fa-solid fa-shield-halved"></i> Add Surge Arrester</li>
                         <li @click="addPowerCable"><i class="fa-solid fa-route"></i> Add Power Cable</li>
                         <li @click="addDisconnector"><i class="fa-solid fa-plug-circle-xmark"></i> Add Disconnector</li>
-                        <li @click="addRotatingMachine"><i class="fa-solid fa-group-arrows-rotate"></i> Add Rotating Machine</li>
-                        <li @click="addCapacitor"><i class="fa-solid fa-bolt"></i> Add Capacitor</li>
-                        <li @click="addReactor"><i class="fa-solid fa-bolt"></i> Add Reactor</li>
+                        <li v-if="isClient" @click="addRotatingMachine"><i class="fa-solid fa-group-arrows-rotate"></i> Add Rotating Machine</li>
+                        <li v-if="isClient" @click="addCapacitor"><i class="fa-solid fa-bolt"></i> Add Capacitor</li>
+                        <li v-if="isClient" @click="addReactor"><i class="fa-solid fa-bolt"></i> Add Reactor</li>
                     </ul>
                 </li>
                 <li @click="addJob" v-if="isClient && this.selectedNode && this.selectedNode.mode == 'asset'">
@@ -125,7 +125,8 @@ export default {
     },
     computed: {
         isClient() { return this.side === 'client' },
-        isServer() { return this.side === 'server' }
+        isServer() { return this.side === 'server' },
+        canTreeCrud() { return this.isClient || this.isServer }
     },
     methods: {
         openContextMenu(event, node, { top, left } = {}) {

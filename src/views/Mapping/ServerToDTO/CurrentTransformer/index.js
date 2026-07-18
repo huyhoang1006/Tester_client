@@ -22,6 +22,12 @@ const STANDARD_TO_SERVER = {
     'IEEEC5713': 'IEEE_C57_13',
 }
 
+const TAP_TYPE_TO_SERVER = {
+    fulltap:  'FULL__TAP',
+    maintap:  'MAIN__TAP',
+    intertap: 'INTER__TAP',
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 // flat number + unit → DTO object {mrid, value, unit}
@@ -53,7 +59,7 @@ const mapTapTable = (table) => ({
         unit:  table?.isn?.unit  || null,
     },
     inUse: table?.inUse ?? false,
-    type:  table?.type  || null,
+    type:  TAP_TYPE_TO_SERVER[table?.type] || table?.type || null,
 })
 
 const mapSmallClassRating = (cr) => ({
@@ -72,9 +78,9 @@ export const mapServerToDto = (serverData) => {
     const dto = new CurrentTransformerDto();
     if (!serverData) return dto;
 
-    const assetInfo = serverData.assetInfo                      || {};
-    const core      = serverData.currentTransformerCoreResponse || {};
-    const taps      = serverData.currentTransformerTapsResponses || [];
+    const assetInfo = serverData.assetInfo || serverData.assetInfoResponseDTO || {};
+    const core      = serverData.currentTransformerCoreResponse || serverData.currentTransformerCore || {};
+    const taps      = serverData.currentTransformerTapsResponses || serverData.currentTransformerTaps || [];
 
     // ─── IDs ─────────────────────────────────────────────────────────────────
     // Tất cả IDs phải có giá trị hợp lệ — nếu server không trả về thì tạo UUID mới
@@ -96,9 +102,9 @@ export const mapServerToDto = (serverData) => {
     dto.properties.type               = dto.properties.asset_type
     dto.properties.kind               = 'Current transformer'
     dto.properties.serial_no          = assetInfo.serialNo         || ''
-    dto.properties.manufacturer       = assetInfo.manufacturerName || ''
-    dto.properties.manufacturer_type  = ''
-    dto.properties.country_of_origin  = assetInfo.countryName      || ''
+    dto.properties.manufacturer       = assetInfo.manufacturer || assetInfo.manufacturerName || ''
+    dto.properties.manufacturer_type  = assetInfo.manufacturerType || ''
+    dto.properties.country_of_origin  = assetInfo.country || assetInfo.countryName || ''
     dto.properties.apparatus_id       = assetInfo.apparatusId      || ''
     dto.properties.comment            = assetInfo.description      || ''
     dto.properties.manufacturing_year = assetInfo.manufacturingYear
@@ -266,11 +272,198 @@ export const mapServerToDto = (serverData) => {
 
 // ─── Mapper: DTO → server JSON (push) ────────────────────────────────────────
 
-export const mapDtoToServer = (dto) => {
+export const mapDtoToServer = (dto, ownerType) => {
     if (!dto) return null
+    void ownerType
 
     const ctConfig = dto.ctConfiguration || {}
     const ratings  = dto.ratings         || {}
+    const p = dto.properties || {}
+    const ratedFrequencyValue = ratings.rated_frequency?.value === 'Custom'
+        ? ratings.rated_frequency_custom
+        : ratings.rated_frequency?.value
+    const taps = []
+    ;(ctConfig.dataCT || []).forEach((core, coreIndex) => {
+        const coreNumber = coreIndex + 1
+        const numberTap = toNumberOrNull(core.taps)
+        const commonTap = toNumberOrNull(core.commonTap)
+        const pushTap = (table, classRating, type) => {
+            const t = table || {}
+            const cr = classRating || {}
+            const burdenUnit = joinUnit(cr.rated_burden?.unit) || joinUnit(cr.burden?.unit) || joinUnit(cr.operatingBurden?.unit)
+            taps.push({
+                id: idT(t.mrid),
+                core: coreNumber,
+                name: textT(t.name),
+                type,
+                commonTap,
+                numberTap,
+                ipn: num(t.ipn?.value),
+                ipnUnit: joinUnit(t.ipn?.unit),
+                isn: num(t.isn?.value),
+                isnUnit: joinUnit(t.isn?.unit),
+                inUse: !!t.inUse,
+                application: textT(cr.app),
+                class_: classToServer(cr.class),
+                windingResistance: num(cr.wr?.value),
+                windingResistanceUnit: joinUnit(cr.wr?.unit),
+                kx: num(cr.kx),
+                k: num(cr.k),
+                fs: num(cr.fs),
+                kssc: num(cr.kssc),
+                ktd: num(cr.ktd),
+                duty: textT(cr.duty),
+                vb: num(typeof cr.vb === 'object' ? cr.vb?.value : cr.vb),
+                vbUnit: joinUnit(cr.vb?.unit),
+                alf: num(cr.alf),
+                ts: num(cr.ts),
+                ek: num(cr.ek),
+                e1: num(cr.e1),
+                le: num(cr.le),
+                le1: num(cr.le1),
+                val: num(cr.val),
+                lal: num(cr.lal),
+                t1: num(cr.t1),
+                tal1: num(cr.tal1),
+                tp: num(cr.tp),
+                tpts: num(cr.tpts),
+                vk: num(cr.vk),
+                lk: num(cr.lk),
+                vk1: num(cr.vk1),
+                lk1: num(cr.lk1),
+                ratedBurden: num(cr.rated_burden?.value),
+                extendedBurden: cr.extended_burden ?? false,
+                burden: num(cr.burden?.value),
+                burdenUnit,
+                burdenCos: num(cr.burdenCos),
+                operatingBurden: num(cr.operatingBurden?.value),
+                operatingBurdenCos: num(cr.operatingBurdenCos),
+                re: num(cr.ratio_error?.value),
+                reUnit: joinUnit(cr.ratio_error?.unit)
+            })
+        }
+        pushTap(core.fullTap?.table, core.fullTap?.classRating, 'Full tap')
+        ;(core.mainTap?.data || []).forEach(tap => pushTap(tap.table, tap.classRating, 'Main tap'))
+        ;(core.interTap?.data || []).forEach(tap => pushTap(tap.table, tap.classRating, 'Inter tap'))
+    })
+
+    void taps
+    if (dto) return {
+        CurrentTransformer: {
+            properties: {
+                mrid:              p.mrid || null,
+                type:              ASSET_TYPE_TO_SERVER[p.asset_type] || ASSET_TYPE_TO_SERVER[p.type] || p.asset_type || p.type || null,
+                kind:              p.kind || null,
+                serial_no:         p.serial_no || null,
+                manufacturer:      p.manufacturer || null,
+                manufacturer_type: p.manufacturer_type || null,
+                manufacturer_year: p.manufacturing_year || p.manufacturer_year || null,
+                country_of_origin: p.country_of_origin || null,
+                apparatus_id:      p.apparatus_id || null,
+                comment:           p.comment || null,
+            },
+            ratings: {
+                standard: {
+                    mrid:  ratings.standard?.mrid || null,
+                    value: (() => {
+                        const raw = typeof ratings.standard === 'string' ? ratings.standard : ratings.standard?.value
+                        return STANDARD_TO_SERVER[raw] || raw || null
+                    })(),
+                    unit: null,
+                },
+                rated_frequency_custom: ratings.rated_frequency_custom || null,
+                rated_frequency: {
+                    mrid:  ratings.rated_frequency?.mrid || null,
+                    value: num(ratedFrequencyValue),
+                    unit:  ratings.rated_frequency?.unit || null,
+                },
+                primary_winding_count: str(ratings.primary_winding_count),
+                um_rms:           mapBurden(ratings.um_rms),
+                u_withstand_rms:  mapBurden(ratings.u_withstand_rms),
+                u_lightning_peak: mapBurden(ratings.u_lightning_peak),
+                icth:             mapBurden(ratings.icth),
+                idyn_peak:        mapBurden(ratings.idyn_peak),
+                ith_rms:          mapBurden(ratings.ith_rms),
+                ith_duration:     mapBurden(ratings.ith_duration),
+                system_voltage:   mapBurden(ratings.system_voltage),
+                system_voltage_type: ratings.system_voltage_type?.value || ratings.system_voltage_type || null,
+                bil:               mapBurden(ratings.bil),
+                rating_factor:     str(ratings.rating_factor),
+                rating_factor_temp: mapBurden(ratings.rating_factor_temp),
+            },
+            ctConfiguration: {
+                cores: str(ctConfig.cores),
+                dataCT: (ctConfig.dataCT || []).map(core => {
+                    const ft   = core.fullTap?.table       || {}
+                    const ftCR = core.fullTap?.classRating || {}
+                    return {
+                        mrid:      core.mrid || null,
+                        taps:      str(core.taps),
+                        commonTap: str(core.commonTap),
+                        fullTap: {
+                            table: mapTapTable(ft),
+                            classRating: {
+                                mrid:               ftCR.mrid || null,
+                                app:                ftCR.app === 'chooseApp' ? null : (ftCR.app || null),
+                                class:              ftCR.class || null,
+                                wr:                 mapBurden(ftCR.wr),
+                                kx:                 str(ftCR.kx),
+                                k:                  str(ftCR.k),
+                                fs:                 str(ftCR.fs),
+                                kssc:               str(ftCR.kssc),
+                                ktd:                str(ftCR.ktd),
+                                duty:               ftCR.duty || null,
+                                vb:                 mapVb(ftCR.vb),
+                                alf:                str(ftCR.alf),
+                                ts:                 str(ftCR.ts),
+                                ek:                 str(ftCR.ek),
+                                le:                 str(ftCR.le),
+                                e1:                 str(ftCR.e1),
+                                le1:                str(ftCR.le1),
+                                val:                str(ftCR.val),
+                                lal:                str(ftCR.lal),
+                                t1:                 str(ftCR.t1),
+                                tal1:               str(ftCR.tal1),
+                                tp:                 str(ftCR.tp),
+                                tpts:               str(ftCR.tpts),
+                                vk:                 str(ftCR.vk),
+                                lk:                 str(ftCR.lk),
+                                vk1:                str(ftCR.vk1),
+                                lk1:                str(ftCR.lk1),
+                                rated_burden:       mapBurden(ftCR.rated_burden),
+                                extended_burden:    ftCR.extended_burden ?? false,
+                                burden:             mapBurden(ftCR.burden),
+                                burdenCos:          str(ftCR.burdenCos),
+                                operatingBurden:    mapBurden(ftCR.operatingBurden),
+                                operatingBurdenCos: str(ftCR.operatingBurdenCos),
+                                core_index:         toNumberOrNull(ftCR.core_index),
+                                ratio_error:        mapBurden(ftCR.ratio_error),
+                            },
+                        },
+                        mainTap: {
+                            data: (core.mainTap?.data || []).map(mt => ({
+                                table:       mapTapTable(mt.table),
+                                classRating: mapSmallClassRating(mt.classRating),
+                            })),
+                        },
+                        interTap: {
+                            data: (core.interTap?.data || []).map(it => ({
+                                table:       mapTapTable(it.table),
+                                classRating: mapSmallClassRating(it.classRating),
+                            })),
+                        },
+                    }
+                }),
+            },
+            locationId:          dto.locationId          || null,
+            psrId:               dto.psrId               || null,
+            assetPsrId:          dto.assetPsrId          || null,
+            assetInfoId:         dto.assetInfoId         || null,
+            productAssetModelId: dto.productAssetModelId || null,
+            lifecycleDateId:     dto.lifecycleDateId     || null,
+            attachmentId:        dto.attachmentId        || null,
+        },
+    }
 
     // Đảm bảo FK entity phụ không null (tránh lỗi NOT NULL / FK phía server)
     const assetInfoId         = dto.assetInfoId         || uuid.newUuid()
@@ -308,7 +501,7 @@ export const mapDtoToServer = (dto) => {
                             : (ratings.standard?.value || null)
                         return STANDARD_TO_SERVER[raw] || raw || null
                     })(),
-                    unit: ratings.standard?.unit || null,
+                    unit: null,
                 },
 
                 rated_frequency_custom: ratings.rated_frequency_custom || null,
@@ -439,8 +632,50 @@ const str = (val) => {
     return String(val)
 }
 
+const mapVb = (vb) => {
+    if (vb && typeof vb === 'object') {
+        return {
+            mrid:  vb.mrid || null,
+            value: mapBurden(vb),
+            unit:  vb.unit || null,
+        }
+    }
+
+    return {
+        mrid:  null,
+        value: {
+            mrid:  null,
+            value: num(vb),
+            unit:  null,
+        },
+        unit:  null,
+    }
+}
+
 const toNumberOrNull = (val) => {
     if (isBlank(val)) return null
     const n = Number(val)
     return Number.isNaN(n) ? null : n
+}
+
+const textT = (val) => {
+    if (isBlank(val)) return null
+    const text = String(val).trim()
+    return text ? text : null
+}
+
+const idT = (val) => {
+    const text = textT(val)
+    return text && /^\d+$/.test(text) ? Number(text) : null
+}
+
+const joinUnit = (unit) => {
+    const text = textT(unit)
+    return text ? text.replace('|', '') : null
+}
+
+const classToServer = (value) => {
+    const text = textT(value)
+    if (!text) return null
+    return '_' + text.replace(/\./g, '_').replace(/^_+/, '')
 }

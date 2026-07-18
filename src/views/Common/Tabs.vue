@@ -117,6 +117,11 @@
                                 style="min-height: calc(100vh - 250px);">
                             </component>
                         </keep-alive>
+
+                        <span class="tab-actions">
+                            <el-button size="small" type="danger" @click="closeTab(indexTab)">Close</el-button>
+                            <el-button size="small" type="primary" @click="saveActiveServerTab()">Save</el-button>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -1137,6 +1142,24 @@ export default {
             } catch (error) {
                 console.error("Error saving data:", error);
             }
+        },
+        async saveActiveServerTab() {
+            if (!this.activeTab) {
+                this.$message.error("Please select a tab to save data.")
+                return
+            }
+
+            const id = this.activeTab.mrid || this.activeTab.id
+            const comp = this.getComponentRef(id)
+            if (!comp) {
+                this.$message.error("Cannot find active tab data.")
+                return
+            }
+
+            this.$emit('save-server-tab', {
+                tab: this.activeTab,
+                component: comp
+            })
         }
     }
 }

@@ -38,7 +38,9 @@ export default {
                 const ct = dialogRef ? dialogRef.getCurrentTransformerRef() : null
                 if (ct) {
                     ctRef = ct;
-                    const savePromise = ct.saveAsset();
+                    const savePromise = this.clientSlide
+                        ? ct.saveAsset()
+                        : this.saveAssetComponentToServer(ct, 'Current transformer');
 
                     let result;
                     if (timeoutValue > 0) {
@@ -79,20 +81,22 @@ export default {
                                 console.error('Error reloading form after save:', err);
                             }
                         } else {
-                            let newRows = []
-                            if (this.organisationClientList && this.organisationClientList.length > 0) {
-                                const apparatusId = assetData.name || assetData.apparatus_id
-                                const newRow = {
-                                    mrid: assetData.mrid,
-                                    apparatus_id: apparatusId,
-                                    name: apparatusId || assetData.serial_number || 'Unnamed Current Transformer',
-                                    serial_number: assetData.serial_number,
-                                    parentId: this.parentOrganization.mrid,
-                                    parentName: this.parentOrganization.name,
-                                    parentArr: this.parentOrganization.parentArr || [],
-                                    mode: 'asset',
-                                    asset: 'Current transformer'
-                                }
+                            const apparatusId = assetData.name || assetData.apparatus_id
+                            const newRow = {
+                                mrid: assetData.mrid,
+                                apparatus_id: apparatusId,
+                                name: apparatusId || assetData.serial_number || 'Unnamed Current Transformer',
+                                serial_number: assetData.serial_number,
+                                parentId: this.clientSlide ? this.parentOrganization.mrid : this.parentOrganization.id,
+                                parentName: this.parentOrganization.name,
+                                parentArr: this.parentOrganization.parentArr || [],
+                                mode: 'asset',
+                                asset: 'Current transformer'
+                            }
+                            if (!this.clientSlide) {
+                                await this.refreshServerParentAfterCreate(newRow)
+                            } else if (this.organisationClientList && this.organisationClientList.length > 0) {
+                                let newRows = []
                                 newRows.push(newRow)
                                 const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
                                 if (node) {

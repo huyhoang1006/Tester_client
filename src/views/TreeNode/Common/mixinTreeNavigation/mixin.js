@@ -56,6 +56,7 @@ import tabPropertiesSync from '@/views/TreeNode/Client/ClientSide/mixin/TabSync/
 
 //Server
 import downloadNode from '@/views/TreeNode/Server/mixin/Download/downloadNode'
+import deleteDataServer from '@/views/TreeNode/Server/mixin/Delete/deleteDataServer'
 import logServer from '@/views/TreeNode/Server/mixin/Resize/logServer.js'
 import getOwner from '@/views/TreeNode/Server/mixin/getOwner'
 import fetchChildrenServer from '@/views/TreeNode/Server/mixin/fetchChildrenServer'
@@ -104,7 +105,7 @@ export default {
         organisationConfirm, powerCableConfirm, reactorConfirm, rotatingMachineConfirm,
         substationConfirm, surgeArresterConfirm, transformerConfirm, vtConfirm,
         voltageLevelConfirm, resizeClient, contextDataHelpers, tabPropertiesSync,
-        logClient, logServer, resizeServer, confirmDownloadNode, downloadNode,
+        logClient, logServer, resizeServer, confirmDownloadNode, downloadNode, deleteDataServer,
         buildMoveTreeData, fetchChildrenForMoveMixin, generateUuid, getOwner,
         fetchChildrenServer, fetchChildrenClient,
         handleAddCommand, handleOpenNode, fetchAssetByPsr,

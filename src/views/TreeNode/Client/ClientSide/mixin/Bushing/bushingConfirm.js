@@ -39,7 +39,9 @@ export default {
                 const bushing = dialogRef ? dialogRef.getBushingRef() : null
                 if (bushing) {
                     bushingRef = bushing;
-                    const savePromise = bushing.saveAsset();
+                    const savePromise = this.clientSlide
+                        ? bushing.saveAsset()
+                        : this.saveAssetComponentToServer(bushing, 'Bushing');
 
                     let result;
                     if (timeoutValue > 0) {
@@ -80,20 +82,22 @@ export default {
                                 console.error('Error reloading form after save:', err);
                             }
                         } else {
-                            let newRows = []
-                            if (this.organisationClientList && this.organisationClientList.length > 0) {
-                                const apparatusId = bushingData.name || bushingData.apparatus_id
-                                const newRow = {
-                                    mrid: bushingData.mrid,
-                                    apparatus_id: apparatusId,
-                                    name: apparatusId || bushingData.serial_number || 'Unnamed Bushing',
-                                    serial_number: bushingData.serial_number,
-                                    parentId: this.parentOrganization.mrid,
-                                    parentName: this.parentOrganization.name,
-                                    parentArr: this.parentOrganization.parentArr || [],
-                                    mode: 'asset',
-                                    asset: 'Bushing'
-                                }
+                            const apparatusId = bushingData.name || bushingData.apparatus_id
+                            const newRow = {
+                                mrid: bushingData.mrid,
+                                apparatus_id: apparatusId,
+                                name: apparatusId || bushingData.serial_number || 'Unnamed Bushing',
+                                serial_number: bushingData.serial_number,
+                                parentId: this.clientSlide ? this.parentOrganization.mrid : this.parentOrganization.id,
+                                parentName: this.parentOrganization.name,
+                                parentArr: this.parentOrganization.parentArr || [],
+                                mode: 'asset',
+                                asset: 'Bushing'
+                            }
+                            if (!this.clientSlide) {
+                                await this.refreshServerParentAfterCreate(newRow)
+                            } else if (this.organisationClientList && this.organisationClientList.length > 0) {
+                                let newRows = []
                                 newRows.push(newRow)
                                 const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
                                 if (node) {

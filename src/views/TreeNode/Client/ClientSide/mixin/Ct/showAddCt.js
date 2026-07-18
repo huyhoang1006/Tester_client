@@ -2,6 +2,12 @@ export default {
     methods: {
         async showAddCt(node) {
             try {
+                if (!this.clientSlide) {
+                    this.locationId = null
+                    this.parentOrganization = node
+                    this.signCt = true
+                    return
+                }
                 const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid)
                 if (dataLocation.success) {
                     this.locationId = dataLocation.data.mrid

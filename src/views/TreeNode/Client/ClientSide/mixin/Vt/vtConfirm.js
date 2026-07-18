@@ -38,7 +38,9 @@ export default {
                 const vt = dialogRef ? dialogRef.getVoltageTransformerRef() : null
                 if (vt) {
                     vtRef = vt;
-                    const savePromise = vt.saveAsset();
+                    const savePromise = this.clientSlide
+                        ? vt.saveAsset()
+                        : this.saveAssetComponentToServer(vt, 'Voltage transformer');
 
                     let result;
                     if (timeoutValue > 0) {
@@ -79,20 +81,22 @@ export default {
                                 console.error('Error reloading form after save:', err);
                             }
                         } else {
-                            let newRows = []
-                            if (this.organisationClientList && this.organisationClientList.length > 0) {
-                                const apparatusId = assetData.name || assetData.apparatus_id
-                                const newRow = {
-                                    mrid: assetData.mrid,
-                                    apparatus_id: apparatusId,
-                                    name: apparatusId || assetData.serial_number || 'Unnamed Voltage Transformer',
-                                    serial_number: assetData.serial_number,
-                                    parentId: this.parentOrganization.mrid,
-                                    parentName: this.parentOrganization.name,
-                                    parentArr: this.parentOrganization.parentArr || [],
-                                    mode: 'asset',
-                                    asset: 'Voltage transformer'
-                                }
+                            const apparatusId = assetData.name || assetData.apparatus_id
+                            const newRow = {
+                                mrid: assetData.mrid,
+                                apparatus_id: apparatusId,
+                                name: apparatusId || assetData.serial_number || 'Unnamed Voltage Transformer',
+                                serial_number: assetData.serial_number,
+                                parentId: this.clientSlide ? this.parentOrganization.mrid : this.parentOrganization.id,
+                                parentName: this.parentOrganization.name,
+                                parentArr: this.parentOrganization.parentArr || [],
+                                mode: 'asset',
+                                asset: 'Voltage transformer'
+                            }
+                            if (!this.clientSlide) {
+                                await this.refreshServerParentAfterCreate(newRow)
+                            } else if (this.organisationClientList && this.organisationClientList.length > 0) {
+                                let newRows = []
                                 newRows.push(newRow)
                                 const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
                                 if (node) {

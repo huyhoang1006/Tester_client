@@ -13,3 +13,7 @@ export const createVoltageTransformer = (data, ownerId, ownerType) => {
         }
     })
 }
+
+export const deleteVoltageTransformer = (id) => {
+    return client.delete(`/${prefix}/${id}`)
+}

@@ -60,6 +60,12 @@
                 @download-node-only="handleDownloadOnlyFromContext"
                 @fmeca-node="handleFmecaFromContext"
                 @delete-data="handleDeleteFromContextMenu"
+                @show-addSubsInTree="showAddSubsInTree" @show-addOrganisation="showAddOrganisation"
+                @show-addVoltageLevel="showAddVoltageLevel" @show-addBay="showAddBay"
+                @show-addTransformer="showAddTransformer" @show-addBushing="showAddBushing"
+                @show-addSurgeArrester="showAddSurgeArrester" @show-addCircuit="showAddCircuitBreaker"
+                @show-addVt="showAddVt" @show-addCt="showAddCt" @show-addPowerCable="showAddPowerCable"
+                @show-addDisconnector="showAddDisconnector"
                 @refresh-node="handleRefreshNode" />
 
             <div @mousedown="startResizeClient" v-if="activeWorkspaceTab === 'tree' && clientSlide" ref="resizerClient" class="resizer"></div>
@@ -70,7 +76,8 @@
                         <div class="title-content"></div>
                         <div class="content-content">
                             <Tabs :side="'server'" ref="serverTabs" v-model="activeTab" :tabs="tabs"
-                                @close-tab="removeTab" />
+                                @close-tab="removeTab"
+                                @save-server-tab="handleSaveServerTab" />
                         </div>
                     </div>
                     <div @mousedown="startResizeContentServer" ref="resizerContentServer" class="resizer"></div>
@@ -382,6 +389,7 @@ import {
     loadWorkspaceState,
     saveWorkspaceState,
 } from '@/utils/workspaceRestore'
+import { startLoading } from '@/utils/loading'
 export default {
     name: 'TreeNavigation',
     components: {
@@ -1170,6 +1178,58 @@ export default {
                 }
             })
 
+        },
+
+        async handleSaveServerTab({ tab, component }) {
+            if (!tab || !component) {
+                this.$message.error('Cannot find active tab data.')
+                return
+            }
+
+            const parentNode = tab.parentId
+                ? this.findNodeByIdOrMrid(tab.parentId, this.ownerServerList)
+                : null
+            const previousParent = this.parentOrganization
+
+            if (tab.mode !== 'organisation' && !parentNode) {
+                this.$message.error('Cannot resolve parent node on server.')
+                return
+            }
+
+            this.parentOrganization = parentNode
+            const { close } = startLoading(this, {
+                action: 'save',
+                type: tab.mode === 'job' ? 'heavy' : 'default'
+            })
+
+            try {
+                let result = null
+                if (tab.mode === 'asset') {
+                    result = await this.saveAssetComponentToServer(component, tab.asset, tab)
+                } else if (tab.mode === 'bay') {
+                    result = await this.saveBayToServer(component, tab)
+                } else if (tab.mode === 'voltageLevel') {
+                    result = await this.saveVoltageLevelToServer(component, tab)
+                } else {
+                    this.$message.warning('Server save is not supported for this node yet.')
+                    return
+                }
+
+                if (result && result.success !== false) {
+                    this.$message.success('Save successfully')
+                    if (parentNode) {
+                        await this.refreshServerParentAfterCreate({
+                            parentId: parentNode.id || parentNode.mrid
+                        })
+                    }
+                }
+            } catch (error) {
+                console.error('Error saving server tab:', error)
+                this.$message.error(error.message || 'Save failed')
+            } finally {
+                this.parentOrganization = previousParent
+                await close()
+            }
         },
 
 

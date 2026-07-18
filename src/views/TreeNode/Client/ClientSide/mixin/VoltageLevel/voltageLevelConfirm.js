@@ -1,5 +1,6 @@
 import Vue from "vue"
 import { startLoading } from '@/utils/loading'
+import * as voltageLevelAPI from '@/api/demo/VoltageLevel'
 
 export default {
     methods: {
@@ -38,7 +39,9 @@ export default {
                 const voltageLevel = dialogRef ? dialogRef.getVoltageLevelRef() : null
                 if (voltageLevel) {
                     voltageLevelRef = voltageLevel;
-                    const savePromise = voltageLevel.saveVoltageLevel();
+                    const savePromise = this.clientSlide
+                        ? voltageLevel.saveVoltageLevel()
+                        : this.saveVoltageLevelToServer(voltageLevel);
 
                     let result;
                     if (timeoutValue > 0) {
@@ -55,21 +58,29 @@ export default {
                     console.log('VoltageLevel save response:', data);
                     if (success) {
                         saveSuccess = true;
-                        let newRows = []
-                        if (this.organisationClientList && this.organisationClientList.length > 0) {
-                            const mrid = data.mrid || data.voltageLevel?.mrid || data.data?.voltageLevel?.mrid
-                            const name = data.name || data.voltageLevel?.name || data.data?.voltageLevel?.name || 'Unnamed Voltage Level'
+                        const serverId = this.extractUploadedServerId(data)
+                        const mrid = data.mrid || data.voltageLevel?.mrid || data.data?.voltageLevel?.mrid || serverId
+                        const name = data.name || data.voltageLevel?.name || data.data?.voltageLevel?.name || 'Unnamed Voltage Level'
 
-                            console.log('Extracted mrid:', mrid, 'name:', name);
+                        console.log('Extracted mrid:', mrid, 'name:', name);
 
-                            const newRow = {
-                                mrid: mrid,
-                                name: name,
-                                parentId: this.parentOrganization.mrid,
-                                parentName: this.parentOrganization.name,
-                                parentArr: this.parentOrganization.parentArr || [],
-                                mode: 'voltageLevel'
+                        const newRow = {
+                            mrid: mrid,
+                            name: name,
+                            parentId: this.clientSlide ? this.parentOrganization.mrid : this.parentOrganization.id,
+                            parentName: this.parentOrganization.name,
+                            parentArr: this.parentOrganization.parentArr || [],
+                            mode: 'voltageLevel'
+                        }
+                        if (!this.clientSlide) {
+                            const parentNode = this.findNodeByIdOrMrid(newRow.parentId, this.ownerServerList)
+                            if (parentNode) {
+                                this.$set(parentNode, 'children', null)
+                                await this.fetchChildrenServer(parentNode)
+                                this.$set(parentNode, 'expanded', true)
                             }
+                        } else if (this.organisationClientList && this.organisationClientList.length > 0) {
+                            let newRows = []
                             newRows.push(newRow)
                             const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
                             if (node) {
@@ -114,6 +125,79 @@ export default {
             const voltageLevel = dialogRef ? dialogRef.getVoltageLevelRef() : null
             if (voltageLevel) {
                 this.resetFormAfterSave(voltageLevel)
+            }
+        },
+
+        async saveVoltageLevelToServer(voltageLevel, serverTab = null) {
+            const properties = voltageLevel?.properties || {}
+            const name = String(properties.name || '').trim()
+            if (!name) {
+                this.$message.error('Name is required.')
+                return { success: false }
+            }
+            if (!properties.base_voltage_value && properties.base_voltage_value !== 0) {
+                this.$message.error('Base voltage is required.')
+                return { success: false }
+            }
+
+            const payload = this.mapVoltageLevelFormToServerPayload(properties, serverTab)
+            const response = await voltageLevelAPI.createVoltageLevel(payload, this.parentOrganization.id)
+
+            return {
+                success: true,
+                data: {
+                    ...response,
+                    name,
+                    mrid: this.extractUploadedServerId(response)
+                }
+            }
+        },
+
+        mapVoltageLevelFormToServerPayload(properties, serverTab = null) {
+            const serverId = serverTab?.id || serverTab?.mrid || null
+            const makeVoltage = (value, unit, multiplier) => {
+                if (value === '' || value === null || value === undefined) return null
+                return {
+                    mRID: null,
+                    value: Number(value),
+                    unit: unit || null,
+                    multiplier: multiplier || null
+                }
+            }
+
+            const baseVoltage = makeVoltage(
+                properties.base_voltage_value,
+                properties.base_voltage_unit,
+                properties.base_voltage_multiplier
+            )
+
+            return {
+                mRID: serverId,
+                name: properties.name || '',
+                aliasName: '',
+                description: properties.comment || '',
+                type: '',
+                psrType: null,
+                assetDatasheet: null,
+                location: null,
+                highVoltageLimit: makeVoltage(
+                    properties.high_voltage_limit_value,
+                    properties.high_voltage_limit_unit,
+                    properties.high_voltage_limit_multiplier
+                ),
+                lowVoltageLimit: makeVoltage(
+                    properties.low_voltage_limit_value,
+                    properties.low_voltage_limit_unit,
+                    properties.low_voltage_limit_multiplier
+                ),
+                baseVoltage: baseVoltage
+                    ? {
+                        mRID: null,
+                        nominalVoltage: baseVoltage
+                    }
+                    : null,
+                status: null,
+                persons: []
             }
         },
     }

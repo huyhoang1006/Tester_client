@@ -3,6 +3,11 @@ export default {
         async showAddTransformer(node) {
             try {
                 this.locationId = null
+                if (!this.clientSlide) {
+                    this.parentOrganization = node
+                    this.signTransformer = true
+                    return
+                }
                 let psrId = null
                 if (node.parentArr && node.parentArr.length >= 2) {
                     psrId = node.parentArr[1].mrid

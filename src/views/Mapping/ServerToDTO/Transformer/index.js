@@ -598,6 +598,28 @@ const joinUnitT = (u) => {
     return u.includes('|') ? u.replace('|', '') : u
 }
 
+const buildVectorGroupText = (wc) => {
+    const directValue = textT(wc.vector_group_data) || textT(wc.vector_group_custom) || textT(wc.unsupported_vector_group)
+    if (directValue) return directValue
+
+    const vg = wc.vector_group || {}
+    const prim = textT(vg.prim)
+    const sec = textT(vg.sec?.i)
+    const secVal = textT(vg.sec?.value)
+    const tert = textT(vg.tert?.i)
+    const tertVal = textT(vg.tert?.value)
+    const tertAccessible = textT(vg.tert?.accessible)
+
+    const parsedValue = [
+        prim,
+        sec || secVal ? `${sec || ''}${secVal || ''}` : null,
+        tert || tertVal || tertAccessible ? `${tert || ''}${tertVal || ''}${tertAccessible || ''}` : null
+    ].filter(Boolean).join('') || null
+    if (parsedValue) return parsedValue
+
+    return null
+}
+
 export const mapDtoToServer = (dto, ownerType) => {
     if (!dto) return null
 
@@ -625,6 +647,7 @@ export const mapDtoToServer = (dto, ownerType) => {
 
     // ─── transformer core ──────────────────────────────────────────────────────
     const vg = wc.vector_group || {}
+    const vectorGroupText = buildVectorGroupText(wc)
     const transformer = {
         assetType: ASSET_TYPE_TO_SERVER[p.type] || p.type || null,
         phases: PHASES_TO_SERVER[wc.phases] || wc.phases || null,
@@ -632,7 +655,7 @@ export const mapDtoToServer = (dto, ownerType) => {
         numberOfPhase: numT(wc.phases),
 
         // vector group: ưu tiên data parsed, fallback custom/unsupported
-        vectorGroup: textT(wc.vector_group_data) || textT(wc.vector_group_custom) || textT(wc.unsupported_vector_group),
+        vectorGroup: vectorGroupText,
         vectorGroupPrim: textT(vg.prim),
         vectorGroupSec: textT(vg.sec?.i),
         vectorGroupSecVal: intT(vg.sec?.value),

@@ -13,3 +13,7 @@ export const createCurrentTransformer = (data, ownerId, ownerType) => {
         }
     })
 }
+
+export const deleteCurrentTransformer = (id) => {
+    return client.delete(`/${prefix}/${id}`)
+}

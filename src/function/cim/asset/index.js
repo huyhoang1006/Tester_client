@@ -308,7 +308,7 @@ export const updateAsset = async (mrid, asset) => {
                             asset_info = ?,
                             product_asset_model = ?,
                             location = ?,
-                            country_of_origin = ?
+                            country_of_origin = ?,
                             number_of_phase = ?,
                             phase = ?
                         WHERE mrid = ?`,
@@ -482,7 +482,7 @@ export const updateAssetTransaction = (mrid, asset, dbsql) => {
                     asset_info = ?,
                     product_asset_model = ?,
                     location = ?,
-                    country_of_origin = ?
+                    country_of_origin = ?,
                     number_of_phase = ?,
                     phase = ?
                 WHERE mrid = ?`,

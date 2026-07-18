@@ -10,3 +10,7 @@ export const getBushingById = (id) => {
 export const createBushing = (data) => {
     return client.post(`/${prefix}/create`, data)
 }
+
+export const deleteBushing = (id) => {
+    return client.delete(`/${prefix}/${id}`)
+}

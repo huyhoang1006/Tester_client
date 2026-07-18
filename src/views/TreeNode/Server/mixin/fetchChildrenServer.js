@@ -11,7 +11,7 @@ export default {
                         console.log('Fetched child organisations:', newRowsOwner)
                         if (newRowsOwner && newRowsOwner.length > 0) {
                             newRowsOwner.forEach((row) => {
-                                row.id = row.mrid || row.id || ''
+                                row.id = row.id || row.mrid || ''
                                 row.mrid = row.mrid || row.id || ''
                                 row.name = row.name || ''
                                 row.aliasName = row.shortName || row.name || ''
@@ -32,7 +32,7 @@ export default {
                         console.log('Fetched child substations:', newRowsSubstation)
                         if (newRowsSubstation && newRowsSubstation.length > 0) {
                             newRowsSubstation.forEach((row) => {
-                                row.id = row.mrid || row.id || ''
+                                row.id = row.id || row.mrid || ''
                                 row.mrid = row.mrid || row.id || ''
                                 row.name = row.name || ''
                                 row.aliasName = row.shortName || row.name || ''
@@ -55,7 +55,7 @@ export default {
                             console.log('Fetched child bays:', newRowsBay)
                             if (newRowsBay && newRowsBay.length > 0) {
                                 newRowsBay.forEach((row) => {
-                                    row.id = row.mrid || row.id || ''
+                                    row.id = row.id || row.mrid || ''
                                     row.mrid = row.mrid || row.id || ''
                                     row.name = row.name || ''
                                     row.aliasName = row.shortName || row.name || ''
@@ -80,7 +80,7 @@ export default {
                             console.log('Fetched child voltage levels:', newRowsVoltageLevel)
                             if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
                                 newRowsVoltageLevel.forEach((row) => {
-                                    row.id = row.mrid || row.id || ''
+                                    row.id = row.id || row.mrid || ''
                                     row.mrid = row.mrid || row.id || ''
                                     row.name = row.name || ''
                                     row.aliasName = row.shortName || row.name || ''
@@ -106,7 +106,7 @@ export default {
                             console.log('Fetched child assets of substation:', newRowsAsset)
                             if (newRowsAsset && newRowsAsset.length > 0) {
                                 newRowsAsset.forEach((row) => {
-                                    row.id = row.mrid || row.id || ''
+                                    row.id = row.id || row.mrid || ''
                                     row.mrid = row.mrid || row.id || ''
                                     row.apparatus_id = row.apparatus_id || row.apparatusId || ''
                                     row.serial_number = row.serial_number || row.serialNumber || ''
@@ -135,7 +135,7 @@ export default {
                             console.log('Fetched child bays of voltage level:', newRowsBay)
                             if (newRowsBay && newRowsBay.length > 0) {
                                 newRowsBay.forEach((row) => {
-                                    row.id = row.mrid || row.id || ''
+                                    row.id = row.id || row.mrid || ''
                                     row.mrid = row.mrid || row.id || ''
                                     row.name = row.name || ''
                                     row.aliasName = row.shortName || row.name || ''
@@ -161,7 +161,7 @@ export default {
                             console.log('Fetched child assets of bay:', newRowsAsset)
                             if (newRowsAsset && newRowsAsset.length > 0) {
                                 newRowsAsset.forEach((row) => {
-                                    row.id = row.mrid || row.id || ''
+                                    row.id = row.id || row.mrid || ''
                                     row.mrid = row.mrid || row.id || ''
                                     row.apparatus_id = row.apparatus_id || row.apparatusId || ''
                                     row.serial_number = row.serial_number || row.serialNumber || ''

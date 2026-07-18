@@ -3,6 +3,13 @@ export default {
         async showAddSubsInTree(node) {
             try {
                 this.parentOrganization = node
+                if (!this.clientSlide) {
+                    this.locationList = []
+                    this.personList = []
+                    this.organisationId = String(node.id || node.mrid || '')
+                    this.signSubs = true
+                    return
+                }
                 const [dataLocation, dataPerson] = await Promise.all([
                     window.electronAPI.getLocationByOrganisationId(node.mrid),
                     window.electronAPI.getPersonByOrganisationId(node.mrid)
@@ -18,7 +25,7 @@ export default {
                 } else {
                     this.personList = []
                 }
-                this.organisationId = node.mrid
+                this.organisationId = String(node.mrid || '')
                 this.signSubs = true
                 this.$nextTick(() => {
                     const substation = this.$refs.substation

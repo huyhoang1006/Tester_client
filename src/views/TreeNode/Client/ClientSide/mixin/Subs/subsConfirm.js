@@ -54,16 +54,18 @@ export default {
 
                     if (success) {
                         saveSuccess = true;
-                        let newRows = []
-                        if (this.organisationClientList && this.organisationClientList.length > 0) {
-                            const newRow = {
-                                mrid: data.substation.mrid,
-                                name: data.substation.name || 'Unnamed Substation',
-                                parentId: this.parentOrganization.mrid,
-                                parentName: this.parentOrganization.name,
-                                parentArr: this.parentOrganization.parentArr || [],
-                                mode: 'substation'
-                            }
+                        const newRow = {
+                            mrid: data.substation.mrid,
+                            name: data.substation.name || 'Unnamed Substation',
+                            parentId: this.clientSlide ? this.parentOrganization.mrid : this.parentOrganization.id,
+                            parentName: this.parentOrganization.name,
+                            parentArr: this.parentOrganization.parentArr || [],
+                            mode: 'substation'
+                        }
+                        if (!this.clientSlide) {
+                            await this.processCreatedNodeOnServer(newRow, this.processUploadSubstation)
+                        } else if (this.organisationClientList && this.organisationClientList.length > 0) {
+                            let newRows = []
                             newRows.push(newRow)
                             const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
                             if (node) {

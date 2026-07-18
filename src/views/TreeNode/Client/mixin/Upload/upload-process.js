@@ -81,7 +81,7 @@ export default {
                 if (!entityRes.success || !entityRes.data) throw new Error('Local substation data not found.')
                 if (!node.parentId) throw new Error('Cannot upload substation without parent organisation.')
 
-                const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                const parentNode = this.findUploadParentNode(node)
                 const serverPayload = mapSubstationEntityToServer(entityRes.data, parentNode)
                 const response = await demoAPI.createSubstation(serverPayload, node.parentId)
 
@@ -99,7 +99,7 @@ export default {
                 if (!entityRes.success || !entityRes.data) throw new Error('Local voltage level data not found.')
                 if (!node.parentId) throw new Error('Cannot upload voltage level without parent substation.')
 
-                const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                const parentNode = this.findUploadParentNode(node)
                 if (!parentNode) throw new Error('Parent node not found in Client Tree')
                 if (parentNode?.mode !== 'substation') {
                     throw new Error(`VoltageLevel parent must be Substation. Current parent mode: ${parentNode?.mode}`)
@@ -123,13 +123,13 @@ export default {
                 const entityRes = await window.electronAPI.getBayEntityByMrid(node.mrid)
                 if (!entityRes.success || !entityRes.data) throw new Error('Local bay data not found.')
                 if (!node.parentId) throw new Error('Cannot upload bay without parent.')
-                const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                const parentNode = this.findUploadParentNode(node)
                 if(!parentNode) throw new Error('Parent node not found in Client Tree')
                 const signParent = await this.checkParentBeforUpload(node.parentId, parentNode?.mode)
                 if(!signParent) {
                     return;
                 } else {
-                    let ownerType = this.normalizeOwnerType(parentNode?.mode)
+                    let ownerType = this.normalizeOwnerTypeCode(parentNode?.mode)
                     if(!ownerType) {
                         throw new Error(`Cannot resolve ownerType for parent node with mode: ${parentNode?.mode}`)
                     } else {
@@ -161,7 +161,7 @@ export default {
                 }
                 const serverPayload = PowerCableServerMapper.mapDtoToServer(dto)
 
-                const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                const parentNode = this.findUploadParentNode(node)
                 if (!parentNode) throw new Error('Parent node not found in Client Tree')
 
                 const signParent = await this.checkParentBeforUpload(node.parentId, parentNode?.mode)
@@ -184,7 +184,7 @@ export default {
                 if (!entityRes.success || !entityRes.data) throw new Error('Local transformer data not found.')
                 if (!node.parentId) throw new Error('Cannot upload transformer without parent.')
 
-                const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                const parentNode = this.findUploadParentNode(node)
                 if (!parentNode) throw new Error('Parent node not found in Client Tree')
                 const signParent = await this.checkParentBeforUpload(node.parentId, parentNode?.mode)
                 if (!signParent) return
@@ -212,7 +212,7 @@ export default {
                 if (!entityRes.success || !entityRes.data) throw new Error('Voltage transformer data not found.')
                 if (!node.parentId) throw new Error('Cannot upload voltage transformer without parent.')
 
-                const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                const parentNode = this.findUploadParentNode(node)
                 if (!parentNode) throw new Error('Parent node not found in Client Tree')
                 const signParent = await this.checkParentBeforUpload(node.parentId, parentNode?.mode)
                 if (!signParent) return
@@ -237,7 +237,7 @@ export default {
                 if (!entityRes.success || !entityRes.data) throw new Error('Current transformer data not found.')
                 if (!node.parentId) throw new Error('Cannot upload current transformer without parent.')
 
-                const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                const parentNode = this.findUploadParentNode(node)
                 if (!parentNode) throw new Error('Parent node not found in Client Tree')
                 const signParent = await this.checkParentBeforUpload(node.parentId, parentNode?.mode)
                 if (!signParent) return
@@ -261,7 +261,7 @@ export default {
                 if (!entityRes.success || !entityRes.data) throw new Error('Circuit breaker data not found.')
                 if (!node.parentId) throw new Error('Cannot upload circuit breaker without parent.')
 
-                const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                const parentNode = this.findUploadParentNode(node)
                 if (!parentNode) throw new Error('Parent node not found in Client Tree')
                 const signParent = await this.checkParentBeforUpload(node.parentId, parentNode?.mode)
                 if (!signParent) return
@@ -286,7 +286,7 @@ export default {
                 if (!entityRes.success || !entityRes.data) throw new Error('Disconnector data not found.')
                 if (!node.parentId) throw new Error('Cannot upload disconnector without parent.')
 
-                const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                const parentNode = this.findUploadParentNode(node)
                 if (!parentNode) throw new Error('Parent node not found in Client Tree')
                 const signParent = await this.checkParentBeforUpload(node.parentId, parentNode?.mode)
                 if (!signParent) return
@@ -310,7 +310,7 @@ export default {
                 if (!entityRes.success || !entityRes.data) throw new Error('Surge arrester data not found.')
                 if (!node.parentId) throw new Error('Cannot upload surge arrester without parent.')
 
-                const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                const parentNode = this.findUploadParentNode(node)
                 if (!parentNode) throw new Error('Parent node not found in Client Tree')
                 const signParent = await this.checkParentBeforUpload(node.parentId, parentNode?.mode)
                 if (!signParent) return
@@ -334,7 +334,7 @@ export default {
                 if (!entityRes.success || !entityRes.data) throw new Error('Local bushing data not found.')
                 if (!node.parentId) throw new Error('Cannot upload bushing without parent.')
 
-                const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                const parentNode = this.findUploadParentNode(node)
                 if (!parentNode) throw new Error('Parent node not found in Client Tree')
 
                 const signParent = await this.checkParentBeforUpload(node.parentId, parentNode?.mode)
@@ -369,7 +369,7 @@ export default {
                 if (!entityRes.success || !entityRes.data) throw new Error('Voltage transformer job data not found.')
                 if (!node.parentId) throw new Error('Cannot upload voltage transformer job without parent.')
 
-                const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                const parentNode = this.findUploadParentNode(node)
                 const ownerType = this._resolveOwnerType(parentNode)
 
                 const dto = voltageTransformerJobMapping.JobEntityToDto(entityRes.data)
@@ -501,6 +501,156 @@ export default {
                 case 'asset':       return 'ASSET'
                 default:             return 'SUBSTATION'
             }
+        },
+
+        findUploadParentNode(node) {
+            if (!node?.parentId) return null
+            return this.findNodeByIdOrMrid(node.parentId, this.organisationClientList)
+                || this.findNodeByIdOrMrid(node.parentId, this.ownerServerList)
+        },
+
+        async processCreatedNodeOnServer(node, uploadHandler) {
+            if (this.clientSlide) return false
+            if (!node || typeof uploadHandler !== 'function') return false
+
+            await uploadHandler.call(this, node)
+            await this.refreshServerParentAfterCreate(node)
+            return true
+        },
+
+        async refreshServerParentAfterCreate(node) {
+            const parentNode = this.findNodeByIdOrMrid(node.parentId, this.ownerServerList)
+            if (parentNode) {
+                this.$set(parentNode, 'children', null)
+                await this.fetchChildrenServer(parentNode)
+                this.$set(parentNode, 'expanded', true)
+            } else {
+                await this.getOwnerLocation()
+            }
+
+            return true
+        },
+
+        async saveAssetComponentToServer(component, assetType, serverTab = null) {
+            const dto = this.getAssetDtoFromComponent(component, assetType)
+            if (!dto) throw new Error(`Cannot read ${assetType} form data`)
+
+            const serialNo = dto.properties?.serial_no
+            if (!serialNo) {
+                this.$message.error('Serial number is required')
+                return { success: false }
+            }
+
+            const parentId = this.parentOrganization?.id
+            const ownerType = this.normalizeOwnerTypeCode(this.parentOrganization?.mode)
+            if (!parentId || !ownerType) {
+                throw new Error(`Cannot resolve ${assetType} parent on server`)
+            }
+
+            dto.psrId = parentId
+            this.applyServerTabIdToDto(dto, serverTab)
+            const response = await this.createAssetDtoOnServer(assetType, dto, parentId, ownerType, serverTab)
+            const serverId = this.extractUploadedServerId(response)
+            const apparatusId = dto.properties?.apparatus_id || dto.properties?.name || ''
+            const assetData = {
+                mrid: serverId || dto.properties?.mrid || '',
+                name: apparatusId,
+                apparatus_id: apparatusId,
+                serial_number: serialNo,
+                serial_no: serialNo,
+                type: dto.properties?.type || dto.properties?.asset_type || ''
+            }
+
+            return {
+                success: true,
+                data: {
+                    asset: assetData,
+                    bushing: assetData,
+                    assetPsr: { mrid: parentId },
+                    raw: response
+                }
+            }
+        },
+
+        getAssetDtoFromComponent(component, assetType) {
+            const keyByAsset = {
+                Transformer: 'transformerDto',
+                Bushing: 'bushing_data',
+                'Surge arrester': 'surge_arrester_data',
+                'Circuit breaker': 'circuitBreakerDto',
+                'Current transformer': 'currentTransformer',
+                'Voltage transformer': 'voltageTransformer',
+                'Power cable': 'powerCable',
+                Disconnector: 'disconnector'
+            }
+            const key = keyByAsset[assetType]
+            const dto = key ? component?.[key] : null
+            return dto ? JSON.parse(JSON.stringify(dto)) : null
+        },
+
+        applyServerTabIdToDto(dto, serverTab) {
+            const serverId = serverTab?.id || serverTab?.mrid
+            if (!serverId || !dto) return
+
+            dto.mrid = serverId
+            if (dto.properties) {
+                dto.properties.mrid = serverId
+            }
+        },
+
+        applyServerTabIdToPayload(payload, serverTab) {
+            const serverId = serverTab?.id || serverTab?.mrid
+            if (!serverId || !payload) return payload
+
+            payload.id = serverId
+            payload.mrid = serverId
+            payload.mRID = serverId
+            if (payload.assetInfo) payload.assetInfo.id = payload.assetInfo.id || null
+            if (payload.assetInfoResponseDTO) payload.assetInfoResponseDTO.id = payload.assetInfoResponseDTO.id || null
+
+            const coreKeys = [
+                'transformer',
+                'bushing',
+                'surgeArrester',
+                'circuitBreaker',
+                'currentTransformer',
+                'voltageTransformer',
+                'disconnector',
+                'powerCableCore'
+            ]
+            coreKeys.forEach((key) => {
+                if (payload[key]) payload[key].id = serverId
+            })
+
+            return payload
+        },
+
+        async createAssetDtoOnServer(assetType, dto, parentId, ownerType, serverTab = null) {
+            if (assetType === 'Transformer') {
+                return transformerAPI.createTransformer(this.applyServerTabIdToPayload(transformerMappingServer.mapDtoToServer(dto, ownerType), serverTab))
+            }
+            if (assetType === 'Bushing') {
+                return bushingAPI.createBushing(this.applyServerTabIdToPayload(bushingMappingServer.mapDtoToServer(dto, ownerType), serverTab))
+            }
+            if (assetType === 'Surge arrester') {
+                return surgeArresterAPI.createSurgeArrester(this.applyServerTabIdToPayload(surgeArresterMappingServer.mapDtoToServer(dto, ownerType), serverTab), parentId, ownerType)
+            }
+            if (assetType === 'Circuit breaker') {
+                return circuitBreakerAPI.createCircuitBreaker(this.applyServerTabIdToPayload(circuitBreakerMappingServer.mapDtoToServer(dto, ownerType), serverTab), parentId, ownerType)
+            }
+            if (assetType === 'Current transformer') {
+                return currentAPI.createCurrentTransformer(this.applyServerTabIdToPayload(currentTransformerMappingServer.mapDtoToServer(dto, ownerType), serverTab), parentId, ownerType)
+            }
+            if (assetType === 'Voltage transformer') {
+                return voltageAPI.createVoltageTransformer(this.applyServerTabIdToPayload(voltageTransformerMappingServer.mapDtoToServer(dto, ownerType), serverTab), parentId, ownerType)
+            }
+            if (assetType === 'Power cable') {
+                return demoAPI.createPowerCableCim(this.applyServerTabIdToPayload(PowerCableServerMapper.mapDtoToServer(dto), serverTab), parentId, ownerType)
+            }
+            if (assetType === 'Disconnector') {
+                return disconnectorAPI.createDisconnector(this.applyServerTabIdToPayload(disconnectorMappingServer.mapDtoToServer(dto, ownerType), serverTab))
+            }
+            throw new Error(`Unsupported asset type: ${assetType}`)
         },
 
         /** Resolve numericOwnerId theo ownerType (fallback nếu parentId đã là số) */

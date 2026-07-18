@@ -51,7 +51,7 @@ export default {
 
                     const deletePromise = this.clientSlide 
                         ? this.deleteDataClient(node)
-                        : Promise.reject(new Error('Delete from server not implemented'));
+                        : this.deleteDataServer(node);
 
                     // Xử lý timeout nếu có
                     if (timeoutValue > 0) {

@@ -2,6 +2,12 @@ export default {
     methods: {
         async showAddVoltageLevel(node) {
             try {
+                if (!this.clientSlide) {
+                    this.locationId = null
+                    this.parentOrganization = node
+                    this.signVoltageLevel = true
+                    return
+                }
                 const dataLocation = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid)
                 if (dataLocation.success) {
                     this.locationId = dataLocation.data.mrid

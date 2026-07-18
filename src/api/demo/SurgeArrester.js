@@ -8,3 +8,7 @@ export const getSurgeArresterById = (id) => {
 export const createSurgeArrester = (data) => {
     return client.post(`/${prefix}/create`, data)
 }
+
+export const deleteSurgeArrester = (id) => {
+    return client.delete(`/${prefix}/${id}`)
+}

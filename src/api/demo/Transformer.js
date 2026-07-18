@@ -6,5 +6,10 @@ export const getTransformerById = (id) => {
 }
 
 export const createTransformer = (data) => {
+    console.log('createTransformer', JSON.stringify(data))
     return client.post(`/${prefix}/create`, data)
+}
+
+export const deleteTransformer = (id) => {
+    return client.delete(`/${prefix}/${id}`)
 }

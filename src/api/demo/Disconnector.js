@@ -8,3 +8,7 @@ export const getDisconnectorById = (id) => {
 export const createDisconnector = (data) => {
     return client.post(`/${prefix}/create`, data)
 }
+
+export const deleteDisconnector = (id) => {
+    return client.delete(`/${prefix}/${id}`)
+}

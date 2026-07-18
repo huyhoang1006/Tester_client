@@ -135,3 +135,23 @@ export const createBay = (data, ownerId, ownerType) => {
 export const createTransformer = (data) => {
     return client.post(`/api/transformer/cim/create`, data)
 }
+
+export const deleteOrganisation = (id) => {
+    return client.delete(`/api/organisation/${id}`)
+}
+
+export const deleteSubstation = (id) => {
+    return client.delete(`/api/substation/${id}`)
+}
+
+export const deleteVoltageLevel = (id) => {
+    return client.delete(`/api/voltage-level/${id}`)
+}
+
+export const deleteBay = (id) => {
+    return client.delete(`/api/bay/${id}`)
+}
+
+export const deletePowerCable = (id) => {
+    return client.delete(`/api/power-cable/${id}`)
+}
