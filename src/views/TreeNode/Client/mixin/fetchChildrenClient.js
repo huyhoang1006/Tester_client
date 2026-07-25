@@ -722,6 +722,9 @@ export default {
                     }
                     // Đánh dấu đã fetch để tránh fetch lại không cần thiết
                     Vue.set(node, '_childrenFetched', true)
+                    if (this.applySyncStatesToTree) {
+                        await this.applySyncStatesToTree(node.children || [])
+                    }
                 } catch (error) {
                     console.error('Error fetching children:', error)
                     this.$message.error('Error fetching children: ' + error.message)

@@ -5,6 +5,7 @@ import * as DisconnectorMapper from '@/views/Mapping/Disconnector/index.js'
 import { fetchWithRetry } from './core-utils.js'
 import { traverseAndFillMrid, ensureTopLevelFK, FK_KEYS } from './fk-utils.js'
 import { detectConflicts, applyResolved, mergeWithoutSnapshot, DISCONNECTOR_FIELD_DEFS } from '@/utils/conflictUtils.js'
+import { applyDownloadedAssetMedia } from './asset-media-utils.js'
 
 // ─── Step 1: fetch full info từ server ───────────────────────────────────────
 
@@ -41,6 +42,7 @@ export async function downloadDisconnectorChain(data, ctx) {
     const serverDto       = DisconnectorServerMapper.mapServerToDto(serverData)
     serverDto.psrId       = data.parentBayId
     serverDto.properties.mrid = dc.mrid
+    await applyDownloadedAssetMedia(serverDto, 'Disconnector', dc.mrid)
 
     // 2. Lấy client data cũ nếu đã tồn tại
     const existingResult = await window.electronAPI.getDisconnectorEntityByMrid(

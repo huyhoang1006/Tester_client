@@ -5,6 +5,7 @@ import * as SurgeArresterMapper from '@/views/Mapping/SurgeArrester/index.js'
 import SurgeArresterEntity from '@/views/Flatten/SurgeArrester'
 import { fetchWithRetry } from './core-utils.js'
 import { traverseAndFillMrid, ensureTopLevelFK, FK_KEYS } from './fk-utils.js'
+import { applyDownloadedAssetMedia } from './asset-media-utils.js'
 
 // SurgeArrester không có conflict dialog vì tableRating là array phức tạp
 // Server wins nếu client rỗng, giữ client nếu đã có data
@@ -44,6 +45,7 @@ export async function downloadSurgeArresterChain(data, ctx) {
     const serverDto       = SurgeArresterServerMapper.mapServerToDto(serverData)
     serverDto.psrId       = data.parentBayId
     serverDto.properties.mrid = sa.mrid
+    await applyDownloadedAssetMedia(serverDto, 'Surge arrester', sa.mrid)
 
     // 2. Lấy client data cũ nếu đã tồn tại
     const existingResult = await window.electronAPI.getSurgeArresterEntityByMrid(

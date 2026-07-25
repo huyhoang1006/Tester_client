@@ -72,15 +72,64 @@ const mapSmallClassRating = (cr) => ({
     operatingBurdenCos: str(cr?.operatingBurdenCos),
 })
 
+const mapSystemVoltageType = (value) => {
+    const raw = value && typeof value === 'object' ? value.value : value
+    return str(raw)
+}
+
 // ─── Mapper: server response → DTO (download) ────────────────────────────────
 
 export const mapServerToDto = (serverData) => {
     const dto = new CurrentTransformerDto();
     if (!serverData) return dto;
+    serverData = serverData.data || serverData
 
-    const assetInfo = serverData.assetInfo || serverData.assetInfoResponseDTO || {};
-    const core      = serverData.currentTransformerCoreResponse || serverData.currentTransformerCore || {};
-    const taps      = serverData.currentTransformerTapsResponses || serverData.currentTransformerTaps || [];
+    if (serverData.CurrentTransformer) {
+        const ct = serverData.CurrentTransformer
+        const properties = ct.properties || {}
+        const ratings = ct.ratings || {}
+
+        Object.assign(dto.properties, properties)
+        dto.properties.asset_type = ASSET_TYPE_MAP[properties.asset_type || properties.type] || properties.asset_type || properties.type || ''
+        dto.properties.type = dto.properties.asset_type
+        dto.properties.kind = properties.kind || 'Current transformer'
+        dto.properties.manufacturer_year = properties.manufacturer_year || properties.manufacturing_year || ''
+        dto.properties.manufacturing_year = properties.manufacturing_year || properties.manufacturer_year || ''
+
+        Object.assign(dto.ratings, ratings)
+        if (ratings.standard) {
+            dto.ratings.standard = {
+                ...dto.ratings.standard,
+                ...ratings.standard,
+                value: ratings.standard.value ? String(ratings.standard.value).replace(/_/g, '') : ''
+            }
+        }
+        if (ratings.system_voltage_type && typeof ratings.system_voltage_type !== 'object') {
+            dto.ratings.system_voltage_type = {
+                ...dto.ratings.system_voltage_type,
+                value: ratings.system_voltage_type
+            }
+        }
+        if (ct.ctConfiguration) {
+            Object.assign(dto.ctConfiguration, ct.ctConfiguration)
+        }
+        if (ct.config) {
+            Object.assign(dto.config, ct.config)
+        }
+        dto.assetInfoId = ct.assetInfoId || ''
+        dto.productAssetModelId = ct.productAssetModelId || ''
+        dto.lifecycleDateId = ct.lifecycleDateId || ''
+        dto.assetPsrId = ct.assetPsrId || ''
+        dto.psrId = ct.psrId || ''
+        dto.attachmentId = ct.attachmentId || ''
+        dto.locationId = ct.locationId || ''
+
+        return dto
+    }
+
+    const assetInfo = serverData.assetInfo || serverData.assetInfoResponseDTO || serverData.assetInfoResponse || {};
+    const core      = serverData.currentTransformerCoreResponse || serverData.currentTransformerCoreResponseDTO || serverData.currentTransformerCore || {};
+    const taps      = serverData.currentTransformerTapsResponses || serverData.currentTransformerTapsResponseDTOList || serverData.currentTransformerTaps || [];
 
     // ─── IDs ─────────────────────────────────────────────────────────────────
     // Tất cả IDs phải có giá trị hợp lệ — nếu server không trả về thì tạo UUID mới
@@ -142,7 +191,7 @@ export const mapServerToDto = (serverData) => {
 
     dto.ratings.system_voltage_type = {
         mrid:  uuid.newUuid(),
-        value: core.systemVoltageType || null,
+        value: core.systemVoltageType || core.system_voltage_type || null,
         unit:  null,
     }
 
@@ -361,6 +410,8 @@ export const mapDtoToServer = (dto, ownerType) => {
                 country_of_origin: p.country_of_origin || null,
                 apparatus_id:      p.apparatus_id || null,
                 comment:           p.comment || null,
+                phase:             dto.config?.phase || null,
+                numberOfPhase:     toNumberOrNull(dto.config?.number_of_phase),
             },
             ratings: {
                 standard: {
@@ -386,16 +437,17 @@ export const mapDtoToServer = (dto, ownerType) => {
                 ith_rms:          mapBurden(ratings.ith_rms),
                 ith_duration:     mapBurden(ratings.ith_duration),
                 system_voltage:   mapBurden(ratings.system_voltage),
-                system_voltage_type: ratings.system_voltage_type?.value || ratings.system_voltage_type || null,
+                system_voltage_type: mapSystemVoltageType(ratings.system_voltage_type),
                 bil:               mapBurden(ratings.bil),
                 rating_factor:     str(ratings.rating_factor),
                 rating_factor_temp: mapBurden(ratings.rating_factor_temp),
             },
             ctConfiguration: {
                 cores: str(ctConfig.cores),
-                dataCT: (ctConfig.dataCT || []).map(core => {
+                dataCT: (ctConfig.dataCT || []).map((core, coreIndex) => {
                     const ft   = core.fullTap?.table       || {}
                     const ftCR = core.fullTap?.classRating || {}
+                    const coreNumber = coreIndex + 1
                     return {
                         mrid:      core.mrid || null,
                         taps:      str(core.taps),
@@ -436,7 +488,7 @@ export const mapDtoToServer = (dto, ownerType) => {
                                 burdenCos:          str(ftCR.burdenCos),
                                 operatingBurden:    mapBurden(ftCR.operatingBurden),
                                 operatingBurdenCos: str(ftCR.operatingBurdenCos),
-                                core_index:         toNumberOrNull(ftCR.core_index),
+                                core_index:         coreNumber,
                                 ratio_error:        mapBurden(ftCR.ratio_error),
                             },
                         },
@@ -523,9 +575,7 @@ export const mapDtoToServer = (dto, ownerType) => {
                 ith_duration:     mapBurden(ratings.ith_duration),
                 system_voltage:   mapBurden(ratings.system_voltage),
 
-                system_voltage_type: ratings.system_voltage_type?.value
-                    || ratings.system_voltage_type
-                    || null,
+                system_voltage_type: mapSystemVoltageType(ratings.system_voltage_type),
 
                 bil:               mapBurden(ratings.bil),
                 rating_factor:     str(ratings.rating_factor),
@@ -534,7 +584,7 @@ export const mapDtoToServer = (dto, ownerType) => {
 
             ctConfiguration: {
                 cores: str(ctConfig.cores),
-                dataCT: (ctConfig.dataCT || []).map(core => {
+                dataCT: (ctConfig.dataCT || []).map((core, coreIndex) => {
                     const ft   = core.fullTap?.table       || {}
                     const ftCR = core.fullTap?.classRating || {}
 
@@ -585,7 +635,7 @@ export const mapDtoToServer = (dto, ownerType) => {
                                 burdenCos:          str(ftCR.burdenCos),
                                 operatingBurden:    mapBurden(ftCR.operatingBurden),
                                 operatingBurdenCos: str(ftCR.operatingBurdenCos),
-                                core_index:         ftCR.core_index ?? null,
+                                core_index:         coreIndex + 1,
                                 ratio_error:        mapBurden(ftCR.ratio_error),
                             },
                         },

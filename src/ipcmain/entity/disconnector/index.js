@@ -36,7 +36,8 @@ export const getDisconnectorEntityByMrid = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data : rs.data
+                    data: rs.data,
+                    changed: rs.changed
                 }
             }
             else {

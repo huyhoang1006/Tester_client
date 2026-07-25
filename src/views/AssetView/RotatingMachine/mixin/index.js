@@ -24,6 +24,7 @@ export default {
                         return {
                             success: true,
                             data: rs.data,
+                            changed: rs.changed
                         };
                     } else {
                         this.$message.error("Error saving Rotating Machine entity: " + rs.message);
@@ -62,7 +63,7 @@ export default {
                 this.$message.success("Asset saved successfully")
                 
                 console.log('[ROTATING_MACHINE] Emitting reload event with saved data')
-                this.$emit('reload', { savedData: this.rotatingMachine })
+                this.$emit('reload', { savedData: this.rotatingMachine, changed: data.changed === true })
                 console.log('[ROTATING_MACHINE] Reload event emitted')
             } else {
                 this.$message.error("Failed to save asset")

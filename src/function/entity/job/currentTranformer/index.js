@@ -1,6 +1,7 @@
 import db from '../../../datacontext/index.js'
 import * as attachmentContext from '../../../attachmentcontext/index'
 import path from 'path'
+import { writeJobSaveAuditLog, writeJobDeleteAuditLog } from '../jobAudit'
 import { uploadAttachmentTransaction, deleteAttachmentByIdTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType } from '@/function/entity/attachment'
 import { insertOldWorkTransaction, getOldWorkById, deleteOldWorkByIdTransaction } from "@/function/cim/oldWork/index"
 import { insertTestingEquipmentTransaction, getTestingEquipmentByWorkId, ensureTestingEquipmentAssetTransaction, persistJobCalibrationTransaction, unlinkTestingEquipmentFromWorkTransaction } from '../../testingEquipment/index.js'
@@ -338,7 +339,8 @@ export const insertCurrentTransformerJobEntity = async (old_entity, entity) => {
             }
 
             await runAsync('COMMIT');
-            return { success: true, data: entity, message: 'Current Transformer Job entity inserted successfully' };
+            const auditResult = await writeJobSaveAuditLog('Current Transformer Job', old_entity, entity);
+            return { success: true, data: entity, changed: auditResult.changed, message: 'Current Transformer Job entity inserted successfully' };
 
         }
     } catch (error) {
@@ -578,6 +580,7 @@ export const deleteCurrentTransformerJobEntity = async (entity) => {
             }
         }
 
+        await writeJobDeleteAuditLog('Current Transformer Job', entity);
         return { success: true, message: 'Current Transformer Job entity deleted successfully' };
 
     } catch (error) {

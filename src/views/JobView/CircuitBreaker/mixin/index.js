@@ -27,6 +27,7 @@ export default {
                         return {
                             success: true,
                             data: rs.data,
+                            changed: rs.changed,
                             message: 'Job saved successfully'
                         }
                     } else {

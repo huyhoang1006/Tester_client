@@ -113,6 +113,31 @@ export async function fetchFullInfoForChain(chain) {
     return fullInfoChain
 }
 
+function extractDownloadedSyncNode(node) {
+    if (!node || typeof node !== 'object') return null
+
+    const keyByType = {
+        organisation: 'organisation',
+        substation: 'substation',
+        voltageLevel: 'voltageLevel',
+        bay: 'bay',
+    }
+    const dataKey = node._type === 'asset'
+        ? Object.keys(node).find(key => node[key] && typeof node[key] === 'object' && (node[key].mrid || node[key].id))
+        : keyByType[node._type]
+    const data = dataKey && node[dataKey] ? node[dataKey] : node
+    const mrid = data && (data.mrid || data.id)
+
+    if (!mrid) return null
+    return {
+        mrid: String(mrid),
+        id: String(mrid),
+        mode: node._type || data._type || data.mode,
+        asset: node.asset || data.asset || null,
+        job: node.job || data.job || null
+    }
+}
+
 export async function downloadChainInfo(chainInfo, ctx) {
     const strategies = {
         'organisation': downloadOrganisationChain, // Sử dụng hàm download Organisation đã có
@@ -138,6 +163,10 @@ export async function downloadChainInfo(chainInfo, ctx) {
         }
         if (strategy) {
             await strategy(node, ctx)
+            if (ctx && ctx.markDownloadedNodeSynced) {
+                const syncNode = extractDownloadedSyncNode(node)
+                if (syncNode) await ctx.markDownloadedNodeSynced(syncNode)
+            }
         }
     }
 }

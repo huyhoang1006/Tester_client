@@ -149,8 +149,8 @@ export const checkAssetDuplicateByKeys = async ({ serialNumber, manufacturer, as
     const type = String(assetType || '').trim()
     const currentMrid = String(excludeMrid || '').trim()
 
-    if (!serial || !maker || !type) {
-        return { success: true, exists: false, data: null, message: 'Duplicate check skipped because key is incomplete' }
+    if (!serial) {
+        return { success: true, exists: false, data: null, message: 'Duplicate check skipped because serial number is empty' }
     }
 
     return new Promise((resolve, reject) => {

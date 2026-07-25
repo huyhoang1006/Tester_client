@@ -56,6 +56,7 @@ export default {
                     const { success, data } = result;
 
                     if (success) {
+                        await this.markSavedExistingResultDirtyIfChanged(result)
                         saveSuccess = true;
                         const bushingData = data.bushing
                         if (this.isEditMode) {

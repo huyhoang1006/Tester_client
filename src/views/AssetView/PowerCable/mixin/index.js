@@ -26,6 +26,7 @@ export default {
                         return {
                             success: true,
                             data: rs.data,
+                            changed: rs.changed
                         };
                     } else {
                         this.$message.error("Error saving Power Cable entity: " + rs.message);
@@ -62,7 +63,7 @@ export default {
                 this.$message.success("Asset saved successfully")
 
                 console.log('[POWER_CABLE] Emitting reload event with saved data')
-                this.$emit('reload', { savedData: this.powerCable })
+                this.$emit('reload', { savedData: this.powerCable, changed: data.changed === true })
                 console.log('[POWER_CABLE] Reload event emitted')
             } else {
                 this.$message.error("Failed to save asset")

@@ -25,6 +25,11 @@
             <!-- chỉ organisation + job dùng icon phẳng mới -->
             <i v-else-if="node.mode === 'job'" class="fa-solid fa-clipboard-list type-icon icon-job"></i>
             <i v-else class="fa-solid fa-building type-icon icon-org"></i>
+            <span
+                v-if="showSyncBadge"
+                class="sync-badge"
+                :class="'sync-' + syncStatus"
+                :title="syncTitle"></span>
             <span class="node-name">{{ displayLabel }}</span>
         </div>
 
@@ -102,6 +107,19 @@ export default {
             if (this.node.mode === 'asset') return this.node.apparatus_id || this.node.serial_number
             if (this.node.mode === 'job') return this.node.name
             return this.node.aliasName || this.node.name
+        },
+        syncStatus() {
+            if (!this.node) return ''
+            return this.node.sync_status || this.node.syncStatus || ''
+        },
+        showSyncBadge() {
+            return ['dirty', 'syncing', 'failed'].includes(this.syncStatus)
+        },
+        syncTitle() {
+            if (this.syncStatus === 'dirty') return 'Changed locally, not synced to server'
+            if (this.syncStatus === 'syncing') return 'Syncing with server'
+            if (this.syncStatus === 'failed') return this.node.sync_error || 'Sync failed'
+            return ''
         },
         sortedChildren() {
             if (!this.node || !Array.isArray(this.node.children) || this.node.children.length === 0) {
@@ -262,6 +280,24 @@ export default {
     color: #146ebe;
 }
 
+.sync-badge {
+    width: 7px;
+    height: 7px;
+    flex: 0 0 7px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px #fff;
+}
+.sync-dirty {
+    background: #f59e0b;
+}
+.sync-syncing {
+    background: #146ebe;
+    animation: sync-pulse 1.2s ease-in-out infinite;
+}
+.sync-failed {
+    background: #d7001b;
+}
+
 /* ===== Mũi tên expand ===== */
 .arrow-wrapper {
     width: 20px;
@@ -335,6 +371,14 @@ export default {
     }
     50% {
         opacity: 0.3;
+    }
+}
+@keyframes sync-pulse {
+    0%, 100% {
+        opacity: 0.4;
+    }
+    50% {
+        opacity: 1;
     }
 }
 .refreshing {

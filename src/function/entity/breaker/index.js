@@ -42,6 +42,7 @@ import { insertPickupVoltageBreakerInfoTransaction, getPickupVoltageBreakerInfoB
 import { insertMotorCharacteristicsBreakerInfoTransaction, getMotorCharacteristicsBreakerInfoByAssessmentLimitId, deleteMotorCharacteristicsBreakerInfoTransaction } from '@/function/cim/motorCharacteristicsBreakerInfo'
 import { insertUnderVoltageReleaseBreakerInfoTransaction, getUnderVoltageReleaseBreakerInfoByAssessmentLimitId, deleteUnderVoltageReleaseBreakerInfoTransaction } from '@/function/cim/underVoltageReleaseBreakerInfo'
 import { insertOvercurrentReleaseBreakerInfoTransaction, getOvercurrentReleaseBreakerInfoByAssessmentLimitId, deleteOvercurrentReleaseBreakerInfoTransaction } from '@/function/cim/overcurrentReleaseBreakerInfo'
+import { writeAssetSaveAuditLog, writeAssetDeleteAuditLog } from '../assetAudit/index'
 
 
 export const insertBreakerEntity = async (old_entity, entity) => {
@@ -208,7 +209,8 @@ export const insertBreakerEntity = async (old_entity, entity) => {
 
             await runAsync('COMMIT');
             deleteBackupFiles(null, entity.asset.mrid);
-            return { success: true, data: entity, message: 'Breaker entity inserted successfully' };
+            const auditResult = await writeAssetSaveAuditLog('Circuit breaker', old_entity, entity)
+            return { success: true, data: entity, changed: auditResult.changed, message: 'Breaker entity inserted successfully' };
         }
     } catch (error) {
         console.error('Error in insertBreakerEntity:', error);
@@ -1372,6 +1374,7 @@ export const deleteBreakerEntity = async (entity) => {
         }
 
         await runAsync('COMMIT');
+        await writeAssetDeleteAuditLog('Circuit breaker', entity)
         return { success: true, message: 'Breaker entity deleted successfully' };
 
     } catch (error) {

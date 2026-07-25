@@ -7,8 +7,8 @@
                 <div class="scroll-btn left" @click="scrollLeft"><i class="fa-solid fa-chevron-left"></i></div>
                 <div class="tabs-header-data" ref="tabsHeader" @scroll="checkScroll">
                     <div v-for="(tab, index) in tabs" :key="tab.mrid || tab.id" @click="selectTab(tab, index)"
-                        @mouseover="hoveredTab = tab.mrid" @mouseleave="hoveredTab = null" class="tab-item"
-                        :class="{ active: compareTab(activeTab, tab) }" ref="tabItems">
+                        @mouseover="hoveredTab = tab.mrid || tab.id" @mouseleave="hoveredTab = null" class="tab-item"
+                        :class="{ active: compareTab(activeTab, tab), 'before-active': compareTab(activeTab, tabs[index + 1]), 'before-hovered': tabs[index + 1] && hoveredTab === (tabs[index + 1].mrid || tabs[index + 1].id) }" ref="tabItems">
                         <div class="icon-wrapper mgl-10">
                             <icon v-if="tab.mode == 'substation'" size="16px" folderType="location" badgeColor="146EBE"></icon>
                             <icon v-else-if="tab.mode == 'voltageLevel'" size="16px" folderType="voltageLevel" badgeColor="146EBE"></icon>
@@ -24,7 +24,7 @@
                             <span v-else-if="tab.mode == 'asset'" class="tab-label">{{ tab.apparatus_id || tab.serial_number }}</span>
                             <span v-else-if="tab.mode == 'job'" class="tab-label">{{ tab.name }}</span>
                         </div>
-                        <span class="close-icon mgr-10 mgl-10" :class="{ visible: hoveredTab === tab.mrid || compareTab(activeTab, tab) }" @click.stop="closeTab(index)">✖</span>
+                        <span class="close-icon mgr-10 mgl-10" :class="{ visible: hoveredTab === (tab.mrid || tab.id) || compareTab(activeTab, tab) }" @click.stop="closeTab(index)">✖</span>
                     </div>
                 </div>
                 <div class="scroll-btn right" @click="scrollRight"><i class="fa-solid fa-angle-right"></i></div>
@@ -43,7 +43,7 @@
                                 :key="activeTab.mrid || activeTab.id"
                                 :ref="'component_' + (activeTab.mrid || activeTab.id)" 
                                 mode="update"
-                                @reload="handleReload(activeTab, indexTab, $event)" 
+                                @reload="(...args) => handleReload(activeTab, indexTab, ...args)" 
                                 :sideData="sideSign"
                                 :is="checkTab(activeTab)" 
                                 :organisationId="String(activeTab.parentId)"
@@ -74,8 +74,8 @@
                 <div class="scroll-btn left" @click="scrollLeft"><i class="fa-solid fa-chevron-left"></i></div>
                 <div class="tabs-header-data" ref="tabsHeader" @scroll="checkScroll">
                     <div v-for="(tab, index) in tabs" :key="tab.mrid || tab.id" @click="selectTab(tab, index)"
-                        @mouseover="hoveredTab = tab.mrid" @mouseleave="hoveredTab = null" class="tab-item"
-                        :class="{ active: compareTab(activeTab, tab) }" ref="tabItems">
+                        @mouseover="hoveredTab = tab.mrid || tab.id" @mouseleave="hoveredTab = null" class="tab-item"
+                        :class="{ active: compareTab(activeTab, tab), 'before-active': compareTab(activeTab, tabs[index + 1]), 'before-hovered': tabs[index + 1] && hoveredTab === (tabs[index + 1].mrid || tabs[index + 1].id) }" ref="tabItems">
                         <div class="icon-wrapper mgl-10">
                             <icon v-if="tab.mode == 'substation'" size="16px" folderType="location" badgeColor="146EBE"></icon>
                             <icon v-else-if="tab.mode == 'voltageLevel'" size="16px" folderType="voltageLevel" badgeColor="146EBE"></icon>
@@ -91,7 +91,7 @@
                             <span v-else-if="tab.mode == 'asset'" class="tab-label">{{ tab.apparatus_id || tab.serial_number }}</span>
                             <span v-else-if="tab.mode == 'job'" class="tab-label">{{ tab.name }}</span>
                         </div>
-                        <span class="close-icon mgr-10 mgl-10" :class="{ visible: hoveredTab === tab.mrid || compareTab(activeTab, tab) }" @click.stop="closeTab(index)">✖</span>
+                        <span class="close-icon mgr-10 mgl-10" :class="{ visible: hoveredTab === (tab.mrid || tab.id) || compareTab(activeTab, tab) }" @click.stop="closeTab(index)">✖</span>
                     </div>
                 </div>
                 <div class="scroll-btn right" @click="scrollRight"><i class="fa-solid fa-angle-right"></i></div>
@@ -106,7 +106,7 @@
                                 v-if="activeTab && (activeTab.mrid || activeTab.id)"
                                 :key="activeTab.mrid || activeTab.id" 
                                 :ref="'component_' + (activeTab.mrid || activeTab.id)"
-                                mode="update" @reload="handleReload(activeTab, indexTab, $event)" :sideData="sideSign"
+                                mode="update" @reload="(...args) => handleReload(activeTab, indexTab, ...args)" :sideData="sideSign"
                                 :is="checkTab(activeTab)" :organisationId="String(activeTab.parentId)"
                                 
                                 :testTypeListData="getContext(activeTab.mrid || activeTab.id).testTypeListData" 
@@ -174,6 +174,7 @@ import * as CurrentTransformerServerMapper from '@/views/Mapping/ServerToDTO/Cur
 import * as DisconnectorServerMapper from '@/views/Mapping/ServerToDTO/Disconnector/index.js'
 import * as CircuitBreakerServerMapper from '@/views/Mapping/ServerToDTO/CircuitBreaker/index.js'
 import * as BushingServerMapper from '@/views/Mapping/ServerToDTO/Bushing/index.js'
+import * as CircuitBreakerAPI from '@/api/demo/CircuitBreaker.js'
 
 import VoltageLevel from '@/views/VoltageLevel/index.vue'
 import Bay from '@/views/Bay/index.vue'
@@ -204,6 +205,7 @@ import Transformer from '@/views/AssetView/Transformer/index.vue'
 import Icon from '@/views/Common/Icon.vue'
 import * as SurgeArresterServerMapper from '@/views/Mapping/ServerToDTO/SurgeArrester/index.js'
 import { startLoading } from '@/utils/loading'
+import { downloadAssetMediaToAttachmentData } from '@/utils/assetMedia.js'
 
 export default {
     name: "Tabs",
@@ -238,6 +240,8 @@ export default {
         value: {
             handler(newVal) {
                 this.activeTab = newVal;
+                const activeKey = newVal ? (newVal.mrid || newVal.id) : null;
+                this.indexTab = activeKey ? this.tabs.findIndex((tab) => (tab.mrid || tab.id) === activeKey) : null;
             },
             deep: true
         },
@@ -292,14 +296,36 @@ export default {
             });
         },
 
+        async attachServerAssetMedia(dto, assetType, serverAssetId) {
+            try {
+                const attachmentData = await downloadAssetMediaToAttachmentData(assetType, serverAssetId)
+                if (!attachmentData.length) return dto
+                if (!dto.attachment) dto.attachment = {}
+                dto.attachment.path = JSON.stringify(attachmentData)
+            } catch (error) {
+                console.warn(`[Server Asset Media] Failed to load media for ${assetType}:`, error)
+            }
+            return dto
+        },
+
         async handleReload(tab, index, ...args) {
             let savedData
             if (args.length === 1) {
                 const eventData = args[0]
                 savedData = eventData?.savedData
+                if (eventData && eventData.syncState) {
+                    this.$emit('sync-state-changed', eventData.syncState)
+                } else if (eventData && eventData.changed === true && tab && (tab.mrid || tab.id)) {
+                    this.$emit('sync-state-changed', { mrid: tab.mrid || tab.id, status: 'dirty', existingOnly: true })
+                }
             } else if (args.length === 2) {
                 const eventData = args[1]
                 savedData = eventData?.savedData
+                if (eventData && eventData.syncState) {
+                    this.$emit('sync-state-changed', eventData.syncState)
+                } else if (eventData && eventData.changed === true && tab && (tab.mrid || tab.id)) {
+                    this.$emit('sync-state-changed', { mrid: tab.mrid || tab.id, status: 'dirty', existingOnly: true })
+                }
             }
             await this.loadData(tab, index, savedData)
         },
@@ -922,6 +948,7 @@ export default {
                     if (response) {
                         const serverData = response.data || response;
                         const dto = TransformerServerMapper.mapServerToDto(serverData);
+                        await this.attachServerAssetMedia(dto, 'Transformer', tab.mrid)
                         this.$set(tab, 'apparatus_id', dto.properties?.apparatus_id);
                         this.$set(tab, 'serial_number', dto.properties?.serial_no || tab.serial_number);
                         this.executeOrQueueLoadData(id, (comp) => comp.loadData(dto));
@@ -932,6 +959,7 @@ export default {
                     const response = await demoAPI.getAssetById(tab.mrid, 'PowerCable');
                     if (response) {
                         const dto = PowerCableServerMapper.mapServerToDto(response);
+                        await this.attachServerAssetMedia(dto, 'Power cable', tab.mrid)
                         this.$set(tab, 'apparatus_id', dto.properties?.apparatus_id);
                         this.$set(tab, 'serial_number', dto.properties?.serial_no || tab.serial_number);
                         this.executeOrQueueLoadData(id, (comp) => comp.loadData(dto));
@@ -947,6 +975,7 @@ export default {
                         
                         // Map sang cấu trúc DTO cho UI
                         const dto = SurgeArresterServerMapper.mapServerToDto(serverData);
+                        await this.attachServerAssetMedia(dto, 'Surge arrester', tab.mrid)
 
                         this.$set(tab, 'apparatus_id', dto.properties?.apparatus_id);
                         this.$set(tab, 'serial_number', dto.properties?.serial_no || tab.serial_number);
@@ -961,6 +990,7 @@ export default {
                     if (response) {
                         const serverData = response.data || response;
                         const dto = DisconnectorServerMapper.mapServerToDto(serverData);
+                        await this.attachServerAssetMedia(dto, 'Disconnector', tab.mrid)
                         this.$set(tab, 'apparatus_id', dto.properties?.apparatus_id);
                         this.$set(tab, 'serial_number', dto.properties?.serial_no || tab.serial_number);
                         this.executeOrQueueLoadData(id, (comp) => comp.loadData(dto));
@@ -973,6 +1003,7 @@ export default {
                     if (response) {
                         const serverData = response.data || response;
                         const dto = BushingServerMapper.mapServerToDto(serverData);
+                        await this.attachServerAssetMedia(dto, 'Bushing', tab.mrid)
                         this.$set(tab, 'apparatus_id', dto.properties?.apparatus_id);
                         this.$set(tab, 'serial_number', dto.properties?.serial_no || tab.serial_number);
                         this.executeOrQueueLoadData(id, (comp) => comp.loadData(dto));
@@ -984,6 +1015,7 @@ export default {
                     if (response) {
                         const serverData = response.data || response;
                         const dto = VoltageTransformerServerMapper.mapServerToDto(serverData);
+                        await this.attachServerAssetMedia(dto, 'Voltage transformer', tab.mrid)
                         this.$set(tab, 'apparatus_id', dto.properties?.apparatus_id);
                         this.$set(tab, 'serial_number', dto.properties?.serial_no || tab.serial_number);
                         this.executeOrQueueLoadData(id, (comp) => comp.loadData(dto));
@@ -995,6 +1027,8 @@ export default {
                     if (response) {
                         const serverData = response.data || response;
                         const dto = CurrentTransformerServerMapper.mapServerToDto(serverData);
+                        await this.attachServerAssetMedia(dto, 'Current transformer', tab.mrid)
+                        if (!dto.properties.mrid) dto.properties.mrid = tab.mrid || tab.id || '';
                         this.$set(tab, 'apparatus_id', dto.properties?.apparatus_id);
                         this.$set(tab, 'serial_number', dto.properties?.serial_no || tab.serial_number);
                         this.executeOrQueueLoadData(id, (comp) => comp.loadData(dto));
@@ -1002,10 +1036,12 @@ export default {
                         this.$message.error("Failed to load Current transformer data");
                     }
                 } else if (tab.mode === 'asset' && tab.asset === 'Circuit breaker') {
-                    const response = await demoAPI.getAssetById(tab.mrid, 'CircuitBreaker');
+                    const response = await CircuitBreakerAPI.getCircuitBreakerById(tab.mrid);
                     if (response) {
                         const serverData = response.data || response;
                         const dto = CircuitBreakerServerMapper.mapServerToDto(serverData);
+                        await this.attachServerAssetMedia(dto, 'Circuit breaker', tab.mrid)
+                        if (!dto.properties.mrid) dto.properties.mrid = tab.mrid || tab.id || '';
                         this.$set(tab, 'apparatus_id', dto.properties?.apparatus_id);
                         this.$set(tab, 'serial_number', dto.properties?.serial_no || tab.serial_number);
                         this.executeOrQueueLoadData(id, (comp) => comp.loadData(dto));
@@ -1176,19 +1212,23 @@ export default {
 
 .tabs-header {
     display: flex;
+    align-items: flex-end;
     width: 100%;
     box-sizing: border-box;
-    height: 40px;
+    height: 38px;
+    padding: 4px 4px 0;
+    background: #e8f0fe;
+    border-bottom: 0;
 }
 
 .tabs-header-data {
     display: flex;
+    align-items: flex-end;
     height: 100%;
-    padding: 3px;
-    gap: 8px;
+    padding: 0 1px;
+    gap: 0;
     box-sizing: border-box;
-    width: calc(100% - 40px);
-    border-bottom: 1px rgb(224, 222, 222) solid;
+    width: 100%;
     flex-wrap: nowrap;
     overflow-x: hidden;
     overflow-y: hidden;
@@ -1197,35 +1237,128 @@ export default {
 .tab-item {
     display: flex;
     align-items: center;
+    position: relative;
     cursor: pointer;
-    transition: border-bottom 0.3s;
-    height: 100%;
+    transition: background-color 0.16s ease, color 0.16s ease;
+    height: 34px;
+    flex: 1 1 180px;
+    min-width: 72px;
+    max-width: 210px;
+    padding: 0 8px 0 10px;
+    border: 0;
+    border-radius: 12px 12px 0 0;
+    color: #3f4a5a;
+    font-size: 13px;
     white-space: nowrap;
+    background: transparent;
+    margin-top: 0;
+}
+
+.tab-item:not(.active)::before {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 10px;
+    bottom: 10px;
+    width: 1px;
+    background: rgba(83, 103, 135, 0.22);
+}
+
+.tab-item:not(.active):hover {
+    background: #d2e3fc;
+    border-radius: 10px;
+    color: #1f2937;
 }
 
 .tab-item.active {
-    border-bottom: 3px solid #012596;
-    font-weight: bold;
+    background: #ffffff;
+    color: #111827;
+    font-weight: 500;
+    box-shadow: none;
+    z-index: 2;
+    margin-bottom: -1px;
+}
+
+.tab-item.active .icon-wrapper::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    background: #ffffff;
+    pointer-events: none;
+}
+
+.tab-item.active::before {
+    content: "";
+    position: absolute;
+    left: -8px;
+    bottom: 0;
+    width: 8px;
+    height: 8px;
+    border-bottom-right-radius: 8px;
+    box-shadow: 4px 4px 0 4px #ffffff;
+    pointer-events: none;
+}
+
+.tab-item.active::after {
+    content: "";
+    position: absolute;
+    right: -8px;
+    bottom: 0;
+    width: 8px;
+    height: 8px;
+    border-bottom-left-radius: 8px;
+    box-shadow: -4px 4px 0 4px #ffffff;
+    pointer-events: none;
+}
+
+.tab-item.before-active::before,
+.tab-item.before-hovered::before,
+.tab-item.active + .tab-item::before,
+.tab-item:hover::before {
+    display: none;
 }
 
 .icon-wrapper {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 7px;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.tab-label {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
 }
 
 .close-icon {
     cursor: pointer;
-    color: red;
-    font-size: 14px;
+    color: #6b7280;
+    font-size: 11px;
     visibility: hidden;
-    width: 20px;
+    width: 18px;
+    min-width: 18px;
     text-align: center;
-    height: 100%;
+    height: 18px;
+    line-height: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
+    border-radius: 50%;
+    margin-left: 5px !important;
+    margin-right: 0 !important;
+}
+
+.close-icon:hover {
+    color: #111827;
+    background: rgba(31, 41, 55, 0.12);
 }
 
 .close-icon.visible {
@@ -1233,20 +1366,27 @@ export default {
 }
 
 .scroll-btn {
+    display: none;
     box-sizing: border-box;
-    display: flex;
-    height: 100%;
+    height: 34px;
     cursor: pointer;
-    font-size: 15px;
+    font-size: 16px;
     color: #012596;
     align-items: center;
     justify-content: center;
-    width: 20px;
+    width: 24px;
+    min-width: 24px;
+    border-radius: 8px 8px 0 0;
+    transition: background-color 0.18s ease;
+}
+
+.scroll-btn:hover {
+    background: rgba(255, 255, 255, 0.5);
 }
 
 .tabs-content {
     width: 100%;
-    height: calc(100% - 40px);
+    height: calc(100% - 38px);
     overflow-y: auto;
     overflow-x: auto;
     scrollbar-width: none;

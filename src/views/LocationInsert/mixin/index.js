@@ -21,7 +21,7 @@ export default {
     methods: {
         async saveCtrS() {
             try {
-                const { success, data } = await this.saveSubstation()
+                const { success, data, changed } = await this.saveSubstation()
                 if (success) {
                     this.$message.success('Substation saved successfully')
                     
@@ -33,7 +33,8 @@ export default {
                             personList: this.personListData,
                             dto: this.properties,
                             substation: this.substation
-                        }
+                        },
+                        changed: changed === true
                     })
                 }
             } catch (error) {
@@ -99,7 +100,8 @@ export default {
                         if (result.success) {
                             return {
                                 data: result.data,
-                                success: true
+                                success: true,
+                                changed: result.changed
                             }
                         } else {
                             this.$message.error('Error saving substation: ' + result.message)

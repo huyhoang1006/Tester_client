@@ -23,6 +23,7 @@ export default {
                         return {
                             success: true,
                             data: rs.data,
+                            changed: rs.changed
                         };
                     } else {
                         this.$message.error("Error saving Bushing entity: " + rs.message);
@@ -56,7 +57,7 @@ export default {
                     this.loadData(dto)
                 }
                 this.$message.success("Asset saved successfully")
-                this.$emit('reload', { savedData: this.bushing_data })
+                this.$emit('reload', { savedData: this.bushing_data, changed: data.changed === true })
             } else {
                 this.$message.error("Failed to save asset")
             }

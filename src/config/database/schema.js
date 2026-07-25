@@ -2230,6 +2230,18 @@ CREATE TABLE IF NOT EXISTS "switch_info" (
 	FOREIGN KEY("low_pressure_alarm") REFERENCES "pressure"("mrid"),
 	FOREIGN KEY("low_pressure_lock_out") REFERENCES "pressure"("mrid")
 );
+CREATE TABLE IF NOT EXISTS sync_state (
+    node_mrid TEXT PRIMARY KEY,
+    node_type TEXT NOT NULL,
+    server_id TEXT,
+    sync_status TEXT NOT NULL DEFAULT 'synced',
+    last_synced_at TEXT,
+    last_modified_at TEXT,
+    last_error TEXT,
+    updated_at TEXT,
+    FOREIGN KEY (node_mrid) REFERENCES identified_object(mrid)
+        ON DELETE CASCADE
+);
 CREATE TABLE IF NOT EXISTS "tap_changer_info" (
 	"mrid"	TEXT NOT NULL,
 	"bil"	TEXT,
@@ -2713,4 +2725,10 @@ CREATE TABLE IF NOT EXISTS "zero_sequence_impedance_table" (
 	FOREIGN KEY("zero_sequence_impedance") REFERENCES "zero_sequence_impedance"("mrid") ON DELETE CASCADE,
 	PRIMARY KEY("mrid")
 );
+CREATE INDEX idx_sync_state_server_id
+ON sync_state(server_id);
+CREATE INDEX idx_sync_state_status
+ON sync_state(sync_status);
+CREATE INDEX idx_sync_state_type_status
+ON sync_state(node_type, sync_status);
 `;

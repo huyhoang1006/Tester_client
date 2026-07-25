@@ -11,7 +11,8 @@ export const insertVoltageTransformerEntity = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data: rs.data
+                    data: rs.data,
+                    changed: rs.changed
                 }
             }
             else {
@@ -39,7 +40,8 @@ export const getVoltageTransformerEntityByMrid = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data : rs.data
+                    data: rs.data,
+                    changed: rs.changed
                 }
             }
             else {

@@ -23,7 +23,7 @@ export default {
                 this.$message.success("Bay saved successfully")
                 
                 // ✅ Emit reload event với data đã save - KHÔNG cần gọi API!
-                this.$emit('reload', { savedData: this.properties })
+                this.$emit('reload', { savedData: this.properties, changed: data.changed === true })
             } else {
                 this.$message.error("Failed to save Bay")
             }

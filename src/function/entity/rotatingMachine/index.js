@@ -12,6 +12,7 @@ import { insertAssetTransaction, getAssetById, deleteAssetByIdTransaction } from
 import { insertRotatingMachineInfoTransaction, getRotatingMachineInfoById, deleteRotatingMachineInfoTransaction } from '@/function/cim/rotatingMachineInfo';
 import { insertApparentPowerTransaction, getApparentPowerByIds, deleteApparentPowerByIdTransaction } from '@/function/cim/apparentPower';
 import RotatingMachineEntity from '@/views/Flatten/RotatingMachine';
+import { writeAssetSaveAuditLog, writeAssetDeleteAuditLog } from '../assetAudit/index'
 
 
 
@@ -24,6 +25,8 @@ export const insertRotatingMachineEntity = async (entity) => {
                 message: '',
             };
         } else {
+            const oldResult = await getRotatingMachineEntity(entity.asset.mrid, entity.assetPsr && entity.assetPsr.psr_id)
+            const oldEntity = oldResult && oldResult.success ? oldResult.data : null
             backupAllFilesInDir(null, null, entity.asset.mrid);
             const syncResult = syncFilesWithDeletion(JSON.parse(entity.attachment.path), null, entity.asset.mrid);
 
@@ -105,7 +108,8 @@ export const insertRotatingMachineEntity = async (entity) => {
 
             await runAsync('COMMIT');
             deleteBackupFiles(null, entity.asset.mrid);
-            return { success: true, data: entity, message: 'Rotating machine entity inserted successfully' };
+            const auditResult = await writeAssetSaveAuditLog('Rotating machine', oldEntity, entity)
+            return { success: true, data: entity, changed: auditResult.changed, message: 'Rotating machine entity inserted successfully' };
         }
     } catch (error) {
         restoreFiles(null, null, entity.asset.mrid);
@@ -294,6 +298,7 @@ export const deleteRotatingMachineEntity = async (entity) => {
         console.log('10')
 
         await runAsync('COMMIT');
+        await writeAssetDeleteAuditLog('Rotating machine', entity)
         return { success: true, message: 'Rotating Machine entity deleted successfully' };
     } catch (error) {
         await runAsync('ROLLBACK');

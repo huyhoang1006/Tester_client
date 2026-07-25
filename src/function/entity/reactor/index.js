@@ -14,6 +14,7 @@ import ReactorEntity from '@/views/Flatten/Reactor';
 import { insertReactivePowerTransaction, getReactivePowerByIds, deleteReactivePowerByIdTransaction } from '@/function/cim/reactivePower';
 import { insertMassTransaction, getMassById, deleteMassByIdTransaction } from '@/function/cim/mass';
 import { insertInductanceTransaction, getInductanceById, deleteInductanceByIdTransaction } from '@/function/cim/inductance';
+import { writeAssetSaveAuditLog, writeAssetDeleteAuditLog } from '../assetAudit/index'
 
 export const insertReactorEntity = async (old_entity, entity) => {
     try {
@@ -119,7 +120,8 @@ export const insertReactorEntity = async (old_entity, entity) => {
 
             await runAsync('COMMIT');
             deleteBackupFiles(null, entity.asset.mrid);
-            return { success: true, data: entity, message: ' Reactor entity inserted successfully' };
+            const auditResult = await writeAssetSaveAuditLog('Reactor', old_entity, entity)
+            return { success: true, data: entity, changed: auditResult.changed, message: ' Reactor entity inserted successfully' };
         }
     } catch (error) {
         restoreFiles(null, null, entity.asset.mrid);
@@ -372,6 +374,7 @@ export const deleteReactorEntity = async (entity) => {
             }
         }
         await runAsync('COMMIT');
+        await writeAssetDeleteAuditLog('Reactor', entity)
         return { success: true, message: 'Reactor entity deleted successfully' };
     } catch (error) {
         await runAsync('ROLLBACK');

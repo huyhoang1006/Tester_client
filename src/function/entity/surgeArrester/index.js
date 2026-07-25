@@ -9,6 +9,7 @@ import { insertProductAssetModelTransaction, getProductAssetModelById, deletePro
 import { insertAssetPsrTransaction, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from '@/function/entity/assetPsr'
 import { insertOldSurgeArresterInfoTransaction, getOldSurgeArresterInfoBySurgeArresterId, deleteOldSurgeArresterInfoByIdTransaction } from '@/function/cim/oldSurgeArresterInfo';
 import SurgeArresterEntity from '@/views/Flatten/SurgeArrester';
+import { writeAssetSaveAuditLog, writeAssetDeleteAuditLog } from '../assetAudit/index'
 
 export const insertSurgeArresterEntity = async (old_entity, entity) => {
     try {
@@ -143,7 +144,8 @@ export const insertSurgeArresterEntity = async (old_entity, entity) => {
 
             await runAsync('COMMIT');
             deleteBackupFiles(null, entity.surgeArrester.mrid);
-            return { success: true, data: entity, message: 'Surge Arrester entity inserted successfully' };
+            const auditResult = await writeAssetSaveAuditLog('Surge arrester', old_entity, entity)
+            return { success: true, data: entity, changed: auditResult.changed, message: 'Surge Arrester entity inserted successfully' };
         }
     } catch (error) {
         restoreFiles(null, null, entity.surgeArrester.mrid);
@@ -495,6 +497,7 @@ export const deleteSurgeArresterEntity = async (data) => {
                 if (data.attachment && data.attachment.id) {
                     deleteDirectory(null, data.surgeArrester.mrid);
                 }
+                await writeAssetDeleteAuditLog('Surge arrester', data)
                 return { success: true, message: 'Surge Arrester entity deleted successfully' };
             } catch (error) {
                 await runAsync('ROLLBACK');

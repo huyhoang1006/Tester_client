@@ -31,6 +31,7 @@ import * as templateFunc from "./template/index"
 import * as mRIDCheckFunc from "./mRIDCheck/index"
 import * as testingEquipmentEntityFunc from "./testingEquipment/index"
 import * as accessoryTestingEquipmentFunc from "./accessoryTestingEquipment/index"
+import * as syncStateFunc from "./syncState/index"
 
 
 export {
@@ -41,6 +42,6 @@ export {
     capacitorEntityFunc, breakerEntityFunc, updateEntityFunc, entitySnapshotFunc, mRIDCheckFunc,
     voltageTransformerEntityFunc, bushingEntityFunc, disconnectorEntityFunc, rotatingMachineEntityFunc,
     currentTransformerEntityFunc, reactorEntityFunc, assetPsrFunc, notificationEntityFunc, templateFunc,
-    testingEquipmentEntityFunc, accessoryTestingEquipmentFunc
+    testingEquipmentEntityFunc, accessoryTestingEquipmentFunc, syncStateFunc
 
 }

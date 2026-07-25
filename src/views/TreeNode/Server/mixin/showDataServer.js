@@ -21,7 +21,7 @@ export default {
                     this.$nextTick(() => {
                         if (this.$refs.serverTabs) {
                             this.$refs.serverTabs.selectTab(newNode, newIndex);
-                            this.$refs.serverTabs.loadDataServer(newNode, newIndex);
+                            this.$refs.serverTabs.loadData(newNode, newIndex);
                         }
                     });
                 }

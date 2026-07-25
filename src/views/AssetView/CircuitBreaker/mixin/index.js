@@ -28,6 +28,7 @@ export default {
                         return {
                             success: true,
                             data: rs.data,
+                            changed: rs.changed
                         };
                     } else {
                         this.$message.error("Error saving Breaker entity: " + rs.message);
@@ -100,7 +101,7 @@ export default {
                 this.$message.success("Asset saved successfully")
                 
                 console.log('[CIRCUIT_BREAKER] Emitting reload event with saved data')
-                this.$emit('reload', { savedData: this.circuitBreakerDto })
+                this.$emit('reload', { savedData: this.circuitBreakerDto, changed: data.changed === true })
                 console.log('[CIRCUIT_BREAKER] Reload event emitted')
             } else {
                 this.$message.error("Failed to save asset")

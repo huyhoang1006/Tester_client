@@ -71,7 +71,7 @@ const requestDuplicateKeyUpdate = async (vm, keys) => {
                         color: '#303133',
                         lineHeight: '20px'
                     }
-                }, 'An asset with the same Serial number, Manufacturer, and Asset type already exists. Please update at least one value before saving.'),
+                }, 'An asset with the same Serial number, Manufacturer, and Asset type already exists. Blank Manufacturer or Asset type is also treated as a duplicate key. Please update at least one value before saving.'),
                 duplicateKeyField(h, 'Serial number', draft.serialNumber, (value) => { draft.serialNumber = value }),
                 duplicateKeyField(h, 'Manufacturer', draft.manufacturer, (value) => { draft.manufacturer = value }),
                 duplicateKeyField(h, 'Asset type', draft.assetType, (value) => { draft.assetType = value })
@@ -87,8 +87,8 @@ const requestDuplicateKeyUpdate = async (vm, keys) => {
                     return
                 }
 
-                if (!cleanKey(draft.serialNumber) || !cleanKey(draft.manufacturer) || !cleanKey(draft.assetType)) {
-                    vm.$message.error('Serial number, Manufacturer, and Asset type are required.')
+                if (!cleanKey(draft.serialNumber)) {
+                    vm.$message.error('Serial number is required.')
                     return
                 }
 
@@ -111,7 +111,7 @@ const requestDuplicateKeyUpdate = async (vm, keys) => {
 export const ensureUniqueAssetBeforeSave = async (vm, dto) => {
     let keys = getAssetDuplicateKeys(dto)
 
-    while (keys.serialNumber && keys.manufacturer && keys.assetType) {
+    while (keys.serialNumber) {
         const result = await window.electronAPI.checkAssetDuplicateByKeys(keys)
         if (result && result.success === false) {
             throw new Error(result.message || 'Cannot check asset duplicate')

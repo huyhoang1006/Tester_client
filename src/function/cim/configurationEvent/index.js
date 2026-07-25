@@ -175,6 +175,7 @@ export const getAllConfigurationEvents = async () => {
                 FROM configuration_event ce
                 JOIN activity_record ar ON ce.mrid = ar.mrid
                 JOIN identified_object io ON ar.mrid = io.mrid
+                ORDER BY COALESCE(ce.effective_date_time, ar.created_date_time, '') DESC
             `;
 
             db.all(query, [], (err, rows) => {

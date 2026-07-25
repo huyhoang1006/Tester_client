@@ -56,6 +56,7 @@ export default {
                     const { success, data } = result;
 
                     if (success) {
+                        await this.markSavedExistingResultDirtyIfChanged(result)
                         saveSuccess = true;
                         if (this.isEditMode) {
                             // 1. Cập nhật node trong cây

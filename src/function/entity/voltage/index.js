@@ -3,6 +3,75 @@ import { insertVoltageTransaction, getVoltageById, deleteVoltageByIdTransaction 
 import { insertBaseVoltageTransaction, getBaseVoltageById, deleteBaseVoltageByIdTransaction } from '@/function/cim/baseVoltage';
 import { insertVoltageLevelTransaction, getVoltageLevelById, deleteVoltageLevelByIdTransaction } from '@/function/cim/voltageLevel';
 import { deleteBayByIdTransaction, getBayByVoltageLevelOrSubstation } from '@/function/cim/bay';
+import { normaliseAuditValue, tryWriteAuditLog } from '../auditLog/index'
+
+const readLogValue = (entity, group, field) => {
+    if (!entity || !entity[group]) return null
+    return entity[group][field]
+}
+
+const getVoltageRefValue = (entity, mrid) => {
+    if (!mrid || !entity || !Array.isArray(entity.voltage)) return mrid
+    const voltage = entity.voltage.find((item) => item && item.mrid === mrid)
+    if (!voltage) return mrid
+    return [voltage.value, voltage.multiplier, voltage.unit].map(normaliseAuditValue).filter(Boolean).join(' ')
+}
+
+const getVoltageLevelLogFields = (entity) => ({
+    'Name': readLogValue(entity, 'voltageLevel', 'name'),
+    'Alias name': readLogValue(entity, 'voltageLevel', 'alias_name'),
+    'Comment': readLogValue(entity, 'voltageLevel', 'description'),
+    'High voltage limit': getVoltageRefValue(entity, readLogValue(entity, 'voltageLevel', 'high_voltage_limit')),
+    'Low voltage limit': getVoltageRefValue(entity, readLogValue(entity, 'voltageLevel', 'low_voltage_limit')),
+    'Base voltage': getVoltageRefValue(entity, entity && entity.baseVoltage ? entity.baseVoltage.nominal_voltage : null),
+    'Substation': readLogValue(entity, 'voltageLevel', 'substation')
+})
+
+const getVoltageLevelChanges = (beforeEntity, afterEntity) => {
+    const before = getVoltageLevelLogFields(beforeEntity)
+    const after = getVoltageLevelLogFields(afterEntity)
+    return Object.keys(after)
+        .map((field) => ({
+            field,
+            from: normaliseAuditValue(before[field]),
+            to: normaliseAuditValue(after[field])
+        }))
+        .filter((change) => change.from !== change.to)
+}
+
+const getEntityUser = (entity) => {
+    const user = entity && entity.user ? entity.user : {}
+    return {
+        name: user.name || user.user_name || user.username || 'Unknown',
+        id: user.user_id || user.id || null
+    }
+}
+
+const writeVoltageLevelSaveLog = async (beforeEntity, afterEntity) => {
+    const name = normaliseAuditValue(readLogValue(afterEntity, 'voltageLevel', 'name')) || 'Unnamed Voltage level'
+    const objectId = readLogValue(afterEntity, 'voltageLevel', 'mrid')
+    const changes = beforeEntity ? getVoltageLevelChanges(beforeEntity, afterEntity) : []
+    const result = await tryWriteAuditLog({
+        objectType: 'Voltage level',
+        objectId,
+        objectName: name,
+        action: beforeEntity ? 'UPDATE' : 'INSERT',
+        changes,
+        user: getEntityUser(afterEntity)
+    })
+    return { ...result, changed: beforeEntity ? changes.length > 0 : true }
+}
+
+const writeVoltageLevelDeleteLog = async (entity) => {
+    const name = normaliseAuditValue(readLogValue(entity, 'voltageLevel', 'name')) || 'Unnamed Voltage level'
+    await tryWriteAuditLog({
+        objectType: 'Voltage level',
+        objectId: readLogValue(entity, 'voltageLevel', 'mrid'),
+        objectName: name,
+        action: 'DELETE',
+        user: getEntityUser(entity)
+    })
+}
 
 /**
  * Insert VoltageLevel Entity vào database
@@ -10,6 +79,8 @@ import { deleteBayByIdTransaction, getBayByVoltageLevelOrSubstation } from '@/fu
 export const insertVoltageLevelEntity = async (entity) => {
     try {
         if (entity.voltageLevel.mrid) {
+            const beforeResult = await getVoltageLevelEntity(entity.voltageLevel.mrid)
+            const beforeEntity = beforeResult && beforeResult.success ? beforeResult.data : null
             await runAsync('BEGIN TRANSACTION');
             
             // Insert các Voltage trước (only if they have valid mrid)
@@ -30,7 +101,8 @@ export const insertVoltageLevelEntity = async (entity) => {
             await insertVoltageLevelTransaction(entity.voltageLevel, db);
             
             await runAsync('COMMIT');
-            return { success: true, data: entity, message: 'Voltage level entity inserted successfully' };
+            const auditResult = await writeVoltageLevelSaveLog(beforeEntity, entity)
+            return { success: true, data: entity, changed: auditResult.changed, message: 'Voltage level entity inserted successfully' };
         } else {
             return { success: false, message: 'Error retrieving voltage entity, id is required' };
         }
@@ -113,6 +185,7 @@ export const deleteVoltageLevelById = async (data) => {
         await deleteVoltagesIfNotUsed(data.voltage)
         
         await runAsync('COMMIT');
+        await writeVoltageLevelDeleteLog(data)
         console.log('VoltageLevel deleted successfully')
         return { success: true, data: data, message: 'Voltage level deleted successfully' };
     } catch (error) {

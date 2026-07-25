@@ -19,11 +19,114 @@ import { insertPositionPointArrayTransaction, getPositionPointByLocationId } fro
 import { insertPsrTypeTransaction, getPsrTypeById, deletePsrTypeByIdTransaction } from '@/function/cim/psrType'
 import { insertOrganisationPersonTransaction, getOrganisationPersonByOrganisationIdAndPersonId } from '../organisationPerson'
 import { insertOrganisationPsrTransaction, getOrganisationPsrByOrganisationIdAndPsrId } from '../organisationPsr'
-import { insertConfigurationEventArrayTransaction, insertConfigurationEventTransaction } from '@/function/cim/configurationEvent/index'
 import { getPowerSystemResourceByLocationIdTransaction } from '@/function/cim/powerSystemResource/index'
-import ConfigurationEvent from '@/views/Cim/ConfigurationEvent'
-import uuid from '@/utils/uuid'
 import SubstationEntity from '@/views/Flatten/Substation'
+import { normaliseAuditValue, tryWriteAuditLog } from '../auditLog/index'
+
+const getAttachmentLogValue = (attachment) => {
+    if (!attachment || !attachment.path) return ''
+    try {
+        const files = JSON.parse(attachment.path)
+        if (!Array.isArray(files)) return ''
+        return files.map((item) => path.basename(item.path || item.name || '')).filter(Boolean).join(', ')
+    } catch (error) {
+        return normaliseAuditValue(attachment.path)
+    }
+}
+
+const getPositionPointLogValue = (positionPoints) => {
+    if (!Array.isArray(positionPoints) || positionPoints.length === 0) return ''
+    return positionPoints
+        .map((point) => [point.x, point.y, point.z].map(normaliseAuditValue).join(','))
+        .join(' | ')
+}
+
+const readLogValue = (entity, group, field) => {
+    if (!entity || !entity[group]) return null
+    return entity[group][field]
+}
+
+const getSubstationLogFields = (entity) => ({
+    'Name': readLogValue(entity, 'substation', 'name'),
+    'Alias name': readLogValue(entity, 'substation', 'alias_name'),
+    'Comment': readLogValue(entity, 'substation', 'description'),
+    'Psr type': readLogValue(entity, 'substation', 'psr_type_id'),
+    'Generation': readLogValue(entity, 'substation', 'generation'),
+    'Industry': readLogValue(entity, 'substation', 'industry'),
+    'Street': readLogValue(entity, 'streetDetail', 'address_general'),
+    'Ward/Commune': readLogValue(entity, 'townDetail', 'ward_or_commune'),
+    'District/Town': readLogValue(entity, 'townDetail', 'district_or_town'),
+    'City': readLogValue(entity, 'townDetail', 'city'),
+    'State/Province': readLogValue(entity, 'townDetail', 'state_or_province'),
+    'Country': readLogValue(entity, 'townDetail', 'country'),
+    'Contact name': readLogValue(entity, 'person', 'name'),
+    'Phone number': readLogValue(entity, 'telephoneNumber', 'itu_phone'),
+    'Email': readLogValue(entity, 'electronicAddress', 'email'),
+    'Attachments': getAttachmentLogValue(entity && entity.attachment),
+    'Geo coordinates': getPositionPointLogValue(entity && entity.positionPoint)
+})
+
+const getSubstationChanges = (beforeEntity, afterEntity) => {
+    const before = getSubstationLogFields(beforeEntity)
+    const after = getSubstationLogFields(afterEntity)
+    return Object.keys(after)
+        .map((field) => ({
+            field,
+            from: normaliseAuditValue(before[field]),
+            to: normaliseAuditValue(after[field])
+        }))
+        .filter((change) => change.from !== change.to)
+}
+
+const getEntityUser = (entity) => {
+    const user = entity && entity.user ? entity.user : {}
+    return {
+        name: user.name || user.user_name || user.username || 'Unknown',
+        id: user.user_id || user.id || null
+    }
+}
+
+const getOrganisationId = (entity) => {
+    if (!entity) return null
+    if (entity.organisationPsr && entity.organisationPsr.organisation_id) return entity.organisationPsr.organisation_id
+    if (entity.organisationLocation && entity.organisationLocation.organisation_id) return entity.organisationLocation.organisation_id
+    if (entity.organisationPerson && entity.organisationPerson.organisation_id) return entity.organisationPerson.organisation_id
+    return null
+}
+
+const getExistingSubstationEntity = async (entity) => {
+    if (!entity || !entity.substation || !entity.substation.mrid) return null
+    const user = getEntityUser(entity)
+    const organisationId = getOrganisationId(entity)
+    const result = await getSubstationEntityById(entity.substation.mrid, user.id, organisationId)
+    return result && result.success ? result.data : null
+}
+
+const writeSubstationSaveLog = async (beforeEntity, afterEntity) => {
+    const name = normaliseAuditValue(readLogValue(afterEntity, 'substation', 'name')) || 'Unnamed Substation'
+    const objectId = readLogValue(afterEntity, 'substation', 'mrid')
+    const changes = beforeEntity ? getSubstationChanges(beforeEntity, afterEntity) : []
+    const result = await tryWriteAuditLog({
+        objectType: 'Substation',
+        objectId,
+        objectName: name,
+        action: beforeEntity ? 'UPDATE' : 'INSERT',
+        changes,
+        user: getEntityUser(afterEntity)
+    })
+    return { ...result, changed: beforeEntity ? changes.length > 0 : true }
+}
+
+const writeSubstationDeleteLog = async (entity) => {
+    const name = normaliseAuditValue(readLogValue(entity, 'substation', 'name')) || 'Unnamed Substation'
+    await tryWriteAuditLog({
+        objectType: 'Substation',
+        objectId: readLogValue(entity, 'substation', 'mrid'),
+        objectName: name,
+        action: 'DELETE',
+        user: getEntityUser(entity)
+    })
+}
 
 export const moveSubstationToOrganisation = async (substationId, organisationId) => {
     if (!substationId || !organisationId) {
@@ -138,6 +241,7 @@ export const insertSubstationEntity = async (entity) => {
             message: '',
         };
         try {
+            const beforeEntity = await getExistingSubstationEntity(entity)
             if (entity.attachment && entity.attachment.path && entity.attachment.path.length > 0) {
                 backupAllFilesInDir(null, null, entity.substation.mrid);
                 const syncResult = syncFilesWithDeletion(JSON.parse(entity.attachment.path), null, entity.substation.mrid);
@@ -145,20 +249,14 @@ export const insertSubstationEntity = async (entity) => {
                     restoreFiles(null, null, entity.substation.mrid);
                     result.error = syncResult.error;
                     result.message = 'Failed syncing files';
-                    const configEvent = new ConfigurationEvent();
-                    configEvent.mrid = uuid.newUuid()
-                    configEvent.name = 'Change Attachment'
-                    configEvent.effective_date_time = new Date().toISOString()
-                    configEvent.changed_attachment = entity.attachmentId
-                    configEvent.user_name = entity.user.name
-                    configEvent.modified_by = entity.user.user_id
-                    configEvent.type = "ERROR"
-                    configEvent.description = `Attachment changed of ${entity.name}`
-                    try {
-                        await insertConfigurationEventTransaction(configEvent, db);
-                    } catch (err) {
-                        console.error('Insert ConfigurationEvent failed:', err);
-                    }
+                    await tryWriteAuditLog({
+                        objectType: 'Substation',
+                        objectId: entity && entity.substation ? entity.substation.mrid : null,
+                        objectName: entity && entity.substation ? entity.substation.name : null,
+                        action: 'ERROR',
+                        description: `Attachment changed of ${entity.substation && entity.substation.name ? entity.substation.name : 'Substation'} failed`,
+                        user: getEntityUser(entity)
+                    })
                     return result;
                 }
 
@@ -194,7 +292,6 @@ export const insertSubstationEntity = async (entity) => {
                                 entity.attachment.path = JSON.stringify(newPath);
                                 await uploadAttachmentTransaction(entity.attachment, db);
                             }
-                            if (Array.isArray(entity.configurationEvent) && entity.configurationEvent.length > 0) await insertConfigurationEventArrayTransaction(entity.configurationEvent, db);
                             db.run('COMMIT');
                             resolve({ success: true, data: entity, message: 'Insert entity completed' });
                         } catch (err) {
@@ -240,7 +337,6 @@ export const insertSubstationEntity = async (entity) => {
                                 entity.attachment.path = JSON.stringify(newPath);
                                 await uploadAttachmentTransaction(entity.attachment, db);
                             }
-                            if (Array.isArray(entity.configurationEvent) && entity.configurationEvent.length > 0) await insertConfigurationEventArrayTransaction(entity.configurationEvent, db);
                             db.run('COMMIT');
                             resolve({ success: true, data: entity, message: 'Insert entity completed' });
                         } catch (err) {
@@ -253,6 +349,8 @@ export const insertSubstationEntity = async (entity) => {
                 result.data = entity;
                 result.message = 'Insert SubstationEntity completed';
             }
+            const auditResult = await writeSubstationSaveLog(beforeEntity, entity)
+            result.changed = auditResult.changed
             return result;
         } catch (err) {
             if (entity.attachment && entity.attachment.path && entity.attachment.path.length > 0) {
@@ -262,20 +360,14 @@ export const insertSubstationEntity = async (entity) => {
                     console.error('Restore files failed:', err);
                     result.error = err.message;
                     result.message = 'Insert SubstationEntity failed and rollback executed';
-                    const configEvent = new ConfigurationEvent();
-                    configEvent.mrid = uuid.newUuid()
-                    configEvent.name = 'Change Attachment'
-                    configEvent.effective_date_time = new Date().toISOString()
-                    configEvent.changed_attachment = entity.attachmentId
-                    configEvent.user_name = entity.user.name
-                    configEvent.modified_by = entity.user.user_id
-                    configEvent.type = "ERROR"
-                    configEvent.description = `Attachment changed of ${entity.name}`
-                    try {
-                        await insertConfigurationEventTransaction(configEvent, db);
-                    } catch (err) {
-                        console.error('Insert ConfigurationEvent failed:', err);
-                    }
+                    await tryWriteAuditLog({
+                        objectType: 'Substation',
+                        objectId: entity && entity.substation ? entity.substation.mrid : null,
+                        objectName: entity && entity.substation ? entity.substation.name : null,
+                        action: 'ERROR',
+                        description: `Substation changed of ${entity.substation && entity.substation.name ? entity.substation.name : 'Substation'} failed`,
+                        user: getEntityUser(entity)
+                    })
                     return result;
                 }
 
@@ -283,20 +375,14 @@ export const insertSubstationEntity = async (entity) => {
             console.error(err);
             result.error = err.message;
             result.message = 'Insert SubstationEntity failed and rollback executed';
-            const configEvent = new ConfigurationEvent();
-            configEvent.mrid = uuid.newUuid()
-            configEvent.name = 'Change Attachment'
-            configEvent.effective_date_time = new Date().toISOString()
-            configEvent.changed_attachment = entity.attachmentId
-            configEvent.user_name = entity.user.username
-            configEvent.modified_by = entity.user.user_id
-            configEvent.type = "ERROR"
-            configEvent.description = `Attachment changed of ${entity.name}`
-            try {
-                await insertConfigurationEventTransaction(configEvent, db);
-            } catch (err) {
-                console.error('Insert ConfigurationEvent failed:', err);
-            }
+            await tryWriteAuditLog({
+                objectType: 'Substation',
+                objectId: entity && entity.substation ? entity.substation.mrid : null,
+                objectName: entity && entity.substation ? entity.substation.name : null,
+                action: 'ERROR',
+                description: `Substation changed of ${entity.substation && entity.substation.name ? entity.substation.name : 'Substation'} failed`,
+                user: getEntityUser(entity)
+            })
             return result;
         }
     }
@@ -464,6 +550,7 @@ export const deleteSubstationEntityById = async (data) => {
                 if (data.attachment && data.attachment.id) {
                     deleteDirectory(null, data.substation.mrid);
                 }
+                await writeSubstationDeleteLog(data)
                 return { success: true, message: 'Substation entity deleted successfully' };
             } catch (err) {
                 await runSQL('ROLLBACK');

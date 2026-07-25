@@ -21,7 +21,7 @@ export default {
                 }
             } else {
                 if(this.$refs.serverTabs) {
-                    this.$refs.serverTabs.saveCtrlS()
+                    this.$refs.serverTabs.saveActiveServerTab()
                 }
             }
         }

@@ -10,7 +10,8 @@ export const insertTransformerEntity = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data : rs.data
+                    data: rs.data,
+                    changed: rs.changed
                 }
             }
             else {
@@ -37,7 +38,8 @@ export const getTransformerEntityByMrid = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data : rs.data
+                    data: rs.data,
+                    changed: rs.changed
                 }
             }
             else {
@@ -65,7 +67,8 @@ export const deleteTransformerEntity = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data : rs.data
+                    data: rs.data,
+                    changed: rs.changed
                 }
             }
             else {

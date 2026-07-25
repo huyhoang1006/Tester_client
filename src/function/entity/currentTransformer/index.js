@@ -20,6 +20,7 @@ import { getAssetInfoById, insertAssetInfoTransaction, deleteAssetInfoByIdTransa
 import { getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction, uploadAttachmentTransaction } from "@/function/entity/attachment";
 import path from "path";
 import * as attachmentContext from "@/function/attachmentcontext/index";
+import { writeAssetSaveAuditLog, writeAssetDeleteAuditLog } from "../assetAudit/index";
 
 
 export const insertCurrentTransformerEntity = async (old_entity, entity) => {
@@ -205,7 +206,8 @@ export const insertCurrentTransformerEntity = async (old_entity, entity) => {
 
         await runAsync('COMMIT');
         deleteBackupFiles(null, entity.oldCurrentTransformerInfo.mrid);
-        return { success: true, data: entity, message: 'Current Transformer entity inserted successfully' };
+        const auditResult = await writeAssetSaveAuditLog('Current transformer', old_entity, entity)
+        return { success: true, data: entity, changed: auditResult.changed, message: 'Current Transformer entity inserted successfully' };
 
 
     } catch (error) {
@@ -458,6 +460,7 @@ export const deleteCurrentTransformerEntity = async (data) => {
 
                 // 8. Commit transaction để lưu tất cả thay đổi
                 await runAsync('COMMIT');
+                await writeAssetDeleteAuditLog('Current transformer', data)
                 return { success: true, message: 'Current Transformer entity deleted successfully' };
 
             } catch (error) {

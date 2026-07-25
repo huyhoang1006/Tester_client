@@ -6,6 +6,7 @@ export const getCurrentTransformerById = (id) => {
 }
 
 export const createCurrentTransformer = (data, ownerId, ownerType) => {
+    console.log('createCurrentTransformer', JSON.stringify(data))
     return client.post(`/${prefix}/create`, data, {
         params: {
             ownerId,

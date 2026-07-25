@@ -57,6 +57,7 @@ export default {
 
                     console.log('VoltageLevel save response:', data);
                     if (success) {
+                        await this.markSavedExistingResultDirtyIfChanged(result)
                         saveSuccess = true;
                         const serverId = this.extractUploadedServerId(data)
                         const mrid = data.mrid || data.voltageLevel?.mrid || data.data?.voltageLevel?.mrid || serverId

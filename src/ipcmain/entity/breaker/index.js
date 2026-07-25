@@ -10,7 +10,8 @@ export const insertBreakerEntity = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data: rs.data
+                    data: rs.data,
+                    changed: rs.changed
                 }
             }
             else {
@@ -37,7 +38,8 @@ export const updateMotorCharacteristicsLimits = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data: rs.data
+                    data: rs.data,
+                    changed: rs.changed
                 }
             }
             else {
@@ -64,7 +66,8 @@ export const updateContactResistanceLimits = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data: rs.data
+                    data: rs.data,
+                    changed: rs.changed
                 }
             }
             else {
@@ -91,7 +94,8 @@ export const updateCoilCharacteristicsLimits = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data: rs.data
+                    data: rs.data,
+                    changed: rs.changed
                 }
             }
             else {
@@ -118,7 +122,8 @@ export const updatePickupVoltageLimits = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data: rs.data
+                    data: rs.data,
+                    changed: rs.changed
                 }
             }
             else {
@@ -145,7 +150,8 @@ export const updateUnderVoltageReleaseLimits = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data: rs.data
+                    data: rs.data,
+                    changed: rs.changed
                 }
             }
             else {
@@ -172,7 +178,8 @@ export const updateOvercurrentReleaseLimits = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data: rs.data
+                    data: rs.data,
+                    changed: rs.changed
                 }
             }
             else {
@@ -199,7 +206,8 @@ export const updateOperatingTimeLimits = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data: rs.data
+                    data: rs.data,
+                    changed: rs.changed
                 }
             }
             else {
@@ -226,7 +234,8 @@ export const updateAuxContactsLimits = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data: rs.data
+                    data: rs.data,
+                    changed: rs.changed
                 }
             }
             else {
@@ -253,7 +262,8 @@ export const updateMiscellaneousLimits = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data: rs.data
+                    data: rs.data,
+                    changed: rs.changed
                 }
             }
             else {
@@ -280,7 +290,8 @@ export const updateTimingAssessmentLimits = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data: rs.data
+                    data: rs.data,
+                    changed: rs.changed
                 }
             }
             else {
@@ -307,7 +318,8 @@ export const getBreakerEntityByMrid = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data: rs.data
+                    data: rs.data,
+                    changed: rs.changed
                 }
             }
             else {

@@ -91,6 +91,7 @@ import exportWord from '@/views/TreeNode/Common/Export/exportWord'
 import handleRefreshNode from '@/views/TreeNode/Common/Refresh/handleRefreshNode'
 import exportTreeJSON from '@/views/TreeNode/Common/Export/exportTreeJSON'
 import importTreeJSON from '@/views/TreeNode/Common/Import/importTreeJSON'
+import syncStateMixin from '@/views/TreeNode/Common/syncStateMixin'
 
 
 export default {
@@ -112,6 +113,6 @@ export default {
         fetchJobsByAssetId, hideProperties, removeTab,
         pathMap, fmeca, showProperties, showDataServer, checkChildren, showPropertiesData,
         breadCum, showOwnerServerRoot, exportExcel, exportTreeJSON,
-        exportWord, handleRefreshNode, importTreeJSON
+        exportWord, handleRefreshNode, importTreeJSON, syncStateMixin
         ]
 }

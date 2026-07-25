@@ -78,6 +78,7 @@ const entitySnapshotAPI = entityPreload.entitySnapshotPreload.entitySnapshotPrel
 const templateAPI = entityPreload.templatePreload.templatePreload()
 const mRIDCheckAPI = entityPreload.mRIDCheckPreload.mRIDCheckPreload()
 const testingEquipmentEntityAPI = entityPreload.testingEquipmentEntityPreload.testingEquipmentEntityPreload()
+const syncStateAPI = entityPreload.syncStatePreload.syncStatePreload()
 
 
 // Update API from entity preload
@@ -152,6 +153,7 @@ const ipcMain = Object.assign(
     entitySnapshotAPI,
     templateAPI,
     mRIDCheckAPI,
-    testingEquipmentEntityAPI
+    testingEquipmentEntityAPI,
+    syncStateAPI
 )
 contextBridge.exposeInMainWorld('electronAPI', ipcMain)

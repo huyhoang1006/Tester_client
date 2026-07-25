@@ -10,7 +10,8 @@ export const insertDisconnectorJob = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data : rs.data
+                    data: rs.data,
+                    changed: rs.changed
                 }
             }
             else {
@@ -37,7 +38,8 @@ export const getDisconnectorJobByMrid = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data : rs.data
+                    data: rs.data,
+                    changed: rs.changed
                 }
             }
             else {

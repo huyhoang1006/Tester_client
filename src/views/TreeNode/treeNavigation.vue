@@ -95,7 +95,7 @@
                     </button>
                 </div>
                 <div ref="logBar" v-if="logSign" class="log-bar">
-                    <LogBar :logData="logDataServer" @hideLogBar="hideLogBar"></LogBar>
+                    <LogBar :logData="logDataServer" @reloadLog="reloadLogServer" @hideLogBar="hideLogBar"></LogBar>
                 </div>
             </div>
             <ContextDataClient v-show="activeWorkspaceTab === 'tree' && clientSlide" ref="contextDataClient" :activeTabClient="activeTabClient"
@@ -106,6 +106,7 @@
                 :logDataClient="logDataClient" @update:activeTabClient="activeTabClient = $event"
                 @tab-changed="handleTabSelect" @remove-tab-client="removeTabClient"
                 @update-node-data="handleUpdateNodeData" @refresh-properties="handleRefreshPropertiesClient"
+                @sync-state-changed="handleSyncStateChanged"
                 @reload-log-client="reloadLogClient" />
                 </div>
             </div>

@@ -17,6 +17,7 @@ import { insertSheathVoltageLimiterTransaction, getSheathVoltageLimiterByCableIn
 import { insertTerminalCableInfoTransaction, getTerminalCableInfoByCableInfoId } from '@/function/cim/terminalCableInfo';
 import { insertSecondsTransaction, getSecondByIds, deleteSecondsByIdTransaction } from '@/function/cim/seconds';
 import PowerCableEntity from '@/views/Flatten/PowerCable/index'
+import { writeAssetSaveAuditLog, writeAssetDeleteAuditLog } from '../assetAudit/index'
 
 export const insertPowerCableEntity = async (old_entity, entity) => {
     try {
@@ -139,7 +140,8 @@ export const insertPowerCableEntity = async (old_entity, entity) => {
 
             await runAsync('COMMIT');
             deleteBackupFiles(null, entity.asset.mrid);
-            return { success: true, data: entity, message: 'Power cable entity inserted successfully' };
+            const auditResult = await writeAssetSaveAuditLog('Power cable', old_entity, entity)
+            return { success: true, data: entity, changed: auditResult.changed, message: 'Power cable entity inserted successfully' };
         }
     } catch (error) {
         restoreFiles(null, null, entity.asset.mrid);
@@ -352,6 +354,7 @@ export const deletePowerCableEntity = async (entity) => {
         for (const item of entity.area || []) await deleteUnitSafely(deleteAreaByIdTransaction, item.mrid, db);
 
         await runAsync('COMMIT');
+        await writeAssetDeleteAuditLog('Power cable', entity)
         return { success: true, message: 'Power cable entity deleted successfully' };
     } catch (error) {
         await runAsync('ROLLBACK');

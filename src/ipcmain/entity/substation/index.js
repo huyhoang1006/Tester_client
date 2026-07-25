@@ -10,7 +10,8 @@ export const insertSubstationEntity = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data : rs.data
+                    data: rs.data,
+                    changed: rs.changed
                 }
             }
             else {
@@ -37,7 +38,8 @@ export const getSubstationEntityByMrid = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data : rs.data
+                    data: rs.data,
+                    changed: rs.changed
                 }
             }
             else {
@@ -92,7 +94,8 @@ export const moveSubstationToOrganisation = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data: rs.data
+                    data: rs.data,
+                    changed: rs.changed
                 }
             }
             return {

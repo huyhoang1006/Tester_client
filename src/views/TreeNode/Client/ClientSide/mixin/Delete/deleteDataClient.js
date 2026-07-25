@@ -39,6 +39,10 @@ export default {
                             this.$message.error('Entity not found')
                             return
                         }
+                        entity.data.user = {
+                            user_id: this.$store.state.user.user_id,
+                            name: this.$store.state.user.name
+                        }
                         const deleteSign = await window.electronAPI.deleteParentOrganizationEntity(entity.data)
                         if (!deleteSign.success) {
                             this.$message.error('Delete data failed')

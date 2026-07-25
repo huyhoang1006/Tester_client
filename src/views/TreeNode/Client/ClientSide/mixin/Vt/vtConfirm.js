@@ -55,6 +55,7 @@ export default {
                     const { success, data } = result;
 
                     if (success) {
+                        await this.markSavedExistingResultDirtyIfChanged(result)
                         saveSuccess = true;
                         const assetData = data.asset || data
                         if (this.isEditMode) {

@@ -5,6 +5,7 @@ import * as VoltageTransformerMapper from '@/views/Mapping/VoltageTransformer/in
 import { fetchWithRetry } from './core-utils.js'
 import { traverseAndFillMrid, ensureTopLevelFK, FK_KEYS } from './fk-utils.js'
 import { detectConflicts, applyResolved, mergeWithoutSnapshot, VOLTAGE_TRANSFORMER_FIELD_DEFS } from '@/utils/conflictUtils.js'
+import { applyDownloadedAssetMedia } from './asset-media-utils.js'
 
 // ─── Step 1: fetch full info từ server ───────────────────────────────────────
 
@@ -41,6 +42,7 @@ export async function downloadVoltageTransformerChain(data, ctx) {
     const serverDto       = VoltageTransformerServerMapper.mapServerToDto(serverData)
     serverDto.psrId       = data.parentBayId
     serverDto.properties.mrid = vt.mrid
+    await applyDownloadedAssetMedia(serverDto, 'Voltage transformer', vt.mrid)
 
     // 2. Lấy client data cũ nếu đã tồn tại
     const existingResult = await window.electronAPI.getVoltageTransformerEntityByMrid(

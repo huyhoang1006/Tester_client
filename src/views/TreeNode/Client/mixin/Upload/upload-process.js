@@ -49,6 +49,7 @@ import * as PowerCableServerMapper          from '@/views/Mapping/ServerToDTO/Po
 import { mapSubstationEntityToServer }   from '@/utils/MapperClient/mapSubstationToServer.js'
 import { mapVoltageLevelEntityToServer } from '@/utils/MapperClient/mapVoltageLevelToServer.js'
 import { mapBayEntityToServer }          from '@/utils/MapperClient/mapBayToServer.js'
+import { uploadAssetMediaFromAttachmentData } from '@/utils/assetMedia.js'
 
 // ───JOB DTO → Server (dùng chung cho upload & submit)──────────────────────────────
 import * as voltageTransformerJobMappingServer from '@/views/Mapping/ServerToDTO/VoltageTransformerJob/index.js'
@@ -159,7 +160,6 @@ export default {
                 if (!dto.properties.apparatus_id && !dto.properties.serial_no) {
                     dto.properties.apparatus_id = node.name || 'Unnamed Asset'
                 }
-                const serverPayload = PowerCableServerMapper.mapDtoToServer(dto)
 
                 const parentNode = this.findUploadParentNode(node)
                 if (!parentNode) throw new Error('Parent node not found in Client Tree')
@@ -169,8 +169,10 @@ export default {
                 const ownerType = this._resolveOwnerType(parentNode)
                 if (!ownerType) throw new Error(`Cannot resolve ownerType for parent node with mode: ${parentNode?.mode}`)
 
+                dto.psrId = node.parentId
+                const serverPayload = PowerCableServerMapper.mapDtoToServer(dto, ownerType)
                 const response = await demoAPI.createPowerCableCim(serverPayload, node.parentId, ownerType)
-                await this.syncUploadedNodeServerId(node, response)
+                await this.syncUploadedAssetAndMedia(node, response, 'Power cable', dto)
                 this.$message.success(`Upload PowerCable successfully to ${ownerType} ID: ${node.parentId}`)
                 return response
             } catch (error) {
@@ -194,7 +196,7 @@ export default {
                 const serverPayload = transformerMappingServer.mapDtoToServer(dto, ownerType)
                 const response = await transformerAPI.createTransformer(serverPayload)
 
-                await this.syncUploadedNodeServerId(node, response)
+                await this.syncUploadedAssetAndMedia(node, response, 'Transformer', dto)
                 this.$message.success(`Upload Transformer "${node.name}" successfully!`)
                 return response
             } catch (error) {
@@ -223,7 +225,7 @@ export default {
                 const serverPayload = voltageTransformerMappingServer.mapDtoToServer(dto, ownerType)
                 const response = await voltageAPI.createVoltageTransformer(serverPayload, node.parentId, ownerType)
 
-                await this.syncUploadedNodeServerId(node, response)
+                await this.syncUploadedAssetAndMedia(node, response, 'Voltage transformer', dto)
                 this.$message.success(`Upload Voltage Transformer "${node.name}" successfully!`)
                 return response
             } catch (error) {
@@ -247,7 +249,7 @@ export default {
                 const dto = currentTransformerMapping.mapEntityToDto(entityRes.data)
                 const serverPayload = currentTransformerMappingServer.mapDtoToServer(dto, ownerType)
                 const response = await currentAPI.createCurrentTransformer(serverPayload, node.parentId, ownerType)
-                await this.syncUploadedNodeServerId(node, response)
+                await this.syncUploadedAssetAndMedia(node, response, 'Current transformer', dto)
                 this.$message.success(`Upload Current Transformer "${node.name}" successfully!`)
                 return response
             } catch (error) {
@@ -272,7 +274,7 @@ export default {
                 const serverPayload = circuitBreakerMappingServer.mapDtoToServer(dto, ownerType)
                 const response = await circuitBreakerAPI.createCircuitBreaker(serverPayload, node.parentId, ownerType)
 
-                await this.syncUploadedNodeServerId(node, response)
+                await this.syncUploadedAssetAndMedia(node, response, 'Circuit breaker', dto)
                 this.$message.success(`Upload Circuit Breaker "${node.name}" successfully!`)
                 return response
             } catch (error) {
@@ -296,7 +298,7 @@ export default {
                 const serverPayload = disconnectorMappingServer.mapDtoToServer(dto, ownerType)
                 const response = await disconnectorAPI.createDisconnector(serverPayload)
 
-                await this.syncUploadedNodeServerId(node, response)
+                await this.syncUploadedAssetAndMedia(node, response, 'Disconnector', dto)
                 this.$message.success(`Upload Disconnector "${node.name}" successfully!`)
                 return response
             } catch (error) {
@@ -320,7 +322,7 @@ export default {
                 const serverPayload = surgeArresterMappingServer.mapDtoToServer(dto, ownerType)
                 const response = await surgeArresterAPI.createSurgeArrester(serverPayload, node.parentId, ownerType)
 
-                await this.syncUploadedNodeServerId(node, response)
+                await this.syncUploadedAssetAndMedia(node, response, 'Surge arrester', dto)
                 this.$message.success(`Upload Surge Arrester "${node.name}" successfully!`)
                 return response
             } catch (error) {
@@ -351,7 +353,7 @@ export default {
                 const response = await bushingAPI.createBushing(serverPayload)
 
                 console.log('[Upload Bushing] Response:', response)
-                await this.syncUploadedNodeServerId(node, response)
+                await this.syncUploadedAssetAndMedia(node, response, 'Bushing', dto)
                 this.$message.success(`Upload Bushing "${node.name}" successfully!`)
                 return response
             } catch (error) {
@@ -585,7 +587,17 @@ export default {
             }
             const key = keyByAsset[assetType]
             const dto = key ? component?.[key] : null
-            return dto ? JSON.parse(JSON.stringify(dto)) : null
+            if (!dto) return null
+
+            const cloned = JSON.parse(JSON.stringify(dto))
+            if (Array.isArray(component?.attachmentData)) {
+                cloned.attachment = cloned.attachment || {}
+                cloned.attachment.path = JSON.stringify(component.attachmentData)
+            }
+            if (component?.old_data?.attachment?.path) {
+                cloned._previousAttachmentPath = component.old_data.attachment.path
+            }
+            return cloned
         },
 
         applyServerTabIdToDto(dto, serverTab) {
@@ -627,28 +639,44 @@ export default {
 
         async createAssetDtoOnServer(assetType, dto, parentId, ownerType, serverTab = null) {
             if (assetType === 'Transformer') {
-                return transformerAPI.createTransformer(this.applyServerTabIdToPayload(transformerMappingServer.mapDtoToServer(dto, ownerType), serverTab))
+                const response = await transformerAPI.createTransformer(this.applyServerTabIdToPayload(transformerMappingServer.mapDtoToServer(dto, ownerType), serverTab))
+                await this.uploadAssetMedia(assetType, dto, this.extractUploadedServerId(response) || serverTab?.id || serverTab?.mrid || dto?.properties?.mrid)
+                return response
             }
             if (assetType === 'Bushing') {
-                return bushingAPI.createBushing(this.applyServerTabIdToPayload(bushingMappingServer.mapDtoToServer(dto, ownerType), serverTab))
+                const response = await bushingAPI.createBushing(this.applyServerTabIdToPayload(bushingMappingServer.mapDtoToServer(dto, ownerType), serverTab))
+                await this.uploadAssetMedia(assetType, dto, this.extractUploadedServerId(response) || serverTab?.id || serverTab?.mrid || dto?.properties?.mrid)
+                return response
             }
             if (assetType === 'Surge arrester') {
-                return surgeArresterAPI.createSurgeArrester(this.applyServerTabIdToPayload(surgeArresterMappingServer.mapDtoToServer(dto, ownerType), serverTab), parentId, ownerType)
+                const response = await surgeArresterAPI.createSurgeArrester(this.applyServerTabIdToPayload(surgeArresterMappingServer.mapDtoToServer(dto, ownerType), serverTab), parentId, ownerType)
+                await this.uploadAssetMedia(assetType, dto, this.extractUploadedServerId(response) || serverTab?.id || serverTab?.mrid || dto?.properties?.mrid)
+                return response
             }
             if (assetType === 'Circuit breaker') {
-                return circuitBreakerAPI.createCircuitBreaker(this.applyServerTabIdToPayload(circuitBreakerMappingServer.mapDtoToServer(dto, ownerType), serverTab), parentId, ownerType)
+                const response = await circuitBreakerAPI.createCircuitBreaker(this.applyServerTabIdToPayload(circuitBreakerMappingServer.mapDtoToServer(dto, ownerType), serverTab), parentId, ownerType)
+                await this.uploadAssetMedia(assetType, dto, this.extractUploadedServerId(response) || serverTab?.id || serverTab?.mrid || dto?.properties?.mrid)
+                return response
             }
             if (assetType === 'Current transformer') {
-                return currentAPI.createCurrentTransformer(this.applyServerTabIdToPayload(currentTransformerMappingServer.mapDtoToServer(dto, ownerType), serverTab), parentId, ownerType)
+                const response = await currentAPI.createCurrentTransformer(this.applyServerTabIdToPayload(currentTransformerMappingServer.mapDtoToServer(dto, ownerType), serverTab), parentId, ownerType)
+                await this.uploadAssetMedia(assetType, dto, this.extractUploadedServerId(response) || serverTab?.id || serverTab?.mrid || dto?.properties?.mrid)
+                return response
             }
             if (assetType === 'Voltage transformer') {
-                return voltageAPI.createVoltageTransformer(this.applyServerTabIdToPayload(voltageTransformerMappingServer.mapDtoToServer(dto, ownerType), serverTab), parentId, ownerType)
+                const response = await voltageAPI.createVoltageTransformer(this.applyServerTabIdToPayload(voltageTransformerMappingServer.mapDtoToServer(dto, ownerType), serverTab), parentId, ownerType)
+                await this.uploadAssetMedia(assetType, dto, this.extractUploadedServerId(response) || serverTab?.id || serverTab?.mrid || dto?.properties?.mrid)
+                return response
             }
             if (assetType === 'Power cable') {
-                return demoAPI.createPowerCableCim(this.applyServerTabIdToPayload(PowerCableServerMapper.mapDtoToServer(dto), serverTab), parentId, ownerType)
+                const response = await demoAPI.createPowerCableCim(this.applyServerTabIdToPayload(PowerCableServerMapper.mapDtoToServer(dto, ownerType), serverTab), parentId, ownerType)
+                await this.uploadAssetMedia(assetType, dto, this.extractUploadedServerId(response) || serverTab?.id || serverTab?.mrid || dto?.properties?.mrid)
+                return response
             }
             if (assetType === 'Disconnector') {
-                return disconnectorAPI.createDisconnector(this.applyServerTabIdToPayload(disconnectorMappingServer.mapDtoToServer(dto, ownerType), serverTab))
+                const response = await disconnectorAPI.createDisconnector(this.applyServerTabIdToPayload(disconnectorMappingServer.mapDtoToServer(dto, ownerType), serverTab))
+                await this.uploadAssetMedia(assetType, dto, this.extractUploadedServerId(response) || serverTab?.id || serverTab?.mrid || dto?.properties?.mrid)
+                return response
             }
             throw new Error(`Unsupported asset type: ${assetType}`)
         },
@@ -657,6 +685,36 @@ export default {
         /** Xử lý lỗi upload thống nhất */
         extractUploadedServerId(response) {
             return response?.id || response?.data?.id || response?.data?.mrid || response?.mrid || null
+        },
+
+        async syncUploadedAssetAndMedia(node, response, assetType, dto) {
+            const serverId = await this.syncUploadedNodeServerId(node, response)
+            await this.uploadAssetMedia(assetType, dto, serverId || this.extractUploadedServerId(response) || node?.mrid)
+            return serverId
+        },
+
+        async uploadAssetMedia(assetType, dto, serverAssetId) {
+            const attachmentData = this.parseAttachmentPath(dto?.attachment?.path)
+            const previousAttachmentData = this.parseAttachmentPath(dto?._previousAttachmentPath)
+            if (!serverAssetId) return null
+            try {
+                return await uploadAssetMediaFromAttachmentData(assetType, serverAssetId, attachmentData, previousAttachmentData)
+            } catch (error) {
+                console.warn(`[Upload ${assetType} Media] Error:`, error)
+                this.$message.warning(`${assetType} uploaded, but media upload failed.`)
+                return null
+            }
+        },
+
+        parseAttachmentPath(pathValue) {
+            if (Array.isArray(pathValue)) return pathValue
+            if (!pathValue) return []
+            try {
+                const parsed = JSON.parse(pathValue)
+                return Array.isArray(parsed) ? parsed : []
+            } catch (error) {
+                return []
+            }
         },
 
         isLocalGeneratedMrid(value) {
@@ -676,7 +734,15 @@ export default {
 
             const oldId = node.mrid || node.id
             const newId = String(serverId)
-            if (!oldId || oldId === newId) return newId
+            if (!oldId || oldId === newId) {
+                if (window.electronAPI && window.electronAPI.markNodeSynced) {
+                    await window.electronAPI.markNodeSynced(newId, this.getSyncNodeType ? this.getSyncNodeType(node) : (node.mode || ''), newId)
+                }
+                if (this.updateTreeNodeSyncState) {
+                    this.updateTreeNodeSyncState(node, 'synced', { serverId: newId })
+                }
+                return newId
+            }
 
             const replaceResult = await window.electronAPI.replaceLocalMrid(oldId, newId)
             if (!replaceResult || !replaceResult.success) {
@@ -688,6 +754,12 @@ export default {
             this.$set(node, 'id', newId)
 
             this.syncUploadedChildrenParentId(node, oldId, newId)
+            if (window.electronAPI && window.electronAPI.markNodeSynced) {
+                await window.electronAPI.markNodeSynced(newId, this.getSyncNodeType ? this.getSyncNodeType(node) : (node.mode || ''), newId)
+            }
+            if (this.updateTreeNodeSyncState) {
+                this.updateTreeNodeSyncState(node, 'synced', { serverId: newId })
+            }
             return newId
         },
 

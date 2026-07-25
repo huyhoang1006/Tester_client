@@ -17,6 +17,7 @@ import { insertReactivePowerTransaction, getReactivePowerByIds, deleteReactivePo
 import { insertCapacitanceTransaction, getCapacitanceById, deleteCapacitanceByIdTransaction } from '@/function/cim/capacitance';
 import { insertPercentTransaction, getPercentById, deletePercentByIdTransaction } from '@/function/cim/percent';
 import { insertMassTransaction, getMassById, deleteMassByIdTransaction } from '@/function/cim/mass';
+import { writeAssetSaveAuditLog, writeAssetDeleteAuditLog } from '../assetAudit/index'
 
 // Helper to safely delete with FK check
 const tryDelete = async (deleteFunc, id, dbsql, name) => {
@@ -197,7 +198,8 @@ export const insertCapacitorEntity = async (old_entity, entity) => {
 
             await runAsync('COMMIT');
             deleteBackupFiles(null, entity.asset.mrid);
-            return { success: true, data: entity, message: 'Capacitor entity inserted successfully' };
+            const auditResult = await writeAssetSaveAuditLog('Capacitor', old_entity, entity)
+            return { success: true, data: entity, changed: auditResult.changed, message: 'Capacitor entity inserted successfully' };
         }
     } catch (error) {
         restoreFiles(null, null, entity.asset.mrid);
@@ -538,6 +540,7 @@ export const deleteCapacitorEntity = async (entity) => {
         }
 
         await runAsync('COMMIT');
+        await writeAssetDeleteAuditLog('Capacitor', entity)
         return { success: true, message: 'Capacitor entity deleted successfully' };
     } catch (error) {
         await runAsync('ROLLBACK');

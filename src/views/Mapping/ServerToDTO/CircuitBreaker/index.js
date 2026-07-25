@@ -23,6 +23,15 @@ const OPERATING_TYPE_MAP = {
     'Magnetic':  'magnetic',
 }
 
+const TANK_TYPE_MAP = {
+    LIVE_TANK: 'liveTank',
+    DEAD_TANK: 'deadTank',
+    NO_VALUE: 'noValue',
+    'Live tank': 'liveTank',
+    'Dead tank': 'deadTank',
+    'No value': 'noValue',
+}
+
 const extractYear = (dateStr) => {
     if (!dateStr) return ''
     const match = String(dateStr).match(/^(\d{4})/)
@@ -30,32 +39,70 @@ const extractYear = (dateStr) => {
 }
 
 const str = (val) => (val !== null && val !== undefined) ? String(val) : ''
+const numberOrBlank = (val) => {
+    const raw = leafValueFromServer(val)
+    if (raw === null || raw === undefined || raw === '') return ''
+    const num = Number(raw)
+    return Number.isNaN(num) ? raw : num
+}
+const leafValueFromServer = (value) => {
+    if (value && typeof value === 'object' && 'value' in value) return value.value
+    return value
+}
+const joinUnitFromServer = (leaf, fallbackUnit) => {
+    if (!leaf || typeof leaf !== 'object') return fallbackUnit
+    if (leaf.multiplier && leaf.unit) return `${leaf.multiplier}|${leaf.unit}`
+    return leaf.unit || fallbackUnit
+}
+const toUpperSnake = (val) => {
+    if (val === null || val === undefined || val === '') return null
+    return String(val)
+        .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+        .replace(/[\s-]+/g, '_')
+        .toUpperCase()
+}
 
 // flat value object: { mrid, value, unit }
 // serverUnit (nếu có) override defaultUnit để dùng đúng đơn vị server trả
 const flat = (value, defaultUnit, serverUnit) => ({
     mrid:  uuid.newUuid(),
-    value: str(value),
-    unit:  serverUnit || defaultUnit,
+    value: str(leafValueFromServer(value)),
+    unit:  joinUnitFromServer(value, serverUnit || defaultUnit),
 })
+
+const applyServerAssessment = (target, source) => {
+    if (!target || !source || typeof target !== 'object' || typeof source !== 'object') return
+    Object.keys(source).forEach((key) => {
+        if (!(key in target)) return
+        const src = source[key]
+        const dst = target[key]
+        if (dst && typeof dst === 'object' && src && typeof src === 'object' && 'value' in src) {
+            dst.value = str(src.value)
+            dst.unit = joinUnitFromServer(src, dst.unit)
+            return
+        }
+        applyServerAssessment(dst, src)
+    })
+}
 
 // ─── Mapper ──────────────────────────────────────────────────────────────────
 export const mapServerToDto = (serverData) => {
     const dto = new CircuitBreakerDto();
     if (!serverData) return dto;
+    serverData = serverData.data || serverData;
 
     const assetInfo   = serverData.assetInfo          || {};
     const lifecycle   = serverData.lifecycleDate      || {};
     const opMech      = serverData.operatingMechanism || {};
     const opAssetInfo = opMech.assetInfo              || {};
-    const opLifecycle = opMech.lifeCycleDate || opMech.lifecycleDate || {};
+    const opLifecycle = opMech.lifeCycleDate || opMech.lifecycleDate || opMech || {};
 
     // server sections (chưa có trong response hiện tại — sẽ map khi server bổ sung)
     const ratings     = serverData.ratings           || {};
     const cbCore      = serverData.circuitBreaker     || serverData.breaker || {};
     const contactSys  = serverData.contactSystem      || {};
     const others      = serverData.others             || {};
-    const opDetail    = opMech.detail || opMech.ratings || {};
+    const opDetail    = opMech.detail || opMech.ratings || opMech || {};
 
     // 1. IDs — luôn sinh UUID
     dto.assetInfoId                           = uuid.newUuid()
@@ -77,15 +124,12 @@ export const mapServerToDto = (serverData) => {
     dto.properties.type              = ASSET_TYPE_MAP[serverData.type] || serverData.type || ''
     dto.properties.serial_no         = serverData.serialNumber || ''
 
-    const mfgName = assetInfo.manufacturerType || opAssetInfo.manufacturerType || ''
-    dto.properties.manufacturer      = mfgName
-    dto.properties.manufacturer_type = (assetInfo.productAssetModel && assetInfo.productAssetModel !== mfgName)
-        ? assetInfo.productAssetModel
-        : ''
+    const assetManufacturer = assetInfo.manufacturer || ''
+    dto.properties.manufacturer      = assetManufacturer
+    dto.properties.manufacturer_type = assetInfo.manufacturerType || ''
     dto.properties.manufacturer_year = extractYear(lifecycle.manufacturedDate)
     dto.properties.country_of_origin = serverData.countryOfOrigin || ''
     dto.properties.apparatus_id      = serverData.lotNumber
-        || assetInfo.productAssetModel
         || serverData.position
         || ''
     dto.properties.comment           = serverData.description || ''
@@ -105,15 +149,15 @@ export const mapServerToDto = (serverData) => {
     dto.ratings.rated_frequency_custom               = flat(ratings.ratedFrequencyCustom,          'Hz',  ratings.ratedFrequencyCustomUnit)
 
     // 4. CircuitBreaker section
-    dto.circuitBreaker.numberOfPhases        = str(cbCore.numberOfPhases)
-    dto.circuitBreaker.interruptersPerPhase  = str(cbCore.interruptersPerPhase)
+    dto.circuitBreaker.numberOfPhases        = numberOrBlank(cbCore.numberOfPhases)
+    dto.circuitBreaker.interruptersPerPhase  = numberOrBlank(cbCore.interruptersPerPhase)
     dto.circuitBreaker.poleOperation         = cbCore.poleOperation       || ''
     dto.circuitBreaker.hasPIR                = cbCore.hasPIR ?? ''
     dto.circuitBreaker.pirValue              = flat(cbCore.pirValue, '', cbCore.pirValueUnit)
     dto.circuitBreaker.hasGradingCapacitors  = cbCore.hasGradingCapacitors ?? ''
     dto.circuitBreaker.capacitorValue        = flat(cbCore.capacitorValue, '', cbCore.capacitorValueUnit)
     dto.circuitBreaker.interruptingMedium    = cbCore.interruptingMedium  || ''
-    dto.circuitBreaker.tankType              = cbCore.tankType            || ''
+    dto.circuitBreaker.tankType              = TANK_TYPE_MAP[cbCore.tankType] || cbCore.tankType || ''
 
     // 5. ContactSystem
     dto.contactSystem.nominal_total_travel = flat(contactSys.nominalTotalTravel, 'mm',  contactSys.nominalTotalTravelUnit)
@@ -132,8 +176,9 @@ export const mapServerToDto = (serverData) => {
     dto.operating.serial_no         = opMech.serialNumber             || ''
     dto.operating.comment           = opMech.description              || ''
     dto.operating.manufacturer_year = extractYear(opLifecycle.manufacturedDate)
-    dto.operating.manufacturer_type = opAssetInfo.manufacturerType    || ''
-    dto.operating.manufacturer      = opAssetInfo.manufacturerType    || ''
+    const operatingManufacturer = opMech.manufacturer || opAssetInfo.manufacturer || ''
+    dto.operating.manufacturer      = operatingManufacturer
+    dto.operating.manufacturer_type = opMech.manufacturerType || opAssetInfo.manufacturerType || ''
     dto.operating.number_of_trip_coil  = str(opDetail.numberOfTripCoil)
     dto.operating.number_of_close_coil = str(opDetail.numberOfCloseCoil)
     dto.operating.rated_operating_pressure             = flat(opDetail.ratedOperatingPressure,            'Pa',  opDetail.ratedOperatingPressureUnit)
@@ -156,18 +201,18 @@ export const mapServerToDto = (serverData) => {
     // Trip/Close coil components (arrays)
     if (Array.isArray(opDetail.tripCoilComponents)) {
         dto.operating.trip_coil_component = opDetail.tripCoilComponents.map(c => ({
-            component:     c.name || 'Trip coil',
-            rated_current: flat(c.ratedCurrent, 'A',  c.ratedCurrentUnit),
-            rated_voltage: flat(c.ratedVoltage, 'V',  c.ratedVoltageUnit),
+            component:     c.component || c.name || 'Trip coil',
+            rated_current: flat(c.ratedCurrent || c.rated_current, 'A',  c.ratedCurrentUnit),
+            rated_voltage: flat(c.ratedVoltage || c.rated_voltage, 'V',  c.ratedVoltageUnit),
             power:         str(c.power),
             frequency:     flat(c.frequency, 'Hz', c.frequencyUnit),
         }))
     }
     if (Array.isArray(opDetail.closeCoilComponents)) {
         dto.operating.close_coil_component = opDetail.closeCoilComponents.map(c => ({
-            component:     c.name || 'Close coil',
-            rated_current: flat(c.ratedCurrent, 'A'),
-            rated_voltage: flat(c.ratedVoltage, 'V'),
+            component:     c.component || c.name || 'Close coil',
+            rated_current: flat(c.ratedCurrent || c.rated_current, 'A'),
+            rated_voltage: flat(c.ratedVoltage || c.rated_voltage, 'V'),
             power:         str(c.power),
             frequency:     flat(c.frequency, 'Hz'),
         }))
@@ -182,6 +227,7 @@ export const mapServerToDto = (serverData) => {
 
         // limits mode: 'Absolute' | 'Relative'
         A.limits = al.limits || 'Absolute'
+        applyServerAssessment(A, al)
 
         // helper: set value + unit (nếu server trả) vào leaf {mrid,value,unit}
         // val = số; unit = đơn vị server trả (giữ nguyên unit mặc định nếu server null)
@@ -563,8 +609,9 @@ export const mapDtoToServer = (dto) => {
 
         assetInfo: {
             mRID:              assetInfoId,
-            manufacturerType:  p.manufacturer || null,   // tên hãng
-            productAssetModel: p.manufacturer_type || null, // model
+            manufacturer:      p.manufacturer || null,
+            manufacturerType:  p.manufacturer_type || null,
+            productAssetModel: null,
             name: null, aliasName: null, description: null,
         },
 
@@ -583,7 +630,9 @@ export const mapDtoToServer = (dto) => {
             operatingMechanismInfoId:              dto.operatingMechanismInfoId || null,
             operatingMechanismProductAssetModelId: dto.operatingMechanismProductAssetModelId || null,
             manufacturedDate: op.manufacturer_year ? `${op.manufacturer_year}-01-01T00:00:00` : null,
-            manufacturerType: op.manufacturer || null,
+            manufacturer: op.manufacturer || null,
+            manufacturerType: op.manufacturer_type || null,
+            productAssetModel: null,
 
             numberOfTripCoil:  strU(op.number_of_trip_coil),
             numberOfCloseCoil: strU(op.number_of_close_coil),
@@ -630,7 +679,7 @@ export const mapDtoToServer = (dto) => {
             hasGradingCapacitors: cb.hasGradingCapacitors ?? null,
             capacitorValue:       leafToServer(cb.capacitorValue),
             interruptingMedium:   cb.interruptingMedium || null,
-            tankType:             cb.tankType || null,
+            tankType:             toUpperSnake(cb.tankType),
         },
 
         contactSystem: {

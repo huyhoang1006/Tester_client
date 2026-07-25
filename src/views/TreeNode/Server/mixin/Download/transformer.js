@@ -7,6 +7,7 @@ import OldTransformerEndInfo from '@/views/Cim/OldTransformerEndInfo'
 import constant from '@/utils/constant'
 import {fetchWithRetry} from './core-utils.js'
 import {detectConflicts, applyResolved, mergeWithoutSnapshot, TRANSFORMER_FIELD_DEFS} from '@/utils/conflictUtils.js'
+import { applyDownloadedAssetMedia } from './asset-media-utils.js'
 
 // ─── Step 1: fetch full info từ server ───────────────────────────────────────
 
@@ -43,6 +44,7 @@ export async function downloadTransformerChain(data, ctx) {
     const serverDto = TransformerServerMapper.mapServerToDto(serverData)
     serverDto.psrId = data.parentBayId
     serverDto.properties.mrid = tr.mrid
+    await applyDownloadedAssetMedia(serverDto, 'Transformer', tr.mrid)
 
     console.log('Kiem tra serverDTO sau khi mapping tu server', serverDto)
 

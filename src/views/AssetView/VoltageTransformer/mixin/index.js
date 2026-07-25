@@ -28,6 +28,7 @@ export default {
                         return {
                             success: true,
                             data: rs.data,
+                            changed: rs.changed
                         };
                     } else {
                         this.$message.error("Error saving voltage transformer entity: " + rs.message);
@@ -60,7 +61,7 @@ export default {
                     this.loadData(dto)
                 }
                 this.$message.success("Asset saved successfully")
-                this.$emit('reload', { savedData: this.voltageTransformer })
+                this.$emit('reload', { savedData: this.voltageTransformer, changed: data.changed === true })
             } else {
                 this.$message.error("Failed to save asset")
             }

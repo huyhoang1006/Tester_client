@@ -1,357 +1,422 @@
 import PowerCableDTO from "@/views/Dto/PowerCable";
 
-const mapServerUnit = (serverObj) => {
-    if (!serverObj) return { mrid: '', value: '', unit: '' };
-    const multiplier = (serverObj.multiplier === 'none' || !serverObj.multiplier) ? '' : serverObj.multiplier;
-    return {
-        mrid: serverObj.mRID || serverObj.mrid || '',
-        value: serverObj.value !== undefined ? serverObj.value : '',
-        unit: multiplier ? `${multiplier}|${serverObj.unit}` : (serverObj.unit || '')
-    };
-};
+const str = (value) => (value !== null && value !== undefined ? String(value) : '')
+
+const textT = (value) => {
+    if (value === null || value === undefined) return null
+    const text = String(value).trim()
+    return text ? text : null
+}
+
+const numT = (value) => {
+    if (value === null || value === undefined || value === '') return null
+    const number = Number(value)
+    return Number.isFinite(number) ? number : null
+}
+
+const intT = (value) => {
+    if (value === null || value === undefined || value === '') return null
+    const number = parseInt(value, 10)
+    return Number.isFinite(number) ? number : null
+}
+
+const idT = (value) => {
+    const text = textT(value)
+    return text && /^\d+$/.test(text) ? Number(text) : null
+}
+
+const splitUnit = (unit, defaultUnit = '') => {
+    const value = unit || defaultUnit
+    if (!value) return ''
+    if (value.includes('|')) return value
+    const multipliers = ['da', 'k', 'M', 'G', 'm', 'µ', 'u', 'n', 'p']
+    for (const multiplier of multipliers) {
+        if (value.length > multiplier.length && value.startsWith(multiplier)) {
+            return `${multiplier}|${value.slice(multiplier.length)}`
+        }
+    }
+    return value
+}
+
+const joinUnit = (unit) => {
+    const text = textT(unit)
+    return text ? text.replace('|', '') : null
+}
+
+const measurementToServer = (measurement = {}) => ({
+    value: numT(measurement.value),
+    unit: joinUnit(measurement.unit),
+})
+
+const setMeasurement = (target, value, unit, defaultUnit) => {
+    target.mrid = ''
+    target.value = str(value)
+    target.unit = splitUnit(unit, defaultUnit)
+}
+
+const setSelect = (target, value) => {
+    if (!target) return
+    target.value = value || ''
+}
+
+const setCustomSelect = (target, customTarget, value, customValue) => {
+    if (target) target.value = value || ''
+    if (customTarget) customTarget.value = customValue || ''
+}
+
+const pickSection = (serverData, ...names) => {
+    for (const name of names) {
+        if (serverData && serverData[name]) return serverData[name]
+    }
+    return {}
+}
+
+const buildLayersFromSections = (dto, core) => {
+    dto.layersData.conductor = Boolean(core.hasConductor)
+    dto.layersData.sheath_reinforcing = Boolean(core.hasSheathReinforcingTap)
+    dto.layersData.conductor_shield = Boolean(core.hasConductorShield)
+    dto.layersData.concentric_neutral = Boolean(core.hasConcentricNeutral)
+    dto.layersData.insulation = Boolean(core.hasInsulation)
+    dto.layersData.insulation_screen = Boolean(core.hasInsulationScreen)
+    dto.layersData.armour_bedding = Boolean(core.hasArmourBedding)
+    dto.layersData.armour = Boolean(core.hasArmour)
+    dto.layersData.sheath = Boolean(core.hasSheath)
+    dto.layersData.oversheath = Boolean(core.hasOversheathJacketServing)
+}
 
 export const mapServerToDto = (serverData) => {
     const dto = new PowerCableDTO();
     if (!serverData) return dto;
 
-    const info = serverData.cableInfo || {};
-    const asset = serverData.assetData || {};
-    const model = asset.productAssetModel || {};
-    const acc = serverData.accessories || {};
-    const neutral = serverData.concentricNeutral || {};
+    const data = serverData.data || serverData
+    const assetInfo = pickSection(data, 'assetInfo', 'assetInfoResponseDTO')
+    const core = pickSection(data, 'powerCableCore', 'powerCableCoreResponseDTO')
+    const rating = pickSection(data, 'powerCableRating', 'powerCableRatingResponseDTO')
+    const other = pickSection(data, 'powerCableOtherInfo', 'powerCableOtherInfoResponseDTO')
+    const conductor = pickSection(data, 'powerCableConductor', 'powerCableConductorResponseDTO')
+    const sheathReinforcing = pickSection(data, 'powerCableSheathReinforcingTap', 'powerCableSheathReinforcingTapResponseDTO')
+    const conductorShield = pickSection(data, 'powerCableConductorShield', 'powerCableConductorShieldResponseDTO')
+    const concentricNeutral = pickSection(data, 'powerCableConcentricNeutral', 'powerCableConcentricNeutralResponseDTO')
+    const insulation = pickSection(data, 'powerCableInsulation', 'powerCableInsulationResponseDTO')
+    const insulationScreen = pickSection(data, 'powerCableInsulationScreen', 'powerCableInsulationScreenResponseDTO')
+    const sheath = pickSection(data, 'powerCableSheath', 'powerCableSheathResponseDTO')
+    const armourBedding = pickSection(data, 'powerCableArmourBedding', 'powerCableArmourBeddingResponseDTO')
+    const armour = pickSection(data, 'powerCableArmour', 'powerCableArmourResponseDTO')
+    const oversheath = pickSection(data, 'powerCableOverSheathJacketServing', 'powerCableOverSheathJacketServingResponseDTO')
+    const joint = pickSection(data, 'powerCableJoint', 'powerCableJointResponseDTO')
+    const terminal = pickSection(data, 'powerCableTerminal', 'powerCableTerminalResponseDTO')
+    const svl = pickSection(data, 'powerCableSheathVoltageLimiter', 'powerCableSheathVoltageLimiterResponseDTO')
 
-    // 1. Map Properties
-    dto.properties.mrid = serverData.mRID || '';
-    dto.properties.serial_no = asset.serialNumber || '';
-    dto.properties.apparatus_id = serverData.name || '';
-    dto.properties.kind = 'Power cable';
-    dto.properties.manufacturer = model.manufacturer?.name || '';
-    dto.properties.manufacturer_type = model.modelNumber || '';
-    dto.properties.manufacturer_year = asset.lotNumber || '';
-    dto.properties.country_of_origin = asset.countryOfOrigin || '';
-    dto.properties.comment = serverData.description || '';
+    dto.properties.mrid = str(core.id || data.id || assetInfo.id || data.mRID)
+    dto.properties.type = core.assetType || ''
+    dto.properties.kind = 'Power cable'
+    dto.properties.serial_no = assetInfo.serialNo || ''
+    dto.properties.manufacturer = assetInfo.manufacturer || ''
+    dto.properties.manufacturer_type = assetInfo.manufacturerType || ''
+    dto.properties.manufacturer_year = assetInfo.manufacturingYear !== null && assetInfo.manufacturingYear !== undefined
+        ? String(assetInfo.manufacturingYear)
+        : ''
+    dto.properties.country_of_origin = assetInfo.country || ''
+    dto.properties.apparatus_id = assetInfo.apparatusId || assetInfo.assetName || ''
+    dto.properties.comment = assetInfo.description || ''
 
-    // 2. Map Configs
-    dto.configsData.phases.value = info.phaseCount || 1;
-    dto.configsData.cores.value = info.coreCount === 1 ? 'Single' : 'Multiple';
+    dto.assetInfoId = assetInfo.id ? String(assetInfo.id) : ''
+    dto.psrId = assetInfo.ownerId ? String(assetInfo.ownerId) : null
 
-    // 3. Map Ratings
-    dto.ratingsData.rated_voltage = mapServerUnit(info.ratedU);
-    dto.ratingsData.max_voltage = mapServerUnit(info.maxU);
-    dto.ratingsData.rated_frequency = mapServerUnit(info.ratedFrequency);
-    dto.ratingsData.shortcircuit = mapServerUnit(info.shortCircuitCurrent);
-    dto.ratingsData.rated_duration = mapServerUnit(info.ratedDurationShortCircuit);
+    dto.configsData.number_of_phase = assetInfo.numberOfPhase ?? ''
+    dto.configsData.phase = assetInfo.phase || ''
+    dto.configsData.cores.value = core.core || ''
+    buildLayersFromSections(dto, core)
 
-    // 4. Map Others
-    dto.othersData.insulation_method.value = info.installationMethod || '';
-    dto.othersData.bonding_type.value = info.bondingType || '';
-    dto.othersData.install_location.value = info.installLocation || '';
-    dto.othersData.cable_length = mapServerUnit(info.length);
+    setMeasurement(dto.ratingsData.rated_voltage, rating.ratedVoltage, rating.ratedVoltageUnit, 'k|V')
+    setMeasurement(dto.ratingsData.max_voltage, rating.maximumVoltage, rating.maximumVoltageUnit, 'k|V')
+    setMeasurement(dto.ratingsData.rated_frequency, rating.rateFrequency, rating.rateFrequencyUnit, 'Hz')
+    setMeasurement(dto.ratingsData.shortcircuit, rating.shortCircuitCurrent, rating.shortCircuitCurrentUnit, 'k|A')
+    setMeasurement(dto.ratingsData.rated_duration, rating.ratedDurationOfShortCircuit, rating.ratedDurationOfShortCircuitUnit, 's')
 
-    // 5. Map Datas - Conductor, Insulation, Sheath, Armour
-    dto.datasData.conductor.conductor_size = mapServerUnit(info.conductorSize);
-    dto.datasData.conductor.conductor_class.value = info.conductorClass || '';
-    dto.datasData.conductor.conductor_material = info.conductorMaterial || '';
-    dto.datasData.conductor.conductor_type.value = info.conductorType || '';
-    dto.datasData.conductor.conductor_diameter = mapServerUnit(info.nominalConductorDiameter);
+    setSelect(dto.othersData.insulation_method, other.installationMethod)
+    setSelect(dto.othersData.bonding_type, other.bondingType)
+    setSelect(dto.othersData.install_location, other.installLocation)
+    setMeasurement(dto.othersData.cable_length, other.cableLength, other.cableLengthUnit, 'k|m')
 
-    dto.datasData.insulation.insulation_type.value = info.insulationMaterial || '';
-    dto.datasData.insulation.thickness = mapServerUnit(info.insulationThickness);
-    dto.datasData.insulation.diameter = mapServerUnit(info.diameterOverInsulation);
-    dto.datasData.insulation.insulation_operating = mapServerUnit(info.insulationMaxOperatingTemp);
+    setMeasurement(dto.datasData.conductor.conductor_size, conductor.conductorSize, conductor.conductorSizeUnit, 'mm²')
+    setSelect(dto.datasData.conductor.conductor_class, conductor.conductorClass)
+    setSelect(dto.datasData.conductor.conductor_count, conductor.conductorCount)
+    setCustomSelect(dto.datasData.conductor.conductor_material, dto.datasData.conductor.conductor_material_custom, conductor.conductorMaterial, conductor.conductorMaterialCustom)
+    setCustomSelect(dto.datasData.conductor.conductor_type, dto.datasData.conductor.conductor_type_custom, conductor.conductorType, conductor.conductorTypeCustom)
+    setMeasurement(dto.datasData.conductor.conductor_diameter, conductor.nominalConductorDiameter, conductor.nominalConductorDiameterUnit, 'mm')
 
-    dto.datasData.sheath.thickness = mapServerUnit(info.sheathThickness);
-    dto.datasData.sheath.diameter = mapServerUnit(info.diameterOverShield);
-    dto.datasData.sheath.construction.value = info.sheathConstruction || '';
-    dto.datasData.sheath.multicore.value = info.sheathMulticore || '';
-    dto.datasData.sheath.sheath_type.value = info.sheathType || '';
+    setCustomSelect(dto.datasData.sheath_reinforcing.material, dto.datasData.sheath_reinforcing.material_custom, sheathReinforcing.material, sheathReinforcing.materialCustom)
+    setMeasurement(dto.datasData.sheath_reinforcing.thickness, sheathReinforcing.thickness, sheathReinforcing.thicknessUnit, 'mm')
+    setMeasurement(dto.datasData.sheath_reinforcing.diameter, sheathReinforcing.diameter, sheathReinforcing.diameterUnit, 'mm')
+    setMeasurement(dto.datasData.sheath_reinforcing.width, sheathReinforcing.width, sheathReinforcing.widthUnit, 'mm')
+    setMeasurement(dto.datasData.sheath_reinforcing.lengthOfLay, sheathReinforcing.lengthOfLay, sheathReinforcing.lengthOfLayUnit, 'mm')
+    setSelect(dto.datasData.sheath_reinforcing.numOfTapes, sheathReinforcing.noOfTapes)
 
-    dto.datasData.armour.material.value = info.armourMaterial || '';
-    dto.datasData.armour.thickness = mapServerUnit(info.armourThickness);
-    dto.datasData.armour.diameter = mapServerUnit(info.diameterOverArmour);
-    dto.datasData.armour.layerOfTapes.value = info.armourLayerTape || '';
-    dto.datasData.armour.crossSectional = mapServerUnit(info.armourCrossSectionalAreaTap);
+    setMeasurement(dto.datasData.conductor_shield.thickness, conductorShield.thickness, conductorShield.thicknessUnit, 'mm')
+    setMeasurement(dto.datasData.conductor_shield.diameter, conductorShield.diameter, conductorShield.diameterUnit, 'mm')
 
-    dto.datasData.concentric_neutral.construction.value = info.concentricConstruction || '';
-    dto.datasData.concentric_neutral.area = mapServerUnit(info.concentricArea);
-    dto.datasData.concentric_neutral.lengthOfLay = mapServerUnit(info.concentricLengthLay);
-    dto.datasData.concentric_neutral.material = mapServerUnit(info.concentricMaterial);
-    dto.datasData.concentric_neutral.numOfWires.value = info.concentricNoOfWires || '';
-    dto.datasData.concentric_neutral.thickness = mapServerUnit(info.concentricThickness);
+    setCustomSelect(dto.datasData.concentric_neutral.material, dto.datasData.concentric_neutral.material_custom, concentricNeutral.material, concentricNeutral.materialCustom)
+    setCustomSelect(dto.datasData.concentric_neutral.construction, dto.datasData.concentric_neutral.construction_custom, concentricNeutral.construction, concentricNeutral.constructionCustom)
+    setMeasurement(dto.datasData.concentric_neutral.thickness, concentricNeutral.thickness, concentricNeutral.thicknessUnit, 'mm')
+    setMeasurement(dto.datasData.concentric_neutral.diameter, concentricNeutral.diameter, concentricNeutral.diameterUnit, 'mm')
+    setMeasurement(dto.datasData.concentric_neutral.lengthOfLay, concentricNeutral.lengthOfLay, concentricNeutral.lengthOfLayUnit, 'mm')
+    setMeasurement(dto.datasData.concentric_neutral.area, concentricNeutral.area, concentricNeutral.areaUnit, 'mm²')
+    setSelect(dto.datasData.concentric_neutral.numOfWires, concentricNeutral.noOfWires)
 
-    dto.datasData.conductor_shield.thickness = mapServerUnit(info.conductorShieldThickness);
-    dto.datasData.conductor_shield.diameter = mapServerUnit(info.conductorShieldThickness);
+    setCustomSelect(dto.datasData.insulation.insulation_type, dto.datasData.insulation.insulation_type_custom, insulation.insulationType, insulation.insulationTypeCustom)
+    setMeasurement(dto.datasData.insulation.thickness, insulation.thickness, insulation.thicknessUnit, 'mm')
+    setMeasurement(dto.datasData.insulation.diameter, insulation.diameter, insulation.diameterUnit, 'mm')
+    setMeasurement(dto.datasData.insulation.insulation_operating, insulation.maxOperatingTemp, insulation.maxOperatingTempUnit, '°C')
 
-    dto.datasData.insulation_screen.diameter = mapServerUnit(info.diameterOverScreen);
-    dto.datasData.insulation_screen.thickness = mapServerUnit(info.screenThickness);
-    dto.datasData.insulation_screen.material.value = info.screenMaterial || '';
+    setCustomSelect(dto.datasData.insulation_screen.material, dto.datasData.insulation_screen.material_custom, insulationScreen.material, insulationScreen.materialCustom)
+    setMeasurement(dto.datasData.insulation_screen.thickness, insulationScreen.thickness, insulationScreen.thicknessUnit, 'mm')
+    setMeasurement(dto.datasData.insulation_screen.diameter, insulationScreen.diameter, insulationScreen.diameterUnit, 'mm')
 
-    dto.datasData.sheath_reinforcing.material.value = info.sheathReinforcingMaterial || '';
-    dto.datasData.sheath_reinforcing.thickness = mapServerUnit(info.sheathReinforcingThickness);
-    dto.datasData.sheath_reinforcing.diameter = mapServerUnit(info.diameterOverSheathReinforcing);
-    dto.datasData.sheath_reinforcing.width = mapServerUnit(info.sheathReinforcingWidth);
-    dto.datasData.sheath_reinforcing.lengthOfLay = mapServerUnit(info.sheathReinforcingLengthLay);
-    dto.datasData.sheath_reinforcing.numOfTapes.value = info.sheathReinforcingNoTape || '';
+    setCustomSelect(dto.datasData.sheath.sheath_type, dto.datasData.sheath.sheath_type_custom, sheath.sheathType, sheath.sheathTypeCustom)
+    setCustomSelect(dto.datasData.sheath.construction, dto.datasData.sheath.construction_custom, sheath.construction, sheath.constructionCustom)
+    setMeasurement(dto.datasData.sheath.thickness, sheath.thickness, sheath.thicknessUnit, 'mm')
+    setMeasurement(dto.datasData.sheath.diameter, sheath.diameter, sheath.diameterUnit, 'mm')
 
-    dto.datasData.armour_bedding.material.value = info.armourBeddingMaterial || '';
-    dto.datasData.armour_bedding.thickness = mapServerUnit(info.armourBeddingThickness);
-    dto.datasData.armour_bedding.diameter = mapServerUnit(info.diameterBeddingOverAmour);
+    setCustomSelect(dto.datasData.armour_bedding.material, dto.datasData.armour_bedding.material_custom, armourBedding.material, armourBedding.materialCustom)
+    setMeasurement(dto.datasData.armour_bedding.thickness, armourBedding.thickness, armourBedding.thicknessUnit, 'mm')
+    setMeasurement(dto.datasData.armour_bedding.diameter, armourBedding.diameter, armourBedding.diameterUnit, 'mm')
 
-    dto.datasData.oversheath.material.value = info.outerJacketKind || '';
-    dto.datasData.oversheath.diameter = mapServerUnit(info.diameterOverJacket);
-    dto.datasData.oversheath.thickness = mapServerUnit(info.jacketThickness);
+    setCustomSelect(dto.datasData.armour.material, dto.datasData.armour.material_custom, armour.material, armour.materialCustom)
+    setMeasurement(dto.datasData.armour.thickness, armour.thickness, armour.thicknessUnit, 'mm')
+    setMeasurement(dto.datasData.armour.diameter, armour.diameter, armour.diameterUnit, 'mm')
+    setCustomSelect(dto.datasData.armour.layerOfTapes, dto.datasData.armour.layerOfTapes_custom, armour.layerOfTap, armour.layerOfTapCustom)
+    setMeasurement(dto.datasData.armour.crossSectional, armour.areaOfTap, armour.areaOfTapUnit, 'mm²')
 
-    // 6. Map Concentric Neutral
-    if (neutral) {
-        dto.datasData.concentric_neutral.mrid = neutral.mRID || '';
-        dto.datasData.concentric_neutral.diameter = mapServerUnit(neutral.diameterOverNeutral);
-    }
+    setCustomSelect(dto.datasData.oversheath.material, dto.datasData.oversheath.material_custom, oversheath.material, oversheath.materialCustom)
+    setMeasurement(dto.datasData.oversheath.thickness, oversheath.thickness, oversheath.thicknessUnit, 'mm')
+    setMeasurement(dto.datasData.oversheath.diameter, oversheath.diameter, oversheath.diameterUnit, 'mm')
 
-    // 7. Map Accessories - Terminal (Đầu cáp)
-    if (acc.terminal) {
-        const term = acc.terminal;
-        dto.datasData.terminalsData.mrid = term.mRID || '';
-        dto.datasData.terminalsData.rated_u = mapServerUnit(term.ratedU);
-        dto.datasData.terminalsData.bil = mapServerUnit(term.bil);
-        dto.datasData.terminalsData.bsl = mapServerUnit(term.bsl);
-        dto.datasData.terminalsData.type.value = term.type || '';
+    setMeasurement(dto.datasData.jointsData.rated_u, joint.ratedVoltage, joint.ratedVoltageUnit, 'k|V')
+    setMeasurement(dto.datasData.jointsData.rated_current, joint.ratedCurrent, joint.ratedCurrentUnit, 'A')
+    setSelect(dto.datasData.jointsData.category, joint.category)
+    setSelect(dto.datasData.jointsData.construction, joint.construction)
+    setSelect(dto.datasData.jointsData.service_condition, joint.serviceCondition)
 
-        // CÁC TRƯỜNG BẠN ĐANG THIẾU:
-        dto.datasData.terminalsData.connector_type.value = term.connectorType || ''; // Lug
-        dto.datasData.terminalsData.service_condition.value = term.serviceCondition || ''; // Polluted
-        dto.datasData.terminalsData.class.value = term.class || '';
-    }
+    setMeasurement(dto.datasData.terminalsData.rated_u, terminal.ratedVoltage, terminal.ratedVoltageUnit, 'k|V')
+    setMeasurement(dto.datasData.terminalsData.bil, terminal.bil, terminal.bilUnit, 'k|V')
+    setMeasurement(dto.datasData.terminalsData.bsl, terminal.bsl, terminal.bslUnit, 'k|V')
+    setSelect(dto.datasData.terminalsData.type, terminal.type)
+    setSelect(dto.datasData.terminalsData.connector_type, terminal.connectorType)
+    setSelect(dto.datasData.terminalsData.service_condition, terminal.serviceCondition)
+    setSelect(dto.datasData.terminalsData.class, terminal.class)
 
-    // 8. Map Accessories - Joint (Hộp nối)
-    if (acc.joint) {
-        const joint = acc.joint;
-        dto.datasData.jointsData.mrid = joint.mRID || '';
-        dto.datasData.jointsData.rated_u = mapServerUnit(joint.ratedU);
-        dto.datasData.jointsData.rated_current = mapServerUnit(joint.ratedCurrent);
-        dto.datasData.jointsData.category.value = joint.category || '';
-        dto.datasData.jointsData.construction.value = joint.construction || '';
-        dto.datasData.jointsData.service_condition.value = joint.serviceCondition || '';
-    }
+    setMeasurement(dto.datasData.sheathLimitsData.rated_voltage_ur, svl.ratedVoltageUr, svl.ratedVoltageUrUnit, 'k|V')
+    setMeasurement(dto.datasData.sheathLimitsData.max_continuous_operating_voltage, svl.maximumOperatingVoltageUc, svl.maximumOperatingVoltageUcUnit, 'k|V')
+    setMeasurement(dto.datasData.sheathLimitsData.nominal_discharge_current, svl.nominalDischargeCurrent, svl.nominalDischargeCurrentUnit, 'A')
+    setSelect(dto.datasData.sheathLimitsData.high_current_impulse_withstand, svl.highCurrentImpulseWithstand)
+    setSelect(dto.datasData.sheathLimitsData.long_duration_current_impulse_withstand, svl.longDurationCurrentImpulseWithstand)
+    setSelect(dto.datasData.sheathLimitsData.short_circuit_withstand, svl.shortCircuitWithstand)
 
-    // 9. Map Accessories - Sheath Voltage Limiter (SVL - Chống sét van)
-    if (acc.sheathVoltageLimiter) {
-        const svl = acc.sheathVoltageLimiter;
-        dto.datasData.sheathLimitsData.mrid = svl.mRID || '';
-        dto.datasData.sheathLimitsData.rated_voltage_ur = mapServerUnit(svl.ratedVoltageUr);
-        dto.datasData.sheathLimitsData.max_continuous_operating_voltage = mapServerUnit(svl.maxContinuousOperatingVoltage);
-        dto.datasData.sheathLimitsData.nominal_discharge_current = mapServerUnit(svl.nominalDischargeCurrent);
-        dto.datasData.sheathLimitsData.high_current_impulse_withstand = mapServerUnit(svl.highCurrentImpulseWithstand); // 40 kA
-        dto.datasData.sheathLimitsData.long_duration_current_impulse_withstand = mapServerUnit(svl.longDurationCurrentImpulseWithstand); // 200 A
-        dto.datasData.sheathLimitsData.short_circuit_withstand = mapServerUnit(svl.shortCircuitWithstand); // 5 kA
-    }
     return dto;
 };
 
-// Helper: Chuyển đổi an toàn sang số
-const safeNumber = (val) => {
-    if (val === '' || val === null || val === undefined) return null;
-    const num = Number(val);
-    return isNaN(num) ? null : num;
-};
+export const mapDtoToServer = (dto, ownerType) => {
+    if (!dto) return null;
 
-const safeInt = (val, defaultVal = 0) => {
-    if (val === '' || val === null || val === undefined) return defaultVal;
-    const num = parseInt(val, 10);
-    return isNaN(num) ? defaultVal : num;
-};
+    const p = dto.properties || {};
+    const c = dto.configsData || {};
+    const l = dto.layersData || {};
+    const r = dto.ratingsData || {};
+    const o = dto.othersData || {};
+    const d = dto.datasData || {};
 
-const mapDtoUnitToServer = (dtoUnit) => {
-    if (!dtoUnit) return null;
-    const { mrid = '', value = '', unit = '' } = dtoUnit;
-    const numValue = safeNumber(value);
-
-    // Mặc định nếu không có unit
-    if (!unit) return { mRID: mrid, value: numValue };
-
-    const [multiplier, realUnit] = unit.includes('|') ? unit.split('|') : ['none', unit];
+    const ratedVoltage = measurementToServer(r.rated_voltage)
+    const maximumVoltage = measurementToServer(r.max_voltage)
+    const rateFrequency = measurementToServer(r.rated_frequency)
+    const shortCircuitCurrent = measurementToServer(r.shortcircuit)
+    const ratedDuration = measurementToServer(r.rated_duration)
+    const cableLength = measurementToServer(o.cable_length)
 
     return {
-        mRID: mrid,
-        value: numValue,
-        unit: realUnit,
-        multiplier: multiplier || 'none'
-    };
-};
-
-export const mapDtoToServer = (dto) => {
-    if (!dto) return {};
-
-    const server = {};
-
-    // --- ROOT LEVEL ---
-    server.mRID = dto.properties.mrid;
-    server.name = dto.properties.apparatus_id || dto.properties.name || "Unnamed Cable";
-    server.aliasName = dto.properties.name || "";
-    server.description = dto.properties.comment;
-
-    // --- ASSET DATA ---
-    server.assetData = {
-        serialNumber: dto.properties.serial_no,
-        lotNumber: dto.properties.manufacturer_year,
-        countryOfOrigin: dto.properties.country_of_origin,
-        type: "UndergroundCable",
-        kind: "Power",
-        critical: false,
-        inUseState: true,
-        initialCondition: "New",
-
-        // Product Asset Model
-        productAssetModel: {
-            modelNumber: dto.properties.manufacturer_type,
-            manufacturer: {
-                name: dto.properties.manufacturer
-            }
+        assetInfo: {
+            ownerId: idT(dto.psrId),
+            ownerType: textT(ownerType),
+            assetName: textT(p.apparatus_id),
+            serialNo: textT(p.serial_no),
+            phase: textT(c.phase),
+            numberOfPhase: intT(c.number_of_phase),
+            manufacturer: textT(p.manufacturer),
+            manufacturerId: null,
+            manufacturerType: textT(p.manufacturer_type),
+            manufacturingYear: intT(p.manufacturer_year),
+            country: textT(p.country_of_origin),
+            countryOfOriginId: null,
+            apparatusId: textT(p.apparatus_id),
+            description: textT(p.comment)
         },
-
-        // Status (Default value để tránh null)
-        status: {
-            value: "in_service",
-            dateTime: new Date().toISOString()
+        powerCableCore: {
+            assetType: textT(p.type),
+            feeder: null,
+            core: textT(c.cores?.value),
+            hasConductor: Boolean(l.conductor),
+            hasSheathReinforcingTap: Boolean(l.sheath_reinforcing),
+            hasConductorShield: Boolean(l.conductor_shield),
+            hasConcentricNeutral: Boolean(l.concentric_neutral),
+            hasInsulation: Boolean(l.insulation),
+            hasInsulationScreen: Boolean(l.insulation_screen),
+            hasArmourBedding: Boolean(l.armour_bedding),
+            hasArmour: Boolean(l.armour),
+            hasSheath: Boolean(l.sheath),
+            hasOversheathJacketServing: Boolean(l.oversheath)
         },
-
-        // Initial Loss Of Life (Default)
-        initialLossOfLife: {
-            value: 0,
-            unit: "%",
-            multiplier: "none"
+        powerCableRating: {
+            ratedVoltage: ratedVoltage.value,
+            ratedVoltageUnit: ratedVoltage.unit,
+            maximumVoltage: maximumVoltage.value,
+            maximumVoltageUnit: maximumVoltage.unit,
+            rateFrequency: rateFrequency.value,
+            rateFrequencyUnit: rateFrequency.unit,
+            shortCircuitCurrent: shortCircuitCurrent.value,
+            shortCircuitCurrentUnit: shortCircuitCurrent.unit,
+            ratedDurationOfShortCircuit: ratedDuration.value,
+            ratedDurationOfShortCircuitUnit: ratedDuration.unit
+        },
+        powerCableOtherInfo: {
+            installationMethod: textT(o.insulation_method?.value),
+            bondingType: textT(o.bonding_type?.value),
+            installLocation: textT(o.install_location?.value),
+            cableLength: cableLength.value,
+            cableLengthUnit: cableLength.unit
+        },
+        powerCableConductor: {
+            conductorSize: measurementToServer(d.conductor?.conductor_size).value,
+            conductorSizeUnit: measurementToServer(d.conductor?.conductor_size).unit,
+            conductorClass: textT(d.conductor?.conductor_class?.value),
+            conductorCount: textT(d.conductor?.conductor_count?.value),
+            conductorMaterial: textT(d.conductor?.conductor_material?.value),
+            conductorMaterialCustom: textT(d.conductor?.conductor_material_custom?.value),
+            conductorType: textT(d.conductor?.conductor_type?.value),
+            conductorTypeCustom: textT(d.conductor?.conductor_type_custom?.value),
+            nominalConductorDiameter: measurementToServer(d.conductor?.conductor_diameter).value,
+            nominalConductorDiameterUnit: measurementToServer(d.conductor?.conductor_diameter).unit
+        },
+        powerCableSheathReinforcingTap: {
+            material: textT(d.sheath_reinforcing?.material?.value),
+            materialCustom: textT(d.sheath_reinforcing?.material_custom?.value),
+            thickness: measurementToServer(d.sheath_reinforcing?.thickness).value,
+            thicknessUnit: measurementToServer(d.sheath_reinforcing?.thickness).unit,
+            diameter: measurementToServer(d.sheath_reinforcing?.diameter).value,
+            diameterUnit: measurementToServer(d.sheath_reinforcing?.diameter).unit,
+            width: measurementToServer(d.sheath_reinforcing?.width).value,
+            widthUnit: measurementToServer(d.sheath_reinforcing?.width).unit,
+            lengthOfLay: measurementToServer(d.sheath_reinforcing?.lengthOfLay).value,
+            lengthOfLayUnit: measurementToServer(d.sheath_reinforcing?.lengthOfLay).unit,
+            noOfTapes: intT(d.sheath_reinforcing?.numOfTapes?.value)
+        },
+        powerCableConductorShield: {
+            thickness: measurementToServer(d.conductor_shield?.thickness).value,
+            thicknessUnit: measurementToServer(d.conductor_shield?.thickness).unit,
+            diameter: measurementToServer(d.conductor_shield?.diameter).value,
+            diameterUnit: measurementToServer(d.conductor_shield?.diameter).unit
+        },
+        powerCableConcentricNeutral: {
+            material: textT(d.concentric_neutral?.material?.value),
+            materialCustom: textT(d.concentric_neutral?.material_custom?.value),
+            construction: textT(d.concentric_neutral?.construction?.value),
+            constructionCustom: textT(d.concentric_neutral?.construction_custom?.value),
+            thickness: measurementToServer(d.concentric_neutral?.thickness).value,
+            thicknessUnit: measurementToServer(d.concentric_neutral?.thickness).unit,
+            diameter: measurementToServer(d.concentric_neutral?.diameter).value,
+            diameterUnit: measurementToServer(d.concentric_neutral?.diameter).unit,
+            lengthOfLay: measurementToServer(d.concentric_neutral?.lengthOfLay).value,
+            lengthOfLayUnit: measurementToServer(d.concentric_neutral?.lengthOfLay).unit,
+            area: measurementToServer(d.concentric_neutral?.area).value,
+            areaUnit: measurementToServer(d.concentric_neutral?.area).unit,
+            noOfWires: intT(d.concentric_neutral?.numOfWires?.value)
+        },
+        powerCableInsulation: {
+            insulationType: textT(d.insulation?.insulation_type?.value),
+            insulationTypeCustom: textT(d.insulation?.insulation_type_custom?.value),
+            thickness: measurementToServer(d.insulation?.thickness).value,
+            thicknessUnit: measurementToServer(d.insulation?.thickness).unit,
+            diameter: measurementToServer(d.insulation?.diameter).value,
+            diameterUnit: measurementToServer(d.insulation?.diameter).unit,
+            maxOperatingTemp: measurementToServer(d.insulation?.insulation_operating).value,
+            maxOperatingTempUnit: measurementToServer(d.insulation?.insulation_operating).unit
+        },
+        powerCableInsulationScreen: {
+            material: textT(d.insulation_screen?.material?.value),
+            materialCustom: textT(d.insulation_screen?.material_custom?.value),
+            thickness: measurementToServer(d.insulation_screen?.thickness).value,
+            thicknessUnit: measurementToServer(d.insulation_screen?.thickness).unit,
+            diameter: measurementToServer(d.insulation_screen?.diameter).value,
+            diameterUnit: measurementToServer(d.insulation_screen?.diameter).unit
+        },
+        powerCableSheath: {
+            sheathType: textT(d.sheath?.sheath_type?.value),
+            sheathTypeCustom: textT(d.sheath?.sheath_type_custom?.value),
+            construction: textT(d.sheath?.construction?.value),
+            constructionCustom: textT(d.sheath?.construction_custom?.value),
+            thickness: measurementToServer(d.sheath?.thickness).value,
+            thicknessUnit: measurementToServer(d.sheath?.thickness).unit,
+            diameter: measurementToServer(d.sheath?.diameter).value,
+            diameterUnit: measurementToServer(d.sheath?.diameter).unit
+        },
+        powerCableArmourBedding: {
+            material: textT(d.armour_bedding?.material?.value),
+            materialCustom: textT(d.armour_bedding?.material_custom?.value),
+            thickness: measurementToServer(d.armour_bedding?.thickness).value,
+            thicknessUnit: measurementToServer(d.armour_bedding?.thickness).unit,
+            diameter: measurementToServer(d.armour_bedding?.diameter).value,
+            diameterUnit: measurementToServer(d.armour_bedding?.diameter).unit
+        },
+        powerCableArmour: {
+            material: textT(d.armour?.material?.value),
+            materialCustom: textT(d.armour?.material_custom?.value),
+            thickness: measurementToServer(d.armour?.thickness).value,
+            thicknessUnit: measurementToServer(d.armour?.thickness).unit,
+            diameter: measurementToServer(d.armour?.diameter).value,
+            diameterUnit: measurementToServer(d.armour?.diameter).unit,
+            layerOfTap: textT(d.armour?.layerOfTapes?.value),
+            layerOfTapCustom: textT(d.armour?.layerOfTapes_custom?.value),
+            areaOfTap: measurementToServer(d.armour?.crossSectional).value,
+            areaOfTapUnit: measurementToServer(d.armour?.crossSectional).unit
+        },
+        powerCableOverSheathJacketServing: {
+            material: textT(d.oversheath?.material?.value),
+            materialCustom: textT(d.oversheath?.material_custom?.value),
+            thickness: measurementToServer(d.oversheath?.thickness).value,
+            thicknessUnit: measurementToServer(d.oversheath?.thickness).unit,
+            diameter: measurementToServer(d.oversheath?.diameter).value,
+            diameterUnit: measurementToServer(d.oversheath?.diameter).unit
+        },
+        powerCableJoint: {
+            ratedVoltage: measurementToServer(d.jointsData?.rated_u).value,
+            ratedVoltageUnit: measurementToServer(d.jointsData?.rated_u).unit,
+            ratedCurrent: measurementToServer(d.jointsData?.rated_current).value,
+            ratedCurrentUnit: measurementToServer(d.jointsData?.rated_current).unit,
+            category: textT(d.jointsData?.category?.value),
+            construction: textT(d.jointsData?.construction?.value),
+            serviceCondition: textT(d.jointsData?.service_condition?.value)
+        },
+        powerCableTerminal: {
+            ratedVoltage: measurementToServer(d.terminalsData?.rated_u).value,
+            ratedVoltageUnit: measurementToServer(d.terminalsData?.rated_u).unit,
+            bil: measurementToServer(d.terminalsData?.bil).value,
+            bilUnit: measurementToServer(d.terminalsData?.bil).unit,
+            bsl: measurementToServer(d.terminalsData?.bsl).value,
+            bslUnit: measurementToServer(d.terminalsData?.bsl).unit,
+            type: textT(d.terminalsData?.type?.value),
+            connectorType: textT(d.terminalsData?.connector_type?.value),
+            serviceCondition: textT(d.terminalsData?.service_condition?.value),
+            class: textT(d.terminalsData?.class?.value)
+        },
+        powerCableSheathVoltageLimiter: {
+            ratedVoltageUr: measurementToServer(d.sheathLimitsData?.rated_voltage_ur).value,
+            ratedVoltageUrUnit: measurementToServer(d.sheathLimitsData?.rated_voltage_ur).unit,
+            maximumOperatingVoltageUc: measurementToServer(d.sheathLimitsData?.max_continuous_operating_voltage).value,
+            maximumOperatingVoltageUcUnit: measurementToServer(d.sheathLimitsData?.max_continuous_operating_voltage).unit,
+            nominalDischargeCurrent: measurementToServer(d.sheathLimitsData?.nominal_discharge_current).value,
+            nominalDischargeCurrentUnit: measurementToServer(d.sheathLimitsData?.nominal_discharge_current).unit,
+            highCurrentImpulseWithstand: textT(d.sheathLimitsData?.high_current_impulse_withstand?.value),
+            longDurationCurrentImpulseWithstand: textT(d.sheathLimitsData?.long_duration_current_impulse_withstand?.value),
+            shortCircuitWithstand: textT(d.sheathLimitsData?.short_circuit_withstand?.value)
         }
     };
-
-    // --- CABLE INFO ---
-    const pCount = safeInt(dto.configsData.phases.value, 3); // Mặc định 3 pha như mẫu
-    let cCount = 1;
-    if (dto.configsData.cores.value === 'Multiple') cCount = 3;
-    else if (dto.configsData.cores.value !== 'Single') cCount = safeInt(dto.configsData.cores.value, 1);
-
-    server.cableInfo = {
-        name: (server.name || "") + " Info",
-        __type: "OldCableInfo", // QUAN TRỌNG: Giống mẫu Postman
-        phaseCount: pCount,
-        coreCount: cCount,
-
-        // Ratings
-        ratedU: mapDtoUnitToServer(dto.ratingsData.rated_voltage),
-        maxU: mapDtoUnitToServer(dto.ratingsData.max_voltage),
-        ratedFrequency: mapDtoUnitToServer(dto.ratingsData.rated_frequency),
-        shortCircuitCurrent: mapDtoUnitToServer(dto.ratingsData.shortcircuit),
-        ratedDurationShortCircuit: mapDtoUnitToServer(dto.ratingsData.rated_duration),
-
-        // Dimensions & Specs
-        length: mapDtoUnitToServer(dto.othersData.cable_length),
-        conductorSize: mapDtoUnitToServer(dto.datasData.conductor.conductor_size),
-        nominalConductorDiameter: mapDtoUnitToServer(dto.datasData.conductor.conductor_diameter),
-
-        // Layers
-        conductorShieldThickness: mapDtoUnitToServer(dto.datasData.conductor_shield.thickness),
-        diameterOverShield: mapDtoUnitToServer(dto.datasData.sheath.diameter),
-        sheathThickness: mapDtoUnitToServer(dto.datasData.sheath.thickness),
-
-        // Insulation
-        insulationMaxOperatingTemp: mapDtoUnitToServer(dto.datasData.insulation.insulation_operating),
-        insulationThickness: mapDtoUnitToServer(dto.datasData.insulation.thickness),
-        diameterOverInsulation: mapDtoUnitToServer(dto.datasData.insulation.diameter),
-
-        // Screen & Armour
-        screenThickness: mapDtoUnitToServer(dto.datasData.insulation_screen.thickness),
-        diameterOverScreen: mapDtoUnitToServer(dto.datasData.insulation_screen.diameter),
-        armourThickness: mapDtoUnitToServer(dto.datasData.armour.thickness),
-        diameterOverArmour: mapDtoUnitToServer(dto.datasData.armour.diameter),
-        armourCrossSectionalAreaTap: mapDtoUnitToServer(dto.datasData.armour.crossSectional),
-
-        // Jacket (Oversheath)
-        jacketThickness: mapDtoUnitToServer(dto.datasData.oversheath.thickness),
-        diameterOverJacket: mapDtoUnitToServer(dto.datasData.oversheath.diameter),
-
-        // String Fields
-        installationMethod: dto.othersData.insulation_method.value,
-        bondingType: dto.othersData.bonding_type.value,
-        installLocation: dto.othersData.install_location.value,
-        conductorClass: dto.datasData.conductor.conductor_class.value,
-        conductorType: dto.datasData.conductor.conductor_type.value,
-        sheathType: dto.datasData.sheath.sheath_type.value,
-        insulationMaterial: dto.datasData.insulation.insulation_type.value,
-        outerJacketKind: dto.datasData.oversheath.material.value,
-        armourMaterial: dto.datasData.armour.material.value
-    };
-
-    // --- CONCENTRIC NEUTRAL ---
-    if (dto.datasData.concentric_neutral) {
-        server.concentricNeutral = {
-            neutralStrandCount: safeInt(dto.datasData.concentric_neutral.numOfWires.value),
-            diameterOverNeutral: mapDtoUnitToServer(dto.datasData.concentric_neutral.diameter),
-            // Các trường khác map nếu có trong DTO
-        };
-    }
-
-    // --- ACCESSORIES ---
-    server.accessories = {};
-
-    // Terminal
-    if (dto.datasData.terminalsData.mrid) {
-        server.accessories.terminal = {
-            mRID: dto.datasData.terminalsData.mrid,
-            name: "Terminal " + (server.name || ""),
-            ratedU: mapDtoUnitToServer(dto.datasData.terminalsData.rated_u),
-            bil: mapDtoUnitToServer(dto.datasData.terminalsData.bil),
-            bsl: mapDtoUnitToServer(dto.datasData.terminalsData.bsl),
-            type: dto.datasData.terminalsData.type.value,
-            connectorType: dto.datasData.terminalsData.connector_type.value,
-            serviceCondition: dto.datasData.terminalsData.service_condition.value,
-            class: dto.datasData.terminalsData.class.value
-        };
-    }
-
-    // Joint
-    if (dto.datasData.jointsData.mrid) {
-        server.accessories.joint = {
-            mRID: dto.datasData.jointsData.mrid,
-            name: "Joint " + (server.name || ""),
-            ratedU: mapDtoUnitToServer(dto.datasData.jointsData.rated_u),
-            ratedCurrent: mapDtoUnitToServer(dto.datasData.jointsData.rated_current),
-            category: dto.datasData.jointsData.category.value,
-            construction: dto.datasData.jointsData.construction.value,
-            serviceCondition: dto.datasData.jointsData.service_condition.value
-        };
-    }
-
-    // SVL
-    if (dto.datasData.sheathLimitsData.mrid) {
-        server.accessories.sheathVoltageLimiter = {
-            mRID: dto.datasData.sheathLimitsData.mrid,
-            name: "SVL " + (server.name || ""),
-            ratedVoltageUr: mapDtoUnitToServer(dto.datasData.sheathLimitsData.rated_voltage_ur),
-            maxContinuousOperatingVoltage: mapDtoUnitToServer(dto.datasData.sheathLimitsData.max_continuous_operating_voltage),
-            nominalDischargeCurrent: mapDtoUnitToServer(dto.datasData.sheathLimitsData.nominal_discharge_current),
-            highCurrentImpulseWithstand: mapDtoUnitToServer(dto.datasData.sheathLimitsData.high_current_impulse_withstand),
-            longDurationCurrentImpulseWithstand: mapDtoUnitToServer(dto.datasData.sheathLimitsData.long_duration_current_impulse_withstand),
-            shortCircuitWithstand: mapDtoUnitToServer(dto.datasData.sheathLimitsData.short_circuit_withstand)
-        };
-    }
-
-    // --- ATTACHMENTS ---
-    // Giả sử DTO lưu attachment dưới dạng string JSON trong path
-    if (dto.attachment && dto.attachment.path && dto.attachment.path !== '[]') {
-        try {
-            // Nếu là mảng JSON string
-            const parsed = JSON.parse(dto.attachment.path);
-            if (Array.isArray(parsed)) {
-                server.attachments = parsed.map(att => ({
-                    id: att.id || att.mrid,
-                    name: att.name,
-                    path: att.path,
-                    type: att.type,
-                    idForeign: server.mRID
-                }));
-            }
-        } catch (e) {
-            server.attachments = [];
-        }
-    }
-
-    return server;
 };

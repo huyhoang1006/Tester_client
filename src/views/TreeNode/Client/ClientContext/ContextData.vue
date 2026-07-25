@@ -8,6 +8,7 @@
                         @input="onTabChange"
                         @close-tab="removeTabClient"
                         @update-node-data="handleUpdateNodeData"
+                        @sync-state-changed="$emit('sync-state-changed', $event)"
                         @refresh-properties="handleRefreshProperties" />
                 </div>
             </div>

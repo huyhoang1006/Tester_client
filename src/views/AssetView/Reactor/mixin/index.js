@@ -27,6 +27,7 @@ export default {
                         return {
                             success: true,
                             data: rs.data,
+                            changed: rs.changed
                         };
                     } else {
                         this.$message.error("Error saving Reactor entity: " + rs.message);
@@ -63,7 +64,7 @@ export default {
                 this.$message.success("Asset saved successfully")
                 
                 console.log('[REACTOR] Emitting reload event with saved data')
-                this.$emit('reload', { savedData: this.reactor })
+                this.$emit('reload', { savedData: this.reactor, changed: data.changed === true })
                 console.log('[REACTOR] Reload event emitted')
             } else {
                 this.$message.error("Failed to save asset")

@@ -12,6 +12,7 @@ import { insertPotentialTransformerTable, deletePotentialTransformerTableByPoten
 import { insertAssetPsrTransaction, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from '@/function/entity/assetPsr'
 import VoltageTransformerEntity from '@/views/Flatten/VoltageTransformer'
 import { getAssetInfoById } from '@/function/cim/assetInfo'
+import { writeAssetSaveAuditLog, writeAssetDeleteAuditLog } from '../assetAudit/index'
 
 
 /**
@@ -141,7 +142,8 @@ export const insertVoltageTransformerEntity = async (old_entity, entity) => {
 
             await runAsync('COMMIT');
             deleteBackupFiles(null, entity.asset.mrid);
-            return { success: true, data: entity, message: 'Voltage Transformer entity inserted successfully' };
+            const auditResult = await writeAssetSaveAuditLog('Voltage transformer', old_entity, entity)
+            return { success: true, data: entity, changed: auditResult.changed, message: 'Voltage Transformer entity inserted successfully' };
 
         }
     } catch (error) {
@@ -355,6 +357,7 @@ export const deleteVoltageTransformerEntity = async (data) => {
                 deleteDirectory(null, data.asset.mrid);
             }
 
+            await writeAssetDeleteAuditLog('Voltage transformer', data)
             return { success: true, message: 'Voltage Transformer entity deleted successfully' };
 
         } catch (error) {

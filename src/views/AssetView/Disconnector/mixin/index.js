@@ -93,6 +93,7 @@ export default {
                         return {
                             success: true,
                             data: rs.data,
+                            changed: rs.changed
                         };
                     } else {
                         this.$message.error("Error saving Disconnector entity: " + rs.message);
@@ -131,7 +132,7 @@ export default {
                 this.$message.success("Asset saved successfully")
 
                 console.log('[DISCONNECTOR] Emitting reload event with saved data')
-                this.$emit('reload', { savedData: this.disconnector })
+                this.$emit('reload', { savedData: this.disconnector, changed: data.changed === true })
                 console.log('[DISCONNECTOR] Reload event emitted')
             } else {
                 this.$message.error("Failed to save asset")

@@ -55,7 +55,7 @@ export const getAssetById = (assetId, mode) => {
         return Promise.reject(new Error('assetId is required'))
     } else {
         if (mode == 'PowerCable') {
-            return client.get(`/api/cim/power-cable/${assetId}`)
+            return client.get(`/api/power-cable/${assetId}`)
         } else if (mode == 'SurgeArrester') {
             return client.get(`/api/surge-arrester/${assetId}`)
         } else if (mode == 'Disconnector') {
@@ -99,12 +99,7 @@ export const getAssetByOwner = (ownerId, mode) => {
 }
 
 export const createPowerCableCim = (data, ownerId, ownerType) => {
-    return client.post(`/api/cim/power-cable/create`, data, {
-        params: {
-            ownerId: ownerId,
-            ownerType: ownerType
-        }
-    })
+    return client.post(`/api/power-cable/create`, data)
 }
 
 export const createSubstation = (data, ownerId) => {

@@ -10,7 +10,8 @@ export const getAllNotifications = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data: rs.data
+                    data: rs.data,
+                    changed: rs.changed
                 }
             } else {
                 return {
@@ -36,7 +37,8 @@ export const getNotificationById = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data: rs.data
+                    data: rs.data,
+                    changed: rs.changed
                 }
             } else {
                 return {
@@ -62,7 +64,8 @@ export const insertNotification = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data: rs.data
+                    data: rs.data,
+                    changed: rs.changed
                 }
             } else {
                 return {
@@ -88,7 +91,8 @@ export const updateNotification = () => {
                 return {
                     success: true,
                     message: "Success",
-                    data: rs.data
+                    data: rs.data,
+                    changed: rs.changed
                 }
             } else {
                 return {

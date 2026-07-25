@@ -5,17 +5,25 @@ import * as CurrentTransformerMapper from '@/views/Mapping/CurrentTransformer/in
 import { fetchWithRetry } from './core-utils.js'
 import { traverseAndFillMrid, ensureTopLevelFK, FK_KEYS } from './fk-utils.js'
 import { detectConflicts, applyResolved, mergeWithoutSnapshot, CURRENT_TRANSFORMER_FIELD_DEFS } from '@/utils/conflictUtils.js'
+import { applyDownloadedAssetMedia } from './asset-media-utils.js'
 
 // ─── Step 1: fetch full info từ server ───────────────────────────────────────
 
 export async function getCurrentTransformerChain(id, parentId) {
     try {
         const data = await fetchWithRetry(() => currentAPI.getCurrentTransformerById(id))
+        const currentTransformerData = data?.CurrentTransformer || data || {}
+        const properties = currentTransformerData.properties || {}
+        const assetInfo = data?.assetInfo || {}
+        const displayName = properties.apparatus_id
+            || assetInfo.apparatusId
+            || properties.serial_no
+            || ''
         return {
             currentTransformer: {
                 id:          id,
                 mrid:        String(id),
-                name:        data?.assetInfo?.apparatusId || '',
+                name:        displayName,
                 parentId:    String(parentId),
                 _type:       'asset',
                 asset:       'Current transformer',
@@ -41,6 +49,7 @@ export async function downloadCurrentTransformerChain(data, ctx) {
     const serverDto       = CurrentTransformerServerMapper.mapServerToDto(serverData)
     serverDto.psrId       = data.parentBayId
     serverDto.properties.mrid = ct.mrid
+    await applyDownloadedAssetMedia(serverDto, 'Current transformer', ct.mrid)
 
     // 2. Lấy client data cũ nếu đã tồn tại
     const existingResult = await window.electronAPI.getCurrentTransformerEntityByMrid(

@@ -37,6 +37,7 @@ import { getOldBushingInfoByTransformerEndInfoIds } from '@/function/cim/oldBush
 import TransformerEntity from '@/views/Flatten/Transformer/index';
 import SurgeArrester from '@/views/Flatten/SurgeArrester'
 import * as bushingFunc from '../Bushing/index'
+import { writeAssetSaveAuditLog, writeAssetDeleteAuditLog } from '../assetAudit/index'
 
 // Helper to check if a value is used in a column of a table
 const isUsedInTable = async (table, column, id, db) => {
@@ -249,7 +250,8 @@ export const insertTransformerEntity = async (old_entity, entity) => {
 
             await runAsync('COMMIT');
             deleteBackupFiles(null, entity.asset.mrid);
-            return { success: true, data: entity, message: 'Transformer entity inserted successfully' };
+            const auditResult = await writeAssetSaveAuditLog('Transformer', old_entity, entity)
+            return { success: true, data: entity, changed: auditResult.changed, message: 'Transformer entity inserted successfully' };
         }
     } catch (error) {
         restoreFiles(null, null, entity.asset.mrid);
@@ -733,6 +735,7 @@ export const deleteTransformerEntity = async (data) => {
                 if (data.attachment && data.attachment.id) {
                     deleteDirectory(null, data.asset.mrid);
                 }
+                await writeAssetDeleteAuditLog('Transformer', data)
                 return { success: true, message: 'Transformer entity deleted successfully' };
             } catch (error) {
                 await runAsync('ROLLBACK');

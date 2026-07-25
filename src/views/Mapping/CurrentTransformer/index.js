@@ -12,11 +12,16 @@ import ApparentPower from "@/views/Cim/ApparentPower";
 import CoreDto from "@/views/Dto/CurrentTransformer/CTConfiguration/CoreDto";
 import Percent from "@/views/Cim/Percent";
 import { UnitSymbol } from "@/views/Enum/UnitSymbol";
+import uuid from "@/utils/uuid";
+
+const ensureMrid = (value) => value || uuid.newUuid();
 
 const mappingUnit = (map, unitDto) => {
     if (!map || !unitDto) return;
 
-    map.mrid = unitDto.mrid || null;
+    const hasValue = unitDto.value !== null && unitDto.value !== undefined && unitDto.value !== '';
+    map.mrid = unitDto.mrid || (hasValue ? uuid.newUuid() : null);
+    unitDto.mrid = map.mrid;
     map.value = unitDto.value || null;
 
     const unitParts = (unitDto.unit || '').split('|'); // ví dụ: "k|V"
@@ -118,7 +123,8 @@ export const mapDtoToEntity = (dto) => {
     
     dto.ctConfiguration.dataCT.forEach((coreDto, index) => {
         const coreInfo = new CtCoreInfo();
-        coreInfo.mrid = coreDto.mrid || '';
+        coreInfo.mrid = ensureMrid(coreDto.mrid);
+        coreDto.mrid = coreInfo.mrid;
         coreInfo.core_index = index + 1;
         
         // Validate taps (must be 2-6)
@@ -137,9 +143,9 @@ export const mapDtoToEntity = (dto) => {
         coreInfo.fs = fullTapClassRating.fs;
         coreInfo.alf = fullTapClassRating.alf;
 
-        coreInfo.winding_resistance = fullTapClassRating.wr.mrid;
         const newResistance = new Resistance();
         mappingUnit(newResistance, fullTapClassRating.wr);
+        coreInfo.winding_resistance = newResistance.mrid;
         entity.resistance.push(newResistance);
 
         coreInfo.kx = fullTapClassRating.kx;
@@ -161,13 +167,13 @@ export const mapDtoToEntity = (dto) => {
         coreInfo.ik = fullTapClassRating.lk;
         coreInfo.vk1 = fullTapClassRating.vk1;
         coreInfo.ik1 = fullTapClassRating.lk1;
-        coreInfo.vb = fullTapClassRating.vb.mrid;
         const newVb = new Voltage();
         mappingUnit(newVb, fullTapClassRating.vb);
+        coreInfo.vb = newVb.mrid;
         entity.voltage.push(newVb);
-        coreInfo.ratio_error = fullTapClassRating.ratio_error.mrid;
         const newRatioError = new Percent();
         mappingUnit(newRatioError, fullTapClassRating.ratio_error);
+        coreInfo.ratio_error = newRatioError.mrid;
         entity.percent.push(newRatioError);
 
         entity.CtCoreInfo.push(coreInfo);
@@ -186,36 +192,37 @@ export const mapDtoToEntity = (dto) => {
             if (!hasData) return;
 
             const tapInfo = new CtTapInfo();
-            tapInfo.mrid = tapTableData.mrid || '';
+            tapInfo.mrid = ensureMrid(tapTableData.mrid);
+            tapTableData.mrid = tapInfo.mrid;
             tapInfo.tap_name = tapTableData.name;
             tapInfo.in_use = tapTableData.inUse;
             tapInfo.type = type;
             tapInfo.ct_core_info_id = coreInfo.mrid;
 
             // Xử lý các đối tượng đơn vị
-            tapInfo.ipn = tapTableData.ipn.mrid;
             const newIpn = new CurrentFlow();
             mappingUnit(newIpn, tapTableData.ipn);
+            tapInfo.ipn = newIpn.mrid;
             entity.currentFlow.push(newIpn);
 
-            tapInfo.isn = tapTableData.isn.mrid;
             const newIsn = new CurrentFlow();
             mappingUnit(newIsn, tapTableData.isn);
+            tapInfo.isn = newIsn.mrid;
             entity.currentFlow.push(newIsn);
 
-            tapInfo.rated_burden = tapClassRatingData.rated_burden.mrid;
             const newRatedBurden = new ApparentPower();
             mappingUnit(newRatedBurden, tapClassRatingData.rated_burden);
+            tapInfo.rated_burden = newRatedBurden.mrid;
             entity.apparentPower.push(newRatedBurden);
 
-            tapInfo.burden = tapClassRatingData.burden.mrid;
             const newBurden = new ApparentPower();
             mappingUnit(newBurden, tapClassRatingData.burden);
+            tapInfo.burden = newBurden.mrid;
             entity.apparentPower.push(newBurden);
 
-            tapInfo.operating_burden = tapClassRatingData.operatingBurden.mrid;
             const newOpBurden = new ApparentPower();
             mappingUnit(newOpBurden, tapClassRatingData.operatingBurden);
+            tapInfo.operating_burden = newOpBurden.mrid;
             entity.apparentPower.push(newOpBurden);
 
             tapInfo.extended_burden = tapClassRatingData.extended_burden;

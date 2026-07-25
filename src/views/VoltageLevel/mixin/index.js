@@ -22,7 +22,7 @@ export default {
                 this.$message.success("Voltage Level saved successfully")
 
                 // ✅ Emit reload event với data đã save - KHÔNG cần gọi API!
-                this.$emit('reload', { savedData: this.properties })
+                this.$emit('reload', { savedData: this.properties, changed: data.changed === true })
             } else {
                 this.$message.error("Failed to save Voltage Level")
             }
@@ -60,7 +60,8 @@ export default {
                     if (resultData.success) {
                         return {
                             success: true,
-                            data: resultData.data
+                            data: resultData.data,
+                            changed: resultData.changed
                         }
                     } else {
                         this.$message.error("Failed to save voltage level.");

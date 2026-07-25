@@ -48,6 +48,7 @@ export default {
                     console.log('Save result:', result);
 
                     if (success) {
+                        await this.markSavedExistingResultDirtyIfChanged(result)
                         saveSuccess = true;
 
                         let newRows = []

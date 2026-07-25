@@ -19,6 +19,7 @@ import { deleteAssetByIdTransaction } from '@/function/cim/asset';
 import { insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from '@/function/entity/assetPsr'
 import { insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction } from '@/function/cim/lifecycleDate';
 import { insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction } from '@/function/cim/productAssetModel';
+import { writeAssetSaveAuditLog, writeAssetDeleteAuditLog } from '../assetAudit/index'
 
 
 export const insertDisconnectorEntity = async (entity) => {
@@ -31,6 +32,8 @@ export const insertDisconnectorEntity = async (entity) => {
             }
             return result;
         } else {
+            const oldResult = await getDisconnectorEntityById(entity.asset.mrid, entity.assetPsr && entity.assetPsr.psr_id)
+            const oldEntity = oldResult && oldResult.success ? oldResult.data : null
             backupAllFilesInDir(null, null, entity.asset.mrid);
             const syncResult = syncFilesWithDeletion(JSON.parse(entity.attachment.path), null, entity.asset.mrid);
             if (!syncResult.success) {
@@ -122,7 +125,8 @@ export const insertDisconnectorEntity = async (entity) => {
             }
 
             await runAsync('COMMIT');
-            return { success: true, data: entity, message: 'Insert disconnector entity completed' };
+            const auditResult = await writeAssetSaveAuditLog('Disconnector', oldEntity, entity)
+            return { success: true, data: entity, changed: auditResult.changed, message: 'Insert disconnector entity completed' };
 
         }
     } catch (error) {
@@ -374,6 +378,7 @@ export const deleteDisconnectorEntity = async (data) => {
             }
 
 
+            await writeAssetDeleteAuditLog('Disconnector', data)
             return { success: true, message: 'Disconnector entity deleted successfully' };
         } catch (error) {
             await runAsync('ROLLBACK');

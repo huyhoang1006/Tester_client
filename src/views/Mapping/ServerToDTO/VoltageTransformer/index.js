@@ -41,6 +41,24 @@ const toNumberOrNull = (value) => {
     return Number.isNaN(parsed) ? null : parsed
 }
 
+const splitMultiplierUnit = (measurement = {}) => {
+    const rawUnit = measurement?.unit || null
+    const parts = typeof rawUnit === 'string' && rawUnit.includes('|')
+        ? rawUnit.split('|')
+        : []
+    const multiplier = parts.length > 1
+        ? parts[0]
+        : (measurement?.multiplier || null)
+    const unit = parts.length > 1
+        ? parts.slice(1).join('|')
+        : rawUnit
+
+    return {
+        unit: unit || null,
+        multiplier: MULTIPLIER_TO_SERVER[multiplier] || multiplier || null,
+    }
+}
+
 // ─── Mapper ──────────────────────────────────────────────────────────────────
 
 export const mapServerToDto = (serverData) => {
@@ -250,7 +268,11 @@ export const mapDtoToServer = (dto) => {
 
             vt_Configuration: {
                 windings: dto.vt_Configuration?.windings || 0,
-                dataVT: (dto.vt_Configuration?.dataVT || []).map(vt => ({
+                dataVT: (dto.vt_Configuration?.dataVT || []).map(vt => {
+                    const usrVoltage = splitMultiplierUnit(vt.usr_rated_voltage)
+                    const burden = splitMultiplierUnit(vt.rated_burden)
+
+                    return {
                     mrid: vt.mrid || null,
 
                     // DTO usr_formula là string "3sqrt" → map vào value, convert sang server format
@@ -269,15 +291,15 @@ export const mapDtoToServer = (dto) => {
                     usr_rated_voltage: {
                         mrid:       vt.usr_rated_voltage?.mrid || null,
                         value:      toNumberOrNull(vt.usr_rated_voltage?.value),
-                        unit:       vt.usr_rated_voltage?.unit       || null,
-                        multiplier: vt.usr_rated_voltage?.multiplier || null,
+                        unit:       usrVoltage.unit,
+                        multiplier: usrVoltage.multiplier,
                     },
 
                     rated_burden: {
                         mrid:       vt.rated_burden?.mrid || null,
                         value:      toNumberOrNull(vt.rated_burden?.value),
-                        unit:       vt.rated_burden?.unit       || null,
-                        multiplier: vt.rated_burden?.multiplier || null,
+                        unit:       burden.unit,
+                        multiplier: burden.multiplier,
                     },
 
                     // DTO rated_power_factor là number 7 → map vào value
@@ -291,7 +313,7 @@ export const mapDtoToServer = (dto) => {
                         unit:       vt.rated_power_factor?.unit       || null,
                         multiplier: vt.rated_power_factor?.multiplier || null,
                     },
-                })),
+                }}),
             },
         },
     }

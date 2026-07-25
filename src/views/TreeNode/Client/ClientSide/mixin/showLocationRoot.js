@@ -14,6 +14,9 @@ export default {
                         const rootNode = this.organisationClientList[0];
                         await this.fetchChildren(rootNode);
                         this.$set(rootNode, 'expanded', true);
+                        if (this.applySyncStatesToTree) {
+                            await this.applySyncStatesToTree(this.organisationClientList)
+                        }
                     }
                 } else {
                     this.$message.error('Cannot load root organisation')

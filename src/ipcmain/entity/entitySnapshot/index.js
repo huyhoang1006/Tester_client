@@ -10,7 +10,8 @@ export const getEntitySnapshotByMrid = () => {
                 return {
                     success: true,
                     message: rs.message || "Success",
-                    data: rs.data
+                    data: rs.data,
+                    changed: rs.changed
                 }
             } else {
                 return {
@@ -37,7 +38,8 @@ export const insertEntitySnapshot = () => {
                 return {
                     success: true,
                     message: rs.message || "Success",
-                    data: rs.data
+                    data: rs.data,
+                    changed: rs.changed
                 }
             } else {
                 return {

@@ -3,7 +3,6 @@ import { mapState } from 'vuex'
 import uuid from '@/utils/uuid'
 import OrganisationDto from '@/views/Dto/Organisation'
 import * as orgMapper from '@/views/Mapping/Organisation/index'
-import ConfigurationEvent from '@/views/Cim/ConfigurationEvent'
 
 export default {
     data() {
@@ -22,7 +21,7 @@ export default {
                 
                 console.log('[ORGANISATION] Emitting reload event with saved data')
                 // ✅ Emit reload event với data đã save - KHÔNG cần gọi API!
-                this.$emit('reload', { savedData: this.properties })
+                this.$emit('reload', { savedData: this.properties, changed: data.changed === true })
                 console.log('[ORGANISATION] Reload event emitted')
             } else {
                 this.$message.error("Failed to save organisation")
@@ -62,7 +61,8 @@ export default {
                     if (result.success) {
                         return {
                             data: result.data,
-                            success: true
+                            success: true,
+                            changed: result.changed
                         }
                     } else {
                         this.$message.error('Error saving organisation: ' + result.message)
@@ -148,25 +148,6 @@ export default {
             }
         },
 
-        checkConfigurationEvent(dto) {
-            if (dto.organisationId !== null && dto.organisationId !== '') {
-                const configEventAttachment = new ConfigurationEvent()
-                configEventAttachment.mrid = uuid.newUuid()
-                configEventAttachment.name = 'Change organisation'
-                configEventAttachment.effective_date_time = new Date().toISOString()
-                configEventAttachment.changed_organisation = dto.organisationId
-                configEventAttachment.user_name = this.$store.state.user.name
-                configEventAttachment.modified_by = this.$store.state.user.user_id
-                if (this.mode === this.$constant.ADD) {
-                    configEventAttachment.type = "INSERT"
-                } else if (this.mode === this.$constant.EDIT) {
-                    configEventAttachment.type = "UPDATE"
-                }
-                configEventAttachment.description = `Organisation changed of ${dto.name}`
-                dto.configurationEvent.push(configEventAttachment)
-            }
-        },
-
         checkUser(dto) {
             dto.user_id = this.$store.state.user.user_id
             dto.user_name = this.$store.state.user.name
@@ -196,7 +177,6 @@ export default {
             this.checkPositionPoint(dto)
             this.checkAttachment(dto)
             this.checkUser(dto)
-            this.checkConfigurationEvent(dto)
             return dto
         }
 

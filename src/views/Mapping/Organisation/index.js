@@ -50,6 +50,9 @@ export const OrgDtoToOrgEntity = (orgDto) => {
         orgEntity.configurationEvent = orgDto.configurationEvent
     }
 
+    orgEntity.user.user_id = orgDto.user_id || orgDto.userId || null;
+    orgEntity.user.name = orgDto.user_name || orgDto.userName || null;
+
     if (Array.isArray(orgDto.positionPoints.x) && orgDto.positionPoints.x.length > 0) {
         for (let i = 0; i < orgDto.positionPoints.x.length; i++) {
             const geoMapPoint = new GeoMap();

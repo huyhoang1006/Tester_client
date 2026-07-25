@@ -23,6 +23,7 @@ import * as entitySnapshotPreload from './entitySnapshot/index.js'
 import * as templatePreload from './template/index.js'
 import * as mRIDCheckPreload from './mRIDCheck/index.js'
 import * as testingEquipmentEntityPreload from './testingEquipment/index.js'
+import * as syncStatePreload from './syncState/index.js'
 
 export {
     attachmentPreload, substationPreload, parentOrganizationPreload,
@@ -30,5 +31,5 @@ export {
     jobEntityPreload, powerCableEntityPreload, voltageTransformerEntityPreload, updateEntityPreload,
     bushingEntityPreload, disconnectorEntityPreload, rotatingMachineEntityPreload, currentTransformerEntityPreload,
     capacitorEntityPreload, breakerEntityPreload, reactorEntityPreload, exportPreload, assetPsrPreload, notificationEntityPreload,
-    entitySnapshotPreload, templatePreload, mRIDCheckPreload, testingEquipmentEntityPreload
+    entitySnapshotPreload, templatePreload, mRIDCheckPreload, testingEquipmentEntityPreload, syncStatePreload
 }

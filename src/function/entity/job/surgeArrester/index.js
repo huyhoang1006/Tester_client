@@ -1,6 +1,7 @@
 import db from '../../../datacontext/index.js'
 import * as attachmentContext from '../../../attachmentcontext/index'
 import path from 'path'
+import { writeJobSaveAuditLog, writeJobDeleteAuditLog } from '../jobAudit'
 import { uploadAttachmentTransaction, deleteAttachmentByIdTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType } from '@/function/entity/attachment'
 import {insertOldWorkTransaction, getOldWorkById, deleteOldWorkByIdTransaction} from "@/function/cim/oldWork/index"
 import { insertTestingEquipmentTransaction, getTestingEquipmentByWorkId, ensureTestingEquipmentAssetTransaction, persistJobCalibrationTransaction, unlinkTestingEquipmentFromWorkTransaction } from '../../testingEquipment/index.js'
@@ -347,7 +348,8 @@ export const insertSurgeArresterJobEntity = async (old_entity,entity) => {
             for(const attachment of entity.attachmentTest) {
                 deleteBackupFiles(null, attachment.id_foreign);
             }
-            return { success: true, data: entity, message: 'Surge Arrester Job entity inserted successfully' };
+            const auditResult = await writeJobSaveAuditLog('Surge Arrester Job', old_entity, entity);
+            return { success: true, data: entity, changed: auditResult.changed, message: 'Surge Arrester Job entity inserted successfully' };
 
         }
     } catch (error) {
@@ -593,6 +595,7 @@ export const deleteSurgeArresterJobEntity = async (entity) => {
             }
         }
 
+        await writeJobDeleteAuditLog('Surge Arrester Job', entity);
         return { success: true, message: 'Surge Arrester Job entity deleted successfully' };
 
     } catch (error) {

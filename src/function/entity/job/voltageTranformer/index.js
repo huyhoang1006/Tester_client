@@ -1,6 +1,7 @@
 import db from '../../../datacontext/index.js'
 import * as attachmentContext from '../../../attachmentcontext/index'
 import path from 'path'
+import { writeJobSaveAuditLog, writeJobDeleteAuditLog } from '../jobAudit'
 import { uploadAttachmentTransaction, deleteAttachmentByIdTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType } from '@/function/entity/attachment'
 import {insertOldWorkTransaction, getOldWorkById, deleteOldWorkByIdTransaction} from "@/function/cim/oldWork/index"
 import { insertTestingEquipmentTransaction, getTestingEquipmentByWorkId, ensureTestingEquipmentAssetTransaction, persistJobCalibrationTransaction, unlinkTestingEquipmentFromWorkTransaction } from '../../testingEquipment/index.js'
@@ -343,7 +344,8 @@ export const insertVoltageTransformerJobEntity = async (old_entity,entity) => {
             for(const attachment of entity.attachmentTest) {
                 deleteBackupFiles(null, attachment.id_foreign);
             }
-            return { success: true, data: entity, message: 'Voltage Transformer Job entity inserted successfully' };
+            const auditResult = await writeJobSaveAuditLog('Voltage Transformer Job', old_entity, entity);
+            return { success: true, data: entity, changed: auditResult.changed, message: 'Voltage Transformer Job entity inserted successfully' };
 
         }
     } catch (error) {
@@ -591,6 +593,7 @@ export const deleteVoltageTransformerJobEntity = async (entity) => {
             }
         }
 
+        await writeJobDeleteAuditLog('Voltage Transformer Job', entity);
         return { success: true, message: 'Voltage Transformer Job entity deleted successfully' };
 
     } catch (error) {

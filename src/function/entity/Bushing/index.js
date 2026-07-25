@@ -13,6 +13,7 @@ import { insertProductAssetModelTransaction, getProductAssetModelById, deletePro
 import { insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from '@/function/entity/assetPsr'
 import { insertOldBushingInfoTransaction, getOldBushingInfoById, deleteOldBushingInfoTransaction } from '@/function/cim/oldBushingInfo';
 import BushingEntity from '@/views/Flatten/Bushing';
+import { writeAssetSaveAuditLog, writeAssetDeleteAuditLog } from '../assetAudit/index'
 
 export const insertBushingEntity = async (entity) => {
     try {
@@ -24,6 +25,8 @@ export const insertBushingEntity = async (entity) => {
             }
             return result;
         } else {
+            const oldResult = await getBushingEntityById(entity.bushing.mrid, entity.assetPsr && entity.assetPsr.psr_id)
+            const oldEntity = oldResult && oldResult.success ? oldResult.data : null
             backupAllFilesInDir(null, null, entity.bushing.mrid);
             const syncResult = syncFilesWithDeletion(JSON.parse(entity.attachment.path), null, entity.bushing.mrid);
             if (!syncResult.success) {
@@ -83,7 +86,8 @@ export const insertBushingEntity = async (entity) => {
 
             await runAsync('COMMIT');
             deleteBackupFiles(null, entity.bushing.mrid);
-            return { success: true, data: entity, message: 'Bushing entity inserted successfully' };
+            const auditResult = await writeAssetSaveAuditLog('Bushing', oldEntity, entity)
+            return { success: true, data: entity, changed: auditResult.changed, message: 'Bushing entity inserted successfully' };
         }
     } catch (error) {
         restoreFiles(null, null, entity.bushing.mrid);
@@ -360,6 +364,7 @@ export const deleteBushingEntity = async (data) => {
                 if (data.attachment && data.attachment.id) {
                     deleteDirectory(null, data.bushing.mrid);
                 }
+                await writeAssetDeleteAuditLog('Bushing', data)
                 return { success: true, message: 'Bushing entity deleted successfully' };
             } catch (error) {
                 await runAsync('ROLLBACK');

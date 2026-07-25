@@ -11,6 +11,8 @@ export const attachmentPreload = () => {
         openFile : (path) => ipcRenderer.invoke('openFile', path),
         downloadFile : (path) => ipcRenderer.invoke('downloadFile', path),
         readFileData : (file_Path) => ipcRenderer.invoke('readFileData', file_Path),
+        readAbsoluteFileData : (filePath) => ipcRenderer.invoke('readAbsoluteFileData', filePath),
         downloadFileData : (base64, dirFile) => ipcRenderer.invoke('downloadFileData', base64, dirFile),
+        writeAttachmentFileData : (base64, dirFile) => ipcRenderer.invoke('writeAttachmentFileData', base64, dirFile),
     }
 }

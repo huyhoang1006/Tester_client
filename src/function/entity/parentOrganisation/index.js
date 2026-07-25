@@ -7,13 +7,111 @@ import { insertStreetAddressTransaction, getStreetAddressById, deleteStreetAddre
 import { insertElectronicAddressTransaction, getElectronicAddressById, deleteElectronicAddressByIdTransaction } from '@/function/cim/electronicAddress'
 import { insertTelephoneNumberTransaction, getTelephoneNumberById, deleteTelephoneNumberByIdTransaction } from '@/function/cim/telephoneNumber'
 import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, deleteDirectory, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction } from '@/function/entity/attachment'
-import { insertConfigurationEventArrayTransaction, insertConfigurationEventTransaction} from '@/function/cim/configurationEvent/index'
-import ConfigurationEvent from '@/views/Cim/ConfigurationEvent'
+import { insertConfigurationEventArrayTransaction } from '@/function/cim/configurationEvent/index'
 import { insertParentOrganizationTransaction, getParentOrganizationById, deleteParentOrganizationByIdTransaction } from '@/function/cim/parentOrganization'
-import { insertGeoMapArrayTransaction, getGeoMapByOrganisationId, deleteGeoMapByArrayMridTransaction } from '../geoMap'
+import { insertGeoMapArrayTransaction, getGeoMapByOrganisationId } from '../geoMap'
 import {saveSnapshotTransaction} from '../entitySnapshot/index'
-import uuid from '@/utils/uuid'
+import { detachAuditLogReference, normaliseAuditValue, tryWriteAuditLog } from '../auditLog/index'
 import path from 'path'
+
+const getAttachmentLogValue = (attachment) => {
+    if (!attachment || !attachment.path) return ''
+    try {
+        const files = JSON.parse(attachment.path)
+        if (!Array.isArray(files)) return ''
+        return files.map((item) => path.basename(item.path || item.name || '')).filter(Boolean).join(', ')
+    } catch (error) {
+        return normaliseAuditValue(attachment.path)
+    }
+}
+
+const getPositionPointLogValue = (positionPoints) => {
+    if (!Array.isArray(positionPoints) || positionPoints.length === 0) return ''
+    return positionPoints
+        .map((point) => [point.x, point.y, point.z].map(normaliseAuditValue).join(','))
+        .join(' | ')
+}
+
+const readLogValue = (entity, group, field) => {
+    if (!entity || !entity[group]) return null
+    return entity[group][field]
+}
+
+const getOrganisationLogFields = (entity) => ({
+    'Name': readLogValue(entity, 'organisation', 'name'),
+    'Alias name': readLogValue(entity, 'organisation', 'alias_name'),
+    'Tax code': readLogValue(entity, 'organisation', 'tax_code'),
+    'Comment': readLogValue(entity, 'organisation', 'description'),
+    'Parent organisation': readLogValue(entity, 'organisation', 'parent_organisation'),
+    'Street': readLogValue(entity, 'streetDetail', 'address_general'),
+    'Ward/Commune': readLogValue(entity, 'townDetail', 'ward_or_commune'),
+    'District/Town': readLogValue(entity, 'townDetail', 'district_or_town'),
+    'City': readLogValue(entity, 'townDetail', 'city'),
+    'State/Province': readLogValue(entity, 'townDetail', 'state_or_province'),
+    'Country': readLogValue(entity, 'townDetail', 'country'),
+    'Phone number': readLogValue(entity, 'telephoneNumber', 'itu_phone'),
+    'Email': readLogValue(entity, 'electronicAddress', 'email'),
+    'Fax': readLogValue(entity, 'electronicAddress', 'fax'),
+    'Attachments': getAttachmentLogValue(entity && entity.attachment),
+    'Geo coordinates': getPositionPointLogValue(entity && entity.positionPoints)
+})
+
+const getOrganisationChanges = (beforeEntity, afterEntity) => {
+    const before = getOrganisationLogFields(beforeEntity)
+    const after = getOrganisationLogFields(afterEntity)
+    return Object.keys(after)
+        .map((field) => ({
+            field,
+            from: normaliseAuditValue(before[field]),
+            to: normaliseAuditValue(after[field])
+        }))
+        .filter((change) => change.from !== change.to)
+}
+
+const getOrganisationUser = (entity) => {
+    const user = entity && entity.user ? entity.user : {}
+    return {
+        name: user.name || user.user_name || 'Unknown',
+        id: user.user_id || user.id || null
+    }
+}
+
+const writeOrganisationSaveLog = async (beforeEntity, afterEntity) => {
+    const name = normaliseAuditValue(readLogValue(afterEntity, 'organisation', 'name')) || 'Unnamed Organisation'
+    const objectId = readLogValue(afterEntity, 'organisation', 'mrid')
+    if (!beforeEntity) {
+        const result = await tryWriteAuditLog({
+            objectType: 'Organisation',
+            objectId,
+            objectName: name,
+            action: 'INSERT',
+            user: getOrganisationUser(afterEntity)
+        })
+        return { ...result, changed: true }
+    }
+
+    const changes = getOrganisationChanges(beforeEntity, afterEntity)
+    const result = await tryWriteAuditLog({
+        objectType: 'Organisation',
+        objectId,
+        objectName: name,
+        action: 'UPDATE',
+        changes,
+        user: getOrganisationUser(afterEntity)
+    })
+    return { ...result, changed: changes.length > 0 }
+}
+
+const writeOrganisationDeleteLog = async (entity) => {
+    const name = normaliseAuditValue(readLogValue(entity, 'organisation', 'name')) || 'Unnamed Organisation'
+    await tryWriteAuditLog({
+        objectType: 'Organisation',
+        objectId: readLogValue(entity, 'organisation', 'mrid'),
+        objectName: name,
+        action: 'DELETE',
+        user: getOrganisationUser(entity)
+    })
+}
 
 export const insertOrganisationEntity = async (entity) => {
     if(entity == null || typeof entity !== 'object') {
@@ -27,6 +125,8 @@ export const insertOrganisationEntity = async (entity) => {
             message: '',
         };
         try {
+            const beforeResult = await getOrganisationEntityById(entity.organisation.mrid);
+            const beforeEntity = beforeResult && beforeResult.success ? beforeResult.data : null;
             if(entity.attachment && entity.attachment.path && entity.attachment.path.length > 0) {
                 backupAllFilesInDir(null, null, entity.organisation.mrid);
                 const syncResult = syncFilesWithDeletion(JSON.parse(entity.attachment.path), null, entity.organisation.mrid);
@@ -58,7 +158,6 @@ export const insertOrganisationEntity = async (entity) => {
                                 entity.attachment.path = JSON.stringify(newPath);
                                 await uploadAttachmentTransaction(entity.attachment, db);
                             }
-                            if (Array.isArray(entity.configurationEvent) && entity.configurationEvent.length > 0)  await insertConfigurationEventArrayTransaction(entity.configurationEvent, db);
                             db.run('COMMIT');
                             resolve({ success: true, data: entity, message: 'Insert entity completed' });
                         } catch (err) {
@@ -93,7 +192,6 @@ export const insertOrganisationEntity = async (entity) => {
                                 entity.attachment.path = JSON.stringify(newPath);
                                 await uploadAttachmentTransaction(entity.attachment, db);
                             }
-                            if (Array.isArray(entity.configurationEvent) && entity.configurationEvent.length > 0)  await insertConfigurationEventArrayTransaction(entity.configurationEvent, db);
                             db.run('COMMIT');
                             resolve({ success: true, data: entity, message: 'Insert entity completed' });
                         } catch (err) {
@@ -106,6 +204,8 @@ export const insertOrganisationEntity = async (entity) => {
                 result.data = entity;
                 result.message = 'Insert ParentOrganisationEntity completed';
             }
+            const auditResult = await writeOrganisationSaveLog(beforeEntity, entity);
+            result.changed = auditResult.changed;
             return result;
         } catch (err) {
             console.error('Insert ParentOrganisationEntity failed:', err);
@@ -119,19 +219,14 @@ export const insertOrganisationEntity = async (entity) => {
             }
             result.error = err.message;
             result.message = 'Insert ParentOrganisationEntity failed and rollback executed';
-            const configEvent = new ConfigurationEvent();
-            configEvent.mrid = uuid.newUuid()
-            configEvent.name = 'Change organisation'
-            configEvent.effective_date_time = new Date().toISOString()
-            configEvent.user_name = entity.user.name
-            configEvent.modified_by = entity.user.user_id
-            configEvent.type = "ERROR"
-            configEvent.description = `Organisation changed of ${entity.organisation.name} failed`
-            try {
-                await insertConfigurationEventTransaction(configEvent, db);
-            } catch (err) {
-                console.error('Insert ConfigurationEvent failed:', err);
-            }
+            await tryWriteAuditLog({
+                objectType: 'Organisation',
+                objectId: entity && entity.organisation ? entity.organisation.mrid : null,
+                objectName: entity && entity.organisation ? entity.organisation.name : null,
+                action: 'ERROR',
+                description: `Organisation changed of ${entity.organisation.name} failed`,
+                user: getOrganisationUser(entity)
+            });
             return result;
         }
     }
@@ -228,20 +323,14 @@ export const insertOrganisationEntityFromServer = async (entity, serverData) => 
         }
 
         // 6. Ghi log cấu hình lỗi
-        const configEvent = new ConfigurationEvent();
-        configEvent.mrid = uuid.newUuid();
-        configEvent.name = 'Change organisation';
-        configEvent.effective_date_time = new Date().toISOString();
-        configEvent.user_name = (entity.user && entity.user.name) ? entity.user.name : 'Unknown';
-        configEvent.modified_by = (entity.user && entity.user.user_id) ? entity.user.user_id : 'Unknown';
-        configEvent.type = "ERROR";
-        configEvent.description = `Organisation changed of ${entity.organisation.name} failed`;
-
-        try {
-            await insertConfigurationEventTransaction(configEvent, db);
-        } catch (eventErr) {
-            console.error('Insert ConfigurationEvent failed:', eventErr);
-        }
+        await tryWriteAuditLog({
+            objectType: 'Organisation',
+            objectId: entity && entity.organisation ? entity.organisation.mrid : null,
+            objectName: entity && entity.organisation ? entity.organisation.name : null,
+            action: 'ERROR',
+            description: `Organisation changed of ${entity.organisation.name} failed`,
+            user: getOrganisationUser(entity)
+        });
 
         return { 
             success: false, 
@@ -326,6 +415,7 @@ export const deleteOrganisationEntityById = async (data) => {
         await runSQL('BEGIN TRANSACTION');
 
         if (data.organisation.mrid) {
+            await detachAuditLogReference('changed_organisation', data.organisation.mrid, db);
             await deleteParentOrganizationByIdTransaction(data.organisation.mrid, db);
         }
 
@@ -356,6 +446,7 @@ export const deleteOrganisationEntityById = async (data) => {
         await runSQL('COMMIT');
 
         deleteDirectory(null, data.organisation.mrid);
+        await writeOrganisationDeleteLog(data);
 
         return { success: true, data, message: 'Organisation deleted successfully' };
 

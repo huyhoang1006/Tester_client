@@ -35,6 +35,32 @@ export const readFileData = () => {
     })
 }
 
+export const readAbsoluteFileData = () => {
+    ipcMain.handle('readAbsoluteFileData', async function (event, filePath) {
+        try {
+            if (!filePath || !fs.existsSync(filePath)) {
+                return { success: false, message: 'File not found' }
+            }
+            const stats = await fs.promises.stat(filePath)
+            if (stats.size > MAX_ATTACHMENT_SIZE_BYTES) {
+                return {
+                    success: false,
+                    message: `Attachment file size must be ${MAX_ATTACHMENT_SIZE_MB} MB or smaller`
+                }
+            }
+            const data = await fs.promises.readFile(filePath)
+            return {
+                success: true,
+                name: Path.basename(filePath),
+                mimeType: getMimeType(filePath),
+                base64: data.toString('base64'),
+            }
+        } catch (err) {
+            return { success: false, message: 'Read file failed', err }
+        }
+    })
+}
+
 export const downloadFileData = () => {
     ipcMain.handle('downloadFileData', async function (event, base64, dirFile) {
         try {
@@ -42,6 +68,20 @@ export const downloadFileData = () => {
             return { success: true }
         } catch (err) {
             return { success: false, message: 'Download file data failed', err }
+        }
+    })
+}
+
+export const writeAttachmentFileData = () => {
+    ipcMain.handle('writeAttachmentFileData', async function (event, base64, dirFile) {
+        try {
+            const normalized = String(dirFile || '').replace(/^[/\\]+/, '')
+            const fullPath = Path.join(pathUpload, normalized)
+            await fs.promises.mkdir(Path.dirname(fullPath), { recursive: true })
+            await fs.promises.writeFile(fullPath, base64, { encoding: 'base64' })
+            return { success: true, path: upath.toUnix(fullPath) }
+        } catch (err) {
+            return { success: false, message: 'Write attachment file data failed', err }
         }
     })
 }
@@ -168,7 +208,9 @@ export const getAttachmentByIdForeignAndType = () => {
 export const active = () => {
     openFile()
     readFileData()
+    readAbsoluteFileData()
     downloadFileData()
+    writeAttachmentFileData()
     downloadFile()
     getAttachmentpath()
     insertAttachment()
@@ -176,4 +218,24 @@ export const active = () => {
     updateAttachmentById()
     getAttachmentById()
     getAttachmentByIdForeignAndType()
+}
+
+const getMimeType = (filePath) => {
+    const ext = String(filePath || '').split('.').pop().toLowerCase()
+    const map = {
+        png: 'image/png',
+        jpg: 'image/jpeg',
+        jpeg: 'image/jpeg',
+        gif: 'image/gif',
+        bmp: 'image/bmp',
+        webp: 'image/webp',
+        pdf: 'application/pdf',
+        txt: 'text/plain',
+        csv: 'text/csv',
+        doc: 'application/msword',
+        docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        xls: 'application/vnd.ms-excel',
+        xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    }
+    return map[ext] || 'application/octet-stream'
 }

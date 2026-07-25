@@ -5,6 +5,7 @@ import * as CircuitBreakerMapper from '@/views/Mapping/Breaker/index.js'
 import CircuitBreakerEntity from '@/views/Flatten/CircuitBreaker'
 import { fetchWithRetry } from './core-utils.js'
 import { detectConflicts, applyResolved, mergeWithoutSnapshot, CIRCUIT_BREAKER_FIELD_DEFS } from '@/utils/conflictUtils.js'
+import { applyDownloadedAssetMedia } from './asset-media-utils.js'
 
 // ─── Step 1: fetch full info từ server ───────────────────────────────────────
 
@@ -41,6 +42,7 @@ export async function downloadCircuitBreakerChain(data, ctx) {
     const serverDto       = CircuitBreakerServerMapper.mapServerToDto(serverData)
     serverDto.psrId       = data.parentBayId
     serverDto.properties.mrid = cb.mrid
+    await applyDownloadedAssetMedia(serverDto, 'Circuit breaker', cb.mrid)
 
     // 2. Lấy client data cũ nếu đã tồn tại
     const existingResult = await window.electronAPI.getBreakerEntityByMrid(

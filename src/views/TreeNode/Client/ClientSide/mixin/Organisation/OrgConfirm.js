@@ -53,6 +53,7 @@ export default {
                     const { success, data } = result;
 
                     if (success) {
+                        await this.markSavedExistingResultDirtyIfChanged(result)
                         saveSuccess = true;
 
                         let newRows = []

@@ -15,6 +15,9 @@ export async function executeDownload(node, ctx, options = {}) {
             : await coreUtils.buildSingleNodeChain(node)
         const fullInfoChain = await coreUtils.fetchFullInfoForChain(chain)
         await coreUtils.downloadChainInfo(fullInfoChain, ctx)
+        if (ctx.applySyncStatesToTree) {
+            await ctx.applySyncStatesToTree(ctx.organisationClientList || [])
+        }
         ctx.$message.success(`${node.aliasName || 'Data'} downloaded successfully!`)
 
     } catch (error) {

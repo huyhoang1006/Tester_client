@@ -28,6 +28,7 @@ export default {
                         return {
                             success: true,
                             data: rs.data,
+                            changed: rs.changed,
                             message: 'Job saved successfully'
                         }
                     } else {
@@ -53,6 +54,7 @@ export default {
                 const dto = voltageTransformerJobMapping.JobEntityToDto(result.data);
                 this.loadData(dto);
                 this.$message.success(result.message);
+                this.$emit('reload', { changed: result.changed === true })
             } else {
                 this.$message.error(result.message);
             }
