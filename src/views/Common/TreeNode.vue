@@ -2,8 +2,20 @@
     <li class="tree-li">
         <div
             class="tree-row"
-            :class="{ selected: isSelected(node), refreshing: node._isRefreshing }"
-            :title="getNodeDisplayName"
+            :class="{
+                selected: isSelected(node),
+                refreshing: node._isRefreshing,
+                'drag-source': isDragSource,
+                'drop-allowed': isDropTarget && dragState.allowed,
+                'drop-denied': isDropTarget && !dragState.allowed
+            }"
+            :title="rowTitle"
+            :draggable="draggableNodes"
+            @dragstart="onDragStart"
+            @dragover="onDragOver"
+            @dragleave="onDragLeave"
+            @drop="onDrop"
+            @dragend="onDragEnd"
             @contextmenu.prevent="openContextMenu($event, node)"
             @click="toggle"
             @dblclick="doubleToggle">
@@ -40,6 +52,8 @@
                 v-for="child in sortedChildren"
                 :key="getChildUniqueKey(child)" :node="child"
                 :selectedNodes="selectedNodes"
+                :draggableNodes="draggableNodes"
+                @drop-node="(payload) => $emit('drop-node', payload)"
                 @double-click-node="(n) => $emit('double-click-node', n)"
                 @fetch-children="(n) => $emit('fetch-children', n)"
                 @show-properties="(n) => $emit('show-properties', n)"
@@ -57,11 +71,35 @@
 import Vue from "vue"
 import spinner from '@/views/Common/Spinner.vue'
 import icon from '@/views/Common/Icon.vue'
+import { canDropInto } from '@/views/TreeNode/Common/MoveNode/moveRules'
+import { dragState, startDrag, setDragOver, clearDragOver, endDrag } from '@/views/TreeNode/Common/MoveNode/dragDropState'
 
 export default {
-    props: ["node", "selectedNodes"],
+    props: {
+        node: {},
+        selectedNodes: {},
+        // Chỉ bật kéo thả ở cây client; cây server không sửa dữ liệu local được
+        draggableNodes: { type: Boolean, default: false }
+    },
     name : "TreeNode",
     computed: {
+        isDragSource() {
+            return !!(dragState.dragNode && this.node && dragState.dragNode.mrid === this.node.mrid)
+        },
+        isDropTarget() {
+            return !!(dragState.dragNode && this.node && dragState.overMrid === this.node.mrid)
+        },
+        // Đang kéo mà hover node không hợp lệ thì cho tooltip nói rõ lý do
+        rowTitle() {
+            if (this.isDropTarget && !dragState.allowed && this.dropCheck.reason) {
+                return this.dropCheck.reason
+            }
+            return this.getNodeDisplayName
+        },
+        dropCheck() {
+            if (!dragState.dragNode) return { allowed: false, reason: '' }
+            return canDropInto(dragState.dragNode, this.node)
+        },
         getNodeDisplayName() {
             if (!this.node) return '';
             if (this.node.mode === 'organisation') {
@@ -165,10 +203,51 @@ export default {
             dataType : ["OWNER1", "OWNER2", "OWNER3", "OWNER4", "OWNER5"],
             dataOwnerType : ["location", "voltage", "feeder"],
             assetType : ["Transformer", "Circuit breaker", "Current transformer", "Disconnector", "Surge arrester", "Power cable", "Voltage transformer","Reactor", "Bushing"],
-            clickTimeout: null
+            clickTimeout: null,
+            // observable dùng chung cho kéo thả (xem MoveNode/dragDropState.js)
+            dragState
         }
     },
     methods: {
+        // ── Kéo thả ─────────────────────────────────────────────────────────
+        onDragStart(event) {
+            if (!this.draggableNodes) return
+            startDrag(this.node)
+            if (event.dataTransfer) {
+                event.dataTransfer.effectAllowed = 'move'
+                // Firefox bắt buộc phải setData thì dragstart mới có hiệu lực
+                event.dataTransfer.setData('text/plain', this.node.mrid || '')
+            }
+            event.stopPropagation()
+        },
+        onDragOver(event) {
+            if (!this.draggableNodes || !dragState.dragNode) return
+            const allowed = this.dropCheck.allowed
+            setDragOver(this.node.mrid, allowed)
+            // Chặn mặc định thì mới drop được; dropEffect 'none' cho ra con trỏ cấm
+            event.preventDefault()
+            event.stopPropagation()
+            if (event.dataTransfer) {
+                event.dataTransfer.dropEffect = allowed ? 'move' : 'none'
+            }
+        },
+        onDragLeave() {
+            if (!this.draggableNodes) return
+            clearDragOver(this.node.mrid)
+        },
+        onDrop(event) {
+            if (!this.draggableNodes || !dragState.dragNode) return
+            event.preventDefault()
+            event.stopPropagation()
+            const dragNode = dragState.dragNode
+            const check = this.dropCheck
+            endDrag()
+            if (!check.allowed) return
+            this.$emit('drop-node', { dragNode, targetNode: this.node })
+        },
+        onDragEnd() {
+            endDrag()
+        },
         getChildUniqueKey(child) {
             if (!child.mrid) return Math.random().toString(36).substr(2, 9)
             if (child.mode === 'asset') {
@@ -271,6 +350,22 @@ export default {
 }
 .tree-row.selected {
     background-color: #e6f1fb;
+}
+
+/* ── Kéo thả ─────────────────────────────────────────────────────────── */
+.tree-row.drag-source {
+    opacity: 0.45;
+}
+/* Thả được: viền xanh, báo node này sẽ thành cha mới */
+.tree-row.drop-allowed {
+    background-color: #eaf6ea;
+    box-shadow: inset 0 0 0 2px #4ea72e;
+}
+/* Không thả được: viền đỏ + con trỏ cấm (dropEffect='none' lo phần con trỏ) */
+.tree-row.drop-denied {
+    background-color: #fdecea;
+    box-shadow: inset 0 0 0 2px #d93025;
+    cursor: not-allowed;
 }
 .tree-row.selected .node-name {
     color: #146ebe;

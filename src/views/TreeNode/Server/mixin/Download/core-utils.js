@@ -1,6 +1,7 @@
 /* eslint-disable */
 // File: src/services/download-services/core-utils.js
 import constant from '@/utils/constant'
+import { toLocalMrid } from '@/utils/serverId'
 import { getOrganisationChain, downloadOrganisationChain } from './organisation.js'
 import { getSubstationChain, downloadSubstationChain } from './substation.js'
 import { getVoltageLevelChain, downloadVoltageLevelChain } from './voltageLevel.js'
@@ -25,21 +26,25 @@ export async function fetchWithRetry(fn, maxRetries = 3, delayMs = 1000) {
 }
 
 // Lọc và xây dựng chuỗi cha từ parentArr
+//
+// id/mrid trong chuỗi được đổi sang dạng LOCAL ("<id server>@<loại>") ngay tại đây,
+// vì chỉ ở đây mới biết chắc loại của từng cấp. Các hàm getXxxChain vẫn gọi API bằng
+// giá trị này được, do tầng api/demo tự cắt hậu tố.
 export async function buildOrgAncestors(node) {
     const CLIENT_ROOT = constant.ROOT
     const chain =[]
     let prevParentId = CLIENT_ROOT
-    
+
     // 1. Quét mảng parentArr
     if (node.parentArr && Array.isArray(node.parentArr)) {
         for (const ancestor of node.parentArr) {
-            const ancestorId = ancestor.mrid || ancestor.id
+            const ancestorId = toLocalMrid(ancestor.mrid || ancestor.id, ancestor)
             chain.push({
-                id: ancestorId, 
-                mrid: ancestorId, 
+                id: ancestorId,
+                mrid: ancestorId,
                 name: ancestor.name || '',
                 aliasName: ancestor.aliasName || '',
-                parentId: String(prevParentId), 
+                parentId: String(prevParentId),
                 _type: ancestor.mode,
                 asset: ancestor.asset || null, // Thêm thông tin asset nếu có
             })
@@ -48,12 +53,13 @@ export async function buildOrgAncestors(node) {
     }
 
     // 2. Thêm node hiện tại vào cuối chuỗi
+    const nodeId = toLocalMrid(node.mrid || node.id, node)
     chain.push({
-        id: node.mrid || node.id, 
-        mrid: node.mrid || node.id, 
+        id: nodeId,
+        mrid: nodeId,
         name: node.name || '',
         aliasName: node.aliasName || '',
-        parentId: String(prevParentId), 
+        parentId: String(prevParentId),
         _type: node.mode,
         asset: node.asset || null, // Thêm thông tin asset nếu có
     })
@@ -65,11 +71,14 @@ export async function buildOrgAncestors(node) {
 export async function buildSingleNodeChain(node) {
     const parentArr = Array.isArray(node.parentArr) ? node.parentArr : []
     const lastParent = parentArr.length ? parentArr[parentArr.length - 1] : null
-    const parentId = node.parentId || lastParent?.mrid || lastParent?.id || constant.ROOT
+    const rawParentId = node.parentId || lastParent?.mrid || lastParent?.id || constant.ROOT
+    // lastParent mang mode của cha → dựng được mrid local đúng loại cho cha
+    const parentId = lastParent ? toLocalMrid(rawParentId, lastParent) : rawParentId
+    const nodeId = toLocalMrid(node.mrid || node.id, node)
 
     const chain = [{
-        id: node.mrid || node.id,
-        mrid: node.mrid || node.id,
+        id: nodeId,
+        mrid: nodeId,
         name: node.name || '',
         aliasName: node.aliasName || '',
         parentId: String(parentId),

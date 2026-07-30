@@ -55,14 +55,16 @@
                 <li v-if="isServer" class="has-submenu">
                     <i class="fa-solid fa-file-arrow-down"></i> Download
                     <ul class="submenu">
-                        <li @click="downloadPathNode"><i class="fa-solid fa-diagram-project"></i> Download path node</li>
                         <li @click="downloadOnlyNode"><i class="fa-solid fa-file-arrow-down"></i> Download only node</li>
+                        <li @click="downloadPathNode"><i class="fa-solid fa-diagram-project"></i> Download path node</li>
+                        <li @click="downloadFullTree"><i class="fa-solid fa-sitemap"></i> Download full tree</li>
                     </ul>
                 </li>
                 <li v-if="isClient" class="has-submenu">
                     <i class="fa-solid fa-upload"></i> Upload
                     <ul class="submenu">
                         <li @click="uploadOnlyNode"><i class="fa-solid fa-file-arrow-up"></i> Upload only node</li>
+                        <li @click="uploadPathNode"><i class="fa-solid fa-diagram-project"></i> Upload path node</li>
                         <li @click="uploadFullTree"><i class="fa-solid fa-sitemap"></i> Upload full tree</li>
                     </ul>
                 </li>
@@ -327,6 +329,10 @@ export default {
             this.$emit("upload-node", this.selectedNode)
             this.closeContextMenu()
         },
+        uploadPathNode() {
+            this.$emit("upload-path-node", this.selectedNode)
+            this.closeContextMenu()
+        },
         uploadFullTree() {
             this.$emit("upload-full-tree", this.selectedNode)
             this.closeContextMenu()
@@ -340,6 +346,10 @@ export default {
         },
         downloadOnlyNode() {
             this.$emit("download-node-only", this.selectedNode)
+            this.closeContextMenu()
+        },
+        downloadFullTree() {
+            this.$emit("download-full-tree", this.selectedNode)
             this.closeContextMenu()
         },
         fmeca() {

@@ -5,6 +5,7 @@ import { afterLogout } from './helper'
 import { markRestoreAfterLogin } from '@/utils/workspaceRestore'
 import qs from 'qs'
 import { Loading, Message } from 'element-ui'
+import { stripServerIdsDeep } from '@/utils/serverId'
 
 const REFRESH_TIMEOUT_MS = 15000
 
@@ -81,6 +82,13 @@ client.interceptors.request.use(
             config.headers.Authorization = `Bearer ${token}`
         }
         // -------------------------------------------
+
+        // mrid local có dạng "<id server>@<loại node>" (xem utils/serverId.js).
+        // Cắt hậu tố ở mọi trường định danh trong body trước khi gửi — chốt chặn
+        // cuối cùng cho những chỗ payload được mapper dựng sẵn, không đi qua api/demo.
+        if (config.data && typeof config.data === 'object' && !(config.data instanceof FormData)) {
+            stripServerIdsDeep(config.data)
+        }
 
         return config
     },

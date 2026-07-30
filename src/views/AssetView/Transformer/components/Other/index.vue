@@ -59,7 +59,7 @@
                             </el-select>
                         </el-form-item>
                         <el-form-item label="Insulation" class="insulation-item">
-                            <el-radio-group v-model="othersData.insulation.key" class="insulation-group">
+                            <el-radio-group v-radio-clearable v-model="othersData.insulation.key" class="insulation-group">
                                 <div class="insulation-row">
                                     <el-radio label="Weight">Weight</el-radio>
                                     <el-input type="text" number="positive" v-model="othersData.insulation.weight.value" size="mini"

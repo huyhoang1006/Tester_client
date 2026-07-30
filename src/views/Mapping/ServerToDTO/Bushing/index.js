@@ -1,4 +1,5 @@
 import BushingAssetDto from "@/views/Dto/BushingAsset/index.js";
+import { toServerId } from '@/utils/serverId'
 
 const str = (val) => (val !== null && val !== undefined) ? String(val) : '';
 
@@ -171,7 +172,7 @@ export const mapDtoToServer = (dto, ownerType) => {
 
     return {
         assetInfo: {
-            ownerId: idT(dto.psrId),
+            ownerId: idT(toServerId(dto.psrId)),
             ownerType: textT(ownerType),
             assetName: textT(p.apparatus_id) || textT(p.serial_no) || 'Bushing',
             serialNo: textT(p.serial_no),

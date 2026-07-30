@@ -4,6 +4,37 @@ export default {
     mixins: [processUploadMixin],
 
     methods: {
+        /**
+         * Chạy 1 handler upload rồi ghi log kết quả.
+         * processUpload* tự nuốt lỗi và chỉ gọi $message.error, nên phải chặn message
+         * lại để lấy lý do; vẫn cho message hiện ra bình thường cho người dùng.
+         */
+        async runUploadWithLog(node, handler) {
+            const originalMessage = this.$message
+            let captured = ''
+            this.$message = {
+                success: (m) => originalMessage.success(m),
+                info: (m) => originalMessage.info(m),
+                warning: (m) => { captured = captured || m; originalMessage.warning(m) },
+                error: (m) => { captured = captured || m; originalMessage.error(m) }
+            }
+
+            this.$store.dispatch('loading/start', { action: 'upload', type: 'heavy' })
+
+            let response
+            try {
+                response = await handler.call(this, node)
+            } catch (error) {
+                captured = captured || (error && error.message) || 'Upload failed'
+            } finally {
+                this.$message = originalMessage
+                this.$store.dispatch('loading/stop')
+            }
+
+            await this.writeSyncLog('UPLOAD', node, !!response, captured)
+            return response
+        },
+
         async handleUploadNode() {
             if (!this.selectedNodes || this.selectedNodes.length === 0) {
                 this.$message.warning('Please select a node to upload')
@@ -25,7 +56,7 @@ export default {
                     confirmButtonText: 'Upload',
                     cancelButtonText: 'Cancel',
                     type: 'info'
-                }).then(() => handler(node)).catch(() => {})
+                }).then(() => this.runUploadWithLog(node, handler)).catch(() => {})
             }
 
             if (node.mode === 'substation') {
@@ -42,7 +73,7 @@ export default {
                     confirmButtonText: 'Upload',
                     cancelButtonText: 'Cancel',
                     type: 'info'
-                }).then(() => this.processUploadPowerCable(node)).catch(() => {})
+                }).then(() => this.runUploadWithLog(node, this.processUploadPowerCable)).catch(() => {})
             } else if (node.asset === 'Transformer') {
                 confirmAndRun('Transformer', this.processUploadTransformer)
             } else if (node.asset === 'Voltage transformer') {
@@ -96,14 +127,37 @@ export default {
             }
         },
 
+        // Upload full tree = đường từ node lên gốc + toàn bộ con cháu của node
         async handleUploadFullTreeNode() {
+            await this.startUploadTree({ includeDescendants: true, title: 'Upload full tree' })
+        },
+
+        // Upload path node = chỉ đường từ node lên gốc, không kèm con cháu
+        async handleUploadPathNode() {
+            await this.startUploadTree({ includeDescendants: false, title: 'Upload path to root' })
+        },
+
+        async startUploadTree({ includeDescendants, title }) {
             if (!this.selectedNodes || this.selectedNodes.length === 0) {
                 this.$message.warning('Please select a node to upload')
                 return
             }
 
             const node = this.selectedNodes[this.selectedNodes.length - 1]
-            const chain = this.buildUploadFullTreeChain(node)
+            this.uploadFullTreeTitle = title
+            let chain = this.buildUploadFullTreeChain(node)
+
+            if (includeDescendants) {
+                const descendants = await this.collectUploadDescendants(node)
+                // Cha luôn đứng trước con: chain đã là gốc→node, nối tiếp con cháu theo chiều sâu
+                const seen = new Set(chain.map(n => this.getUploadNodeKey(n)))
+                for (const child of descendants) {
+                    const key = this.getUploadNodeKey(child)
+                    if (seen.has(key)) continue
+                    seen.add(key)
+                    chain.push(child)
+                }
+            }
 
             if (!chain.length) {
                 this.$message.warning('No supported node found to upload')
@@ -151,6 +205,31 @@ export default {
             return chain
         },
 
+        /**
+         * Gom toàn bộ con cháu của node theo thứ tự cha trước con.
+         * Node có thể chưa expand nên phải fetchChildren để nạp vào tree.
+         */
+        async collectUploadDescendants(node) {
+            const result = []
+            const visit = async (current) => {
+                if (this.fetchChildren) {
+                    try {
+                        await this.fetchChildren(current)
+                    } catch (error) {
+                        console.error('Fetch children failed while collecting upload nodes:', error)
+                        return
+                    }
+                }
+                const children = Array.isArray(current.children) ? [...current.children] : []
+                for (const child of children) {
+                    if (this.isSupportedUploadNode(child)) result.push(child)
+                    await visit(child)
+                }
+            }
+            await visit(node)
+            return result
+        },
+
         isSupportedUploadNode(node) {
             if (!node) return false
             if (['substation', 'voltageLevel', 'bay', 'job'].includes(node.mode)) return true
@@ -171,8 +250,15 @@ export default {
             return `${node.mode || ''}:${node.asset || node.job || ''}:${node.mrid || node.id || ''}`
         },
 
+        // Node asset trên cây KHÔNG có field `name` (xem TreeNode.vue: asset hiển thị
+        // apparatus_id || serial_number). Lấy theo đúng thứ tự đó để tên hiện ở
+        // thông báo/bảng kết quả khớp với tên nhìn thấy trên cây.
         getUploadNodeName(node) {
-            return node.name || node.serial_number || node.apparatus_id || node.mrid || 'Unnamed'
+            if (!node) return 'Unnamed'
+            if (node.mode === 'asset') {
+                return node.apparatus_id || node.serial_number || node.serial_no || node.name || node.mrid || 'Unnamed'
+            }
+            return node.name || node.aliasName || node.serial_number || node.apparatus_id || node.mrid || 'Unnamed'
         },
 
         getUploadNodeTypeLabel(node) {
@@ -213,63 +299,123 @@ export default {
                 type: 'heavy'
             })
 
+            const results = []
+
             try {
                 for (const item of this.uploadFullTreeChain) {
-                    const key = this.getUploadNodeKey(item.node)
+                    const node = item.node
+                    const key = this.getUploadNodeKey(node)
+                    const row = {
+                        key,
+                        mrid: node.mrid || node.id || null,
+                        name: this.getUploadNodeName(node),
+                        typeLabel: this.getUploadNodeTypeLabel(node),
+                        status: 'success',
+                        message: ''
+                    }
+
                     if (item.exists && this.uploadFullTreeDecisions[key] === 'skip') {
+                        row.status = 'skipped'
+                        row.message = 'Already on server, skipped by user'
+                        results.push(row)
                         continue
                     }
-                    await this.processUploadNodeWithoutConfirm(item.node)
-                }
 
-                this.$message.success('Upload full tree completed')
-                this.cancelUploadFullTree()
-            } catch (error) {
-                this.$message.error(error.message || 'Upload full tree failed')
+                    // processUpload* nuốt lỗi và chỉ gọi $message.error, nên chặn message
+                    // lại để lấy lý do; trả về response nghĩa là thành công.
+                    const originalMessage = this.$message
+                    let captured = ''
+                    this.$message = {
+                        success: () => {},
+                        info: () => {},
+                        warning: (m) => { captured = captured || m },
+                        error: (m) => { captured = captured || m }
+                    }
+
+                    let response
+                    try {
+                        response = await this.processUploadNodeWithoutConfirm(node)
+                    } catch (error) {
+                        // Lỗi vẫn chỉ dừng node này, các node sau chạy tiếp
+                        captured = captured || (error && error.message) || 'Upload failed'
+                    } finally {
+                        this.$message = originalMessage
+                    }
+
+                    if (response) {
+                        row.status = 'success'
+                        row.message = ''
+                        // mrid có thể đã đổi sang id server sau khi upload
+                        row.mrid = node.mrid || node.id || row.mrid
+                    } else {
+                        row.status = 'failed'
+                        row.message = captured || 'Upload failed'
+                    }
+                    results.push(row)
+                }
             } finally {
                 this.uploadFullTreeUploading = false
                 this.$store.dispatch('loading/stop')
             }
+
+            this.uploadFullTreeDialogVisible = false
+            await this.writeSyncLogBatch('UPLOAD', results)
+            this.showOpResult(this.uploadFullTreeTitle, results)
+
+            const failed = results.filter(r => r.status === 'failed').length
+            if (failed) {
+                this.$message.warning(`${this.uploadFullTreeTitle}: ${results.length - failed}/${results.length} uploaded, ${failed} failed`)
+            } else {
+                this.$message.success(`${this.uploadFullTreeTitle} completed`)
+            }
+
+            this.uploadFullTreeExistingNodes = []
+            this.uploadFullTreeChain = []
+            this.uploadFullTreeDecisions = {}
         },
 
+
+        // Trả về response của processUpload* để bên gọi biết node nào thành công.
+        // processUpload* trả undefined khi lỗi (đã tự bắt trong _handleUploadError).
         async processUploadNodeWithoutConfirm(node) {
             if (node.mode === 'substation') {
-                await this.processUploadSubstation(node)
+                return await this.processUploadSubstation(node)
             } else if (node.mode === 'voltageLevel') {
-                await this.processUploadVoltageLevel(node)
+                return await this.processUploadVoltageLevel(node)
             } else if (node.mode === 'bay') {
-                await this.processUploadBay(node)
+                return await this.processUploadBay(node)
             } else if (node.asset === 'Power cable') {
-                await this.processUploadPowerCable(node)
+                return await this.processUploadPowerCable(node)
             } else if (node.asset === 'Transformer') {
-                await this.processUploadTransformer(node)
+                return await this.processUploadTransformer(node)
             } else if (node.asset === 'Voltage transformer') {
-                await this.processUploadVoltageTransformer(node)
+                return await this.processUploadVoltageTransformer(node)
             } else if (node.asset === 'Current transformer') {
-                await this.processUploadCurrentTransformer(node)
+                return await this.processUploadCurrentTransformer(node)
             } else if (node.asset === 'Circuit breaker') {
-                await this.processUploadCircuitBreaker(node)
+                return await this.processUploadCircuitBreaker(node)
             } else if (node.asset === 'Disconnector') {
-                await this.processUploadDisconnector(node)
+                return await this.processUploadDisconnector(node)
             } else if (node.asset === 'Surge arrester') {
-                await this.processUploadSurgeArrester(node)
+                return await this.processUploadSurgeArrester(node)
             } else if (node.asset === 'Bushing') {
-                await this.processUploadBushing(node)
+                return await this.processUploadBushing(node)
             } else if (node.mode === 'job') {
                 if (node.job === 'Voltage transformer') {
-                    await this.processUploadVoltageTransformerJob(node)
+                    return await this.processUploadVoltageTransformerJob(node)
                 } else if (node.job === 'Current transformer') {
-                    await this.processUploadCurrentTransformerJob(node)
+                    return await this.processUploadCurrentTransformerJob(node)
                 } else if (node.job === 'Circuit breaker') {
-                    await this.processUploadCircuitBreakerJob(node)
+                    return await this.processUploadCircuitBreakerJob(node)
                 } else if (node.job === 'Surge arrester') {
-                    await this.processUploadSurgeArresterJob(node)
+                    return await this.processUploadSurgeArresterJob(node)
                 } else if (node.job === 'Disconnector') {
-                    await this.processUploadDisconnectorJob(node)
+                    return await this.processUploadDisconnectorJob(node)
                 } else if (node.job === 'Transformer') {
-                    await this.processUploadTransformerJob(node)
+                    return await this.processUploadTransformerJob(node)
                 }
             }
+            return undefined
         },
     }
 }

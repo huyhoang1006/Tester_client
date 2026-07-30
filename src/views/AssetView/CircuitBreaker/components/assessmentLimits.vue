@@ -2,7 +2,7 @@
     <div id="assessmentLimits" class="mgt-20">
         <el-row class="mgy-20">
             <el-col>
-                <el-radio-group class="inline-radios" v-model="assessLimitsData.limits">
+                <el-radio-group v-radio-clearable class="inline-radios" v-model="assessLimitsData.limits">
                     <el-radio style="margin-right: 8px;" label="Absolute" value="Absolute"></el-radio>
                     <el-radio label="Relative" value="Relative"></el-radio>
                 </el-radio-group>

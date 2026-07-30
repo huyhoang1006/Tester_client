@@ -13,7 +13,7 @@
                 <el-col :xs="24" :sm="18" :md="14" :lg="12" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Number of phases" class="inline-radios">
-                            <el-radio-group v-model="circuitBreakerData.numberOfPhases">
+                            <el-radio-group v-radio-clearable v-model="circuitBreakerData.numberOfPhases">
                                 <el-radio :label="1">1</el-radio>
                                 <el-radio :label="2">2</el-radio>
                                 <el-radio :label="3">3</el-radio>
@@ -32,7 +32,7 @@
                             </el-select>
                         </el-form-item>
                         <el-form-item class="inline-radios" label="Pole operation">
-                            <el-radio-group v-model="circuitBreakerData.poleOperation">
+                            <el-radio-group v-radio-clearable v-model="circuitBreakerData.poleOperation">
                                 <el-radio style="margin-right: 8px;" label="Independent">Independent</el-radio>
                                 <el-radio label="Ganged">Ganged</el-radio>
                             </el-radio-group>

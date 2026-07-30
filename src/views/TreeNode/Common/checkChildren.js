@@ -11,8 +11,11 @@ export default {
                 let hasChildren = false
 
                 if (node.mode == 'asset') {
-                    if (node.asset && node.asset != 'Surge arrester') {
-                        const jobsReturn = await this.fetchJobsByAssetId(node.mode, node.mrid)
+                    // fetchJobsByAssetId chỉ nhận assetId. Trước đây truyền nhầm (node.mode, node.mrid)
+                    // nên luôn query bằng chuỗi 'asset' và không bao giờ tìm thấy job.
+                    // Surge arrester cũng có job (xem fetchChildren) nên không loại trừ nữa.
+                    if (node.asset) {
+                        const jobsReturn = await this.fetchJobsByAssetId(node.mrid)
                         if (jobsReturn.success && jobsReturn.data.length > 0) {
                             hasChildren = true
                         }

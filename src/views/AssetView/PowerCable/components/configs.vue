@@ -7,7 +7,7 @@
                         <span class="bolder">Configuration</span>
                         <el-divider></el-divider>
                         <el-form-item label="Number of phase" class="inline-radios">
-                            <el-radio-group v-model="configsData.number_of_phase" @change="onChangeNumberOfPhases">
+                            <el-radio-group v-radio-clearable v-model="configsData.number_of_phase" @change="onChangeNumberOfPhases">
                                 <el-radio :label="1">1</el-radio>
                                 <el-radio :label="3">3</el-radio>
                             </el-radio-group>
@@ -24,7 +24,7 @@
                         label-position="left">
                         <span class="bolder">Cores</span>
                         <el-divider></el-divider>
-                        <el-radio-group style="margin-top: 10px;" @change="onChangePhase()"
+                        <el-radio-group v-radio-clearable style="margin-top: 10px;" @change="onChangePhase()"
                             v-model="configsData.cores.value">
                             <el-radio label="Single"></el-radio>
                             <el-radio label="Multiple"></el-radio>

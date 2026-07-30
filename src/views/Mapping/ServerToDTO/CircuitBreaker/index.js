@@ -460,6 +460,15 @@ const OPERATING_TYPE_TO_SERVER = {
     'magnetic':  'Magnetic',
 }
 
+// Loại cơ cấu truyền động KHÔNG có áp suất vận hành.
+// Lấy đúng điều kiện UI đang dùng ở operatingMechanism.vue:
+//   v-if="!['<Select asset type>', 'Spring', 'Motor', 'magnetic'].includes(operatingData.type)"
+// Server validate cùng luật này và trả CREATE_OPERATING_ERROR_0005 nếu vẫn gửi lên.
+const OPERATING_TYPES_WITHOUT_PRESSURE = ['<Select asset type>', 'Spring', 'Motor', 'magnetic']
+
+const hasOperatingPressure = (type) =>
+    !!type && !OPERATING_TYPES_WITHOUT_PRESSURE.includes(type)
+
 // số: '' / null → null, còn lại parseFloat
 const numU = (val) => (val !== null && val !== undefined && val !== '') ? parseFloat(val) : null
 // string: '' → null
@@ -636,8 +645,13 @@ export const mapDtoToServer = (dto) => {
 
             numberOfTripCoil:  strU(op.number_of_trip_coil),
             numberOfCloseCoil: strU(op.number_of_close_coil),
-            ratedOperatingPressure:            leafToServer(op.rated_operating_pressure),
-            ratedOperatingPressureTemperature: leafToServer(op.rated_operating_pressure_temperature),
+            // Chỉ gửi áp suất cho loại thực sự có (hydraulic / Pneumatic).
+            // leafToServer luôn trả về object nên nếu để nguyên thì với Spring
+            // server vẫn coi là "đã cung cấp" và từ chối.
+            ...(hasOperatingPressure(op.type) ? {
+                ratedOperatingPressure:            leafToServer(op.rated_operating_pressure),
+                ratedOperatingPressureTemperature: leafToServer(op.rated_operating_pressure_temperature),
+            } : {}),
             motor: {
                 ratedCurrent: leafToServer(op.motor?.rated_current),
                 ratedVoltage: leafToServer(op.motor?.rated_voltage),

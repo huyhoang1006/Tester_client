@@ -2,7 +2,7 @@
     <div id="tap-changers" class="mgt-20">
         <el-row :gutter="20" class="content">
             <el-col :span="24">
-                <el-radio-group v-model="tapChangersData.mode" @change="onChangeTapChanger" class="radio-two-col">
+                <el-radio-group v-radio-clearable v-model="tapChangersData.mode" @change="onChangeTapChanger" class="radio-two-col">
                     <el-radio style="display: flex; width: 100%" label="oltc">OLTC</el-radio>
                     <el-radio style="display: flex; width: 100%" label="detc">DETC</el-radio>
                 </el-radio-group>

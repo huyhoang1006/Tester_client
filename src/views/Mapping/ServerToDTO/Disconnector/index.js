@@ -1,4 +1,5 @@
 import DisconnectorDTO from '@/views/Dto/Disconnector'
+import { toServerId } from '@/utils/serverId'
 import uuid from '@/utils/uuid'
 
 // Tách unit từ server "kV" → "k|V", "kA" → "k|A", "V" → "V", "A" → "A"
@@ -153,7 +154,7 @@ export const mapDtoToServer = (dto, ownerType) => {
 
     const payload = {
         assetInfo: {
-            ownerId: dto.psrId || null,
+            ownerId: toServerId(dto.psrId) || null,
             ownerType: ownerType || null, // BAY | SUBSTATION — server đọc từ body
             serialNo: p.serial_no || null,
             manufacturer: p.manufacturer || null, // TÊN hãng (không phải id)

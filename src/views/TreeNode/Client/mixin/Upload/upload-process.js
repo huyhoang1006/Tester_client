@@ -9,6 +9,7 @@ import * as disconnectorAPI    from '@/api/demo/Disconnector.js'
 import * as surgeArresterAPI   from '@/api/demo/SurgeArrester.js'
 import * as transformerAPI     from '@/api/demo/Transformer.js'
 import * as bushingAPI         from '@/api/demo/Bushing.js'
+import * as powerCableAPI      from '@/api/demo/PowerCable.js'
 import * as voltageTransformerJobAPI from '@/api/demo/VoltageTransformerJob.js'
 import * as currentTransformerJobAPI from '@/api/demo/CurrentTransformerJob.js'
 import * as circuitBreakerJobAPI from '@/api/demo/CircuitBreakerJob.js'
@@ -50,6 +51,7 @@ import { mapSubstationEntityToServer }   from '@/utils/MapperClient/mapSubstatio
 import { mapVoltageLevelEntityToServer } from '@/utils/MapperClient/mapVoltageLevelToServer.js'
 import { mapBayEntityToServer }          from '@/utils/MapperClient/mapBayToServer.js'
 import { uploadAssetMediaFromAttachmentData } from '@/utils/assetMedia.js'
+import { toLocalMrid, toServerId } from '@/utils/serverId'
 
 // ───JOB DTO → Server (dùng chung cho upload & submit)──────────────────────────────
 import * as voltageTransformerJobMappingServer from '@/views/Mapping/ServerToDTO/VoltageTransformerJob/index.js'
@@ -87,7 +89,7 @@ export default {
                 const response = await demoAPI.createSubstation(serverPayload, node.parentId)
 
                 await this.syncUploadedNodeServerId(node, response)
-                this.$message.success(`Upload Substation "${node.name}" successfully!`)
+                this.$message.success(`Upload Substation "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
                 this._handleUploadError(error, 'Substation')
@@ -112,7 +114,7 @@ export default {
                 const serverPayload = mapVoltageLevelEntityToServer(entityRes.data, null)
                 const response = await voltageLevelAPI.createVoltageLevel(serverPayload, node.parentId)
                 await this.syncUploadedNodeServerId(node, response)
-                this.$message.success(`Upload VoltageLevel "${node.name}" successfully!`)
+                this.$message.success(`Upload VoltageLevel "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
                 this._handleUploadError(error, 'VoltageLevel')
@@ -138,7 +140,7 @@ export default {
                         this.clearLocalGeneratedMrid(serverPayload)
                         const response = await bayAPI.createBay(serverPayload, node.parentId, ownerType)
                         await this.syncUploadedNodeServerId(node, response)
-                        this.$message.success(`Upload Bay "${node.name}" successfully!`)
+                        this.$message.success(`Upload Bay "${this.getUploadNodeName(node)}" successfully!`)
                         return response
                     }
                 }
@@ -154,26 +156,29 @@ export default {
         async processUploadPowerCable(node) {
             try {
                 const entityRes = await window.electronAPI.getPowerCableEntityByMrid(node.mrid, node.parentId)
-                if (!entityRes.success || !entityRes.data) throw new Error('Local data not found.')
-
-                const dto = PowerCableMapping.mapEntityToDto(entityRes.data)
-                if (!dto.properties.apparatus_id && !dto.properties.serial_no) {
-                    dto.properties.apparatus_id = node.name || 'Unnamed Asset'
-                }
+                if (!entityRes.success || !entityRes.data) throw new Error('Local power cable data not found.')
+                if (!node.parentId) throw new Error('Cannot upload power cable without parent.')
 
                 const parentNode = this.findUploadParentNode(node)
                 if (!parentNode) throw new Error('Parent node not found in Client Tree')
-
                 const signParent = await this.checkParentBeforUpload(node.parentId, parentNode?.mode)
                 if (!signParent) return
                 const ownerType = this._resolveOwnerType(parentNode)
-                if (!ownerType) throw new Error(`Cannot resolve ownerType for parent node with mode: ${parentNode?.mode}`)
 
+                const dto = PowerCableMapping.mapEntityToDto(entityRes.data)
+                // PowerCable không có tên riêng: thiếu cả apparatus_id lẫn serial_no thì lấy tên node
+                if (!dto.properties.apparatus_id && !dto.properties.serial_no) {
+                    dto.properties.apparatus_id = this.getUploadNodeName(node) || 'Unnamed Asset'
+                }
+                // assetInfo.ownerId lấy từ dto.psrId, phải là id node cha trên SERVER
+                // (mapEntityToDto trả về psr_id local nên bắt buộc ghi đè)
                 dto.psrId = node.parentId
+
                 const serverPayload = PowerCableServerMapper.mapDtoToServer(dto, ownerType)
-                const response = await demoAPI.createPowerCableCim(serverPayload, node.parentId, ownerType)
+                const response = await powerCableAPI.createPowerCable(serverPayload)
+
                 await this.syncUploadedAssetAndMedia(node, response, 'Power cable', dto)
-                this.$message.success(`Upload PowerCable successfully to ${ownerType} ID: ${node.parentId}`)
+                this.$message.success(`Upload PowerCable "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
                 this._handleUploadError(error, 'PowerCable')
@@ -197,7 +202,7 @@ export default {
                 const response = await transformerAPI.createTransformer(serverPayload)
 
                 await this.syncUploadedAssetAndMedia(node, response, 'Transformer', dto)
-                this.$message.success(`Upload Transformer "${node.name}" successfully!`)
+                this.$message.success(`Upload Transformer "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
                 this._handleUploadError(error, 'Transformer')
@@ -226,7 +231,7 @@ export default {
                 const response = await voltageAPI.createVoltageTransformer(serverPayload, node.parentId, ownerType)
 
                 await this.syncUploadedAssetAndMedia(node, response, 'Voltage transformer', dto)
-                this.$message.success(`Upload Voltage Transformer "${node.name}" successfully!`)
+                this.$message.success(`Upload Voltage Transformer "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
                 this._handleUploadError(error, 'Voltage Transformer')
@@ -250,7 +255,7 @@ export default {
                 const serverPayload = currentTransformerMappingServer.mapDtoToServer(dto, ownerType)
                 const response = await currentAPI.createCurrentTransformer(serverPayload, node.parentId, ownerType)
                 await this.syncUploadedAssetAndMedia(node, response, 'Current transformer', dto)
-                this.$message.success(`Upload Current Transformer "${node.name}" successfully!`)
+                this.$message.success(`Upload Current Transformer "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
                 this._handleUploadError(error, 'Current Transformer')
@@ -275,7 +280,7 @@ export default {
                 const response = await circuitBreakerAPI.createCircuitBreaker(serverPayload, node.parentId, ownerType)
 
                 await this.syncUploadedAssetAndMedia(node, response, 'Circuit breaker', dto)
-                this.$message.success(`Upload Circuit Breaker "${node.name}" successfully!`)
+                this.$message.success(`Upload Circuit Breaker "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
                 this._handleUploadError(error, 'Circuit Breaker')
@@ -299,7 +304,7 @@ export default {
                 const response = await disconnectorAPI.createDisconnector(serverPayload)
 
                 await this.syncUploadedAssetAndMedia(node, response, 'Disconnector', dto)
-                this.$message.success(`Upload Disconnector "${node.name}" successfully!`)
+                this.$message.success(`Upload Disconnector "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
                 this._handleUploadError(error, 'Disconnector')
@@ -323,7 +328,7 @@ export default {
                 const response = await surgeArresterAPI.createSurgeArrester(serverPayload, node.parentId, ownerType)
 
                 await this.syncUploadedAssetAndMedia(node, response, 'Surge arrester', dto)
-                this.$message.success(`Upload Surge Arrester "${node.name}" successfully!`)
+                this.$message.success(`Upload Surge Arrester "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
                 this._handleUploadError(error, 'Surge Arrester')
@@ -354,7 +359,7 @@ export default {
 
                 console.log('[Upload Bushing] Response:', response)
                 await this.syncUploadedAssetAndMedia(node, response, 'Bushing', dto)
-                this.$message.success(`Upload Bushing "${node.name}" successfully!`)
+                this.$message.success(`Upload Bushing "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
                 this._handleUploadError(error, 'Bushing')
@@ -379,7 +384,7 @@ export default {
                 const response = await voltageTransformerJobAPI.createVoltageTransformerJob(serverPayload, node.parentId)
 
                 await this.syncUploadedNodeServerId(node, response)
-                this.$message.success(`Upload Voltage Transformer Job "${node.name}" successfully!`)
+                this.$message.success(`Upload Voltage Transformer Job "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
                 this._handleUploadError(error, 'Voltage Transformer Job')
@@ -400,7 +405,7 @@ export default {
                 const response = await currentTransformerJobAPI.createCurrentTransformerJob(serverPayload, node.parentId)
 
                 await this.syncUploadedNodeServerId(node, response)
-                this.$message.success(`Upload Current Transformer Job "${node.name}" successfully!`)
+                this.$message.success(`Upload Current Transformer Job "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
                 this._handleUploadError(error, 'Current Transformer Job')
@@ -421,7 +426,7 @@ export default {
                 const response = await circuitBreakerJobAPI.createCircuitBreakerJob(serverPayload, node.parentId)
 
                 await this.syncUploadedNodeServerId(node, response)
-                this.$message.success(`Upload Circuit Breaker Job "${node.name}" successfully!`)
+                this.$message.success(`Upload Circuit Breaker Job "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
                 this._handleUploadError(error, 'Circuit Breaker Job')
@@ -442,7 +447,7 @@ export default {
                 const response = await surgeArresterJobAPI.createSurgeArresterJob(serverPayload, node.parentId)
 
                 await this.syncUploadedNodeServerId(node, response)
-                this.$message.success(`Upload Surge Arrester Job "${node.name}" successfully!`)
+                this.$message.success(`Upload Surge Arrester Job "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
                 this._handleUploadError(error, 'Surge Arrester Job')
@@ -463,7 +468,7 @@ export default {
                 const response = await disconnectorJobAPI.createDisconnectorJob(serverPayload, node.parentId)
 
                 await this.syncUploadedNodeServerId(node, response)
-                this.$message.success(`Upload Disconnector Job "${node.name}" successfully!`)
+                this.$message.success(`Upload Disconnector Job "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
                 this._handleUploadError(error, 'Disconnector Job')
@@ -484,7 +489,7 @@ export default {
                 const response = await transformerJobAPI.createTransformerJob(serverPayload, node.parentId)
 
                 await this.syncUploadedNodeServerId(node, response)
-                this.$message.success(`Upload Transformer Job "${node.name}" successfully!`)
+                this.$message.success(`Upload Transformer Job "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
                 this._handleUploadError(error, 'Transformer Job')
@@ -669,7 +674,7 @@ export default {
                 return response
             }
             if (assetType === 'Power cable') {
-                const response = await demoAPI.createPowerCableCim(this.applyServerTabIdToPayload(PowerCableServerMapper.mapDtoToServer(dto, ownerType), serverTab), parentId, ownerType)
+                const response = await powerCableAPI.createPowerCable(this.applyServerTabIdToPayload(PowerCableServerMapper.mapDtoToServer(dto, ownerType), serverTab))
                 await this.uploadAssetMedia(assetType, dto, this.extractUploadedServerId(response) || serverTab?.id || serverTab?.mrid || dto?.properties?.mrid)
                 return response
             }
@@ -733,10 +738,12 @@ export default {
             if (!node || !serverId) return null
 
             const oldId = node.mrid || node.id
-            const newId = String(serverId)
+            // Server đánh id riêng theo từng bảng nên id trần dễ đụng nhau giữa các
+            // loại node khi về chung identified_object/asset → gắn hậu tố loại node.
+            const newId = toLocalMrid(serverId, node)
             if (!oldId || oldId === newId) {
                 if (window.electronAPI && window.electronAPI.markNodeSynced) {
-                    await window.electronAPI.markNodeSynced(newId, this.getSyncNodeType ? this.getSyncNodeType(node) : (node.mode || ''), newId)
+                    await window.electronAPI.markNodeSynced(newId, this.getSyncNodeType ? this.getSyncNodeType(node) : (node.mode || ''), toServerId(newId))
                 }
                 if (this.updateTreeNodeSyncState) {
                     this.updateTreeNodeSyncState(node, 'synced', { serverId: newId })
@@ -755,7 +762,7 @@ export default {
 
             this.syncUploadedChildrenParentId(node, oldId, newId)
             if (window.electronAPI && window.electronAPI.markNodeSynced) {
-                await window.electronAPI.markNodeSynced(newId, this.getSyncNodeType ? this.getSyncNodeType(node) : (node.mode || ''), newId)
+                await window.electronAPI.markNodeSynced(newId, this.getSyncNodeType ? this.getSyncNodeType(node) : (node.mode || ''), toServerId(newId))
             }
             if (this.updateTreeNodeSyncState) {
                 this.updateTreeNodeSyncState(node, 'synced', { serverId: newId })
@@ -763,6 +770,10 @@ export default {
             return newId
         },
 
+        // Duyệt ĐỆ QUY cả cây con, không chỉ 1 cấp.
+        // parentId của con trực tiếp thì 1 cấp là đủ (upload chạy từ trên xuống,
+        // đến lượt cháu thì cha nó đã tự sửa cho nó rồi), NHƯNG parentArr của cháu,
+        // chắt... cũng chứa mrid cũ của node này nên phải quét hết.
         syncUploadedChildrenParentId(node, oldParentId, newParentId) {
             if (!node || !Array.isArray(node.children)) return
 
@@ -779,6 +790,8 @@ export default {
                         }
                     })
                 }
+
+                this.syncUploadedChildrenParentId(child, oldParentId, newParentId)
             })
         },
 

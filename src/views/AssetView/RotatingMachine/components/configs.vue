@@ -9,7 +9,7 @@
             <div class="config-grid">
                 <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                     <el-form-item label="Star point" class="inline-radios">
-                        <el-radio-group v-model="configsData.star_point">
+                        <el-radio-group v-radio-clearable v-model="configsData.star_point">
                             <el-radio value="close" label="Close"></el-radio>
                             <el-radio value="open" label="Open"></el-radio>
                         </el-radio-group>

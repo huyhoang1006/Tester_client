@@ -14,7 +14,7 @@
                 <el-col :xs="24" :md="16" :lg="12" class="col-content">
                     <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Number of phases" class="inline-radios">
-                            <el-radio-group v-model="configData.number_of_phase" @change="onChangeNumberOfPhases">
+                            <el-radio-group v-radio-clearable v-model="configData.number_of_phase" @change="onChangeNumberOfPhases">
                                 <el-radio :label="1">1</el-radio>
                                 <el-radio :label="3">3</el-radio>
                             </el-radio-group>

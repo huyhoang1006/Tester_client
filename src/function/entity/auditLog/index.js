@@ -138,6 +138,9 @@ export const writeAuditLog = async (options, dbsql = db) => {
     configEvent.user_name = user.name
     configEvent.modified_by = user.id
     configEvent.type = action
+    // severity = kết quả của thao tác ('success' | 'failed'), dùng cho log upload/download
+    // để Category vẫn gọn (UPLOAD / DOWNLOAD) còn thành/bại thể hiện bằng icon.
+    configEvent.severity = safeOptions.severity || null
     configEvent.description = description
     configEvent.remark = JSON.stringify({
         objectType: safeOptions.objectType || null,

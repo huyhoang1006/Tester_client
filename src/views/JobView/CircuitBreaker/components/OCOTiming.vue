@@ -108,7 +108,7 @@
         <!-- Assessment settings -->
         <el-dialog append-to-body class="dialog_assess cb-assessment-dialog" title="Assessment settings" :visible.sync="openAssessmentDialog"
             width="min(1040px, 92vw)">
-            <el-radio-group v-model="testData.limits" style="margin-bottom: 20px">
+            <el-radio-group v-radio-clearable v-model="testData.limits" style="margin-bottom: 20px">
                 <el-radio label="Absolute" value="Absolute"></el-radio>
                 <el-radio label="Relative" value="Relative"></el-radio>
             </el-radio-group>

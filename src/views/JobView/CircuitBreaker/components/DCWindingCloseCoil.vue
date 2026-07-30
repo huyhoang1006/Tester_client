@@ -70,7 +70,7 @@
         </table></div>
 
         <el-dialog class="cb-assessment-dialog" append-to-body title="Assessment settings" :visible.sync="openAssessmentDialog" width="min(1040px, 92vw)">
-            <el-radio-group v-model="assetData.assessmentLimits.limits" style="margin-bottom:16px;">
+            <el-radio-group v-radio-clearable v-model="assetData.assessmentLimits.limits" style="margin-bottom:16px;">
                 <el-radio label="Absolute">Absolute limits</el-radio>
                 <el-radio label="Relative">Relative limits</el-radio>
             </el-radio-group>

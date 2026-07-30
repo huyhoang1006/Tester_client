@@ -1,6 +1,10 @@
 
 
 import deleteData from '@/views/TreeNode/Client/ClientSide/mixin/Delete/deleteDataClient'
+import deleteDescendantsClient from '@/views/TreeNode/Client/ClientSide/mixin/Delete/deleteDescendantsClient'
+import opResult from '@/views/TreeNode/Common/opResult'
+import syncLog from '@/views/TreeNode/Common/syncLog'
+import downloadTree from '@/views/TreeNode/Server/mixin/Download/downloadTree'
 import handleDeleteFromContextMenu from '@/views/TreeNode/Client/ClientSide/mixin/Delete/handleDeleteFromContextMenu'
 import showAddBay from '@/views/TreeNode/Client/ClientSide/mixin/Bay/showAddBay'
 import showAddBushing from '@/views/TreeNode/Client/ClientSide/mixin/Bushing/showAddBushing'
@@ -95,7 +99,7 @@ import syncStateMixin from '@/views/TreeNode/Common/syncStateMixin'
 
 
 export default {
-    mixins: [treeNodeFind, deleteData, handleDeleteFromContextMenu, showAddBay, showAddBushing,
+    mixins: [treeNodeFind, deleteData, deleteDescendantsClient, opResult, syncLog, downloadTree, handleDeleteFromContextMenu, showAddBay, showAddBushing,
         showAddCapacitor, showAddCircuitBreaker, showAddConnector, showAddCt,
         showAddJob, showAddOrganisation, showAddPowerCable, showAddReactor,
         showAddRotatingMachine, showAddSubInTree, showAddSubs, showAddSurgeArrester,

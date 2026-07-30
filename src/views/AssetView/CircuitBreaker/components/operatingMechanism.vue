@@ -90,12 +90,12 @@
                                             </el-input>
                                         </td>
                                         <td>
-                                            <el-radio-group v-model="item.power">
+                                            <el-radio-group v-radio-clearable v-model="item.power">
                                                 <el-radio label="DC">&nbsp;</el-radio>
                                             </el-radio-group>
                                         </td>
                                         <td>
-                                            <el-radio-group v-model="item.power">
+                                            <el-radio-group v-radio-clearable v-model="item.power">
                                                 <el-radio label="AC">&#160;</el-radio>
                                             </el-radio-group>
                                         </td>
@@ -121,12 +121,12 @@
                                             </el-input>
                                         </td>
                                         <td>
-                                            <el-radio-group v-model="item.power">
+                                            <el-radio-group v-radio-clearable v-model="item.power">
                                                 <el-radio label="DC">&nbsp;</el-radio>
                                             </el-radio-group>
                                         </td>
                                         <td>
-                                            <el-radio-group v-model="item.power">
+                                            <el-radio-group v-radio-clearable v-model="item.power">
                                                 <el-radio label="AC">&#160;</el-radio>
                                             </el-radio-group>
                                         </td>
@@ -152,12 +152,12 @@
                                             </el-input>
                                         </td>
                                         <td>
-                                            <el-radio-group v-model="operatingData.auxiliary_circuits.power">
+                                            <el-radio-group v-radio-clearable v-model="operatingData.auxiliary_circuits.power">
                                                 <el-radio label="DC">&nbsp;</el-radio>
                                             </el-radio-group>
                                         </td>
                                         <td>
-                                            <el-radio-group v-model="operatingData.auxiliary_circuits.power">
+                                            <el-radio-group v-radio-clearable v-model="operatingData.auxiliary_circuits.power">
                                                 <el-radio label="AC">&#160;</el-radio>
                                             </el-radio-group>
                                         </td>
@@ -184,12 +184,12 @@
                                                 </el-input>
                                             </td>
                                             <td>
-                                                <el-radio-group v-model="operatingData.motor.power">
+                                                <el-radio-group v-radio-clearable v-model="operatingData.motor.power">
                                                     <el-radio label="DC">&nbsp;</el-radio>
                                                 </el-radio-group>
                                             </td>
                                             <td>
-                                                <el-radio-group v-model="operatingData.motor.power">
+                                                <el-radio-group v-radio-clearable v-model="operatingData.motor.power">
                                                     <el-radio label="AC">&#160;</el-radio>
                                                 </el-radio-group>
                                             </td>

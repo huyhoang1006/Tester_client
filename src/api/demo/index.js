@@ -1,5 +1,6 @@
 /* eslint-disable */
 import client from '@/utils/client'
+import { toServerId } from '@/utils/serverId'
 
 export const getOwnerOrganisation = () => {
     // API cũ có số 1 cứng ở cuối, giữ nguyên logic
@@ -7,47 +8,47 @@ export const getOwnerOrganisation = () => {
 }
 
 export const getChildOrganisation = (organisationId) => {
-    return client.get(`/api/organisation/get-child-organisation/${organisationId}`)
+    return client.get(`/api/organisation/get-child-organisation/${toServerId(organisationId)}`)
 }
 
 export const getOrganisationById = (organisationId) => {
-    return client.get(`/api/organisation/cim/${organisationId}`)
+    return client.get(`/api/organisation/cim/${toServerId(organisationId)}`)
 }
 
 export const getChildSubstation = (organisationId) => {
-    return client.get(`/api/substation/get-by-organisation/${organisationId}`)
+    return client.get(`/api/substation/get-by-organisation/${toServerId(organisationId)}`)
 }
 
 export const getSubstationById = (substationId) => {
     // API endpoint để lấy chi tiết substation đầy đủ
-    return client.get(`/api/substation/cim/${substationId}`)
+    return client.get(`/api/substation/cim/${toServerId(substationId)}`)
 }
 export const getVoltageLevelById = (voltageLevelId) => {
     // API endpoint để lấy chi tiết voltage level đầy đủ
-    return client.get(`/api/voltage-level/cim/${voltageLevelId}`)
+    return client.get(`/api/voltage-level/cim/${toServerId(voltageLevelId)}`)
 }
 
 export const getTransformerById = (id) => {
-    return client.get(`/api/transformer/${id}`)
+    return client.get(`/api/transformer/${toServerId(id)}`)
 }
 
 export const getChildBay = (substationId) => {
-    return client.get(`/api/bay/get-by-substation/${substationId}`)
+    return client.get(`/api/bay/get-by-substation/${toServerId(substationId)}`)
 }
 
 export const getVoltageLevelBySubstationId = (substationId) => {
-    return client.get(`/api/voltage-level/get-by-substation/${substationId}`)
+    return client.get(`/api/voltage-level/get-by-substation/${toServerId(substationId)}`)
 }
 
 export const getBayByVoltageLevel = (voltageLevelId) => {
-    return client.get(`/api/bay/get-by-voltage-level/${voltageLevelId}`)
+    return client.get(`/api/bay/get-by-voltage-level/${toServerId(voltageLevelId)}`)
 }
 
 export const getBayById = (bayId) => {
     if (!bayId) {
         return Promise.reject(new Error('bayId is required'))
     }
-    return client.get(`/api/bay/cim/${bayId}`)
+    return client.get(`/api/bay/cim/${toServerId(bayId)}`)
 }
 
 export const getAssetById = (assetId, mode) => {
@@ -55,21 +56,21 @@ export const getAssetById = (assetId, mode) => {
         return Promise.reject(new Error('assetId is required'))
     } else {
         if (mode == 'PowerCable') {
-            return client.get(`/api/power-cable/${assetId}`)
+            return client.get(`/api/power-cable/${toServerId(assetId)}`)
         } else if (mode == 'SurgeArrester') {
-            return client.get(`/api/surge-arrester/${assetId}`)
+            return client.get(`/api/surge-arrester/${toServerId(assetId)}`)
         } else if (mode == 'Disconnector') {
-            return client.get(`/api/disconnector/${assetId}`)
+            return client.get(`/api/disconnector/${toServerId(assetId)}`)
         } else if (mode == 'Bushing') {
-            return client.get(`/api/bushing/${assetId}`)
+            return client.get(`/api/bushing/${toServerId(assetId)}`)
         } else if (mode == 'VoltageTransformer') {
-            return client.get(`/api/voltage-transformer/${assetId}`)
+            return client.get(`/api/voltage-transformer/${toServerId(assetId)}`)
         } else if (mode == 'CurrentTransformer') {
-            return client.get(`/api/current-transformer/${assetId}`)
+            return client.get(`/api/current-transformer/${toServerId(assetId)}`)
         } else if (mode == 'CircuitBreaker') {
-            return client.get(`/api/circuit-breaker/cim/${assetId}`)
+            return client.get(`/api/circuit-breaker/cim/${toServerId(assetId)}`)
         } else if (mode == 'Transformer') {
-            return client.get(`/api/transformer/${assetId}`)
+            return client.get(`/api/transformer/${toServerId(assetId)}`)
         }
     }
 }
@@ -91,7 +92,7 @@ export const getAssetByOwner = (ownerId, mode) => {
         // 3. Truy cập thuộc tính user_id
 
         // 4. Gọi API
-        return client.get(`/api/asset/get-by-owner/${ownerId}/${mode}`)
+        return client.get(`/api/asset/get-by-owner/${toServerId(ownerId)}/${mode}`)
     } catch (e) {
         console.error("Lỗi phân tích cú pháp JSON cho dữ liệu 'user':", e)
         return Promise.reject(new Error('Invalid user data format'))
@@ -105,7 +106,7 @@ export const createPowerCableCim = (data, ownerId, ownerType) => {
 export const createSubstation = (data, ownerId) => {
     return client.post(`/api/substation/cim/create`, data, {
         params: {
-            ownerId: ownerId
+            ownerId: toServerId(ownerId)
         }
     })
 }
@@ -113,7 +114,7 @@ export const createSubstation = (data, ownerId) => {
 export const createVoltageLevel = (data, ownerId) => {
     return client.post(`/api/voltage-level/cim/create`, data, {
         params: {
-            ownerId: ownerId
+            ownerId: toServerId(ownerId)
         }
     })
 }
@@ -121,7 +122,7 @@ export const createVoltageLevel = (data, ownerId) => {
 export const createBay = (data, ownerId, ownerType) => {
     return client.post(`/api/bay/cim/create`, data, {
         params: {
-            ownerId: ownerId,
+            ownerId: toServerId(ownerId),
             ownerType: ownerType
         }
     })
@@ -132,21 +133,21 @@ export const createTransformer = (data) => {
 }
 
 export const deleteOrganisation = (id) => {
-    return client.delete(`/api/organisation/${id}`)
+    return client.delete(`/api/organisation/${toServerId(id)}`)
 }
 
 export const deleteSubstation = (id) => {
-    return client.delete(`/api/substation/${id}`)
+    return client.delete(`/api/substation/${toServerId(id)}`)
 }
 
 export const deleteVoltageLevel = (id) => {
-    return client.delete(`/api/voltage-level/${id}`)
+    return client.delete(`/api/voltage-level/${toServerId(id)}`)
 }
 
 export const deleteBay = (id) => {
-    return client.delete(`/api/bay/${id}`)
+    return client.delete(`/api/bay/${toServerId(id)}`)
 }
 
 export const deletePowerCable = (id) => {
-    return client.delete(`/api/power-cable/${id}`)
+    return client.delete(`/api/power-cable/${toServerId(id)}`)
 }

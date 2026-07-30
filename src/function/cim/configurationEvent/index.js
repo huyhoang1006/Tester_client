@@ -167,8 +167,9 @@ export const getAllConfigurationEvents = async () => {
         return new Promise((resolve, reject) => {
             const query = `
                 SELECT 
-                    ce.*, 
+                    ce.*,
                     ar.type,
+                    ar.severity,
                     ar.created_date_time,
                     io.name,
                     io.description AS description

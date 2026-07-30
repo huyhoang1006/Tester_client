@@ -1,5 +1,6 @@
 /* eslint-disable */
 import TransformerDataDto from '@/views/Dto/Transformer'
+import { toServerId } from '@/utils/serverId'
 import uuid from '@/utils/uuid'
 
 // ─── Lookup maps ─────────────────────────────────────────────────────────────
@@ -632,7 +633,7 @@ export const mapDtoToServer = (dto, ownerType) => {
 
     // ─── assetInfo ────────────────────────────────────────────────────────────
     const assetInfo = {
-        ownerId: dto.psrId || null,
+        ownerId: toServerId(dto.psrId) || null,
         ownerType: ownerType || null,
         serialNo: p.serial_no || null,
         manufacturer: p.manufacturer || null,

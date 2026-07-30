@@ -14,6 +14,8 @@
     <div class="child-nav" >
       <ul>
         <TreeNode v-for="item in organisationClientList" :key="getItemUniqueKey(item)" :node="item" :selectedNodes="selectedNodes"
+          :draggableNodes="true"
+          @drop-node="$emit('drop-node', $event)"
           @update:selectedNodes="$emit('update:selectedNodes', $event)"
           @double-click-node="$emit('double-click-node', $event)" @fetch-children="$emit('fetch-children', $event)"
           @show-properties="$emit('show-properties', $event)" @update-selection="$emit('update-selection', $event)"
@@ -25,6 +27,7 @@
       @show-zero-diagram="$emit('show-zero-diagram', $event)"
         @upload-node="$emit('upload-node', $event)"
         @upload-full-tree="$emit('upload-full-tree', $event)"
+        @upload-path-node="$emit('upload-path-node', $event)"
         @fmeca-node="$emit('fmeca-node', $event)"
         @show-equipment="$emit('show-equipment')"
         @export-json-only-node="$emit('export-json-only-node', $event)"

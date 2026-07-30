@@ -38,6 +38,7 @@ const ACTION_TEXTS = {
     export: 'Exporting...',
     update: 'Updating...',
     download: 'Downloading...',
+    upload: 'Uploading...',
     load: 'Loading...',
     default: 'Processing...'
 };
@@ -51,6 +52,7 @@ const ACTION_TITLES = {
     export: 'Exporting',
     update: 'Updating',
     download: 'Downloading',
+    upload: 'Uploading',
     load: 'Loading',
     default: 'Processing'
 };

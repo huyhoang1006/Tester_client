@@ -1,4 +1,5 @@
 import SurgeArresterDto from '@/views/Dto/SurgeAsset'
+import { toServerId } from '@/utils/serverId'
 import uuid from '@/utils/uuid'
 
 const str = (val) => (val !== null && val !== undefined ? String(val) : '')
@@ -131,7 +132,7 @@ export const mapDtoToServer = (dto, ownerType) => {
 
     const payload = {
         assetInfo: {
-            ownerId: dto.psrId || null,
+            ownerId: toServerId(dto.psrId) || null,
             ownerType: ownerType || null, // BAY | SUBSTATION — server đọc từ body
             serialNo: p.serial_no || null,
             manufacturer: p.manufacturer || null, // TÊN hãng

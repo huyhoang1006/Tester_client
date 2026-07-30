@@ -1,10 +1,11 @@
 /* eslint-disable */
 import client from '@/utils/client'
+import { toServerId } from '@/utils/serverId'
 
 const prefix = 'api/bushing'
 
 export const getBushingById = (id) => {
-    return client.get(`/${prefix}/${id}`)
+    return client.get(`/${prefix}/${toServerId(id)}`)
 }
 
 export const createBushing = (data) => {
@@ -12,5 +13,5 @@ export const createBushing = (data) => {
 }
 
 export const deleteBushing = (id) => {
-    return client.delete(`/${prefix}/${id}`)
+    return client.delete(`/${prefix}/${toServerId(id)}`)
 }

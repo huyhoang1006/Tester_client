@@ -1,8 +1,9 @@
 /* eslint-disable */
 import client from '@/utils/client'
+import { toServerId } from '@/utils/serverId'
 const prefix = 'api/transformer'
 export const getTransformerById = (id) => {
-    return client.get(`/${prefix}/${id}`)
+    return client.get(`/${prefix}/${toServerId(id)}`)
 }
 
 export const createTransformer = (data) => {
@@ -11,5 +12,5 @@ export const createTransformer = (data) => {
 }
 
 export const deleteTransformer = (id) => {
-    return client.delete(`/${prefix}/${id}`)
+    return client.delete(`/${prefix}/${toServerId(id)}`)
 }

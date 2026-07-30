@@ -185,6 +185,32 @@ export const replaceLocalMrid = async (oldMrid, newMrid) => {
          ORDER BY name`
     )
 
+    // Chặn trước: newMrid đã thuộc về một bản ghi KHÁC thì đổi tên chắc chắn vỡ
+    // khoá chính. Báo rõ đang đụng cái gì thay vì để SQLITE_CONSTRAINT thô bắn lên.
+    const conflicts = []
+    for (const table of tables) {
+        const cols = await safeAll(`PRAGMA table_info(${quoteIdent(table.name)})`)
+        for (const col of cols.filter(c => c.pk > 0)) {
+            const hit = await safeAll(
+                `SELECT 1 FROM ${quoteIdent(table.name)} WHERE ${quoteIdent(col.name)} = ? LIMIT 1`,
+                [String(newMrid)]
+            )
+            if (hit.length) conflicts.push(`${table.name}.${col.name}`)
+        }
+    }
+    if (conflicts.length) {
+        const owner = await safeGet(
+            `SELECT name FROM identified_object WHERE mrid = ? LIMIT 1`, [String(newMrid)]
+        )
+        const ownerName = owner && owner.name ? `"${owner.name}"` : '(khong ro ten)'
+        return {
+            success: false,
+            conflict: { newMrid: String(newMrid), tables: conflicts, ownerName },
+            message: `Server returned id "${newMrid}" but it already belongs to another local node ${ownerName}. `
+                + `Check for duplicate serial number.`
+        }
+    }
+
     let updatedCells = 0
 
     try {
@@ -197,12 +223,19 @@ export const replaceLocalMrid = async (oldMrid, newMrid) => {
 
             for (const column of columns.filter(isReplaceableColumn)) {
                 const columnName = column.name
-                const result = await run(
-                    `UPDATE ${quoteIdent(tableName)}
-                     SET ${quoteIdent(columnName)} = ?
-                     WHERE ${quoteIdent(columnName)} = ?`,
-                    [String(newMrid), String(oldMrid)]
-                )
+                let result
+                try {
+                    result = await run(
+                        `UPDATE ${quoteIdent(tableName)}
+                         SET ${quoteIdent(columnName)} = ?
+                         WHERE ${quoteIdent(columnName)} = ?`,
+                        [String(newMrid), String(oldMrid)]
+                    )
+                } catch (updateError) {
+                    // Chỉ rõ bảng.cột làm vỡ — trước đây lỗi bị nuốt ở catch ngoài cùng
+                    console.error(`[REPLACE-MRID] FAILED tai ${tableName}.${columnName}:`, updateError && updateError.message)
+                    throw updateError
+                }
                 updatedCells += result.changes || 0
             }
         }

@@ -333,7 +333,9 @@ app.on('ready', async () => {
     //app option
     ipcAppOption.active()
 
-    updateStart.active()
+    // await: chuẩn hoá mrid phải xong TRƯỚC khi người dùng kịp upload/download,
+    // nếu không sẽ có lúc thao tác chạy trên dữ liệu chưa chuẩn hoá.
+    await updateStart.active()
 
     // ipcMain.handle('getAllUser', async function (event) {
     //     const _users = await userFunc.getAllUser()

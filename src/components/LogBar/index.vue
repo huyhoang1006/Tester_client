@@ -40,7 +40,10 @@
                     @click="selectLog(item, $event)"
                     @dblclick="openLogDetail(item)"
                 >
-                    <div v-if="item.type === 'INSERT'" class="icon"><i style="color: green; background-color: white;" class="fa-solid fa-square-check"></i></div>
+                    <!-- UPLOAD/DOWNLOAD: category giữ nguyên, thành/bại thể hiện bằng icon -->
+                    <div v-if="isSyncLog(item) && item.severity === 'failed'" class="icon"><i style="background-color: white; color: #d0021b;" class="fa-solid fa-circle-xmark" :title="item.type + ' failed'"></i></div>
+                    <div v-else-if="isSyncLog(item)" class="icon"><i style="background-color: white; color: green;" :class="item.type === 'DOWNLOAD' ? 'fa-solid fa-circle-down' : 'fa-solid fa-circle-up'" :title="item.type + ' succeeded'"></i></div>
+                    <div v-else-if="item.type === 'INSERT'" class="icon"><i style="color: green; background-color: white;" class="fa-solid fa-square-check"></i></div>
                     <div v-else-if="item.type === 'UPDATE'" class="icon"><i style="background-color: white; color: #0b5cad;" class="fa-solid fa-pen-to-square"></i></div>
                     <div v-else-if="item.type === 'ERROR'" class="icon"><i style="background-color: white; color: red;" class="fa-solid fa-bug"></i></div>
                     <div v-else-if="item.type === 'DELETE'" class="icon"><i style="background-color: white; color: #d0021b;" class="fa-solid fa-trash"></i></div>
@@ -64,6 +67,12 @@
                     <div class="detail-grid">
                         <div class="detail-row"><span>Date & Time</span><strong>{{ activeLog.effective_date_time || '-' }}</strong></div>
                         <div class="detail-row"><span>Category</span><strong>{{ activeLog.type || '-' }}</strong></div>
+                        <div v-if="isSyncLog(activeLog)" class="detail-row">
+                            <span>Result</span>
+                            <strong :style="{ color: activeLog.severity === 'failed' ? '#d0021b' : 'green' }">
+                                {{ activeLog.severity === 'failed' ? 'Failed' : 'Success' }}
+                            </strong>
+                        </div>
                         <div class="detail-row"><span>Object</span><strong>{{ activeLog.name || '-' }}</strong></div>
                     </div>
                     <div class="detail-row full"><span>Message</span><p>{{ formatMessage(activeLog.description) || '-' }}</p></div>
@@ -117,6 +126,7 @@ export default {
                 return [
                     item.effective_date_time,
                     item.type,
+                    item.severity,
                     item.user_name,
                     item.name,
                     item.description,
@@ -147,6 +157,11 @@ export default {
         }
     },
     methods: {
+        // Log đồng bộ với server: Category là UPLOAD / DOWNLOAD,
+        // kết quả nằm ở severity ('success' | 'failed')
+        isSyncLog(item) {
+            return !!item && (item.type === 'UPLOAD' || item.type === 'DOWNLOAD');
+        },
         hideLog() {
             this.$emit("hideLogBar", false);
         },

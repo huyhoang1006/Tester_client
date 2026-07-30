@@ -1,4 +1,5 @@
 import PowerCableDTO from "@/views/Dto/PowerCable";
+import { toServerId } from '@/utils/serverId'
 
 const str = (value) => (value !== null && value !== undefined ? String(value) : '')
 
@@ -235,7 +236,7 @@ export const mapDtoToServer = (dto, ownerType) => {
 
     return {
         assetInfo: {
-            ownerId: idT(dto.psrId),
+            ownerId: idT(toServerId(dto.psrId)),
             ownerType: textT(ownerType),
             assetName: textT(p.apparatus_id),
             serialNo: textT(p.serial_no),

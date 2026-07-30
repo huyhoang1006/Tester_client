@@ -1,6 +1,7 @@
 import * as rootOrganisationFunc from './organisationRoot/index'
 import * as procedureFunc from './procedure/index'
 import * as databaseInitFunc from './database/init'
+import { normalizeServerMrids } from '@/function/entity/mRIDCheck/normalizeServerMrid'
 import UpdateSchedulerService from '@/function/entity/update/UpdateSchedulerService'
 import { entityFunc } from '@/function'
 import db from '@/function/datacontext/index'
@@ -19,6 +20,47 @@ export const createRootOrganisation = async () => {
         }
     } catch (err) {
         console.error('Error creating root organisation:', err)
+    }
+}
+
+/**
+ * Chuẩn hoá mrid cũ (id server trần) sang dạng có hậu tố loại node. Chạy đúng 1 lần,
+ * đánh dấu bằng app_settings để lần khởi động sau không quét lại.
+ */
+export const normalizeMridOnce = async () => {
+    const KEY = 'mrid_suffix_normalized'
+    try {
+        const done = await new Promise((resolve) => {
+            db.get(`SELECT value FROM app_settings WHERE key = ?`, [KEY],
+                (err, row) => resolve(err ? null : (row && row.value)))
+        })
+        if (done === '1') {
+            console.log('[NORMALIZE-MRID] da chay tu truoc, bo qua')
+            return
+        }
+
+        const rs = await normalizeServerMrids()
+        const data = (rs && rs.data) || {}
+        console.log('[NORMALIZE-MRID] ket qua:', JSON.stringify(data))
+
+        // Chỉ đánh dấu hoàn tất khi KHÔNG còn node nào lỗi. Node lỗi thường do
+        // id server đích đã bị node khác chiếm (trùng serial) — sửa xong dữ liệu
+        // thì lần khởi động sau còn chạy lại được, không bị khoá vĩnh viễn.
+        const failed = (data.failed || []).length
+        if (failed > 0) {
+            console.warn(`[NORMALIZE-MRID] con ${failed} node chua chuan hoa duoc, se thu lai lan sau:`,
+                JSON.stringify(data.failed))
+            return
+        }
+
+        await new Promise((resolve) => {
+            db.run(`INSERT INTO app_settings(key, value) VALUES(?, '1')
+                    ON CONFLICT(key) DO UPDATE SET value = '1'`, [KEY], () => resolve())
+        })
+        console.log('[NORMALIZE-MRID] hoan tat, danh dau da chay')
+    } catch (error) {
+        // Không chặn khởi động app nếu chuẩn hoá lỗi
+        console.error('[NORMALIZE-MRID] that bai:', error)
     }
 }
 
@@ -89,6 +131,7 @@ export const getSchedulerStatus = () => {
 export const active = async () => {
     await updateDatabase()
     await createRootOrganisation()
+    await normalizeMridOnce()
 
     schedulerService.scheduleCheck(async () => {
         await checkForUpdates()

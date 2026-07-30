@@ -7,7 +7,7 @@
             <TreeToolbar ref="treeToolBar"  :clientSlide="clientSlide" @add-command="handleAddCommand"
                 @dropdown-visible-change="handleDropdownVisibleChange" @asset-command="handleAssetCommand"
                 @import-command="handleImportCommand" @export-command="handleCommand" @open-node="handleOpenNode"
-                @duplicate="duplicateSelectedNodes" @upload="handleUploadNode" @download="handleDownloadNode"
+                @duplicate="duplicateSelectedNodes" @upload="handleUploadNode" @download="handleDownloadPathTree"
                 @delete="handleDeleteNode" @fmeca="handleClickFmeca" @move="handleMoveNode" @openDropdown="openDropdown"
                 @explorer-tab="handleExplorerTab"
                 @show-equipment="handleShowEquipment" />
@@ -23,6 +23,7 @@
                 <div class="tree-workspace-body">
             <ClientTreePanel ref="clientPanel" v-show="activeWorkspaceTab === 'tree' && clientSlide" :organisationClientList="organisationClientList"
                 :selectedNodes.sync="selectedNodes" @showLocationRoot="showLocationRoot" @show-addSubs="showAddSubs"
+                @drop-node="handleDropMoveNode"
                 @double-click-node="doubleClickNode" @fetch-children="fetchChildren"
                 @show-properties="showPropertiesDataClient" @update-selection="updateSelection"
                 @clear-selection="clearSelection" @delete-data="handleDeleteFromContextMenu"
@@ -40,6 +41,7 @@
                 @show-zero-diagram="handleShowZeroDiagram"
                 @upload-node="handleUploadFromContext"
                 @upload-full-tree="handleUploadFullTreeFromContext"
+                @upload-path-node="handleUploadPathNodeFromContext"
                 @fmeca-node="handleFmecaFromContext"
                 @show-equipment="handleShowEquipment"
                 @import-excel="handleImportExcelFromContext" @import-word="handleImportWordFromContext"
@@ -58,6 +60,7 @@
                 @show-zero-diagram="handleShowZeroDiagram"
                 @download-node="handleDownloadFromContext"
                 @download-node-only="handleDownloadOnlyFromContext"
+                @download-full-tree="handleDownloadFullTreeFromContext"
                 @fmeca-node="handleFmecaFromContext"
                 @delete-data="handleDeleteFromContextMenu"
                 @show-addSubsInTree="showAddSubsInTree" @show-addOrganisation="showAddOrganisation"
@@ -261,7 +264,35 @@
             :total="progressTotal" />
 
         <el-dialog
-            title="Upload full tree"
+            :title="opResultTitle + ' — result'"
+            :visible.sync="opResultVisible"
+            width="720px"
+            :close-on-click-modal="false"
+            custom-class="upload-full-tree-dialog">
+            <div class="upload-full-tree-note">
+                {{ opResultSummary }}
+            </div>
+            <el-table :data="opResults" size="mini" border height="360" class="upload-full-tree-table">
+                <el-table-column prop="name" label="Node" min-width="170" />
+                <el-table-column prop="typeLabel" label="Type" width="140" />
+                <el-table-column label="Status" width="100">
+                    <template slot-scope="scope">
+                        <el-tag
+                            size="mini"
+                            :type="scope.row.status === 'success' ? 'success' : (scope.row.status === 'skipped' ? 'info' : 'danger')">
+                            {{ scope.row.status }}
+                        </el-tag>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="message" label="Message" min-width="220" show-overflow-tooltip />
+            </el-table>
+            <span slot="footer" class="dialog-footer">
+                <el-button size="small" type="primary" @click="closeOpResult">Close</el-button>
+            </span>
+        </el-dialog>
+
+        <el-dialog
+            :title="uploadFullTreeTitle"
             :visible.sync="uploadFullTreeDialogVisible"
             width="640px"
             :close-on-click-modal="false"
@@ -541,6 +572,11 @@ export default {
             uploadFullTreeChain: [],
             uploadFullTreeDecisions: {},
             uploadFullTreeUploading: false,
+            uploadFullTreeTitle: 'Upload full tree',
+            // Bảng kết quả dùng chung cho cả upload lẫn download nhiều node
+            opResultTitle: '',
+            opResults: [],
+            opResultVisible: false,
             signZeroDiagram: false, // Biến điều khiển ẩn hiện dialog
             nodeForZeroDiagram: null, // Biến lưu node đang chọn
             isEditMode: false,
@@ -660,6 +696,13 @@ export default {
         }
     },
     computed: {
+        opResultSummary() {
+            const rows = this.opResults || []
+            const ok = rows.filter(r => r.status === 'success').length
+            const failed = rows.filter(r => r.status === 'failed').length
+            const skipped = rows.filter(r => r.status === 'skipped').length
+            return `${rows.length} node(s): ${ok} done, ${failed} failed, ${skipped} skipped`
+        },
         // ...existing computed properties...
         isCommandAllowed() {
             return (cmd) => {

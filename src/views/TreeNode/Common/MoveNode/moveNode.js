@@ -1,7 +1,29 @@
 import Vue from "vue"
+import { getValidParentModes, canDropInto } from './moveRules'
 
 export default {
     methods: {
+        /**
+         * Kéo thả trên cây: dùng lại toàn bộ luồng của dialog Move.
+         * Chỉ cần gán nodeToMove + selectedTargetNode rồi gọi confirmMoveNode().
+         */
+        async handleDropMoveNode({ dragNode, targetNode }) {
+            if (!dragNode || !targetNode) return
+
+            // Kiểm tra lại ở đây (TreeNode đã chặn, nhưng không tin phía UI)
+            const check = canDropInto(dragNode, targetNode)
+            if (!check.allowed) {
+                this.$message.warning(check.reason || 'Cannot move here')
+                return
+            }
+
+            this.nodeToMove = dragNode
+            this.validParentTypesForMove = this.getValidParentTypes(dragNode.mode)
+            this.selectedTargetNode = targetNode
+            this.selectedTargetNodes = [targetNode]
+
+            await this.confirmMoveNode()
+        },
         async handleMoveFromContext(node) {
             // Set selectedNodes để handleMoveNode có thể sử dụng
             this.selectedNodes = [node]
@@ -73,23 +95,9 @@ export default {
             this.nodeToMove = null
             this.validParentTypesForMove = []
         },
+        // Bảng phân cấp nằm ở moveRules.js để dialog Move và kéo thả dùng chung 1 nguồn
         getValidParentTypes(nodeMode) {
-            switch (nodeMode) {
-                case 'organisation':
-                    return ['organisation'] // Org chỉ nằm trong Org
-                case 'substation':
-                    return ['organisation'] // Substation nằm trong Org
-                case 'voltageLevel':
-                    return ['substation'] // Voltage nằm trong Substation
-                case 'bay':
-                    return ['voltageLevel', 'substation'] // Bay nằm trong Voltage hoặc Substation
-                case 'asset':
-                    return ['bay', 'substation'] // Asset nằm được nhiều chỗ
-                case 'job':
-                    return ['asset'] // Job nằm trong Asset
-                default:
-                    return []
-            }
+            return getValidParentModes(nodeMode)
         },
     }
 }

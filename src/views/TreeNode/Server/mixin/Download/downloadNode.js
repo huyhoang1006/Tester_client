@@ -59,7 +59,20 @@ export default {
                 }
             }
 
-            await executeDownload(node, this, { includePath: false })
+            const originalMessage = this.$message
+            let captured = ''
+            this.$message = {
+                success: (m) => originalMessage.success(m),
+                info: (m) => originalMessage.info(m),
+                warning: (m) => { captured = captured || m; originalMessage.warning(m) },
+                error: (m) => { captured = captured || m; originalMessage.error(m) }
+            }
+            try {
+                await executeDownload(node, this, { includePath: false })
+            } finally {
+                this.$message = originalMessage
+            }
+            await this.writeSyncLog('DOWNLOAD', node, !captured, captured)
         },
 
         getDownloadParentId(node) {

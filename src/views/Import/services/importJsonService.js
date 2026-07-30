@@ -139,17 +139,34 @@ const regenJobDtoIds = (jobDto, newAssetId, uuid) => {
 const regenTestAssessment = (test, uuid) => {
     const ta = test.testAssessment
     if (!ta) return
+    const ts = ta.testStandard
     // testStandard.mrid (bản ghi chọn) — sinh mới nếu có
-    if (ta.testStandard && ta.testStandard.mrid) ta.testStandard.mrid = uuid.newUuid()
+    if (ts && ts.mrid) ts.mrid = uuid.newUuid()
+
+    // work_task_id phải trỏ tới test.mrid MỚI (test.mrid vừa regen ở vòng ngoài).
+    // Thiếu bước này thì FK test_standard.work_task_id -> work_task.mrid vẫn trỏ
+    // work_task cũ (không tồn tại trong DB đích) → SQLITE_CONSTRAINT,
+    // báo lên là 'Insert testStandard failed'. testCondition đã xử lý, đây thì chưa.
+    if (ts && ts.work_task_id !== undefined) ts.work_task_id = test.mrid
 
     // assessment[] có thể là template chứa cây con; regen từng standard có rule/group
+    const stdIdMap = {}
     if (Array.isArray(ta.assessment)) {
         ta.assessment = ta.assessment.map(std => {
             if (std && (std.assessment_rule || std.assessment_group || std.assessment)) {
-                return regenStandardTree(std, uuid)
+                const oldStdMrid = std.mrid
+                const regenerated = regenStandardTree(std, uuid)
+                if (oldStdMrid) stdIdMap[oldStdMrid] = regenerated.mrid
+                return regenerated
             }
             return std
         })
+    }
+
+    // Cùng lý do: standard customized vừa được cấp mrid mới nên FK
+    // test_standard.test_standard_customize -> customized_standard.mrid phải trỏ theo
+    if (ts && ts.test_standard_customize && stdIdMap[ts.test_standard_customize]) {
+        ts.test_standard_customize = stdIdMap[ts.test_standard_customize]
     }
 }
 

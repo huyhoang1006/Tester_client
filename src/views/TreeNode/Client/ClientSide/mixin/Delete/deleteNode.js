@@ -10,18 +10,36 @@ export default {
 
             const node = this.selectedNodes[this.selectedNodes.length - 1];
             let nodeName = node.apparatus_id || node.serial_number || node.serial_no || node.name || 'Unknown';
-            
-            this.$confirm(`Delete "${nodeName}"?`, 'Warning', {
-                confirmButtonText: 'Delete',
+
+            // Node có con thì hỏi xác nhận xóa cả cây con thay vì chặn như trước.
+            // Chỉ áp dụng cho client, job là node lá nên bỏ qua.
+            let cascade = false;
+            if (this.clientSlide && node.mode !== 'job') {
+                try {
+                    const checkResult = await this.checkChildren(node);
+                    cascade = !!(checkResult && checkResult.hasChildren);
+                } catch (error) {
+                    console.error('Check children before delete failed:', error);
+                }
+            }
+
+            const confirmMessage = cascade
+                ? `"${nodeName}" has child nodes. Deleting it will permanently delete this node and ALL of its child nodes. Are you sure?`
+                : `Delete "${nodeName}"?`;
+            const confirmTitle = cascade ? 'Node has child nodes' : 'Warning';
+
+            this.$confirm(confirmMessage, confirmTitle, {
+                confirmButtonText: cascade ? 'Delete all' : 'Delete',
                 cancelButtonText: 'Cancel',
                 cancelButtonClass: 'el-button--danger',
                 type: 'warning'
             })
             .then(async () => {
                 // Sử dụng Wrapper để bắt đầu loading
-                const { close, timeoutValue } = startLoading(this, { 
+                // Xóa cả cây con chạy lâu hơn nhiều nên dùng timeout 'heavy'
+                const { close, timeoutValue } = startLoading(this, {
                     action: 'delete',
-                    type: 'default' 
+                    type: cascade ? 'heavy' : 'default'
                 });
 
                 // Intercept messages để hiển thị sau khi loading đóng
@@ -49,12 +67,14 @@ export default {
                     // Delay 0.2s để loading hiển thị trước khi bắt đầu xóa
                     await new Promise(resolve => setTimeout(resolve, 200));
 
-                    const deletePromise = this.clientSlide 
-                        ? this.deleteDataClient(node)
+                    const deletePromise = this.clientSlide
+                        ? this.deleteDataClient(node, cascade)
                         : this.deleteDataServer(node);
 
-                    // Xử lý timeout nếu có
-                    if (timeoutValue > 0) {
+                    // Xóa cả cây con không giới hạn thời gian: nếu race timeout thắng thì
+                    // $message được restore trong finally trong khi vòng xóa vẫn chạy tiếp,
+                    // mỗi node còn lại sẽ bắn 1 toast thật ra màn hình.
+                    if (timeoutValue > 0 && !cascade) {
                         const timeoutPromise = new Promise((_, reject) => 
                             setTimeout(() => reject(new Error('Timeout')), timeoutValue)
                         );
@@ -89,7 +109,10 @@ export default {
                 // Hiển thị messages SAU KHI loading đã đóng
                 if (capturedMessages.length > 0) {
                     const last = capturedMessages[capturedMessages.length - 1];
-                    this.$message[last.type](last.message);
+                    const finalMessage = (cascade && last.type === 'success')
+                        ? `Deleted "${nodeName}" and all of its child nodes successfully`
+                        : last.message;
+                    this.$message[last.type](finalMessage);
                 }
 
                 if (deleteSuccess) {

@@ -10,13 +10,21 @@ export default {
             this.selectedNodes = [node]
             this.handleUploadFullTreeNode()
         },
+        handleUploadPathNodeFromContext(node) {
+            this.selectedNodes = [node]
+            this.handleUploadPathNode()
+        },
         handleFmecaFromContext(node) {
             this.selectedNodes = [node]
             this.handleClickFmeca()
         },
         handleDownloadFromContext(node) {
             this.selectedNodes = [node]
-            this.handleDownloadNode()
+            this.handleDownloadPathTree()
+        },
+        handleDownloadFullTreeFromContext(node) {
+            this.selectedNodes = [node]
+            this.handleDownloadFullTree()
         },
         handleDownloadOnlyFromContext(node) {
             this.selectedNodes = [node]

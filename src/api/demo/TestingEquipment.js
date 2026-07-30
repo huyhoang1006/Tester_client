@@ -1,5 +1,6 @@
 /* eslint-disable */
 import client from '@/utils/client'
+import { toServerId } from '@/utils/serverId'
 
 // Lấy TOÀN BỘ danh sách testing equipment trên server để đồng bộ về client.
 // NOTE: endpoint dưới đây là PLACEHOLDER — server chưa có API này trong api-docs.json.
@@ -10,7 +11,7 @@ export const getAllTestingEquipment = () => {
 
 // (tuỳ chọn) Lấy chi tiết đầy đủ 1 thiết bị theo mrid — dùng khi cần tải sâu từng cái
 export const getTestingEquipmentById = (id) => {
-    return client.get(`/api/testing-equipment/${id}`)
+    return client.get(`/api/testing-equipment/${toServerId(id)}`)
 }
 
 // Đẩy (create/update) 1 thiết bị lên server.

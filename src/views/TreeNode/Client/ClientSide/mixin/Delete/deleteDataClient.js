@@ -1,11 +1,26 @@
 export default {
     methods: {
-        async deleteDataClient(node) {
+        /**
+         * @param node    node cần xóa
+         * @param cascade true = xóa luôn toàn bộ con cháu thay vì báo lỗi
+         */
+        async deleteDataClient(node, cascade = false) {
             if (node.mode != 'job') {
                 const checkDelete = await this.checkChildren(node)
                 if (checkDelete.hasChildren) {
-                    this.$message.error('Node has children, cannot delete')
-                    return
+                    if (!cascade) {
+                        this.$message.error('Node has children, cannot delete')
+                        return
+                    }
+                    const childResult = await this.deleteDescendantsClient(node)
+                    if (!childResult.success) {
+                        const failedName = childResult.failedNode
+                            ? (childResult.failedNode.apparatus_id || childResult.failedNode.serial_number
+                                || childResult.failedNode.serial_no || childResult.failedNode.name || 'Unknown')
+                            : 'Unknown'
+                        this.$message.error(`Delete child node "${failedName}" failed, stopped`)
+                        return
+                    }
                 }
                 try {
                     if (node.mode == 'substation') {

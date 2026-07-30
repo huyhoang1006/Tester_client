@@ -10,7 +10,7 @@
                     <div class="bu-body">
                         <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                             <el-form-item label="Number of Phase" class="inline-phases">
-                                <el-radio-group v-model="configurationData.number_of_phase" @change="onChangeNumberOfPhase">
+                                <el-radio-group v-radio-clearable v-model="configurationData.number_of_phase" @change="onChangeNumberOfPhase">
                                     <el-radio label="1">1</el-radio>
                                     <el-radio label="3">3</el-radio>
                                 </el-radio-group>

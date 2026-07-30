@@ -14,7 +14,7 @@
                 <div class="phase-row">
                     <el-form class="winding-form" :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                         <el-form-item label="Number of Phase" class="inline-phases">
-                            <el-radio-group @change="onChangePhase" v-model="windingConfigurationData.phases">
+                            <el-radio-group v-radio-clearable @change="onChangePhase" v-model="windingConfigurationData.phases">
                                 <el-radio type="number" label="1">1</el-radio>
                                 <el-radio type="number" label="3">3</el-radio>
                             </el-radio-group>

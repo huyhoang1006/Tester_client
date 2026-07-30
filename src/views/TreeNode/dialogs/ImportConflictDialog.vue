@@ -104,8 +104,9 @@ export default {
     data() {
         return {
             ACTION,
-            applyAll: null,
-            // bản sao có thêm field `action` cho mỗi dòng (mặc định NEW = an toàn nhất)
+            applyAll: ACTION.USE_EXISTING,
+            // bản sao có thêm field `action` cho mỗi dòng
+            // (mặc định USE_EXISTING: ghép vào node đã có, không đụng dữ liệu cũ)
             rows: [],
         }
     },
@@ -114,8 +115,8 @@ export default {
         conflicts: {
             immediate: true,
             handler(list) {
-                this.rows = (list || []).map(c => ({ ...c, action: ACTION.NEW }))
-                this.applyAll = null
+                this.rows = (list || []).map(c => ({ ...c, action: ACTION.USE_EXISTING }))
+                this.applyAll = ACTION.USE_EXISTING
             },
         },
     },
