@@ -3,6 +3,46 @@ import voltageTransformerTestMap from '@/config/test-definitions/VoltageTransfor
 import voltageTransformerConditionMap from '@/config/testing-condition/VoltageTransformer'
 import voltageTransformerAssessmentMap from '@/config/testing-assessment/VoltageTransformer'
 import * as common from '../../../../Common/index.js'
+import { uprValueFromCode } from '@/config/upr-options'
+
+/**
+ * assetData tới đây ở HAI DẠNG KHÁC NHAU tuỳ đường vào — đây là nguồn của bug
+ * "khai 3 cuộn nhưng bảng chỉ sinh 2 dòng":
+ *
+ *   - Mở job có sẵn trong tab (Tabs.vue)  → DTO, đã map:
+ *         assetData.vt_Configuration.windings
+ *         assetData.ratings.upr
+ *   - Dialog Add Job (showAddJob.js)      → ENTITY thô từ DB, CHƯA map:
+ *         assetData.OldPotentialTransformerInfo.windings
+ *         assetData.OldPotentialTransformerInfo.upr_formula
+ *
+ * Code cũ chỉ đọc nhánh DTO nên ở dialog luôn rơi về mặc định 2 cuộn và UPR rỗng.
+ * Hai hàm dưới đọc được cả hai dạng.
+ */
+const parseMaybeJson = (value) => {
+    if (typeof value !== 'string') return value || {}
+    try {
+        return JSON.parse(value) || {}
+    } catch (e) {
+        return {}
+    }
+}
+
+/** Số cuộn thứ cấp; không đọc được thì mặc định 2 */
+const readWindings = (assetData) => {
+    const vtConfig = parseMaybeJson(assetData?.vt_Configuration)
+    const info = parseMaybeJson(assetData?.OldPotentialTransformerInfo)
+    const raw = vtConfig?.windings ?? info?.windings
+    return parseInt(raw, 10) || 2
+}
+
+/** Mã hệ số Upr: '1' | '3' | '3sqrt' */
+const readUprCode = (assetData) => {
+    const ratings = parseMaybeJson(assetData?.ratings)
+    const info = parseMaybeJson(assetData?.OldPotentialTransformerInfo)
+    return ratings?.upr || info?.upr_formula || ''
+}
+
 export default {
     data() {
         return {}
@@ -37,13 +77,10 @@ export default {
             row1.measurement.value = 'Prim - (Sec + GND)'
             let insulation = [row1]
 
-            // Lấy windings từ DTO structure
-            let winding = 2 // default value
-            if (assetData && assetData.vt_Configuration && assetData.vt_Configuration.windings) {
-                winding = parseInt(assetData.vt_Configuration.windings) || 2
-            }
+            // Đọc được cả DTO (mở tab) lẫn entity thô (dialog Add Job)
+            const winding = readWindings(assetData)
 
-            for (let i = 1; i <= parseInt(winding); i++) {
+            for (let i = 1; i <= winding; i++) {
                 const row = JSON.parse(JSON.stringify(rowDataExample))
                 row.measurement.value = '(' + i + 'a' + i + 'n' + ')' + ' - GND'
                 insulation.push(row)
@@ -64,77 +101,24 @@ export default {
 
             let table = []
 
-            function uprData(uprRatio, upr) {
-                if (uprRatio == ' / √3') return parseFloat(upr) / Math.sqrt(3)
-                if (uprRatio == ' / 3') return parseFloat(upr) / 3
-                return parseFloat(upr)
-            }
-            function uprRatioData(uprRatio) {
-                if (uprRatio == '3sqrt') return ' / √3'
-                if (uprRatio == '3') return ' / 3'
-                return ''
-            }
-            function usrRatioData(usrRatio) {
-                if (usrRatio == '3sqrt') return ' / √3'
-                if (usrRatio == '3') return ' / 3'
-                return ''
-            }
-            function usrData(usrRatio, usr) {
-                if (usrRatio == ' / √3') return parseFloat(usr) / Math.sqrt(3)
-                if (usrRatio == ' / 3') return parseFloat(usr) / 3
-                return parseFloat(usr)
-            }
+            // Đọc được cả DTO (mở tab) lẫn entity thô (dialog Add Job)
+            const winding = readWindings(assetData)
 
-            // Lấy windings từ DTO structure
-            let winding = 2 // default value
-            if (assetData && assetData.vt_Configuration && assetData.vt_Configuration.windings) {
-                winding = parseInt(assetData.vt_Configuration.windings) || 2
-            }
+            // 'upr' bên Ratings LÀ mã hệ số ('1'|'3'|'3sqrt'), không phải điện áp.
+            // Điện áp nằm ở ratings.rated_voltage, cố ý không dùng ở đây.
+            // Quy đổi sang số ngay: dropdown ở bảng test hiện nhãn "1 / √3" nhưng
+            // ô luôn lưu số — xem config/upr-options để biết vì sao.
+            const upr = uprValueFromCode(readUprCode(assetData))
 
-            // Lấy ratings từ DTO structure
-            let ratings = assetData?.ratings || {}
-            if (typeof ratings === 'string') {
-                try {
-                    ratings = JSON.parse(ratings)
-                } catch (e) {
-                    ratings = {}
-                }
-            }
-
-            // Lấy dataVT từ DTO structure
-            let dataVT = assetData?.vt_Configuration?.dataVT || []
-            if (typeof dataVT === 'string') {
-                try {
-                    dataVT = JSON.parse(dataVT)
-                } catch (e) {
-                    dataVT = []
-                }
-            }
-
-            let uprRatio = uprRatioData(ratings?.uprRatio || '')
-            let upr = (ratings?.upr || '') + ' ' + uprRatio
-            let uprValue = uprData(uprRatio, upr)
-
-            for (let i = 1; i <= parseInt(winding); i++) {
+            for (let i = 1; i <= winding; i++) {
                 const row = JSON.parse(JSON.stringify(rowDataExample))
 
                 if (row.name) row.name.value = '(' + i + 'a' + i + 'n' + ')' + ' - GND'
                 else if (row.measurement) row.measurement.value = '(' + i + 'a' + i + 'n' + ')' + ' - GND'
 
-                let usrRatio = ''
-                let usr = ''
-                let usrValue = 0
-
-                if (dataVT && dataVT[i - 1]?.table) {
-                    usrRatio = usrRatioData(dataVT[i - 1].table.usrRatio || '')
-                    usr = (dataVT[i - 1].table.usr || '') + usrRatio
-                    usrValue = usrData(usrRatio, dataVT[i - 1].table.usr || '0')
-                }
-
                 if (row.upr) row.upr.value = upr
-                if (row.usr) row.usr.value = usr
-                if (row.uprValue) row.uprValue.value = uprValue
-                if (row.usrValue) row.usrValue.value = usrValue
+
+                // USR để trống cho kỹ thuật viên tự nhập.
 
                 table.push(row)
             }
@@ -154,13 +138,10 @@ export default {
 
             let table = []
             
-            // Lấy windings từ DTO structure
-            let winding = 2 // default value
-            if (assetData && assetData.vt_Configuration && assetData.vt_Configuration.windings) {
-                winding = parseInt(assetData.vt_Configuration.windings) || 2
-            }
+            // Đọc được cả DTO (mở tab) lẫn entity thô (dialog Add Job)
+            const winding = readWindings(assetData)
 
-            for (let i = 1; i <= parseInt(winding); i++) {
+            for (let i = 1; i <= winding; i++) {
                 const row = JSON.parse(JSON.stringify(rowDataExample))
                 if (row.name) {
                     row.name.value = i + 'a' + i + 'n'

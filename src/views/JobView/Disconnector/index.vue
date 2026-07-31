@@ -36,9 +36,18 @@
                             <el-tab-pane v-for="(item, index) in disconnectorJobDto.testList" :key="index"
                                 :label="item.name" :name="item.name + index">
                                 <test-information :title="item.name" :data="item.testCondition" :assetData="assetData"
-                                    :attachment="item.testCondition.attachmentData">
+                                    :attachment="item.testCondition.attachmentData"
+                                    :show-compare.sync="compareOpen[item.testTypeCode + index]"
+                                    :compare-test-code="compareEnabled(item.testTypeCode) ? item.testTypeCode : ''"
+                                    :compare-current-table="item.data.table"
+                                    :compare-columns="compareColumnsOf(item.testTypeCode)"
+                                    compare-asset-kind="Disconnector"
+                                    :compare-asset-mrid="disconnectorJobDto.properties.asset_id"
+                                    :compare-exclude-work-mrid="disconnectorJobDto.properties.mrid">
                                 </test-information>
-                                <component :is="item.testTypeCode" :data="item.data" :asset="assetData" :testAssessment="item.testAssessment">
+                                <component :is="item.testTypeCode" :data="item.data" :asset="assetData" :testAssessment="item.testAssessment"
+                                    :compare-open="!!compareOpen[item.testTypeCode + index]"
+                                    @toggle-compare="toggleCompare(item.testTypeCode + index)">
                                 </component>
                             </el-tab-pane>
                         </el-tabs>
@@ -55,6 +64,7 @@ import mixin from './mixin'
 import overview from './components/Overview/index.vue'
 import SelectTest from './components/SelectTest'
 import TestInformation from '@/views/Common/TestInformation.vue'
+import compareTestMap from '@/config/test-definitions/Disconnector'
 import TestingEquipment from './components/TestingEquipment/index.vue'
 
 import InsulationResistance from './components/InsulationResistance.vue'
@@ -91,6 +101,10 @@ export default {
     mixins: [mixin],
     data() {
         return {
+            // Trạng thái mở/đóng bảng so sánh, tách theo từng tab test.
+            // Phải để ở đây vì nút nằm trong component test còn bảng nằm trong
+            // test-information — hai component anh em, không tự nói chuyện được.
+            compareOpen: {},
             objActiveName: {
                 activeName: null
             },
@@ -120,6 +134,18 @@ export default {
     mounted() {
     },
     methods: {
+        // ── So sánh với lần test trước ──────────────────────────────────
+        // Bật cho mọi bài test có định nghĩa cột trong test-definitions.
+        compareEnabled(testTypeCode) {
+            return !!compareTestMap[testTypeCode]
+        },
+        compareColumnsOf(testTypeCode) {
+            const definition = compareTestMap[testTypeCode]
+            return (definition && definition.columns) || []
+        },
+        toggleCompare(key) {
+            this.$set(this.compareOpen, key, !this.compareOpen[key])
+        },
         updateAttachmentOverView(attachment) {
             this.disconnectorJobDto.attachmentData = attachment
         },

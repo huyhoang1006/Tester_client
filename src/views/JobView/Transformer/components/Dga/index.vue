@@ -8,6 +8,9 @@
             </div>
             <div class="test-toolbar-group">
                 <el-button size="mini" @click="openConditionIndicatorDialog = true"> <i class="fa-solid fa-hammer"></i> Condition indicator settings </el-button>
+                <el-button size="mini" :type="compareOpen ? 'primary' : ''" @click="$emit('toggle-compare')">
+                    <i class="fa-solid fa-scale-balanced"></i> Compare with previous results
+                </el-button>
             </div>
         </div>
         <!-- Tính toán đánh giá -->
@@ -189,7 +192,8 @@ export default {
         data:           { type: Object, require: true },
         asset:          { type: Object, require: true },
         testAssessment: { type: Object, require: true },
-        testCondition:  { type: Object, default: function() { return { condition: {} } } }
+        testCondition:  { type: Object, default: function() { return { condition: {} } } },
+        compareOpen:    { type: Boolean, default: false }
     },
     computed: {
         testData()     { return this.data },

@@ -11,6 +11,9 @@
                         @click="openConditionIndicatorDialog = true">
                         <i class="fa-solid fa-hammer"></i> Condition indicatior settings
                     </el-button>
+                    <el-button class="btn-action" size="mini" :type="compareOpen ? 'primary' : ''" @click="$emit('toggle-compare')">
+                        <i class="fa-solid fa-scale-balanced"></i> Compare with previous results
+                    </el-button>
                 </el-col>
             </el-row>
 
@@ -113,7 +116,8 @@ export default {
         asset: {
             type: Object,
             require: true
-        }
+        },
+        compareOpen:    { type: Boolean, default: false }
     },
     computed: {
         testData() {

@@ -8,6 +8,9 @@
             </div>
             <div class="test-toolbar-group">
                 <el-button size="mini" @click="openConditionIndicatorDialog = true"> <i class="fa-solid fa-hammer"></i> Condition indicator settings </el-button>
+                <el-button size="mini" :type="compareOpen ? 'primary' : ''" @click="$emit('toggle-compare')">
+                    <i class="fa-solid fa-scale-balanced"></i> Compare with previous results
+                </el-button>
             </div>
         </div>
 
@@ -34,7 +37,7 @@
                     <td>
                         <div class="col-phase">
                             <div class="phase">
-                                <el-input size="mini" type="text" v-model="item.phase.value"></el-input>
+                                <el-select size="mini" v-model="item.phase.value" placeholder="Phase"><el-option label="A" value="A"></el-option><el-option label="B" value="B"></el-option><el-option label="C" value="C"></el-option></el-select>
                             </div>
                             <div class="rectangle"
                                 :class="{ red: item.phase.value == 'A', yellow: item.phase.value == 'B', blue: item.phase.value == 'C' }">
@@ -153,7 +156,8 @@ export default {
         data:           { type: Object, require: true },
         asset:          { type: Object, require: true },
         testAssessment: { type: Object, require: true },
-        testCondition:  { type: Object, default: function() { return { condition: {} } } }
+        testCondition:  { type: Object, default: function() { return { condition: {} } } },
+        compareOpen:    { type: Boolean, default: false }
     },
     computed: {
         testData()     { return this.data },

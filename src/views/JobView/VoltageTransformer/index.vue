@@ -37,14 +37,23 @@
                                     :title="item.name"
                                     :data="item.testCondition"
                                     :assetData="assetData"
-                                    :attachment="item.testCondition.attachmentData">
+                                    :attachment="item.testCondition.attachmentData"
+                                    :show-compare.sync="compareOpen[item.testTypeCode + index]"
+                                    :compare-test-code="compareEnabled(item.testTypeCode) ? item.testTypeCode : ''"
+                                    :compare-current-table="item.data.table"
+                                    :compare-columns="compareColumnsOf(item.testTypeCode)"
+                                    compare-asset-kind="VoltageTransformer"
+                                    :compare-asset-mrid="voltageTransformerJobDto.properties.asset_id"
+                                    :compare-exclude-work-mrid="voltageTransformerJobDto.properties.mrid">
                                 </test-information>
                                 <component
-                                    :is="item.testTypeCode" 
-                                    :data="item.data" 
+                                    :is="item.testTypeCode"
+                                    :data="item.data"
                                     :asset="assetData"
                                     :testCondition="item.testCondition"
                                     :testAssessment="item.testAssessment"
+                                    :compare-open="!!compareOpen[item.testTypeCode + index]"
+                                    @toggle-compare="toggleCompare(item.testTypeCode + index)"
                                     >
                                 </component>
                             </el-tab-pane>
@@ -63,6 +72,7 @@ import overview from './components/Overview'
 import testingEquipment from './components/TestingEquipment/index.vue'
 import SelectTest from './components/SelectTest'
 import testInformation from '@/views/Common/TestInformation.vue'
+import voltageTransformerTestMap from '@/config/test-definitions/VoltageTransformer'
 import DcWindingResistance from './components/DcWindingResistance.vue'
 import InsulationResistance from './components/InsulationResistance.vue'
 import GeneralInspection from './components/GeneralInspection.vue'
@@ -100,6 +110,10 @@ export default {
             assetData : {},
             locationData : {},
             productAssetModelData: {},
+            // Trạng thái mở/đóng bảng so sánh, tách theo từng tab test.
+            // Phải để ở đây vì nút nằm trong component test còn bảng nằm trong
+            // test-information — hai component anh em, không tự nói chuyện được.
+            compareOpen: {},
         }
     },
     methods: {
@@ -107,6 +121,18 @@ export default {
             this.attachmentData = attachment
         },
         loadMapForView() {
+        },
+        // Bật cho mọi bài test của VT — mỗi bài đều có định nghĩa cột trong
+        // test-definitions/VoltageTransformer nên chỉ cần có mã là so được.
+        compareEnabled(testTypeCode) {
+            return !!voltageTransformerTestMap[testTypeCode]
+        },
+        compareColumnsOf(testTypeCode) {
+            const definition = voltageTransformerTestMap[testTypeCode]
+            return (definition && definition.columns) || []
+        },
+        toggleCompare(key) {
+            this.$set(this.compareOpen, key, !this.compareOpen[key])
         },
     },
 }

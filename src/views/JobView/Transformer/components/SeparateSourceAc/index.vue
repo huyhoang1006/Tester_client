@@ -1,5 +1,13 @@
 <template>
     <div id="separate-source" class="test-ui">
+        <div class="test-toolbar">
+            <div class="test-toolbar-group">
+                <el-button size="mini" :type="compareOpen ? 'primary' : ''" @click="$emit('toggle-compare')">
+                    <i class="fa-solid fa-scale-balanced"></i> Compare with previous results
+                </el-button>
+            </div>
+        </div>
+
         <table style="width: 50% ; font-size: 12px;" class="mgb-10">
             <tbody>
                 <tr>
@@ -64,7 +72,8 @@ export default {
         data:           { type: Object, require: true },
         asset:          { type: Object, require: true },
         testAssessment: { type: Object, require: true },
-        testCondition:  { type: Object, default: function() { return { condition: {} } } }
+        testCondition:  { type: Object, default: function() { return { condition: {} } } },
+        compareOpen:    { type: Boolean, default: false }
     },
     computed: {
         testData()     { return this.data },

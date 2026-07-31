@@ -20,6 +20,9 @@
                 <el-button size="mini" @click="openConditionIndicatorDialog = true">
                     <i class="fa-solid fa-hammer"></i> Condition indicator settings
                 </el-button>
+                <el-button size="mini" :type="compareOpen ? 'primary' : ''" @click="$emit('toggle-compare')">
+                    <i class="fa-solid fa-scale-balanced"></i> Compare with previous results
+                </el-button>
             </div>
         </div>
 
@@ -51,8 +54,7 @@
                 <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td>
                         <div class="phase-cell">
-                            <el-input v-if="index % (assetData.unit_count) == 1" class="phase-input" size="mini"
-                                type="text" v-model="item.phase.value"></el-input>
+                            <el-select v-if="index % (assetData.unit_count) == 1" class="phase-input" size="mini" v-model="item.phase.value" placeholder="Phase"><el-option label="A" value="A"></el-option><el-option label="B" value="B"></el-option><el-option label="C" value="C"></el-option></el-select>
                             <div :class="{ colorTableRed: index % 3 == 0, colorTableYellow: index % 3 == 1, colorTableBlue: index % 3 == 2 }"
                                 class="phase-color"></div>
                         </div>
@@ -166,7 +168,8 @@ export default {
         data: { type: Object, require: true },
         asset: { type: Object, require: true },
         testAssessment: { type: Object, require: true },
-        testCondition:  { type: Object, default: function() { return { condition: {} } } }
+        testCondition:  { type: Object, default: function() { return { condition: {} } } },
+        compareOpen:    { type: Boolean, default: false }
     },
     computed: {
         testData() { return this.data },

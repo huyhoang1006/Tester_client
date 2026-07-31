@@ -1,5 +1,13 @@
 <template>
     <div id="induced-ac-voltage-tests" class="test-ui" style="width: 100%; font-size: 12px;">
+        <div class="test-toolbar">
+            <div class="test-toolbar-group">
+                <el-button size="mini" :type="compareOpen ? 'primary' : ''" @click="$emit('toggle-compare')">
+                    <i class="fa-solid fa-scale-balanced"></i> Compare with previous results
+                </el-button>
+            </div>
+        </div>
+
         <table class="mgb-10" style="width: 500px">
             <tbody>
                 <tr>
@@ -117,7 +125,8 @@ export default {
         data:           { type: Object, require: true },
         asset:          { type: Object, require: true },
         testAssessment: { type: Object, require: true },
-        testCondition:  { type: Object, default: function() { return { condition: {} } } }
+        testCondition:  { type: Object, default: function() { return { condition: {} } } },
+        compareOpen:    { type: Boolean, default: false }
     },
     computed: {
         testData()     { return this.data },

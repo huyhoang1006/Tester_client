@@ -17,6 +17,9 @@
                 <el-button size="mini" @click="openConditionIndicatorDialog = true">
                     <i class="fa-solid fa-hammer"></i> Condition indicator settings
                 </el-button>
+                <el-button size="mini" :type="compareOpen ? 'primary' : ''" @click="$emit('toggle-compare')">
+                    <i class="fa-solid fa-scale-balanced"></i> Compare with previous results
+                </el-button>
             </div>
         </div>
 
@@ -42,7 +45,14 @@
                         <el-input size="mini" type="text" v-model="item.name.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.upr.value"></el-input>
+                        <!-- Hiện nhãn "1 / √3" cho dễ đọc, nhưng ô vẫn lưu SỐ đã
+                             quy đổi để ratio_dev và bảng Compare tính được -->
+                        <el-select size="mini" style="width: 100%"
+                            :value="uprSelected(item)"
+                            @change="value => setUpr(item, value)">
+                            <el-option v-for="option in uprOptions" :key="option.value"
+                                :label="option.label" :value="option.value"></el-option>
+                        </el-select>
                     </td>
                     <td>
                         <el-input size="mini" type="text" number="positive" v-model="item.usr.value"></el-input>
@@ -140,6 +150,7 @@ import voltageTransformerTestMap from '@/config/test-definitions/VoltageTransfor
 import * as common from '@/views/JobView/Common/index'
 import GroupNode from '../../Common/GroupNode.vue'
 import { changeTestStandard } from '../../Common'
+import { UPR_OPTIONS, matchUprOption } from '@/config/upr-options'
 
 export default {
     name: "VTRatio",
@@ -151,6 +162,7 @@ export default {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
             option: null,
+            uprOptions: UPR_OPTIONS,
         }
     },
     mounted() {
@@ -169,7 +181,8 @@ export default {
             require: true
         },
         testAssessment: { type: Object, require: true },
-        testCondition:  { type: Object, default: function() { return { condition: {} } } }
+        testCondition:  { type: Object, default: function() { return { condition: {} } } },
+        compareOpen:    { type: Boolean, default: false }
     },
     computed: {
         testData() {
@@ -353,6 +366,15 @@ export default {
             return common.evaluateAssessmentGroup(group, measurementMap, { absolute: true })
         },
 
+        /** Giá trị đang lưu trong ô → option để dropdown highlight đúng nhãn */
+        uprSelected(item) {
+            return matchUprOption(item && item.upr ? item.upr.value : '')
+        },
+        /** Chọn dropdown → ghi SỐ đã quy đổi vào ô, không ghi mã */
+        setUpr(item, value) {
+            if (!item || !item.upr) return
+            this.$set(item.upr, 'value', value === null || value === undefined ? '' : value)
+        },
         clear() {
             if (!this.testData.table.table1) {
                 this.initializeTable()

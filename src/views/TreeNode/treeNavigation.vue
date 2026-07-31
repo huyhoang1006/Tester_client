@@ -337,6 +337,7 @@ import contextMenuSync from './Common/contextMenuSync.js'
 import TopBarClient from './Client/Topbar/index.vue'
 import ObjectPropertiesPanel from '@/views/Common/ObjectPropertiesPanel.vue'
 import ContextDataClient from './Client/ClientContext/ContextData.vue'
+import compareUiBus, { COMPARE_ACTIVE } from '@/utils/compareUiBus'
 
 // Import Mappers
 import mapClientProperties from '@/utils/MapperClient/mapClientProperties'
@@ -655,6 +656,8 @@ export default {
             logSignClient: false,
             propertiesSign: true,
             propertiesSignClient: true,
+            // Bảng Compare đã ẩn Object Properties ở bên nào: '' | 'client' | 'server'
+            compareHiddenSide: '',
             clientSlide: true,
             pageLocationSync: {
                 first: 1,
@@ -821,12 +824,17 @@ export default {
     },
     mounted() {
         window.addEventListener("keydown", this.handleKeyDown);
+        compareUiBus.$on(COMPARE_ACTIVE, this.handleCompareActive)
         this.$nextTick(async () => {
             const restored = await this.restoreWorkspaceState();
             if (!restored) {
                 await this.showLocationRoot();
             }
         });
+    },
+    beforeDestroy() {
+        window.removeEventListener("keydown", this.handleKeyDown);
+        compareUiBus.$off(COMPARE_ACTIVE, this.handleCompareActive)
     },
     watch: {
         clientSlide(value) {
@@ -887,6 +895,39 @@ export default {
         }
     },
     methods: {
+        /**
+         * Bảng Compare mở/đóng → tự ẩn/hiện panel Object Properties.
+         *
+         * Chỉ chạy đúng MỘT lần cho mỗi lần chuyển trạng thái (bus đã lọc sẵn).
+         * Sau đó KHÔNG khoá gì cả: người dùng vẫn bấm ẩn/hiện thoải mái, bus
+         * không ép lại trạng thái.
+         *
+         * Nhớ lại đã ẩn ở bên nào để trả lại đúng bên đó — người dùng có thể
+         * chuyển client/server trong lúc đang mở Compare.
+         */
+        handleCompareActive(active) {
+            if (active) {
+                this.compareHiddenSide = this.clientSlide ? 'client' : 'server'
+                if (this.clientSlide) {
+                    // Gọi qua ref để ContextData chỉnh lại luôn bề rộng cột nội dung;
+                    // đổi mỗi cờ propertiesSignClient thì panel biến mất nhưng
+                    // phần nội dung không giãn ra chiếm chỗ trống.
+                    const client = this.$refs.contextDataClient
+                    if (client) client.hidePropertiesClient()
+                } else if (this.propertiesSign) {
+                    this.hideProperties()
+                }
+                return
+            }
+
+            if (this.compareHiddenSide === 'client') {
+                const client = this.$refs.contextDataClient
+                if (client) client.showPropertiesClient()
+            } else if (this.compareHiddenSide === 'server') {
+                if (!this.propertiesSign) this.showProperties()
+            }
+            this.compareHiddenSide = ''
+        },
         handleExplorerTab() {
             this.activeWorkspaceTab = 'tree'
             if (this.clientSlide) this.clientWorkspaceTab = 'tree'

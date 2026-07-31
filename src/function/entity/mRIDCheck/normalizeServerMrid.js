@@ -67,7 +67,7 @@ export const normalizeServerMrids = async () => {
             continue
         }
         if (!suffix) {
-            result.skipped.push({ mrid, name: row.name, reason: 'Khong xac dinh duoc loai node' })
+            result.skipped.push({ mrid, name: row.name, reason: 'Cannot determine node type' })
             continue
         }
 

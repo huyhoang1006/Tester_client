@@ -35,20 +35,20 @@ export const normalizeMridOnce = async () => {
                 (err, row) => resolve(err ? null : (row && row.value)))
         })
         if (done === '1') {
-            console.log('[NORMALIZE-MRID] da chay tu truoc, bo qua')
+            console.log('[NORMALIZE-MRID] already done, skipping')
             return
         }
 
         const rs = await normalizeServerMrids()
         const data = (rs && rs.data) || {}
-        console.log('[NORMALIZE-MRID] ket qua:', JSON.stringify(data))
+        console.log('[NORMALIZE-MRID] result:', JSON.stringify(data))
 
         // Chỉ đánh dấu hoàn tất khi KHÔNG còn node nào lỗi. Node lỗi thường do
         // id server đích đã bị node khác chiếm (trùng serial) — sửa xong dữ liệu
         // thì lần khởi động sau còn chạy lại được, không bị khoá vĩnh viễn.
         const failed = (data.failed || []).length
         if (failed > 0) {
-            console.warn(`[NORMALIZE-MRID] con ${failed} node chua chuan hoa duoc, se thu lai lan sau:`,
+            console.warn(`[NORMALIZE-MRID] ${failed} node(s) not normalized, will retry next start:`,
                 JSON.stringify(data.failed))
             return
         }
@@ -57,10 +57,10 @@ export const normalizeMridOnce = async () => {
             db.run(`INSERT INTO app_settings(key, value) VALUES(?, '1')
                     ON CONFLICT(key) DO UPDATE SET value = '1'`, [KEY], () => resolve())
         })
-        console.log('[NORMALIZE-MRID] hoan tat, danh dau da chay')
+        console.log('[NORMALIZE-MRID] completed, marked as done')
     } catch (error) {
         // Không chặn khởi động app nếu chuẩn hoá lỗi
-        console.error('[NORMALIZE-MRID] that bai:', error)
+        console.error('[NORMALIZE-MRID] failed:', error)
     }
 }
 

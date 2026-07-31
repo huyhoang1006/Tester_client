@@ -9,6 +9,9 @@
             <div class="test-toolbar-group">
                 <el-button size="mini" @click="openAssessmentSettings()"><i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings</el-button>
                 <el-button size="mini" @click="openConditionIndicatorDialog = true"><i class="fa-solid fa-hammer"></i> Condition indicator settings</el-button>
+                <el-button size="mini" :type="compareOpen ? 'primary' : ''" @click="$emit('toggle-compare')">
+                    <i class="fa-solid fa-scale-balanced"></i> Compare with previous results
+                </el-button>
             </div>
         </div>
 
@@ -135,7 +138,8 @@ export default {
         asset: {
             type: Object,
             default: function () { return {} }
-        }
+        },
+        compareOpen:    { type: Boolean, default: false }
     },
     computed: {
         testData() {

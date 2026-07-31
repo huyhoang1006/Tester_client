@@ -13,7 +13,22 @@
                             <el-input v-model="propertiesData.name" placeholder="Job name"></el-input>
                         </el-form-item>
                         <el-form-item label="Type">
-                            <el-input v-model="propertiesData.type"></el-input>
+                            <!-- allow-create: gõ giá trị ngoài danh sách được luôn,
+                                 nên không cần mục "Other" -->
+                            <el-select
+                                v-model="propertiesData.type"
+                                class="w-100"
+                                filterable
+                                allow-create
+                                default-first-option
+                                placeholder="Select or type a job type">
+                                <el-option
+                                    v-for="jobType in jobTypeOptions"
+                                    :key="jobType"
+                                    :label="jobType"
+                                    :value="jobType">
+                                </el-option>
+                            </el-select>
                         </el-form-item>
                         <el-form-item label="Creation date">
                             <el-date-picker
@@ -122,6 +137,7 @@
 // assetData có 2 shape tùy loại job: { properties: {...} } (Transformer) hoặc flat {...} -> chuẩn hóa ở computed assetInfo.
 import Attachment from '@/views/Common/Attachment.vue'
 import { TestMethod } from '@/views/Enum/TestMethod'
+import { JOB_TYPES } from '@/config/job-types'
 
 export default {
     name: 'JobOverviewPanel',
@@ -154,7 +170,8 @@ export default {
         return {
             labelWidth: '140px',
             attachmentData: [],
-            testMethod: Object.values(TestMethod)
+            testMethod: Object.values(TestMethod),
+            jobTypeOptions: JOB_TYPES
         }
     },
     watch: {

@@ -36,7 +36,14 @@
                                     :title="item.name"
                                     :data="item.testCondition"
                                     :assetData="assetData"
-                                    :attachment="item.testCondition.attachmentData">
+                                    :attachment="item.testCondition.attachmentData"
+                                    :show-compare.sync="compareOpen[item.testTypeCode + index]"
+                                    :compare-test-code="compareEnabled(item.testTypeCode) ? item.testTypeCode : ''"
+                                    :compare-current-table="item.data.table"
+                                    :compare-columns="compareColumnsOf(item.testTypeCode)"
+                                    compare-asset-kind="Capacitor"
+                                    :compare-asset-mrid="capacitorJobDto.properties.asset_id"
+                                    :compare-exclude-work-mrid="capacitorJobDto.properties.mrid">
                                 </test-information>
                                 <component
                                     :is="item.testTypeCode" 
@@ -44,7 +51,8 @@
                                     :asset="assetData"
                                     :testCondition="item.testCondition"
                                     :testAssessment="item.testAssessment"
-                                    >
+                                    :compare-open="!!compareOpen[item.testTypeCode + index]"
+                                    @toggle-compare="toggleCompare(item.testTypeCode + index)">
                                 </component>
                             </el-tab-pane>
                         </el-tabs>
@@ -61,6 +69,7 @@ import mixin from './mixin'
 import overview from './components/Overview/index.vue'
 import SelectTest from './components/SelectTest'
 import testInformation from '@/views/Common/TestInformation.vue'
+import compareTestMap from '@/config/test-definitions/Capacitor'
 import testingEquipment from './components/TestingEquipment/index.vue'
 
 export default {
@@ -82,6 +91,10 @@ export default {
     mixins: [mixin],
     data() {
         return {
+            // Trạng thái mở/đóng bảng so sánh, tách theo từng tab test.
+            // Phải để ở đây vì nút nằm trong component test còn bảng nằm trong
+            // test-information — hai component anh em, không tự nói chuyện được.
+            compareOpen: {},
             objActiveName: {
                 activeName: null
             },
@@ -93,6 +106,18 @@ export default {
     },
     mounted() { },
     methods: {
+        // ── So sánh với lần test trước ──────────────────────────────────
+        // Bật cho mọi bài test có định nghĩa cột trong test-definitions.
+        compareEnabled(testTypeCode) {
+            return !!compareTestMap[testTypeCode]
+        },
+        compareColumnsOf(testTypeCode) {
+            const definition = compareTestMap[testTypeCode]
+            return (definition && definition.columns) || []
+        },
+        toggleCompare(key) {
+            this.$set(this.compareOpen, key, !this.compareOpen[key])
+        },
         updateAttachmentOverView(attachment) {
             this.attachmentData = attachment
         },

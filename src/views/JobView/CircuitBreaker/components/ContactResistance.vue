@@ -9,6 +9,9 @@
             <div class="test-toolbar-group">
                 <el-button size="mini" @click="openAssessmentSettings()"><i class="fa-solid fa-screwdriver-wrench"></i> Assessment settings</el-button>
                 <el-button size="mini" @click="openConditionIndicatorDialog = true"><i class="fa-solid fa-hammer"></i> Condition indicator settings</el-button>
+                <el-button size="mini" :type="compareOpen ? 'primary' : ''" @click="$emit('toggle-compare')">
+                    <i class="fa-solid fa-scale-balanced"></i> Compare with previous results
+                </el-button>
             </div>
         </div>
 
@@ -29,7 +32,7 @@
                     <tr v-for="(item, index) in testData.table.table1" :key="index">
                         <td>
                             <div style="display: flex; width: 100%;">
-                                <el-input size="mini" v-model="item.phase.value"></el-input>
+                                <el-select size="mini" v-model="item.phase.value" placeholder="Phase"><el-option label="A" value="A"></el-option><el-option label="B" value="B"></el-option><el-option label="C" value="C"></el-option></el-select>
                                 <div
                                     :class="{ colorTableRed: item.phase.value == 'A', colorTableYellow: item.phase.value == 'B', colorTableBlue: item.phase.value == 'C' }">
                                 </div>
@@ -92,7 +95,7 @@
                         <td v-if="index % assetData.circuitBreaker.interruptersPerPhase === 0"
                             :rowspan="assetData.circuitBreaker.interruptersPerPhase">
                             <div style="display: flex; width: 100%;">
-                                <el-input size="mini" v-model="item.phase.value"></el-input>
+                                <el-select size="mini" v-model="item.phase.value" placeholder="Phase"><el-option label="A" value="A"></el-option><el-option label="B" value="B"></el-option><el-option label="C" value="C"></el-option></el-select>
                                 <div
                                     :class="{ colorTableRed: item.phase.value == 'A', colorTableYellow: item.phase.value == 'B', colorTableBlue: item.phase.value == 'C' }">
                                 </div>
@@ -220,7 +223,8 @@ export default {
         asset: {
             type: Object,
             require: true
-        }
+        },
+        compareOpen:    { type: Boolean, default: false }
     },
     beforeMount() {
         const asset = {
