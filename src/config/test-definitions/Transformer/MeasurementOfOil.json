@@ -19,7 +19,7 @@
         {
             "mrid": "ce359094-2214-4fc5-8c29-42a3611a82f4",
             "code": "result",
-            "name": "Result",
+            "name": "Breakdown voltage",
             "type": "analog",
             "unit": "k|V"
         },

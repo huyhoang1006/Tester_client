@@ -35,7 +35,7 @@
       "code": "tan_delta",
       "name": "Tan delta [10⁻³]",
       "type": "analog",
-      "unit": "m|''"
+      "unit": ""
     },
     {
       "mrid": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001",

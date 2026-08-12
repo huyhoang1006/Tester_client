@@ -28,35 +28,35 @@
       "code": "capacitance",
       "name": "Capacitance",
       "type": "analog",
-      "unit": "m|F"
+      "unit": "µ|F"
     },
     {
       "mrid": "57da765a-b970-4272-884e-e2a204af1510",
       "code": "mtd",
-      "name": "MTD",
+      "name": "MTD [10⁻³]",
       "type": "analog",
-      "unit": "m|''"
+      "unit": ""
     },
     {
       "mrid": "e0a8769a-ef8e-4661-838c-1543f90e820f",
       "code": "delta_td_each_step",
       "name": "ΔTD [10⁻³] (each step)",
       "type": "analog",
-      "unit": "m|''"
+      "unit": ""
     },
     {
       "mrid": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
       "code": "tan_delta_dtd",
       "name": "DTD [10⁻³] (0.5 U₀ & 1.5 U₀)",
       "type": "analog",
-      "unit": "m|''"
+      "unit": ""
     },
     {
       "mrid": "528b36f8-83a0-4a9f-9f37-2737025f31c2",
       "code": "tan_delta_tdts",
       "name": "TDTS [10⁻³]",
       "type": "analog",
-      "unit": "m|''"
+      "unit": ""
     },
     {
       "mrid": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001",

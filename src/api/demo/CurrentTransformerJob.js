@@ -1,6 +1,6 @@
 import client from '@/utils/client'
 import { toServerId } from '@/utils/serverId'
-const prefix = 'api/test'
+const prefix = 'api/job'
 
 export const createCurrentTransformerJob = (data, deviceId) => {
     return client.post(`/${prefix}/upload/ct`, data, {

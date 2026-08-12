@@ -130,11 +130,11 @@ export default {
                 }
                 // luôn gán work_id: equipment chọn từ kho (mrid có sẵn) cũng phải link vào job này
                 item.work_id = data.properties.mrid;
-                for (const test_type_id of item.test_type_bushing_id) {
+                for (const work_task_id of (item.work_task_ids || [])) {
                     arr.push({
                         mrid: uuid.newUuid(),
                         testing_equipment_id: item.mrid,
-                        test_type_id: test_type_id
+                        work_task_id: work_task_id
                     });
                 }
             }
@@ -144,7 +144,7 @@ export default {
                 const existed = data.bushingTestingEquipmentTestType.some(
                     old =>
                         old.testing_equipment_id === bushing.testing_equipment_id &&
-                        old.test_type_id === bushing.test_type_id
+                        old.work_task_id === bushing.work_task_id
                 );
                 if (!existed) {
                     data.bushingTestingEquipmentTestType.push(bushing);
@@ -156,7 +156,7 @@ export default {
                 old => arr.some(
                     bushing =>
                         old.testing_equipment_id === bushing.testing_equipment_id &&
-                        old.test_type_id === bushing.test_type_id
+                        old.work_task_id === bushing.work_task_id
                 )
             );
         },

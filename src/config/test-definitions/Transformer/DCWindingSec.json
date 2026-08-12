@@ -39,7 +39,7 @@
         {
             "mrid": "32d5115d-c712-408f-8392-0b1641474cc7",
             "code": "dev_r_ref",
-            "name": "Dev with R ref (%)",
+            "name": "Dev with R ref",
             "type": "analog",
             "unit": "%"
         },

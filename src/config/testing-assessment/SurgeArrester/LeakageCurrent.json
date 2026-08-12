@@ -4,7 +4,7 @@
   "testName": "Leakage current at continuous operating voltage",
   "testStandard": [
     {
-      "mrid": "36116f8b-sa02-4ad9-4b16-8c14-lc01-sa001",
+      "mrid": "590c4701-ce0d-4b35-9530-cfd0c576e89f",
       "code": "customized_leakage_current_surge_arrester",
       "name": "Customized limit",
       "type": "customized",
@@ -21,16 +21,16 @@
         }
       ],
       "assessment_rule": [
-        { "mrid": "rule-sa-lc-pass-0001", "standard_id": "36116f8b-sa02-4ad9-4b16-8c14-lc01-sa001", "result": "Pass", "priority": "" },
-        { "mrid": "rule-sa-lc-fail-0001", "standard_id": "36116f8b-sa02-4ad9-4b16-8c14-lc01-sa001", "result": "Fail", "priority": "" }
+        { "mrid": "65795318-9e6e-4961-95fc-e53d858ec6e9", "standard_id": "590c4701-ce0d-4b35-9530-cfd0c576e89f", "result": "Pass", "priority": "" },
+        { "mrid": "d6c0d8c5-3a27-45eb-80a5-eef8b9de7c9e", "standard_id": "590c4701-ce0d-4b35-9530-cfd0c576e89f", "result": "Fail", "priority": "" }
       ],
       "assessment_group": [
-        { "mrid": "group-sa-lc-pass-0001", "rule_id": "rule-sa-lc-pass-0001", "parent_id": "", "logic": "", "is_default": false },
-        { "mrid": "group-sa-lc-fail-0001", "rule_id": "rule-sa-lc-fail-0001", "parent_id": "", "logic": "", "is_default": true }
+        { "mrid": "dd32f018-9e82-4a83-b655-07f561db9fd9", "rule_id": "65795318-9e6e-4961-95fc-e53d858ec6e9", "parent_id": "", "logic": "", "is_default": false },
+        { "mrid": "cec13c2d-9628-4a5b-842a-92577c86e4cd", "rule_id": "d6c0d8c5-3a27-45eb-80a5-eef8b9de7c9e", "parent_id": "", "logic": "", "is_default": true }
       ],
       "assessment": [
-        { "label": "I meas (mA)", "mrid": "", "group_id": "group-sa-lc-pass-0001", "measurement_id": "3f6a7b8c-9d0e-4f10-9006-000000000014", "operator": "≤", "threshold": "" },
-        { "label": "I meas (mA)", "mrid": "", "group_id": "group-sa-lc-fail-0001", "measurement_id": "3f6a7b8c-9d0e-4f10-9006-000000000014", "operator": ">", "threshold": "" }
+        { "label": "I meas (mA)", "mrid": "", "group_id": "dd32f018-9e82-4a83-b655-07f561db9fd9", "measurement_id": "3f6a7b8c-9d0e-4f10-9006-000000000014", "operator": "≤", "threshold": "" },
+        { "label": "I meas (mA)", "mrid": "", "group_id": "cec13c2d-9628-4a5b-842a-92577c86e4cd", "measurement_id": "3f6a7b8c-9d0e-4f10-9006-000000000014", "operator": ">", "threshold": "" }
       ]
     }
   ]

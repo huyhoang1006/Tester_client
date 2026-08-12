@@ -22,7 +22,7 @@
                 <el-tab-pane>
                     <span slot="label"><i class="fa-solid fa-list-check"></i> Testing equipment</span>
                     <div>
-                        <testing-equipment :data="transformerJobDto.testingEquipmentData" :testTypeListData="testTypeListData"></testing-equipment>
+                        <testing-equipment :data="transformerJobDto.testingEquipmentData" :test-list="transformerJobDto.testList"></testing-equipment>
                     </div>
                 </el-tab-pane>
 

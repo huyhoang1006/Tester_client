@@ -55,7 +55,7 @@ export const jobDtoToEntity = (dto) => {
         const data = new RotatingMachineTestingEquipmentTestType();
         data.mrid = rotatingMachineTestingEquipmentTestType.mrid || null;
         data.testing_equipment_id = rotatingMachineTestingEquipmentTestType.testing_equipment_id || null;
-        data.test_type_id = rotatingMachineTestingEquipmentTestType.test_type_id || null;
+        data.work_task_id = rotatingMachineTestingEquipmentTestType.work_task_id || null;
         entity.rotatingMachineTestingEquipmentTestType.push(data);
     }
 
@@ -240,10 +240,10 @@ export const JobEntityToDto = (entity) => {
         data.serial_number = testingEquipment.serial_number || '';
         data.work_id = testingEquipment.work_id || '';
         data.calibration_date = testingEquipment.calibration_date || '';
-        data.test_type_rotating_machine_id = [];
+        data.work_task_ids = [];
         for(const rotatingMachineTestingEquipmentTestType of entity.rotatingMachineTestingEquipmentTestType) {
             if(rotatingMachineTestingEquipmentTestType.testing_equipment_id === data.mrid) {
-                data.test_type_rotating_machine_id.push(rotatingMachineTestingEquipmentTestType.test_type_id);
+                data.work_task_ids.push(rotatingMachineTestingEquipmentTestType.work_task_id);
             }
         }
         dto.testingEquipmentData.push(data);

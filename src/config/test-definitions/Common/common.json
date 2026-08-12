@@ -62,7 +62,7 @@
       "unit": ""
     },
     {
-      "mrid": "c92fh65g-a311-4827-f012-5357a7b8c92e",
+      "mrid": "b68c6e37-b16b-47ca-873c-f2a9d2d3b015",
       "code": "open_close_time",
       "name": "Open-Close time",
       "type": "analog",
@@ -170,7 +170,7 @@
     {
       "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
       "code": "delta_c_percent",
-      "name": "△C cal",
+      "name": "ΔC cal",
       "type": "analog",
       "unit": "%",
       "measurement_type": "test, assessment"
@@ -220,7 +220,7 @@
       "code": "r60s",
       "name": "R60s",
       "type": "analog",
-      "unit": "m|Ω",
+      "unit": "M|Ω",
       "measurement_type": "test, assessment"
     },
     {
@@ -296,7 +296,7 @@
       "unit": "µ|Ω"
     },
     {
-      "mrid": "b3c4d5e6-f7a8-4901-b2c3-d4e5f6g78901",
+      "mrid": "115c5192-2c96-41de-a418-2fcd968e19ba",
       "code": "unit_no",
       "name": "Unit number",
       "type": "analog"
@@ -310,7 +310,7 @@
     {
       "mrid": "32d5115d-c712-408f-8392-0b1641474cc7",
       "code": "dev_r_ref",
-      "name": "Dev with R ref (%)",
+      "name": "Dev with R ref",
       "type": "analog",
       "unit": "%"
     },

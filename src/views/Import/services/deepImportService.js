@@ -1539,7 +1539,7 @@ export var deepImportService = {
         serial_number:    serials[i]  || '',
         calibration_date: calDates[i] || '',
         work_id:          null,
-        test_type_id:     []
+        work_task_ids:     []
       })
     }
     return result

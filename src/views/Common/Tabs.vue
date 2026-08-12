@@ -186,6 +186,7 @@ import TransformerJob from '@/views/JobView/Transformer/index.vue'
 import BushingJob from '@/views/JobView/Bushing/index.vue'
 import CircuitBreakerJob from '@/views/JobView/CircuitBreaker/index.vue'
 import PowerCableJob from '@/views/JobView/PowerCable/index.vue'
+import { loadServerJobTab } from '@/views/Common/loadServerJobTab'
 import CurrentTransformerJob from '@/views/JobView/CurrentTransformer/index.vue'
 import CapacitorJob from '@/views/JobView/Capacitor/index.vue'
 import ReactorJob from '@/views/JobView/Reactor/index.vue'
@@ -1047,6 +1048,32 @@ export default {
                         this.executeOrQueueLoadData(id, (comp) => comp.loadData(dto));
                     } else {
                         this.$message.error("Failed to load Circuit breaker data");
+                    }
+                } else if (tab.mode === 'job') {
+                    // Nhánh này TỪNG KHÔNG TỒN TẠI. Cây server trước đây dừng ở cấp
+                    // thiết bị nên `mode === 'job'` không bao giờ tới được đây; thêm
+                    // nhánh job vào cây xong thì nháy đúp chạy hết chuỗi if/else mà
+                    // không khớp cái nào, và tab dựng lên trắng tinh — không lỗi,
+                    // không log, không gì để lần.
+                    const jobCtx = await loadServerJobTab(tab)
+                    if (jobCtx) {
+                        // Cất phiên bản LÊN CHÍNH TAB, không nhét vào DTO. Lưu ngược
+                        // lên server phải gửi lại đúng số này; để trong DTO thì phép
+                        // gộp ba chiều coi nó là một trường dữ liệu và sinh xung đột
+                        // giả mỗi lần server tăng phiên bản.
+                        this.$set(tab, '_jobVersion', jobCtx.version)
+
+                        this.executeOrQueueLoadData(id, (comp) => {
+                            comp.loadParameter(
+                                jobCtx.testTypeList,
+                                jobCtx.assetDto,
+                                jobCtx.productAssetModel,
+                                jobCtx.location
+                            );
+                            comp.loadData(jobCtx.jobDto);
+                        });
+                    } else {
+                        this.$message.error("Failed to load job data from server");
                     }
                 }
             } catch (error) {

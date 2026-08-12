@@ -72,7 +72,7 @@ export const jobDtoToEntity = (dto) => {
         const data = new TransformerTestingEquipmentTestType()
         data.mrid = transformerTestingEquipmentTestType.mrid || null
         data.testing_equipment_id = transformerTestingEquipmentTestType.testing_equipment_id || null
-        data.test_type_id = transformerTestingEquipmentTestType.test_type_id || null
+        data.work_task_id = transformerTestingEquipmentTestType.work_task_id || null
         entity.transformerTestingEquipmentTestType.push(data)
     }
 
@@ -262,10 +262,10 @@ export const JobEntityToDto = (entity) => {
         data.serial_number = testingEquipment.serial_number || ''
         data.work_id = testingEquipment.work_id || ''
         data.calibration_date = testingEquipment.calibration_date || ''
-        data.test_type_transformer_id = []
+        data.work_task_ids = []
         for (const transformerTestingEquipmentTestType of entity.transformerTestingEquipmentTestType) {
             if (transformerTestingEquipmentTestType.testing_equipment_id === data.mrid) {
-                data.test_type_transformer_id.push(transformerTestingEquipmentTestType.test_type_id)
+                data.work_task_ids.push(transformerTestingEquipmentTestType.work_task_id)
             }
         }
         dto.testingEquipmentData.push(data)

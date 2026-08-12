@@ -34,16 +34,16 @@ export const insertCircuitBreakerTestingEquipmentTestTypeTransaction = async (da
     return new Promise((resolve, reject) => {
         dbsql.run(
             `INSERT INTO circuit_breaker_testing_equipment_test_type(
-                mrid, testing_equipment_id, test_type_id
+                mrid, testing_equipment_id, work_task_id
             ) VALUES (?, ?, ?)
             ON CONFLICT(mrid) DO UPDATE SET
                 testing_equipment_id = excluded.testing_equipment_id,
-                test_type_id = excluded.test_type_id
+                work_task_id = excluded.work_task_id
             `,
             [
                 data.mrid,
                 data.testing_equipment_id,
-                data.test_type_id
+                data.work_task_id
             ],
             function (err) {
                 if (err) return reject({ success: false, err, message: 'Insert circuitBreakerTestingEquipmentTestType failed' })
@@ -59,11 +59,11 @@ export const updateCircuitBreakerTestingEquipmentTestTypeByIdTransaction = async
         dbsql.run(
             `UPDATE circuit_breaker_testing_equipment_test_type SET
                 testing_equipment_id = ?,
-                test_type_id = ?
+                work_task_id = ?
             WHERE mrid = ?`,
             [
                 data.testing_equipment_id,
-                data.test_type_id,
+                data.work_task_id,
                 mrid
             ],
             function (err) {

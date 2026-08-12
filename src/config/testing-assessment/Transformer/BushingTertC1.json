@@ -1,4 +1,5 @@
 {
+  "testId": "8947ffa6-6abf-49a5-a35a-12f78536218c",
   "testCode": "BushingTertC1",
   "testName": "Bushing DF & CAP - BushingTertC1",
   "testStandard": [
@@ -13,7 +14,7 @@
         {
           "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
           "code": "df_meas",
-          "name": "DF meas (%)",
+          "name": "DF meas",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
@@ -21,7 +22,7 @@
         {
           "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
           "code": "delta_c_percent",
-          "name": "ΔC cal (%)",
+          "name": "ΔC cal",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
@@ -87,7 +88,7 @@
         {
           "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
           "code": "df_meas",
-          "name": "DF meas (%)",
+          "name": "DF meas",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
@@ -95,7 +96,7 @@
         {
           "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
           "code": "delta_c_percent",
-          "name": "ΔC cal (%)",
+          "name": "ΔC cal",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
@@ -161,7 +162,7 @@
         {
           "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
           "code": "df_meas",
-          "name": "DF meas (%)",
+          "name": "DF meas",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
@@ -169,7 +170,7 @@
         {
           "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
           "code": "delta_c_percent",
-          "name": "ΔC cal (%)",
+          "name": "ΔC cal",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
@@ -235,7 +236,7 @@
         {
           "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
           "code": "df_meas",
-          "name": "DF meas (%)",
+          "name": "DF meas",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
@@ -243,7 +244,7 @@
         {
           "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
           "code": "delta_c_percent",
-          "name": "ΔC cal (%)",
+          "name": "ΔC cal",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
@@ -309,7 +310,7 @@
         {
           "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
           "code": "df_meas",
-          "name": "DF meas (%)",
+          "name": "DF meas",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
@@ -317,7 +318,7 @@
         {
           "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
           "code": "delta_c_percent",
-          "name": "ΔC cal (%)",
+          "name": "ΔC cal",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
@@ -383,7 +384,7 @@
         {
           "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
           "code": "df_meas",
-          "name": "DF meas (%)",
+          "name": "DF meas",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
@@ -391,7 +392,7 @@
         {
           "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
           "code": "delta_c_percent",
-          "name": "ΔC cal (%)",
+          "name": "ΔC cal",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
@@ -457,7 +458,7 @@
         {
           "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
           "code": "df_meas",
-          "name": "DF meas (%)",
+          "name": "DF meas",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
@@ -465,7 +466,7 @@
         {
           "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
           "code": "delta_c_percent",
-          "name": "ΔC cal (%)",
+          "name": "ΔC cal",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
@@ -531,7 +532,7 @@
         {
           "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
           "code": "df_meas",
-          "name": "DF meas (%)",
+          "name": "DF meas",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
@@ -539,7 +540,7 @@
         {
           "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
           "code": "delta_c_percent",
-          "name": "ΔC cal (%)",
+          "name": "ΔC cal",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
@@ -605,7 +606,7 @@
         {
           "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
           "code": "df_meas",
-          "name": "DF meas (%)",
+          "name": "DF meas",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
@@ -613,7 +614,7 @@
         {
           "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
           "code": "delta_c_percent",
-          "name": "ΔC cal (%)",
+          "name": "ΔC cal",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
@@ -679,7 +680,7 @@
         {
           "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
           "code": "df_meas",
-          "name": "DF meas (%)",
+          "name": "DF meas",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
@@ -687,7 +688,7 @@
         {
           "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
           "code": "delta_c_percent",
-          "name": "ΔC cal (%)",
+          "name": "ΔC cal",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
@@ -753,7 +754,7 @@
         {
           "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
           "code": "df_meas",
-          "name": "DF meas (%)",
+          "name": "DF meas",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
@@ -761,7 +762,7 @@
         {
           "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
           "code": "delta_c_percent",
-          "name": "ΔC cal (%)",
+          "name": "ΔC cal",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
@@ -827,7 +828,7 @@
         {
           "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
           "code": "df_meas",
-          "name": "DF meas (%)",
+          "name": "DF meas",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
@@ -835,7 +836,7 @@
         {
           "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
           "code": "delta_c_percent",
-          "name": "ΔC cal (%)",
+          "name": "ΔC cal",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
@@ -901,7 +902,7 @@
         {
           "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
           "code": "df_meas",
-          "name": "DF meas (%)",
+          "name": "DF meas",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
@@ -909,7 +910,7 @@
         {
           "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",
           "code": "delta_c_percent",
-          "name": "ΔC cal (%)",
+          "name": "ΔC cal",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"

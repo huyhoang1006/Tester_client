@@ -1,6 +1,6 @@
 {
     "testId": "4cd34382-16cd-493a-ad1c-ed2985d1e977",
-    "testCode": "InducedAcVoltageTest",
+    "testCode": "InducedAcVoltageTests",
     "testName": "Induced AC Voltage Test",
     "columns": [
         {
@@ -10,14 +10,14 @@
             "type": "string"
         },
         {
-            "mrid": "8a44e2f7-19f6-4ac4-b691-69a96231c06e",
+            "mrid": "fc958c79-3d14-41be-aadf-ef85d99047d2",
             "code": "rated_voltage",
             "name": "Rated Voltage",
             "type": "analog",
             "unit": "V"
         },
         {
-            "mrid": "d5ed6cf5-c9d5-4baa-9841-ce2caf11e51a",
+            "mrid": "75603dd5-a2d3-424a-aa0d-4958781561de",
             "code": "lv_terminal",
             "name": "LV Terminal",
             "type": "string"

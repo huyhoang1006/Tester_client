@@ -423,6 +423,7 @@ import {
     saveWorkspaceState,
 } from '@/utils/workspaceRestore'
 import { startLoading } from '@/utils/loading'
+import { saveServerJobTab } from '@/views/Common/saveServerJobTab'
 export default {
     name: 'TreeNavigation',
     components: {
@@ -1276,7 +1277,11 @@ export default {
                 : null
             const previousParent = this.parentOrganization
 
-            if (tab.mode !== 'organisation' && !parentNode) {
+            // Job không cần tìm được node cha trên cây. Nó chỉ dùng `tab.parentId` làm
+            // deviceId trên URL, và giá trị đó luôn có sẵn ngay trên tab. Bắt tìm cho
+            // bằng được sẽ chặn lượt lưu khi nhánh thiết bị đã bị thu lại hoặc cây vừa
+            // nạp lại — lúc đó node cha không còn trong bộ nhớ, dù dữ liệu vẫn đủ.
+            if (tab.mode !== 'organisation' && tab.mode !== 'job' && !parentNode) {
                 this.$message.error('Cannot resolve parent node on server.')
                 return
             }
@@ -1295,6 +1300,28 @@ export default {
                     result = await this.saveBayToServer(component, tab)
                 } else if (tab.mode === 'voltageLevel') {
                     result = await this.saveVoltageLevelToServer(component, tab)
+                } else if (tab.mode === 'job') {
+                    const jobResult = await saveServerJobTab(component, tab)
+
+                    // XUNG ĐỘT PHIÊN BẢN tách riêng khỏi lỗi thường: dữ liệu người
+                    // dùng nhập không sai chỗ nào, chỉ là có người lưu trước. Đổ chung
+                    // vào thông báo lỗi sẽ khiến họ đi tìm lỗi trong bản nhập của mình,
+                    // mà ở đó không có gì để tìm.
+                    if (jobResult.conflict) {
+                        this.$alert(jobResult.message, 'Job changed on server', {
+                            type: 'warning', confirmButtonText: 'OK'
+                        }).catch(() => {})
+                        return
+                    }
+                    if (!jobResult.success) {
+                        this.$message.error(jobResult.message)
+                        return
+                    }
+
+                    // Số mới phải ghi đè ngay, nếu không lần lưu thứ hai trong cùng
+                    // phiên sẽ gửi lại số cũ và ăn 409 dù chẳng ai tranh chấp.
+                    this.$set(tab, '_jobVersion', jobResult.version)
+                    result = jobResult
                 } else {
                     this.$message.warning('Server save is not supported for this node yet.')
                     return

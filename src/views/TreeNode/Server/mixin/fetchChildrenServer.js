@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import * as demoAPI from '@/api/demo'
+import * as jobAPI from '@/api/demo/Job.js'
 export default {
     methods: {
         async fetchChildrenServer(node) {
@@ -182,6 +183,46 @@ export default {
                                 newRows.push(...newRowsAsset)
                             }
                         } catch (error) {
+                            console.log(error)
+                        }
+                    } else if (node.mode == 'asset') {
+                        // JOB là cấp cuối của cây. Trước đây cây server dừng ở thiết bị,
+                        // nên không có cách nào chọn một job trên server để tải về —
+                        // luồng job chỉ đi một chiều lên.
+                        //
+                        // Chỉ lấy phần tóm tắt, không kèm bài test: một thiết bị có thể
+                        // có vài chục job, mà màn hình này chỉ hiện tên và ngày.
+                        try {
+                            const jobs = await jobAPI.getJobsByAsset(node.asset, node.mrid)
+                            console.log('Fetched jobs of asset:', jobs)
+                            if (jobs && jobs.length > 0) {
+                                jobs.forEach((row) => {
+                                    row.id = row.id || row.mrid || ''
+                                    row.mrid = row.mrid || row.id || ''
+                                    row.name = row.name || ''
+                                    row.aliasName = row.name || row.mrid || ''
+                                    row.parentId = node.mrid
+                                    row.mode = 'job'
+                                    // `job` giữ NHÃN LOẠI THIẾT BỊ, không phải loại job.
+                                    // Tầng tải xuống dựa vào đây để chọn đúng mapper —
+                                    // giống hệt cách `asset` được dùng ở cấp trên.
+                                    row.job = node.asset || ''
+                                    row.isLeaf = true
+                                    row.parentName = node.parentName + '/' + node.name
+                                    row.parentArr = [...node.parentArr]
+                                    row.parentArr.push({
+                                        mrid: node.mrid,
+                                        id: node.id,
+                                        parent: node.aliasName || node.name,
+                                        mode: node.mode,
+                                        asset: node.asset || null
+                                    })
+                                })
+                                newRows.push(...jobs)
+                            }
+                        } catch (error) {
+                            // Nuốt lỗi có chủ ý, giống các nhánh trên: server chưa bật
+                            // job-service thì cây vẫn phải mở được tới thiết bị.
                             console.log(error)
                         }
                     }

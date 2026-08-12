@@ -165,8 +165,7 @@ export const getTestingEquipmentByWorkId = async (workId) => {
 }
 
 // Usage history is inferred from job/test links instead of a separate table.
-// Some rows store test_type_id as work_task.mrid, while the current schema/UI
-// store it as procedure.mrid. Support both shapes across all equipment link tables.
+// work_task_id luôn trỏ work_task.mrid (từ khi equipment gắn theo test instance).
 const TE_TEST_TYPE_TABLES = [
     'transformer_testing_equipment_test_type',
     'voltage_transformer_testing_equipment_test_type',
@@ -187,17 +186,16 @@ export const getTestingEquipmentUsageHistory = async (teMrid) => {
                ow.execution_date            AS date,
                io_w.name                    AS job_name,
                COALESCE(io_a.name, a.serial_number) AS asset_name,
-               COALESCE(io_wt.name, io_p.name) AS test_type,
+               io_wt.name                   AS test_type,
                ow.tested_by                 AS tested_by
         FROM ${t} l
-        LEFT JOIN work_task wt ON wt.mrid = l.test_type_id
+        LEFT JOIN work_task wt ON wt.mrid = l.work_task_id
         LEFT JOIN testing_equipment te ON te.mrid = l.testing_equipment_id
         JOIN old_work ow ON ow.mrid = COALESCE(wt.work, te.work_id)
         LEFT JOIN identified_object io_w ON io_w.mrid = ow.mrid
         LEFT JOIN identified_object io_a ON io_a.mrid = ow.asset_id
         LEFT JOIN asset a ON a.mrid = ow.asset_id
         LEFT JOIN identified_object io_wt ON io_wt.mrid = wt.mrid
-        LEFT JOIN identified_object io_p ON io_p.mrid = l.test_type_id
         WHERE l.testing_equipment_id = ?`).join('\n        UNION\n')
 
     return new Promise((resolve, reject) => {

@@ -30,13 +30,13 @@
       ],
       "assessment_rule": [
         {
-          "mrid": "rule-pass-001",
+          "mrid": "5a18b84e-539f-4b8a-988d-5ee2a3a9df0c",
           "standard_id": "36116f8b-4ad9-4b16-8c14-5391d1ccc091",
           "result": "Pass",
           "priority": ""
         },
         {
-          "mrid": "rule-fail-001",
+          "mrid": "b58f0f4f-0df3-4b1c-858e-500cbdbbce61",
           "standard_id": "36116f8b-4ad9-4b16-8c14-5391d1ccc091",
           "result": "Fail",
           "priority": ""
@@ -44,29 +44,29 @@
       ],
       "assessment_group": [
         {
-          "mrid": "group-pass-root-1",
-          "rule_id": "rule-pass-001",
+          "mrid": "ad61d4f8-1a6c-44b0-b219-e8a9741ceaa4",
+          "rule_id": "5a18b84e-539f-4b8a-988d-5ee2a3a9df0c",
           "parent_id": "",
           "logic": "AND",
           "is_default": false
         },
         {
-          "mrid": "group-pass-root-2",
+          "mrid": "73ef3843-8a92-41b4-9510-72a8fa79bdfe",
           "rule_id": "",
-          "parent_id": "group-pass-root-1",
+          "parent_id": "ad61d4f8-1a6c-44b0-b219-e8a9741ceaa4",
           "logic": "AND",
           "is_default": false
         },
         {
-          "mrid": "group-pass-root-3",
+          "mrid": "74c816d3-e1c2-4c16-a627-6ff9d35ccc41",
           "rule_id": "",
-          "parent_id": "group-pass-root-1",
+          "parent_id": "ad61d4f8-1a6c-44b0-b219-e8a9741ceaa4",
           "logic": "AND",
           "is_default": false
         },
         {
-          "mrid": "group-fail-default",
-          "rule_id": "rule-fail-001",
+          "mrid": "1f5f41fd-c0fc-490e-a7e4-d2743916136f",
+          "rule_id": "b58f0f4f-0df3-4b1c-858e-500cbdbbce61",
           "parent_id": "",
           "logic": "",
           "is_default": true
@@ -75,7 +75,7 @@
       "assessment": [
         {
           "mrid": "",
-          "group_id": "group-pass-root-2",
+          "group_id": "73ef3843-8a92-41b4-9510-72a8fa79bdfe",
           "measurement_id": "c15b48fc-d387-44c1-9b00-4c92092b5fdf",
           "operator": "≥",
           "threshold": "",
@@ -83,7 +83,7 @@
         },
         {
           "mrid": "",
-          "group_id": "group-pass-root-2",
+          "group_id": "73ef3843-8a92-41b4-9510-72a8fa79bdfe",
           "measurement_id": "c15b48fc-d387-44c1-9b00-4c92092b5fdf",
           "operator": "≤",
           "threshold": "",
@@ -91,7 +91,7 @@
         },
         {
           "mrid": "",
-          "group_id": "group-pass-root-3",
+          "group_id": "74c816d3-e1c2-4c16-a627-6ff9d35ccc41",
           "measurement_id": "9924d58c-26a7-4642-aebb-aabc2006029f",
           "operator": "≥",
           "threshold": "",
@@ -99,7 +99,7 @@
         },
         {
           "mrid": "",
-          "group_id": "group-pass-root-3",
+          "group_id": "74c816d3-e1c2-4c16-a627-6ff9d35ccc41",
           "measurement_id": "9924d58c-26a7-4642-aebb-aabc2006029f",
           "operator": "≤",
           "threshold": "",

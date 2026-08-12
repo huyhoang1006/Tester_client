@@ -361,7 +361,7 @@ export default {
 
                 // JOB: remap nhất quán TẤT CẢ id nội bộ. Sinh id mới cho mọi 'mrid' trong dto,
                 // rồi thay MỌI chuỗi tham chiếu tới id cũ (work_task_id, testing_equipment_id, work_id...)
-                // bằng id mới. Ref NGOÀI (asset_id, procedure_id, test_type_id...) không nằm trong map -> giữ nguyên.
+                // bằng id mới. Ref NGOÀI (asset_id, procedure_id, measurement_id...) không nằm trong map -> giữ nguyên.
                 // -> copy độc lập hoàn toàn, không re-point/ghi đè dữ liệu test của job GỐC, và không lệch FK nội bộ.
                 if (node.mode === 'job') {
                     const idMap = {}
@@ -380,6 +380,11 @@ export default {
                         Object.keys(obj).forEach((k) => {
                             const v = obj[k]
                             if (typeof v === 'string' && idMap[v]) obj[k] = idMap[v]
+                            // Mảng CHUỖI id (vd work_task_ids): remap(phần tử) trả về ngay
+                            // vì phần tử không phải object → phải xử lý tại đây.
+                            else if (Array.isArray(v) && v.some((x) => typeof x === 'string' && idMap[x])) {
+                                obj[k] = v.map((x) => (typeof x === 'string' && idMap[x]) ? idMap[x] : x)
+                            }
                             else if (v && typeof v === 'object') remap(v, depth + 1)
                         })
                     }

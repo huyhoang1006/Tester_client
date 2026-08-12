@@ -80,11 +80,21 @@
                             multiple
                             collapse-tags
                             size="mini"
-                            v-model="item[testTypeField]"
-                            placeholder="Select test type"
+                            v-model="item.work_task_ids"
+                            placeholder="Select test"
                             class="w-100">
-                            <el-option v-for="test in testTypeListData" :key="test.mrid" :label="test.name" :value="test.mrid"></el-option>
+                            <el-option
+                                v-for="t in testList"
+                                :key="t.mrid"
+                                :value="t.mrid"
+                                :label="t.name || t.testTypeName">
+                                <div class="eq-option">
+                                    <span class="eq-option-name">{{ t.name || t.testTypeName }}</span>
+                                    <span class="eq-option-sub">{{ t.testTypeName }}</span>
+                                </div>
+                            </el-option>
                         </el-select>
+                        <div v-if="testList.length === 0" class="te-hint">Chưa chọn bài test nào ở tab Test settings</div>
                     </td>
                     <td class="col-act">
                         <el-tooltip content="Add row below" placement="top">
@@ -113,16 +123,14 @@ export default {
             required: true,
             default: () => []
         },
-        testTypeListData: {
+        // Danh sách test instance ĐÃ CHỌN trong job (jobDto.testList), KHÔNG phải
+        // danh sách loại test. Thiết bị gắn theo từng bài cụ thể (work_task) nên
+        // job có 2 bài cùng loại vẫn phân biệt được thiết bị nào đo bài nào.
+        // Giá trị lưu vào item.work_task_ids là mảng work_task.mrid.
+        testList: {
             type: Array,
             required: true,
             default: () => []
-        },
-        // tên field chứa danh sách test type id, khác nhau theo loại thiết bị
-        // vd: test_type_transformer_id, test_type_circuit_breaker_id...
-        testTypeField: {
-            type: String,
-            required: true
         }
     },
     data() {
@@ -192,7 +200,7 @@ export default {
                 calibration_date: '',
                 work_id: ''
             }
-            row[this.testTypeField] = []
+            row.work_task_ids = []
             return row
         },
         addRow(index) {

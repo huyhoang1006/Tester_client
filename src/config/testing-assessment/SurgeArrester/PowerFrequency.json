@@ -4,7 +4,7 @@
   "testName": "Power frequency voltage at reference current",
   "testStandard": [
     {
-      "mrid": "36116f8b-sa03-4ad9-4b16-8c14-pf01-sa001",
+      "mrid": "09215416-cc8d-4468-ad4c-f48104953e4f",
       "code": "customized_power_frequency_surge_arrester",
       "name": "Customized limit",
       "type": "customized",
@@ -21,16 +21,16 @@
         }
       ],
       "assessment_rule": [
-        { "mrid": "rule-sa-pf-pass-0001", "standard_id": "36116f8b-sa03-4ad9-4b16-8c14-pf01-sa001", "result": "Pass", "priority": "" },
-        { "mrid": "rule-sa-pf-fail-0001", "standard_id": "36116f8b-sa03-4ad9-4b16-8c14-pf01-sa001", "result": "Fail", "priority": "" }
+        { "mrid": "53a74cc2-aef9-4222-b25d-cc224776b48a", "standard_id": "09215416-cc8d-4468-ad4c-f48104953e4f", "result": "Pass", "priority": "" },
+        { "mrid": "12ba3e77-6be8-4cfc-a175-107b1c967b41", "standard_id": "09215416-cc8d-4468-ad4c-f48104953e4f", "result": "Fail", "priority": "" }
       ],
       "assessment_group": [
-        { "mrid": "group-sa-pf-pass-root", "rule_id": "rule-sa-pf-pass-0001", "parent_id": "", "logic": "AND", "is_default": false },
-        { "mrid": "group-sa-pf-fail-root", "rule_id": "rule-sa-pf-fail-0001", "parent_id": "", "logic": "", "is_default": true }
+        { "mrid": "5378e166-ff2d-434d-909f-763fc91d3277", "rule_id": "53a74cc2-aef9-4222-b25d-cc224776b48a", "parent_id": "", "logic": "AND", "is_default": false },
+        { "mrid": "a0fff9ec-c3cb-41ad-995e-be44477b95eb", "rule_id": "12ba3e77-6be8-4cfc-a175-107b1c967b41", "parent_id": "", "logic": "", "is_default": true }
       ],
       "assessment": [
-        { "label": "V meas min (kV)", "mrid": "", "group_id": "group-sa-pf-pass-root", "measurement_id": "1d4e5f6a-7b8c-4d9e-9004-000000000012", "operator": "≥", "threshold": "" },
-        { "label": "V meas max (kV)", "mrid": "", "group_id": "group-sa-pf-pass-root", "measurement_id": "1d4e5f6a-7b8c-4d9e-9004-000000000012", "operator": "≤", "threshold": "" }
+        { "label": "V meas min (kV)", "mrid": "", "group_id": "5378e166-ff2d-434d-909f-763fc91d3277", "measurement_id": "1d4e5f6a-7b8c-4d9e-9004-000000000012", "operator": "≥", "threshold": "" },
+        { "label": "V meas max (kV)", "mrid": "", "group_id": "5378e166-ff2d-434d-909f-763fc91d3277", "measurement_id": "1d4e5f6a-7b8c-4d9e-9004-000000000012", "operator": "≤", "threshold": "" }
       ]
     }
   ]

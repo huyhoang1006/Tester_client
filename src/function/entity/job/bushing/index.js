@@ -102,13 +102,6 @@ export const insertBushingJobEntity = async (old_entity,entity) => {
             const toDeleteSet = old_entity.bushingTestingEquipmentTestType.filter(v => v.mrid && !newIdsSet.includes(v.mrid));
             const toUpdateSet = entity.bushingTestingEquipmentTestType.filter(v => v.mrid && oldIdsSet.includes(v.mrid));
 
-            for (const equipmentTestType of toAddSet) {
-                await insertBushingTestingEquipmentTestTypeTransaction(equipmentTestType, db);
-            }
-
-            for (const equipmentTestType of toUpdateSet) {
-                await insertBushingTestingEquipmentTestTypeTransaction(equipmentTestType, db);
-            }
 
             //customized standard
             const newCustomizedIds = entity.standardCustomized.map(v => v.mrid).filter(id => id); // bỏ null/empty
@@ -138,6 +131,16 @@ export const insertBushingJobEntity = async (old_entity,entity) => {
 
             for (const workTask of toUpdateWorkTask) {
                 await insertWorkTaskTransaction(workTask, db);
+            }
+
+
+            // equipmentTestType.work_task_id -> work_task.mrid nên PHẢI insert sau workTask
+            for (const equipmentTestType of toAddSet) {
+                await insertBushingTestingEquipmentTestTypeTransaction(equipmentTestType, db);
+            }
+
+            for (const equipmentTestType of toUpdateSet) {
+                await insertBushingTestingEquipmentTestTypeTransaction(equipmentTestType, db);
             }
 
             //attachemt
@@ -292,7 +295,7 @@ export const insertBushingJobEntity = async (old_entity,entity) => {
                 await deleteTestDataSetByIdTransaction(testData.mrid, db);
             }
 
-            // ── 3. Equipment (equipTestType.test_type_id có thể ref workTask → xóa trước)
+            // ── 3. Equipment (equipTestType.work_task_id có thể ref workTask → xóa trước)
             for (const equipmentTestType of toDeleteSet) {
                 await deleteBushingTestingEquipmentTestTypeByIdTransaction(equipmentTestType.mrid, db);
             }

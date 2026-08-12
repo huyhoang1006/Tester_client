@@ -1,4 +1,5 @@
 {
+  "testId": "6f418b8c-0217-4f7b-ab4d-2ab500691e3e",
   "testCode": "ShortCircuitImpedancePrim",
   "testName": "Short circuit impedance - rim",
   "testStandard": [
@@ -13,7 +14,7 @@
         {
           "mrid": "68ebea17-7af1-4438-87bf-cf7bda61e691",
           "code": "uk_dev",
-          "name": "Uk dev (%)",
+          "name": "Uk dev",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
@@ -71,7 +72,7 @@
         {
           "mrid": "68ebea17-7af1-4438-87bf-cf7bda61e691",
           "code": "uk_dev",
-          "name": "Uk dev (%)",
+          "name": "Uk dev",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
@@ -129,7 +130,7 @@
         {
           "mrid": "68ebea17-7af1-4438-87bf-cf7bda61e691",
           "code": "uk_dev",
-          "name": "Uk dev (%)",
+          "name": "Uk dev",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"

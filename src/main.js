@@ -13,6 +13,7 @@ import client from '@/utils/client'
 import uuid from '@/utils/uuid'
 import {LoadingPlugin} from 'vue-loading-overlay';
 import CustomInput from '@/views/Common/CustomInput.vue'
+import AssessmentResultLabel from '@/views/JobView/Common/AssessmentResultLabel.vue'
 import radioClearable from '@/directives/radioClearable'
 
 
@@ -34,6 +35,10 @@ if (ElementUI.Select && ElementUI.Select.props) {
 
 Vue.use(ElementUI, { locale })
 Vue.component('ElInput', CustomInput)
+
+// Nhãn kết luận trong bảng Assessment settings — dùng ở 43 component test.
+// Đăng ký toàn cục để khỏi phải import lặp ở từng file.
+Vue.component('AssessmentResultLabel', AssessmentResultLabel)
 
 // Bấm lại radio đang chọn để bỏ chọn (dùng ở form nhập liệu AssetView/JobView)
 Vue.directive('radio-clearable', radioClearable)

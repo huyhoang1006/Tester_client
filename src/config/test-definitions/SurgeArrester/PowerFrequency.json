@@ -10,7 +10,7 @@
       "type": "string"
     },
     {
-      "mrid": "b3c4d5e6-f7a8-4901-b2c3-d4e5f6g78901",
+      "mrid": "115c5192-2c96-41de-a418-2fcd968e19ba",
       "code": "unit_no",
       "name": "Unit number",
       "type": "analog"
@@ -25,7 +25,7 @@
     {
       "mrid": "1d4e5f6a-7b8c-4d9e-9004-000000000012",
       "code": "v_meas",
-      "name": "V measurement",
+      "name": "V meas",
       "type": "analog",
       "unit": "k|V"
     },

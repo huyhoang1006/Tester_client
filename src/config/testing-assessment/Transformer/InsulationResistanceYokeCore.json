@@ -1,4 +1,5 @@
 {
+  "testId": "7b05583f-530e-4547-8668-93961dca99d6",
   "testCode": "InsulationResistanceYokeCore",
   "testName": "Insulation resistance of yoke and core",
   "testStandard": [
@@ -15,7 +16,7 @@
           "code": "r60s",
           "name": "R60s",
           "type": "analog",
-          "unit": "m|Ω",
+          "unit": "M|Ω",
           "measurement_type": "test, assessment"
         }
       ],
@@ -73,7 +74,7 @@
           "code": "r60s",
           "name": "R60s",
           "type": "analog",
-          "unit": "m|Ω",
+          "unit": "M|Ω",
           "measurement_type": "test, assessment"
         }
       ],
@@ -131,7 +132,7 @@
           "code": "r60s",
           "name": "R60s",
           "type": "analog",
-          "unit": "m|Ω",
+          "unit": "M|Ω",
           "measurement_type": "test, assessment"
         }
       ],

@@ -37,7 +37,7 @@ const discreteToValue = (measurementId, value) => {
 // Lược bỏ (tổ chức nội bộ client, KHÔNG gửi):
 //   - procedureAsset            : ánh xạ test↔asset; server đã có procedure (seed config)
 //   - voltageTransformerTestingEquipmentTestType : bảng nối thiết bị↔test;
-//                                 server tự nối từ testingEquipmentData[].testTypeIds
+//                                 server tự nối từ testingEquipmentData[].workTaskIds
 //   - listHealth, *_score, weighting_factor : health index client tự tính
 //
 // Gửi lên:
@@ -64,7 +64,8 @@ const mapCell = (cell) => {
     else if (cell.type === 'discrete') value = discreteToValue(cell.measurement_id, cell.value)  // chữ → số
     else                                value = cell.value ?? null  // string
     return {
-        // KHÔNG gửi mrid cell — id PK độc lập, server tự sinh khi lưu
+        // GỬI mrid cell — client làm chủ định danh, server diff theo mrid
+        mrid:          cell.mrid || null,
         type:          cell.type || null,            // analog | string | discrete
         value,
         unit:          joinUnit(cell.unit),
@@ -100,7 +101,8 @@ const mapDataTable = (data) => {
         const rows = tables[tableName]
         if (!Array.isArray(rows)) continue   // phòng cấu trúc lạ
         out[tableName] = rows.map(row => {
-            const mapped = {}   // KHÔNG gửi mrid row — server tự sinh
+            // GỬI mrid row (procedure_dataset) — server diff theo mrid
+            const mapped = { mrid: row.mrid || null }
             for (const fieldKey of Object.keys(row)) {
                 if (fieldKey === 'mrid') continue
                 const cell = row[fieldKey]
@@ -149,7 +151,8 @@ const flattenTree = (tree, standardId) => {
                 measurement_id: cond.measurement_id || '',
                 operator:       cond.operator || '',
                 threshold:      cond.threshold ?? '',
-                label:          cond.label || '',
+                // KHÔNG gửi label: schema server không có cột này. Nhãn hiển thị
+                // được đắp lại từ config khi tải job về, khớp theo measurement_id.
             })
         }
         for (const child of (node.children || [])) walk(child)
@@ -249,14 +252,17 @@ export const mapDtoToServer = (dto) => {
         },
 
         testList: (dto.testList || []).map(t => ({
-            // KHÔNG gửi mrid work_task — server tự sinh
+            // GỬI mrid work_task — server diff theo mrid
+            mrid:        t.mrid || null,
+            name:        t.name || null,        // tên instance user sửa được, vd "Insulation resistance (1)"
             testTypeId:  t.testTypeId || null,    // = procedure.mrid (khớp config seed) — GIỮ
             testTypeCode:t.testTypeCode || null,
             testTypeName:t.testTypeName || null,
             createdOn:   t.created_on || null,
 
             testCondition: t.testCondition ? {
-                // KHÔNG gửi mrid condition — server tự sinh
+                // GỬI mrid condition (procedure_dataset type=condition)
+                mrid:      t.testCondition.mrid || null,
                 comment:   t.testCondition.comment || null,
                 condition: mapCondition(t.testCondition.condition),
                 // TODO attachment: hiện BỎ QUA (chưa có API upload file).
@@ -270,12 +276,13 @@ export const mapDtoToServer = (dto) => {
         })),
 
         testingEquipmentList: (dto.testingEquipmentData || []).map(e => ({
-            // KHÔNG gửi mrid equipment — server tự sinh
+            // GỬI mrid equipment — server chỉ link vào work_testing_equipment, không tạo mới
+            mrid:            e.mrid || null,
             model:           e.model || null,
             serialNumber:    e.serial_number || null,
             calibrationDate: e.calibration_date || null,
-            // mảng testTypeId thiết bị này dùng để đo (= procedure.mrid, GIỮ để server nối)
-            testTypeIds:     e.test_type_disconnector_id || [],
+            // mảng work_task mrid mà thiết bị này được dùng để đo
+            workTaskIds:     e.work_task_ids || [],
         })),
 
         // attachment job-level: hiện chỉ gửi id tham chiếu.
@@ -377,8 +384,13 @@ export const mapServerToDto = (server) => {
             serial_number:    e.serial_number || e.serialNumber || null,
             calibration_date: e.calibration_date || e.calibrationDate || null,
             work_id:          e.work_id || null,
+            work_task_ids:    e.work_task_ids || e.workTaskIds || [],
         })),
-        disconnectorTestingEquipmentTestType: server.disconnectorTestingEquipmentTestType || [],
+        // Server không gửi bảng nối riêng — dựng lại từ testingEquipmentList[].workTaskIds
+        disconnectorTestingEquipmentTestType: (server.testingEquipmentData || server.testingEquipmentList || [])
+            .flatMap(e => (e.work_task_ids || e.workTaskIds || []).map(wid => ({
+                mrid: null, testing_equipment_id: e.mrid || null, work_task_id: wid
+            }))),
         procedureAsset: server.procedureAsset || [],
         attachmentId:   server.attachmentId || null,
         attachment:     server.attachment || null,

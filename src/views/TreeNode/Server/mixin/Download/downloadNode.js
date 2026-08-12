@@ -1,5 +1,6 @@
 /* eslint-disable */
 import { executeDownload } from './index.js'
+import { toLocalMrid } from '@/utils/serverId'
 
 export default {
     methods: {
@@ -75,10 +76,34 @@ export default {
             await this.writeSyncLog('DOWNLOAD', node, !captured, captured)
         },
 
+        /**
+         * mrid của node cha, ở DẠNG LOCAL (có hậu tố loại).
+         *
+         * Node truyền vào đây đến từ CÂY SERVER, nơi `parentId` là id server trần
+         * ('12'). Mọi thứ hàm này phục vụ thì lại tra ở phía LOCAL — cây client và DB
+         * SQLite — nơi mọi id đều mang hậu tố ('12@sub'). So thẳng hai dạng đó với
+         * nhau là không bao giờ khớp.
+         *
+         * Triệu chứng: bấm "Download only node" trên bất cứ thứ gì dưới trạm đều bị
+         * chặn bằng "Must download parent node first", dù trạm cha đã nằm sẵn ở máy.
+         *
+         * Trước đây tổ chức vô tình thoát nạn, vì mrid tổ chức bị ghi TRẦN do lỗi ở
+         * `Download/organisation.js` — trần so với trần thì khớp. Sửa lỗi đó xong là
+         * trạm cũng dính theo, nên hai chỗ phải đi cùng nhau.
+         *
+         * `toLocalMrid` là thao tác idempotent: giá trị đã có hậu tố thì giữ nguyên.
+         *
+         * @param {object} node node trên cây server
+         * @returns {string|null} mrid cha dạng local, null nếu node không có cha
+         */
         getDownloadParentId(node) {
             const parentArr = Array.isArray(node.parentArr) ? node.parentArr : []
             const lastParent = parentArr.length ? parentArr[parentArr.length - 1] : null
-            return node.parentId || lastParent?.mrid || lastParent?.id || null
+            const rawParentId = node.parentId || lastParent?.mrid || lastParent?.id || null
+            if (!rawParentId) return null
+            // Hậu tố suy từ META của CHA (`lastParent.mode` / `.asset`), không phải của
+            // node hiện tại — cùng một id nhưng khác loại thì ra hai hậu tố khác nhau.
+            return lastParent ? toLocalMrid(rawParentId, lastParent) : rawParentId
         },
 
         getDownloadParentNode(node) {
@@ -111,7 +136,11 @@ export default {
         async hasLocalNodeForDownload(node) {
             if (!node) return false
 
-            const mrid = node.mrid || node.id
+            // Cùng lý do với `getDownloadParentId`: id vào từ cây server là dạng trần,
+            // còn DB local lưu dạng có hậu tố. Không đổi thì hàm này luôn trả về false,
+            // và hộp thoại "đã tồn tại, ghi đè?" KHÔNG BAO GIỜ hiện — bản ở máy bị ghi
+            // đè lặng lẽ, kể cả khi người dùng vừa sửa dở.
+            const mrid = toLocalMrid(node.mrid || node.id, node)
             if (!mrid) return false
 
             try {
@@ -131,6 +160,8 @@ export default {
                     result = await window.electronAPI.getBayEntityByMrid(mrid)
                 } else if (node.mode === 'asset') {
                     result = await this.getLocalAssetForDownload(node, mrid)
+                } else if (node.mode === 'job') {
+                    result = await this.getLocalJobForDownload(node, mrid)
                 }
 
                 return Boolean(result && result.success && result.data)
@@ -175,6 +206,39 @@ export default {
             }
             if (node.asset === 'Rotating machine') {
                 return window.electronAPI.getRotatingMachineEntityByMrid(mrid, psrId)
+            }
+
+            return null
+        },
+
+        /**
+         * Job này đã có ở máy chưa.
+         *
+         * Chỉ phục vụ hộp thoại "đã tồn tại, ghi đè?" ở `handleDownloadOnlyNode`.
+         * Chừng nào chưa có bước gộp thì đó là chỗ DUY NHẤT người dùng được hỏi
+         * trước khi bản ở máy bị bản trên server ghi đè — thiếu nhánh này thì hộp
+         * thoại không bao giờ hiện và công sửa ở máy biến mất không một lời cảnh báo.
+         *
+         * `node.job` giữ nhãn loại THIẾT BỊ, giống `node.asset` ở cấp trên.
+         */
+        async getLocalJobForDownload(node, mrid) {
+            if (node.job === 'Transformer') {
+                return window.electronAPI.getTransformerJobByMrid(mrid)
+            }
+            if (node.job === 'Voltage transformer') {
+                return window.electronAPI.getVoltageTransformerJobByMrid(mrid)
+            }
+            if (node.job === 'Current transformer') {
+                return window.electronAPI.getCurrentTransformerJobByMrid(mrid)
+            }
+            if (node.job === 'Circuit breaker') {
+                return window.electronAPI.getCircuitBreakerJobByMrid(mrid)
+            }
+            if (node.job === 'Disconnector') {
+                return window.electronAPI.getDisconnectorJobByMrid(mrid)
+            }
+            if (node.job === 'Surge arrester') {
+                return window.electronAPI.getSurgeArresterJobByMrid(mrid)
             }
 
             return null

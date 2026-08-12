@@ -120,11 +120,11 @@ export default {
                 }
                 // luôn gán work_id: equipment chọn từ kho (mrid có sẵn) cũng phải link vào job này
                 item.work_id = data.properties.mrid
-                for (const test_type_id of item.test_type_circuit_breaker_id) {
+                for (const work_task_id of (item.work_task_ids || [])) {
                     arr.push({
                         mrid: uuid.newUuid(),
                         testing_equipment_id: item.mrid,
-                        test_type_id: test_type_id
+                        work_task_id: work_task_id
                     })
                 }
             }
@@ -132,7 +132,7 @@ export default {
             // Thêm các phần tử mới vào data.circuitBreakerTestingEquipmentTestType nếu chưa có
             for (const current of arr) {
                 const existed = data.circuitBreakerTestingEquipmentTestType.some(
-                    (old) => old.testing_equipment_id === current.testing_equipment_id && old.test_type_id === current.test_type_id
+                    (old) => old.testing_equipment_id === current.testing_equipment_id && old.work_task_id === current.work_task_id
                 )
                 if (!existed) {
                     data.circuitBreakerTestingEquipmentTestType.push(current)
@@ -141,7 +141,7 @@ export default {
 
             // Xóa các phần tử quá khứ không còn trong hiện tại
             data.circuitBreakerTestingEquipmentTestType = data.circuitBreakerTestingEquipmentTestType.filter((old) =>
-                arr.some((current) => old.testing_equipment_id === current.testing_equipment_id && old.test_type_id === current.test_type_id)
+                arr.some((current) => old.testing_equipment_id === current.testing_equipment_id && old.work_task_id === current.work_task_id)
             )
         },
 

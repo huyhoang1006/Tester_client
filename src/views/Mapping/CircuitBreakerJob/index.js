@@ -91,7 +91,7 @@ export const jobDtoToEntity = (dto) => {
         const data = new CircuitBreakerTestingEquipmentTestType()
         data.mrid = circuitBreakerTestingEquipmentTestType.mrid || null
         data.testing_equipment_id = circuitBreakerTestingEquipmentTestType.testing_equipment_id || null
-        data.test_type_id = circuitBreakerTestingEquipmentTestType.test_type_id || null
+        data.work_task_id = circuitBreakerTestingEquipmentTestType.work_task_id || null
         entity.circuitBreakerTestingEquipmentTestType.push(data)
     }
 
@@ -281,10 +281,10 @@ export const JobEntityToDto = (entity) => {
         data.serial_number = testingEquipment.serial_number || ''
         data.work_id = testingEquipment.work_id || ''
         data.calibration_date = testingEquipment.calibration_date || ''
-        data.test_type_circuit_breaker_id = []
+        data.work_task_ids = []
         for (const circuitBreakerTestingEquipmentTestType of entity.circuitBreakerTestingEquipmentTestType) {
             if (circuitBreakerTestingEquipmentTestType.testing_equipment_id === data.mrid) {
-                data.test_type_circuit_breaker_id.push(circuitBreakerTestingEquipmentTestType.test_type_id)
+                data.work_task_ids.push(circuitBreakerTestingEquipmentTestType.work_task_id)
             }
         }
         dto.testingEquipmentData.push(data)

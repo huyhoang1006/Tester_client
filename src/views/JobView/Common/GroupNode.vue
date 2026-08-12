@@ -32,8 +32,7 @@
     <!-- RESULT -->
     <template v-else>
       <div v-if="node.result">
-        <span v-if="node.result === 'Pass'" class="pass">✔ Pass</span>
-        <span v-else class="fail">✖ Fail</span>
+        <assessment-result-label :result="node.result" />
       </div>
       <div v-for="(child, i) in node.children || []" :key="'r' + i">
         <GroupNode :node="child" mode="result" />

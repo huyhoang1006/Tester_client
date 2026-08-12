@@ -406,9 +406,9 @@ CREATE TABLE IF NOT EXISTS "bushing_info" (
 CREATE TABLE IF NOT EXISTS "bushing_testing_equipment_test_type" (
 	"mrid"	TEXT NOT NULL,
 	"testing_equipment_id"	TEXT,
-	"test_type_id"	TEXT,
+	"work_task_id"	TEXT,
 	PRIMARY KEY("mrid"),
-	FOREIGN KEY("test_type_id") REFERENCES "procedure"("mrid"),
+	FOREIGN KEY("work_task_id") REFERENCES "work_task"("mrid") ON DELETE CASCADE,
 	FOREIGN KEY("testing_equipment_id") REFERENCES "testing_equipment"("mrid") ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS "cable_info" (
@@ -487,9 +487,9 @@ CREATE TABLE IF NOT EXISTS "capacitor_test_type" (
 CREATE TABLE IF NOT EXISTS "capacitor_testing_equipment_test_type" (
 	"mrid"	TEXT NOT NULL,
 	"testing_equipment_id"	TEXT,
-	"test_type_id"	TEXT,
+	"work_task_id"	TEXT,
 	PRIMARY KEY("mrid"),
-	FOREIGN KEY("test_type_id") REFERENCES "procedure"("mrid"),
+	FOREIGN KEY("work_task_id") REFERENCES "work_task"("mrid") ON DELETE CASCADE,
 	FOREIGN KEY("testing_equipment_id") REFERENCES "testing_equipment"("mrid") ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS "cigre_standard" (
@@ -502,9 +502,9 @@ CREATE TABLE IF NOT EXISTS "cigre_standard" (
 CREATE TABLE IF NOT EXISTS "circuit_breaker_testing_equipment_test_type" (
 	"mrid"	TEXT NOT NULL,
 	"testing_equipment_id"	TEXT,
-	"test_type_id"	TEXT,
+	"work_task_id"	TEXT,
 	PRIMARY KEY("mrid"),
-	FOREIGN KEY("test_type_id") REFERENCES "procedure"("mrid"),
+	FOREIGN KEY("work_task_id") REFERENCES "work_task"("mrid") ON DELETE CASCADE,
 	FOREIGN KEY("testing_equipment_id") REFERENCES "testing_equipment"("mrid") ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS "close_operation" (
@@ -752,9 +752,9 @@ CREATE TABLE IF NOT EXISTS "current_transformer_info" (
 CREATE TABLE IF NOT EXISTS "current_transformer_testing_equipment_test_type" (
 	"mrid"	TEXT NOT NULL,
 	"testing_equipment_id"	TEXT,
-	"test_type_id"	TEXT,
+	"work_task_id"	TEXT,
 	PRIMARY KEY("mrid"),
-	FOREIGN KEY("test_type_id") REFERENCES "procedure"("mrid"),
+	FOREIGN KEY("work_task_id") REFERENCES "work_task"("mrid") ON DELETE CASCADE,
 	FOREIGN KEY("testing_equipment_id") REFERENCES "testing_equipment"("mrid") ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS "current_voltage" (
@@ -803,9 +803,9 @@ CREATE TABLE IF NOT EXISTS "disconnector_info" (
 CREATE TABLE IF NOT EXISTS "disconnector_testing_equipment_test_type" (
 	"mrid"	TEXT NOT NULL,
 	"testing_equipment_id"	TEXT,
-	"test_type_id"	TEXT,
+	"work_task_id"	TEXT,
 	PRIMARY KEY("mrid"),
-	FOREIGN KEY("test_type_id") REFERENCES "procedure"("mrid"),
+	FOREIGN KEY("work_task_id") REFERENCES "work_task"("mrid") ON DELETE CASCADE,
 	FOREIGN KEY("testing_equipment_id") REFERENCES "testing_equipment"("mrid") ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS "discrete" (
@@ -1732,9 +1732,9 @@ CREATE TABLE IF NOT EXISTS "power_cable" (
 CREATE TABLE IF NOT EXISTS "power_cable_testing_equipment_test_type" (
 	"mrid"	TEXT NOT NULL,
 	"testing_equipment_id"	TEXT,
-	"test_type_id"	TEXT,
+	"work_task_id"	TEXT,
 	PRIMARY KEY("mrid"),
-	FOREIGN KEY("test_type_id") REFERENCES "procedure"("mrid"),
+	FOREIGN KEY("work_task_id") REFERENCES "work_task"("mrid") ON DELETE CASCADE,
 	FOREIGN KEY("testing_equipment_id") REFERENCES "testing_equipment"("mrid") ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS "power_rating" (
@@ -1927,9 +1927,9 @@ CREATE TABLE IF NOT EXISTS "reactor_test_type" (
 CREATE TABLE IF NOT EXISTS "reactor_testing_equipment_test_type" (
 	"mrid"	TEXT NOT NULL,
 	"testing_equipment_id"	TEXT,
-	"test_type_id"	TEXT,
+	"work_task_id"	TEXT,
 	PRIMARY KEY("mrid"),
-	FOREIGN KEY("test_type_id") REFERENCES "procedure"("mrid"),
+	FOREIGN KEY("work_task_id") REFERENCES "work_task"("mrid") ON DELETE CASCADE,
 	FOREIGN KEY("testing_equipment_id") REFERENCES "testing_equipment"("mrid") ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS "reconditioning" (
@@ -1985,9 +1985,9 @@ CREATE TABLE IF NOT EXISTS "rotating_machine_test_type" (
 CREATE TABLE IF NOT EXISTS "rotating_machine_testing_equipment_test_type" (
 	"mrid"	TEXT NOT NULL,
 	"testing_equipment_id"	TEXT,
-	"test_type_id"	TEXT,
+	"work_task_id"	TEXT,
 	PRIMARY KEY("mrid"),
-	FOREIGN KEY("test_type_id") REFERENCES "procedure"("mrid"),
+	FOREIGN KEY("work_task_id") REFERENCES "work_task"("mrid") ON DELETE CASCADE,
 	FOREIGN KEY("testing_equipment_id") REFERENCES "testing_equipment"("mrid") ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS "seconds" (
@@ -2183,9 +2183,9 @@ CREATE TABLE IF NOT EXISTS "surge_arrester_test_type" (
 CREATE TABLE IF NOT EXISTS "surge_arrester_testing_equipment_test_type" (
 	"mrid"	TEXT NOT NULL,
 	"testing_equipment_id"	TEXT,
-	"test_type_id"	TEXT,
+	"work_task_id"	TEXT,
 	PRIMARY KEY("mrid"),
-	FOREIGN KEY("test_type_id") REFERENCES "procedure"("mrid"),
+	FOREIGN KEY("work_task_id") REFERENCES "work_task"("mrid") ON DELETE CASCADE,
 	FOREIGN KEY("testing_equipment_id") REFERENCES "testing_equipment"("mrid") ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS "surge_arrester_work_task" (
@@ -2502,9 +2502,9 @@ CREATE TABLE IF NOT EXISTS "transformer_test" (
 CREATE TABLE IF NOT EXISTS "transformer_testing_equipment_test_type" (
 	"mrid"	TEXT NOT NULL,
 	"testing_equipment_id"	TEXT,
-	"test_type_id"	TEXT,
+	"work_task_id"	TEXT,
 	PRIMARY KEY("mrid"),
-	FOREIGN KEY("test_type_id") REFERENCES "procedure"("mrid"),
+	FOREIGN KEY("work_task_id") REFERENCES "work_task"("mrid") ON DELETE CASCADE,
 	FOREIGN KEY("testing_equipment_id") REFERENCES "testing_equipment"("mrid") ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS "trip_operation" (
@@ -2632,9 +2632,9 @@ CREATE TABLE IF NOT EXISTS "voltage_trans" (
 CREATE TABLE IF NOT EXISTS "voltage_transformer_testing_equipment_test_type" (
 	"mrid"	TEXT NOT NULL,
 	"testing_equipment_id"	TEXT,
-	"test_type_id"	TEXT,
+	"work_task_id"	TEXT,
 	PRIMARY KEY("mrid"),
-	FOREIGN KEY("test_type_id") REFERENCES "procedure"("mrid"),
+	FOREIGN KEY("work_task_id") REFERENCES "work_task"("mrid") ON DELETE CASCADE,
 	FOREIGN KEY("testing_equipment_id") REFERENCES "testing_equipment"("mrid") ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS "volume" (
@@ -2725,10 +2725,10 @@ CREATE TABLE IF NOT EXISTS "zero_sequence_impedance_table" (
 	FOREIGN KEY("zero_sequence_impedance") REFERENCES "zero_sequence_impedance"("mrid") ON DELETE CASCADE,
 	PRIMARY KEY("mrid")
 );
-CREATE INDEX idx_sync_state_server_id
+CREATE INDEX IF NOT EXISTS idx_sync_state_server_id
 ON sync_state(server_id);
-CREATE INDEX idx_sync_state_status
+CREATE INDEX IF NOT EXISTS idx_sync_state_status
 ON sync_state(sync_status);
-CREATE INDEX idx_sync_state_type_status
+CREATE INDEX IF NOT EXISTS idx_sync_state_type_status
 ON sync_state(node_type, sync_status);
 `;

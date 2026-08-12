@@ -4,7 +4,7 @@
   "testName": "Insulation resistance of motor",
   "testStandard": [
     {
-      "mrid": "36116f8b-dcl3-4ad9-4b16-8c14-irm1-dcl01",
+      "mrid": "a703dd37-fa8b-4b2f-bca9-70aa20ea3913",
       "code": "customized_insulation_resistance_motor_disconnector",
       "name": "Customized limit",
       "type": "customized",
@@ -16,21 +16,21 @@
           "code": "r60s",
           "name": "R60s",
           "type": "analog",
-          "unit": "m|Ω",
+          "unit": "M|Ω",
           "measurement_type": "test, assessment"
         }
       ],
       "assessment_rule": [
-        { "mrid": "rule-dcl-irm-pass-0001", "standard_id": "36116f8b-dcl3-4ad9-4b16-8c14-irm1-dcl01", "result": "Pass", "priority": "" },
-        { "mrid": "rule-dcl-irm-fail-0001", "standard_id": "36116f8b-dcl3-4ad9-4b16-8c14-irm1-dcl01", "result": "Fail", "priority": "" }
+        { "mrid": "092f52cc-562b-4d21-b53f-cbfc726b5857", "standard_id": "a703dd37-fa8b-4b2f-bca9-70aa20ea3913", "result": "Pass", "priority": "" },
+        { "mrid": "93b2e578-216d-4b8f-b685-922ddec6d755", "standard_id": "a703dd37-fa8b-4b2f-bca9-70aa20ea3913", "result": "Fail", "priority": "" }
       ],
       "assessment_group": [
-        { "mrid": "group-dcl-irm-pass-0001", "rule_id": "rule-dcl-irm-pass-0001", "parent_id": "", "logic": "" },
-        { "mrid": "group-dcl-irm-fail-0001", "rule_id": "rule-dcl-irm-fail-0001", "parent_id": "", "logic": "" }
+        { "mrid": "48c67aab-3f12-4323-9d1c-27b6a0742541", "rule_id": "092f52cc-562b-4d21-b53f-cbfc726b5857", "parent_id": "", "logic": "" },
+        { "mrid": "e4636cc7-c2a8-4ada-8043-bdbb46489bed", "rule_id": "93b2e578-216d-4b8f-b685-922ddec6d755", "parent_id": "", "logic": "" }
       ],
       "assessment": [
-        { "label": "R<sub>60s</sub> (MΩ)", "mrid": "", "group_id": "group-dcl-irm-pass-0001", "measurement_id": "6c9d0e1f-2a3b-4c13-9009-000000000017", "operator": "≥", "threshold": "" },
-        { "label": "R<sub>60s</sub> (MΩ)", "mrid": "", "group_id": "group-dcl-irm-fail-0001", "measurement_id": "6c9d0e1f-2a3b-4c13-9009-000000000017", "operator": "<", "threshold": "" }
+        { "label": "R<sub>60s</sub> (MΩ)", "mrid": "", "group_id": "48c67aab-3f12-4323-9d1c-27b6a0742541", "measurement_id": "6c9d0e1f-2a3b-4c13-9009-000000000017", "operator": "≥", "threshold": "" },
+        { "label": "R<sub>60s</sub> (MΩ)", "mrid": "", "group_id": "e4636cc7-c2a8-4ada-8043-bdbb46489bed", "measurement_id": "6c9d0e1f-2a3b-4c13-9009-000000000017", "operator": "<", "threshold": "" }
       ]
     }
   ]

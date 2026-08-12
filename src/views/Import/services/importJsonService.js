@@ -75,7 +75,7 @@ const regenJobDtoIds = (jobDto, newAssetId, uuid) => {
                 if (link.testing_equipment_id && equipMap[link.testing_equipment_id]) {
                     link.testing_equipment_id = equipMap[link.testing_equipment_id]
                 }
-                // test_type_id giữ nguyên (= procedure.mrid seed, dùng chung)
+                // work_task_id KHÔNG giữ nguyên — là id job-local, regen theo map
             }
         }
     }
@@ -94,7 +94,7 @@ const regenJobDtoIds = (jobDto, newAssetId, uuid) => {
         // 3.0 mrid của CHÍNH test (work_task) — BẮT BUỘC regen, nếu không link tới
         // work_task cũ → không xóa được job mới (dùng chung record với job gốc).
         test.mrid = uuid.newUuid()
-        // testTypeId / test_type_id GIỮ NGUYÊN (= procedure định nghĩa, dùng chung)
+        // testTypeId GIỮ NGUYÊN (= procedure định nghĩa, dùng chung)
 
         // 3a. testCondition
         if (test.testCondition) {
@@ -343,12 +343,13 @@ const branchMrid = (branch) => {
 // ---------------------------------------------------------------------------
 // Field *_id/*Id là DỮ LIỆU người dùng hoặc SEED dùng chung — KHÔNG regen.
 //  - apparatus_id: mã thiết bị người dùng nhập ("Asset ID" trên form)
-//  - measurement_id / test_type_id / testTypeId / procedure_id: trỏ ĐỊNH NGHĨA dùng chung
+//  - measurement_id / testTypeId / procedure_id: trỏ ĐỊNH NGHĨA dùng chung
+//    (work_task_id KHÔNG nằm đây — nó là id job-local, phải regen như mọi mrid khác)
 //  - userId / userName / userIdentifiedObjectId: của người dùng
 const ID_KEEP = new Set([
     'userId', 'userName', 'userIdentifiedObjectId',
     'apparatus_id',
-    'measurement_id', 'test_type_id', 'testTypeId', 'procedure_id',
+    'measurement_id', 'testTypeId', 'procedure_id',
 ])
 
 // regen id với REMAP tham chiếu chéo (2 lượt).
@@ -392,6 +393,19 @@ const regenIdsDeep = (root, uuid) => {
         for (const k of Object.keys(obj)) {
             const v = obj[k]
             if (k === 'mrid') continue   // đã xử lý lượt 1
+
+            // MẢNG id — vd testingEquipmentData[].work_task_ids: phần tử là CHUỖI
+            // chứ không phải object, nên hai nhánh bên dưới không chạm tới.
+            // Không remap ở đây thì sau khi import, thiết bị vẫn trỏ work_task cũ
+            // → đứt liên kết "thiết bị nào đo bài nào".
+            // Phần tử không có trong idMap = trỏ ra ngoài nhánh đang import → BỎ,
+            // vì giữ lại là link chết, mà regen bừa thì thành link tới hư vô.
+            if ((k.endsWith('_ids') || k.endsWith('Ids')) && Array.isArray(v)
+                && v.every(x => typeof x === 'string')) {
+                obj[k] = v.map(x => idMap[x]).filter(Boolean)
+                continue
+            }
+
             const isRef = (k.endsWith('_id') || k.endsWith('Id') || k.endsWith('mrid'))
             if (isRef && !ID_KEEP.has(k) && typeof v === 'string' && v) {
                 if (idMap[v]) obj[k] = idMap[v]        // tham chiếu nội bộ → trỏ id mới

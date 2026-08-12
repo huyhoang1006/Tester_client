@@ -12,8 +12,9 @@
     {
       "mrid": "cbf48165-6f7a-4716-8258-bb4eae410b3b",
       "code": "interrupter",
+      "unit": "",
       "name": "Interrupter",
-      "type": "string"
+      "type": "analog"
     },
     {
       "mrid": "899bc9df-acf5-4bde-b8f7-f690263aabee",

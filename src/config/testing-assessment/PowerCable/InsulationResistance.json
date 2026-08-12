@@ -1,10 +1,10 @@
 {
-  "testId": "pc-ir-001",
+  "testId": "d29b00a7-969f-40be-96e0-6ead1c9449d8",
   "testCode": "InsulationResistance",
   "testName": "Insulation resistance",
   "testStandard": [
     {
-      "mrid": "36116f8b-pc01-4ad9-4b16-8c14-ir01-pc001",
+      "mrid": "30c021f0-3340-40b6-b898-a71c33713b30",
       "code": "customized_insulation_resistance_power_cable",
       "name": "Customized limit",
       "type": "customized",
@@ -22,29 +22,29 @@
       ],
       "assessment_rule": [
         {
-          "mrid": "rule-pc-ir-pass-001",
-          "standard_id": "36116f8b-pc01-4ad9-4b16-8c14-ir01-pc001",
+          "mrid": "8bcf5536-8768-4a7c-b940-24300e2b6def",
+          "standard_id": "30c021f0-3340-40b6-b898-a71c33713b30",
           "result": "Pass",
           "priority": ""
         },
         {
-          "mrid": "rule-pc-ir-fail-001",
-          "standard_id": "36116f8b-pc01-4ad9-4b16-8c14-ir01-pc001",
+          "mrid": "38b11117-168b-4a72-823e-048a70c22de6",
+          "standard_id": "30c021f0-3340-40b6-b898-a71c33713b30",
           "result": "Fail",
           "priority": ""
         }
       ],
       "assessment_group": [
         {
-          "mrid": "group-pc-ir-pass-001",
-          "rule_id": "rule-pc-ir-pass-001",
+          "mrid": "1bb89f58-7d61-4c58-b6c0-9a49262fb230",
+          "rule_id": "8bcf5536-8768-4a7c-b940-24300e2b6def",
           "parent_id": "",
           "logic": "",
           "is_default": false
         },
         {
-          "mrid": "group-pc-ir-fail-001",
-          "rule_id": "rule-pc-ir-fail-001",
+          "mrid": "cbb2597e-a169-4329-8ced-ac26cfe8ce21",
+          "rule_id": "38b11117-168b-4a72-823e-048a70c22de6",
           "parent_id": "",
           "logic": "",
           "is_default": true
@@ -54,7 +54,7 @@
         {
           "label": "R meas (MΩ)",
           "mrid": "",
-          "group_id": "group-pc-ir-pass-001",
+          "group_id": "1bb89f58-7d61-4c58-b6c0-9a49262fb230",
           "measurement_id": "7213c077-fd8a-4f12-888c-1263570aa8d6",
           "operator": "≥",
           "threshold": ""
@@ -62,7 +62,7 @@
         {
           "label": "R meas (MΩ)",
           "mrid": "",
-          "group_id": "group-pc-ir-fail-001",
+          "group_id": "cbb2597e-a169-4329-8ced-ac26cfe8ce21",
           "measurement_id": "7213c077-fd8a-4f12-888c-1263570aa8d6",
           "operator": "<",
           "threshold": ""

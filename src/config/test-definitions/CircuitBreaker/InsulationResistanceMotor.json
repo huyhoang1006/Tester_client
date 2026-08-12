@@ -15,7 +15,7 @@
       "code": "r60s",
       "name": "R60s",
       "type": "analog",
-      "unit": "m|Ω",
+      "unit": "M|Ω",
       "measurement_type": "test, assessment"
     },
     {

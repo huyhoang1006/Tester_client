@@ -28,7 +28,18 @@ export const createRootOrganisation = async () => {
  * đánh dấu bằng app_settings để lần khởi động sau không quét lại.
  */
 export const normalizeMridOnce = async () => {
-    const KEY = 'mrid_suffix_normalized'
+    // ĐỔI KHOÁ LÀ CÁCH CHO NÓ CHẠY LẠI MỘT LƯỢT.
+    //
+    // Máy nào đã đánh dấu xong bằng khoá cũ vẫn còn tổ chức mang mrid trần, vì
+    // `getOrganisationChain` từng dựng lại mrid từ phản hồi server và làm rơi hậu tố
+    // '@org' — xem chú thích trong `Download/organisation.js`. Tổ chức nào tải về SAU
+    // lần chuẩn hoá đầu tiên thì không có gì quét lại chúng, và lần tải tiếp theo sẽ
+    // vỡ khoá ngoại vì con trỏ tới '1000@org' còn cha nằm dưới tên '1000'.
+    //
+    // Khoá mới bắt quét lại đúng một lượt cho mọi máy. `replaceLocalMrid` là thao tác
+    // idempotent — mrid đã có '@' thì bị loại ngay ở câu SELECT — nên máy nào sạch rồi
+    // cũng không hề hấn gì.
+    const KEY = 'mrid_suffix_normalized_v2'
     try {
         const done = await new Promise((resolve) => {
             db.get(`SELECT value FROM app_settings WHERE key = ?`, [KEY],

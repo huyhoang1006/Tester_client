@@ -81,7 +81,7 @@ export const jobDtoToEntity = (dto) => {
             const data = new CurrentTransformerTestingEquipmentTestType();
             data.mrid = currentTransformerTestingEquipmentTestType.mrid || null;
             data.testing_equipment_id = currentTransformerTestingEquipmentTestType.testing_equipment_id || null;
-            data.test_type_id = currentTransformerTestingEquipmentTestType.test_type_id || null;
+            data.work_task_id = currentTransformerTestingEquipmentTestType.work_task_id || null;
             entity.currentTransformerTestingEquipmentTestType.push(data);
         }
 
@@ -351,10 +351,10 @@ export const JobEntityToDto = (entity) => {
         data.serial_number = testingEquipment.serial_number || '';
         data.work_id = testingEquipment.work_id || '';
         data.calibration_date = testingEquipment.calibration_date || '';
-        data.test_type_current_transformer_id = [];
+        data.work_task_ids = [];
         for (const currentTransformerTestingEquipmentTestType of entity.currentTransformerTestingEquipmentTestType) {
             if (currentTransformerTestingEquipmentTestType.testing_equipment_id === data.mrid) {
-                data.test_type_current_transformer_id.push(currentTransformerTestingEquipmentTestType.test_type_id);
+                data.work_task_ids.push(currentTransformerTestingEquipmentTestType.work_task_id);
             }
         }
         dto.testingEquipmentData.push(data);

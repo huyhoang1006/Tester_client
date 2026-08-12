@@ -1,4 +1,5 @@
 {
+  "testId": "7eefc1db-4ceb-4ddd-92ff-5a9e662afc8e",
   "testCode": "DCWindingPrim",
   "testName": "DC Winding Resistance - Prim",
   "testStandard": [
@@ -71,7 +72,7 @@
         {
           "mrid": "32d5115d-c712-408f-8392-0b1641474cc7",
           "code": "dev_r_ref",
-          "name": "Dev R ref (%)",
+          "name": "Dev with R ref",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"
@@ -145,7 +146,7 @@
         {
           "mrid": "32d5115d-c712-408f-8392-0b1641474cc7",
           "code": "dev_r_ref",
-          "name": "Dev R ref (%)",
+          "name": "Dev with R ref",
           "type": "analog",
           "unit": "%",
           "measurement_type": "test, assessment"

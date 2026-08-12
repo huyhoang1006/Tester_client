@@ -1,5 +1,5 @@
 {
-  "testId": "pc-tdvlf-001",
+  "testId": "c769beda-9f72-4f92-981c-7229ee296821",
   "testCode": "TandeltaVlfSource",
   "testName": "Tan delta measurement with VLF source",
   "testStandard": [
@@ -16,15 +16,15 @@
           "code": "mtd",
           "name": "MTD [10⁻³]",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         },
         {
           "mrid": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
           "code": "tan_delta_dtd",
-          "name": "DTD [10⁻³]",
+          "name": "DTD [10⁻³] (0.5 U₀ & 1.5 U₀)",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         },
         {
@@ -32,7 +32,7 @@
           "code": "tan_delta_tdts",
           "name": "TDTS [10⁻³]",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         }
       ],
@@ -76,7 +76,7 @@
           "threshold": "0.1"
         },
         {
-          "label": "DTD [10⁻³]",
+          "label": "DTD [10⁻³] (0.5 U₀ & 1.5 U₀)",
           "mrid": "ad9525dc-3402-4b1a-a99a-757d8bc1ae1a",
           "group_id": "7d110934-f92c-4642-9676-a56a212635dc",
           "measurement_id": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
@@ -114,15 +114,15 @@
           "code": "mtd",
           "name": "MTD [10⁻³]",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         },
         {
           "mrid": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
           "code": "tan_delta_dtd",
-          "name": "DTD [10⁻³]",
+          "name": "DTD [10⁻³] (0.5 U₀ & 1.5 U₀)",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         },
         {
@@ -130,7 +130,7 @@
           "code": "tan_delta_tdts",
           "name": "TDTS [10⁻³]",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         }
       ],
@@ -174,7 +174,7 @@
           "threshold": "0.1"
         },
         {
-          "label": "DTD [10⁻³]",
+          "label": "DTD [10⁻³] (0.5 U₀ & 1.5 U₀)",
           "mrid": "51734e3d-a0b6-4002-92a9-27cb923b2473",
           "group_id": "fa167570-479d-4b0d-859d-2c8bdaf2e414",
           "measurement_id": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
@@ -212,15 +212,15 @@
           "code": "mtd",
           "name": "MTD [10⁻³]",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         },
         {
           "mrid": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
           "code": "tan_delta_dtd",
-          "name": "DTD [10⁻³]",
+          "name": "DTD [10⁻³] (0.5 U₀ & 1.5 U₀)",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         },
         {
@@ -228,7 +228,7 @@
           "code": "tan_delta_tdts",
           "name": "TDTS [10⁻³]",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         }
       ],
@@ -285,7 +285,7 @@
           "threshold": "0.1"
         },
         {
-          "label": "DTD [10⁻³]",
+          "label": "DTD [10⁻³] (0.5 U₀ & 1.5 U₀)",
           "mrid": "0397dc10-695d-4023-9646-fac51d5d0165",
           "group_id": "d5d5214f-82a5-469a-a45c-7894986f5ff7",
           "measurement_id": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
@@ -331,15 +331,15 @@
           "code": "mtd",
           "name": "MTD [10⁻³]",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         },
         {
           "mrid": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
           "code": "tan_delta_dtd",
-          "name": "DTD [10⁻³]",
+          "name": "DTD [10⁻³] (0.5 U₀ & 1.5 U₀)",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         },
         {
@@ -347,7 +347,7 @@
           "code": "tan_delta_tdts",
           "name": "TDTS [10⁻³]",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         }
       ],
@@ -404,7 +404,7 @@
           "threshold": "0.1"
         },
         {
-          "label": "DTD [10⁻³]",
+          "label": "DTD [10⁻³] (0.5 U₀ & 1.5 U₀)",
           "mrid": "b66f14b4-86f8-4431-afa4-3a8a82e38b9a",
           "group_id": "6f9be1a3-afab-4317-98e7-9f3233cb463c",
           "measurement_id": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
@@ -450,15 +450,15 @@
           "code": "mtd",
           "name": "MTD [10⁻³]",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         },
         {
           "mrid": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
           "code": "tan_delta_dtd",
-          "name": "DTD [10⁻³]",
+          "name": "DTD [10⁻³] (0.5 U₀ & 1.5 U₀)",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         },
         {
@@ -466,7 +466,7 @@
           "code": "tan_delta_tdts",
           "name": "TDTS [10⁻³]",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         }
       ],
@@ -523,7 +523,7 @@
           "threshold": "0.1"
         },
         {
-          "label": "DTD [10⁻³]",
+          "label": "DTD [10⁻³] (0.5 U₀ & 1.5 U₀)",
           "mrid": "944162a3-3239-4a52-abd9-9a2a66d2e20b",
           "group_id": "e11da5ea-0d66-4713-8cd1-31e8b04066ca",
           "measurement_id": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
@@ -569,15 +569,15 @@
           "code": "mtd",
           "name": "MTD [10⁻³]",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         },
         {
           "mrid": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
           "code": "tan_delta_dtd",
-          "name": "DTD [10⁻³]",
+          "name": "DTD [10⁻³] (0.5 U₀ & 1.5 U₀)",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         },
         {
@@ -585,7 +585,7 @@
           "code": "tan_delta_tdts",
           "name": "TDTS [10⁻³]",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         }
       ],
@@ -642,7 +642,7 @@
           "threshold": "0.1"
         },
         {
-          "label": "DTD [10⁻³]",
+          "label": "DTD [10⁻³] (0.5 U₀ & 1.5 U₀)",
           "mrid": "9e3e542e-ebb0-427b-9b3f-4c9b13f241b6",
           "group_id": "33688129-de6d-4381-ad26-e129903de06e",
           "measurement_id": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
@@ -688,15 +688,15 @@
           "code": "mtd",
           "name": "MTD [10⁻³]",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         },
         {
           "mrid": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
           "code": "tan_delta_dtd",
-          "name": "DTD [10⁻³]",
+          "name": "DTD [10⁻³] (0.5 U₀ & 1.5 U₀)",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         },
         {
@@ -704,7 +704,7 @@
           "code": "tan_delta_tdts",
           "name": "TDTS [10⁻³]",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         }
       ],
@@ -761,7 +761,7 @@
           "threshold": "0.1"
         },
         {
-          "label": "DTD [10⁻³]",
+          "label": "DTD [10⁻³] (0.5 U₀ & 1.5 U₀)",
           "mrid": "05ba27b8-a659-4edf-a4ec-e55344dcd3d5",
           "group_id": "04c8d32e-beeb-4007-9aa2-fe4ac512b960",
           "measurement_id": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
@@ -807,15 +807,15 @@
           "code": "mtd",
           "name": "MTD [10⁻³]",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         },
         {
           "mrid": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
           "code": "tan_delta_dtd",
-          "name": "DTD [10⁻³]",
+          "name": "DTD [10⁻³] (0.5 U₀ & 1.5 U₀)",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         },
         {
@@ -823,7 +823,7 @@
           "code": "tan_delta_tdts",
           "name": "TDTS [10⁻³]",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         }
       ],
@@ -910,15 +910,15 @@
           "code": "mtd",
           "name": "MTD [10⁻³]",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         },
         {
           "mrid": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
           "code": "tan_delta_dtd",
-          "name": "DTD [10⁻³]",
+          "name": "DTD [10⁻³] (0.5 U₀ & 1.5 U₀)",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         },
         {
@@ -926,7 +926,7 @@
           "code": "tan_delta_tdts",
           "name": "TDTS [10⁻³]",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         }
       ],
@@ -1021,15 +1021,15 @@
           "code": "mtd",
           "name": "MTD [10⁻³]",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         },
         {
           "mrid": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",
           "code": "tan_delta_dtd",
-          "name": "DTD [10⁻³]",
+          "name": "DTD [10⁻³] (0.5 U₀ & 1.5 U₀)",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         },
         {
@@ -1037,7 +1037,7 @@
           "code": "tan_delta_tdts",
           "name": "TDTS [10⁻³]",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         }
       ],
@@ -1094,7 +1094,7 @@
           "threshold": ""
         },
         {
-          "label": "DTD [10⁻³]",
+          "label": "DTD [10⁻³] (0.5 U₀ & 1.5 U₀)",
           "mrid": "9e55c187-faa1-4cc6-be2d-98fc4a1a5cb7",
           "group_id": "a58d6ee0-1976-48f8-860b-336642ffa31b",
           "measurement_id": "e0dbe708-1c8d-4ebc-99dd-65a531cc09b0",

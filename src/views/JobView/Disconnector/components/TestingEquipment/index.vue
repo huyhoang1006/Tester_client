@@ -1,8 +1,7 @@
 <template>
     <testing-equipment-table
         :data="data"
-        :test-type-list-data="testTypeListData"
-        test-type-field="test_type_disconnector_id" />
+        :test-list="testList" />
 </template>
 <script>
 /* eslint-disable */
@@ -17,7 +16,7 @@ export default {
             required: true,
             default: () => []
         },
-        testTypeListData: {
+        testList: {
             type: Array,
             required: true,
             default: () => []

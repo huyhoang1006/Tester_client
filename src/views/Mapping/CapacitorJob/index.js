@@ -55,7 +55,7 @@ export const jobDtoToEntity = (dto) => {
         const data = new CapacitorTestingEquipmentTestType();
         data.mrid = capacitorTestingEquipmentTestType.mrid || null;
         data.testing_equipment_id = capacitorTestingEquipmentTestType.testing_equipment_id || null;
-        data.test_type_id = capacitorTestingEquipmentTestType.test_type_id || null;
+        data.work_task_id = capacitorTestingEquipmentTestType.work_task_id || null;
         entity.capacitorTestingEquipmentTestType.push(data);
     }
 
@@ -240,10 +240,10 @@ export const JobEntityToDto = (entity) => {
         data.serial_number = testingEquipment.serial_number || '';
         data.work_id = testingEquipment.work_id || '';
         data.calibration_date = testingEquipment.calibration_date || '';
-        data.test_type_capacitor_id = [];
+        data.work_task_ids = [];
         for(const capacitorTestingEquipmentTestType of entity.capacitorTestingEquipmentTestType) {
             if(capacitorTestingEquipmentTestType.testing_equipment_id === data.mrid) {
-                data.test_type_capacitor_id.push(capacitorTestingEquipmentTestType.test_type_id);
+                data.work_task_ids.push(capacitorTestingEquipmentTestType.work_task_id);
             }
         }
         dto.testingEquipmentData.push(data);

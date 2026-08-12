@@ -24,7 +24,7 @@
                     <span slot="label"><i class="fa-solid fa-list-check"></i> Testing equipment</span>
                     <div>
                         <testing-equipment :data="disconnectorJobDto.testingEquipmentData"
-                            :testTypeListData="testTypeListData"></testing-equipment>
+                            :test-list="disconnectorJobDto.testList"></testing-equipment>
                     </div>
                 </el-tab-pane>
 

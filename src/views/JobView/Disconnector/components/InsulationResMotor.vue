@@ -83,18 +83,11 @@
                     <template v-for="(node, i) in element.tree">
                         <div v-if="!node.is_default" :key="'node-' + i" class="tree-row">
                             <div class="limit-col"><GroupNode :node="node" mode="limit" /></div>
-                            <div class="result-col">
-                                <span v-if="node.result === 'Pass'" class="pass">✔ Pass</span>
-                                <span v-else-if="node.result === 'Fail'" class="fail">✖ Fail</span>
-                                <span v-else>—</span>
-                            </div>
+                            <div class="result-col"><assessment-result-label :result="node.result" /></div>
                         </div>
                         <div v-else :key="'default-' + i" class="tree-row tree-row-default">
                             <div class="limit-col default-label">All other cases</div>
-                            <div class="result-col">
-                                <span v-if="node.result === 'Pass'" class="pass">✔ Pass</span>
-                                <span v-else-if="node.result === 'Fail'" class="fail">✖ Fail</span>
-                            </div>
+                            <div class="result-col"><assessment-result-label :result="node.result" /></div>
                         </div>
                     </template>
                 </div>

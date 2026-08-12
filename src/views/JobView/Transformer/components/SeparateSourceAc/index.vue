@@ -188,7 +188,7 @@ export default {
 .tree-row { display: flex; align-items: center; border-bottom: 1px solid #ebeef5; min-height: 40px; padding: 8px 0; width: 100%; }
 .tree-row:last-child { border-bottom: none; }
 .limit-col { flex: 1; padding: 0 12px; }
-.result-col { flex-shrink: 0; width: 100px; text-align: center; border-left: 1px solid #ebeef5; padding: 0 12px; align-self: stretch; display: flex; align-items: center; justify-content: center; }
+.result-col { flex-shrink: 0; width: 168px; text-align: center; border-left: 1px solid #ebeef5; padding: 0 12px; align-self: stretch; display: flex; align-items: center; justify-content: center; }
 .tree-row-default { background: #fafafa; }
 .default-label { font-style: italic; color: #909399; font-size: 13px; }
 .pass { color: #67C23A; font-weight: bold; }

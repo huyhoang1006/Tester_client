@@ -409,6 +409,22 @@ export const collectAssessmentResults = (assessmentStandard, measurementMap, opt
   }
 }
 
+// Nhãn kết luận của nhánh nào được coi là ĐẠT khi chấm điểm.
+//
+// Bảng tiêu chí hiển thị NGUYÊN VĂN theo đặc tả: đa số bài dùng Pass/Fail, riêng
+// "Tan delta measurement with VLF source" theo IEEE 400.2 dùng ba mức
+// Acceptable / Further study advised / Action Required (đặc tả tr.459-462).
+//
+// Nhưng ô Assessment trong bảng đo chỉ có hai mức, nên khi CHẤM thì quy về:
+// chỉ 'Acceptable' mới là đạt, hai mức còn lại đều là không đạt — cáp cần theo
+// dõi thêm hay cần xử lý ngay thì đều chưa thể coi là qua.
+const PASS_LABELS = ['pass', 'acceptable']
+
+export const normalizeAssessmentResult = (result) => {
+  if (!result) return ''
+  return PASS_LABELS.includes(String(result).trim().toLowerCase()) ? 'Pass' : 'Fail'
+}
+
 export const resolveAssessmentResult = (assessmentStandard, measurementMap, options = {}) => {
   const {
     passedResults,
@@ -419,11 +435,13 @@ export const resolveAssessmentResult = (assessmentStandard, measurementMap, opti
 
   if (!hasApplicableRule) return ''
   if (hasNull && passedResults.length === 0) return ''
-  if (passedResults.includes('Fail')) return 'Fail'
-  if (passedResults.includes('Pass')) return 'Pass'
-  if (defaultResult === 'Pass') return 'Pass'
-  if (defaultResult) return 'Fail'
-  return ''
+
+  // Quy về Pass/Fail rồi mới so — không so chuỗi cứng như trước, vì làm vậy thì
+  // 'Acceptable' không khớp nhánh nào và kết quả trả về rỗng.
+  const matched = passedResults.map(normalizeAssessmentResult)
+  if (matched.includes('Fail')) return 'Fail'
+  if (matched.includes('Pass')) return 'Pass'
+  return normalizeAssessmentResult(defaultResult)
 }
 
 export const traverseAndFillMrid = async (obj) => {

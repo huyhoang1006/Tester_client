@@ -1,10 +1,10 @@
 {
-  "testId": "pc-tdac-001",
+  "testId": "229e6ce9-7198-4665-bd6a-76555867be76",
   "testCode": "TandeltaPowerAcSource",
   "testName": "Tan delta measurement with power frequency AC source",
   "testStandard": [
     {
-      "mrid": "36116f8b-pc07-4ad9-4b16-8c14-tda1-pc001",
+      "mrid": "80fd50ef-7be2-4b20-b449-15b26810c938",
       "code": "customized_tan_delta_ac_power_cable",
       "name": "Customized limit",
       "type": "customized",
@@ -16,35 +16,35 @@
           "code": "tan_delta",
           "name": "Tan delta [10⁻³]",
           "type": "analog",
-          "unit": "m|''",
+          "unit": "",
           "measurement_type": "test, assessment"
         }
       ],
       "assessment_rule": [
         {
-          "mrid": "rule-pc-tdac-pass-001",
-          "standard_id": "36116f8b-pc07-4ad9-4b16-8c14-tda1-pc001",
+          "mrid": "cf12efbf-22fe-40bf-be79-55f632652c03",
+          "standard_id": "80fd50ef-7be2-4b20-b449-15b26810c938",
           "result": "Pass",
           "priority": ""
         },
         {
-          "mrid": "rule-pc-tdac-fail-001",
-          "standard_id": "36116f8b-pc07-4ad9-4b16-8c14-tda1-pc001",
+          "mrid": "e0ee7143-6cf6-41c1-906e-d67d4588d70c",
+          "standard_id": "80fd50ef-7be2-4b20-b449-15b26810c938",
           "result": "Fail",
           "priority": ""
         }
       ],
       "assessment_group": [
         {
-          "mrid": "group-pc-tdac-pass-001",
-          "rule_id": "rule-pc-tdac-pass-001",
+          "mrid": "4511d563-e890-435c-af22-76cb9aae2cbd",
+          "rule_id": "cf12efbf-22fe-40bf-be79-55f632652c03",
           "parent_id": "",
           "logic": "",
           "is_default": false
         },
         {
-          "mrid": "group-pc-tdac-fail-001",
-          "rule_id": "rule-pc-tdac-fail-001",
+          "mrid": "0351e9b2-f497-4b81-bd8b-aced28a8e19e",
+          "rule_id": "e0ee7143-6cf6-41c1-906e-d67d4588d70c",
           "parent_id": "",
           "logic": "",
           "is_default": true
@@ -54,7 +54,7 @@
         {
           "label": "Tan delta [10⁻³]",
           "mrid": "",
-          "group_id": "group-pc-tdac-pass-001",
+          "group_id": "4511d563-e890-435c-af22-76cb9aae2cbd",
           "measurement_id": "9c0b757c-3829-4842-9c9c-8d16863bf4b6",
           "operator": "≤",
           "threshold": ""
@@ -62,7 +62,7 @@
         {
           "label": "Tan delta [10⁻³]",
           "mrid": "",
-          "group_id": "group-pc-tdac-fail-001",
+          "group_id": "0351e9b2-f497-4b81-bd8b-aced28a8e19e",
           "measurement_id": "9c0b757c-3829-4842-9c9c-8d16863bf4b6",
           "operator": ">",
           "threshold": ""

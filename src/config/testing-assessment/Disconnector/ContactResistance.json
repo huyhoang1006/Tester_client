@@ -4,7 +4,7 @@
   "testName": "Contact resistance",
   "testStandard": [
     {
-      "mrid": "36116f8b-dcl2-4ad9-4b16-8c14-cr01-dcl01",
+      "mrid": "4b1fa444-240b-4687-9181-b158482d596f",
       "code": "customized_contact_resistance_disconnector",
       "name": "Customized limit",
       "type": "customized",
@@ -22,28 +22,28 @@
       ],
       "assessment_rule": [
         {
-          "mrid": "rule-dcl-cr-pass-0001",
-          "standard_id": "36116f8b-dcl2-4ad9-4b16-8c14-cr01-dcl01",
+          "mrid": "30ef2574-12d3-4f89-9b70-c173077d9d1d",
+          "standard_id": "4b1fa444-240b-4687-9181-b158482d596f",
           "result": "Pass",
           "priority": ""
         },
         {
-          "mrid": "rule-dcl-cr-fail-0001",
-          "standard_id": "36116f8b-dcl2-4ad9-4b16-8c14-cr01-dcl01",
+          "mrid": "043be0e0-e6d3-4b47-afa3-28eaa578ec9f",
+          "standard_id": "4b1fa444-240b-4687-9181-b158482d596f",
           "result": "Fail",
           "priority": ""
         }
       ],
       "assessment_group": [
         {
-          "mrid": "group-dcl-cr-pass-root",
-          "rule_id": "rule-dcl-cr-pass-0001",
+          "mrid": "b1e13992-2f08-47a2-a0d0-6a6277532466",
+          "rule_id": "30ef2574-12d3-4f89-9b70-c173077d9d1d",
           "parent_id": "",
           "logic": "AND"
         },
         {
-          "mrid": "group-dcl-cr-fail-root",
-          "rule_id": "rule-dcl-cr-fail-0001",
+          "mrid": "905210e4-248f-4c9c-a9ef-a7f9b233b4f2",
+          "rule_id": "043be0e0-e6d3-4b47-afa3-28eaa578ec9f",
           "parent_id": "",
           "logic": "",
           "is_default": true
@@ -53,7 +53,7 @@
         {
           "label": "Contact resistance min (μΩ)",
           "mrid": "",
-          "group_id": "group-dcl-cr-pass-root",
+          "group_id": "b1e13992-2f08-47a2-a0d0-6a6277532466",
           "measurement_id": "d24f5034-3d7d-4bb2-9788-86405874a2e4",
           "operator": "≥",
           "threshold": ""
@@ -61,7 +61,7 @@
         {
           "label": "Contact resistance max (μΩ)",
           "mrid": "",
-          "group_id": "group-dcl-cr-pass-root",
+          "group_id": "b1e13992-2f08-47a2-a0d0-6a6277532466",
           "measurement_id": "d24f5034-3d7d-4bb2-9788-86405874a2e4",
           "operator": "≤",
           "threshold": ""

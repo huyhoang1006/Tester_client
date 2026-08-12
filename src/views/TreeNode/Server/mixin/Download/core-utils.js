@@ -12,6 +12,32 @@ import { getDisconnectorChain, downloadDisconnectorChain } from './disconnector.
 import { getSurgeArresterChain, downloadSurgeArresterChain } from './surgeArrester.js'
 import { getCircuitBreakerChain, downloadCircuitBreakerChain } from './circuitBreaker.js'
 import { getTransformerChain, downloadTransformerChain } from './transformer.js'
+import {
+    getTransformerJobChain, getVoltageTransformerJobChain, getCurrentTransformerJobChain,
+    getCircuitBreakerJobChain, getDisconnectorJobChain, getSurgeArresterJobChain,
+    downloadTransformerJobChain, downloadVoltageTransformerJobChain, downloadCurrentTransformerJobChain,
+    downloadCircuitBreakerJobChain, downloadDisconnectorJobChain, downloadSurgeArresterJobChain
+} from './job.js'
+
+// Job phân nhánh theo `job` (nhãn loại THIẾT BỊ), giống hệt cách asset phân nhánh
+// theo `asset`. Tách ra hằng số vì cùng một bảng được dùng ở hai chỗ bên dưới.
+const JOB_FETCH_STRATEGIES = {
+    'Transformer':         getTransformerJobChain,
+    'Voltage transformer': getVoltageTransformerJobChain,
+    'Current transformer': getCurrentTransformerJobChain,
+    'Circuit breaker':     getCircuitBreakerJobChain,
+    'Disconnector':        getDisconnectorJobChain,
+    'Surge arrester':      getSurgeArresterJobChain,
+}
+
+const JOB_DOWNLOAD_STRATEGIES = {
+    'Transformer':         downloadTransformerJobChain,
+    'Voltage transformer': downloadVoltageTransformerJobChain,
+    'Current transformer': downloadCurrentTransformerJobChain,
+    'Circuit breaker':     downloadCircuitBreakerJobChain,
+    'Disconnector':        downloadDisconnectorJobChain,
+    'Surge arrester':      downloadSurgeArresterJobChain,
+}
 
 // Cơ chế gọi API an toàn, chống rớt mạng
 export async function fetchWithRetry(fn, maxRetries = 3, delayMs = 1000) {
@@ -47,6 +73,7 @@ export async function buildOrgAncestors(node) {
                 parentId: String(prevParentId),
                 _type: ancestor.mode,
                 asset: ancestor.asset || null, // Thêm thông tin asset nếu có
+                job: ancestor.job || null,     // node job: nhãn loại thiết bị, để chọn mapper
             })
             prevParentId = ancestorId
         }
@@ -62,6 +89,7 @@ export async function buildOrgAncestors(node) {
         parentId: String(prevParentId),
         _type: node.mode,
         asset: node.asset || null, // Thêm thông tin asset nếu có
+        job: node.job || null,     // node job: nhãn loại thiết bị, để chọn mapper
     })
     console.log('Built ancestor chain:', chain)
     return chain
@@ -84,6 +112,7 @@ export async function buildSingleNodeChain(node) {
         parentId: String(parentId),
         _type: node.mode,
         asset: node.asset || null,
+        job: node.job || null,
     }]
 
     console.log('Built single node chain:', chain)
@@ -104,12 +133,15 @@ export async function fetchFullInfoForChain(chain) {
             'Surge arrester':      getSurgeArresterChain,
             'Circuit breaker':     getCircuitBreakerChain,
             'Transformer':         getTransformerChain,
-        }
+        },
+        'job': JOB_FETCH_STRATEGIES,
     }
     for (const node of chain) {
         var strategy;
         if (node._type === 'asset') {
             strategy = strategies[node._type][node.asset]
+        } else if (node._type === 'job') {
+            strategy = strategies[node._type][node.job]
         } else {
             strategy = strategies[node._type]
         }
@@ -130,6 +162,7 @@ function extractDownloadedSyncNode(node) {
         substation: 'substation',
         voltageLevel: 'voltageLevel',
         bay: 'bay',
+        job: 'jobData',
     }
     const dataKey = node._type === 'asset'
         ? Object.keys(node).find(key => node[key] && typeof node[key] === 'object' && (node[key].mrid || node[key].id))
@@ -160,13 +193,16 @@ export async function downloadChainInfo(chainInfo, ctx) {
             'Surge arrester':      downloadSurgeArresterChain,
             'Circuit breaker':     downloadCircuitBreakerChain,
             'Transformer':         downloadTransformerChain,
-        }
+        },
+        'job': JOB_DOWNLOAD_STRATEGIES,
     }
 
     for (const node of chainInfo) {
         var strategy;
         if (node._type === 'asset') {
             strategy = strategies[node._type][node.asset];
+        } else if (node._type === 'job') {
+            strategy = strategies[node._type][node.job];
         } else {
             strategy = strategies[node._type];
         }

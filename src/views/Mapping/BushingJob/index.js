@@ -55,7 +55,7 @@ export const jobDtoToEntity = (dto) => {
         const data = new BushingTestingEquipmentTestType();
         data.mrid = bushingTestingEquipmentTestType.mrid || null;
         data.testing_equipment_id = bushingTestingEquipmentTestType.testing_equipment_id || null;
-        data.test_type_id = bushingTestingEquipmentTestType.test_type_id || null;
+        data.work_task_id = bushingTestingEquipmentTestType.work_task_id || null;
         entity.bushingTestingEquipmentTestType.push(data);
     }
 
@@ -240,10 +240,10 @@ export const JobEntityToDto = (entity) => {
         data.serial_number = testingEquipment.serial_number || '';
         data.work_id = testingEquipment.work_id || '';
         data.calibration_date = testingEquipment.calibration_date || '';
-        data.test_type_bushing_id = [];
+        data.work_task_ids = [];
         for(const bushingTestingEquipmentTestType of entity.bushingTestingEquipmentTestType) {
             if(bushingTestingEquipmentTestType.testing_equipment_id === data.mrid) {
-                data.test_type_bushing_id.push(bushingTestingEquipmentTestType.test_type_id);
+                data.work_task_ids.push(bushingTestingEquipmentTestType.work_task_id);
             }
         }
         dto.testingEquipmentData.push(data);

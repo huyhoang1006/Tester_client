@@ -60,6 +60,7 @@ import * as circuitBreakerJobMappingServer from '@/views/Mapping/ServerToDTO/Cir
 import * as surgeArresterJobMappingServer from '@/views/Mapping/ServerToDTO/SurgeArresterJob/index.js'
 import * as disconnectorJobMappingServer from '@/views/Mapping/ServerToDTO/DisconnectorJob/index.js'
 import * as transformerJobMappingServer from '@/views/Mapping/ServerToDTO/TransformerJob/index.js'
+import { getJobBaseVersion, saveJobSnapshot } from '@/utils/jobSnapshot'
 
 /**
  * Mixin chứa các hàm xử lý upload từng loại entity lên server.
@@ -381,9 +382,11 @@ export default {
 
                 const dto = voltageTransformerJobMapping.JobEntityToDto(entityRes.data)
                 const serverPayload = voltageTransformerJobMappingServer.mapDtoToServer(dto, ownerType)
+                await this.attachJobBaseVersion(node, serverPayload)
                 const response = await voltageTransformerJobAPI.createVoltageTransformerJob(serverPayload, node.parentId)
 
                 await this.syncUploadedNodeServerId(node, response)
+                await this.saveJobBaseAfterUpload(node, dto, response)
                 this.$message.success(`Upload Voltage Transformer Job "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
@@ -402,9 +405,11 @@ export default {
 
                 const dto = currentTransformerJobMapping.JobEntityToDto(entityRes.data)
                 const serverPayload = currentTransformerJobMappingServer.mapDtoToServer(dto, ownerType)
+                await this.attachJobBaseVersion(node, serverPayload)
                 const response = await currentTransformerJobAPI.createCurrentTransformerJob(serverPayload, node.parentId)
 
                 await this.syncUploadedNodeServerId(node, response)
+                await this.saveJobBaseAfterUpload(node, dto, response)
                 this.$message.success(`Upload Current Transformer Job "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
@@ -423,9 +428,11 @@ export default {
 
                 const dto = circuitBreakerJobMapping.JobEntityToDto(entityRes.data)
                 const serverPayload = circuitBreakerJobMappingServer.mapDtoToServer(dto, ownerType)
+                await this.attachJobBaseVersion(node, serverPayload)
                 const response = await circuitBreakerJobAPI.createCircuitBreakerJob(serverPayload, node.parentId)
 
                 await this.syncUploadedNodeServerId(node, response)
+                await this.saveJobBaseAfterUpload(node, dto, response)
                 this.$message.success(`Upload Circuit Breaker Job "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
@@ -444,9 +451,11 @@ export default {
 
                 const dto = surgeArresterJobMapping.JobEntityToDto(entityRes.data)
                 const serverPayload = surgeArresterJobMappingServer.mapDtoToServer(dto, ownerType)
+                await this.attachJobBaseVersion(node, serverPayload)
                 const response = await surgeArresterJobAPI.createSurgeArresterJob(serverPayload, node.parentId)
 
                 await this.syncUploadedNodeServerId(node, response)
+                await this.saveJobBaseAfterUpload(node, dto, response)
                 this.$message.success(`Upload Surge Arrester Job "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
@@ -465,9 +474,11 @@ export default {
 
                 const dto = disconnectorJobMapping.JobEntityToDto(entityRes.data)
                 const serverPayload = disconnectorJobMappingServer.mapDtoToServer(dto, ownerType)
+                await this.attachJobBaseVersion(node, serverPayload)
                 const response = await disconnectorJobAPI.createDisconnectorJob(serverPayload, node.parentId)
 
                 await this.syncUploadedNodeServerId(node, response)
+                await this.saveJobBaseAfterUpload(node, dto, response)
                 this.$message.success(`Upload Disconnector Job "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
@@ -486,14 +497,80 @@ export default {
 
                 const dto = transformerJobMapping.JobEntityToDto(entityRes.data)
                 const serverPayload = transformerJobMappingServer.mapDtoToServer(dto, ownerType)
+                await this.attachJobBaseVersion(node, serverPayload)
                 const response = await transformerJobAPI.createTransformerJob(serverPayload, node.parentId)
 
                 await this.syncUploadedNodeServerId(node, response)
+                await this.saveJobBaseAfterUpload(node, dto, response)
                 this.$message.success(`Upload Transformer Job "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
                 this._handleUploadError(error, 'Transformer Job')
             }
+        },
+
+        // ═══════════════════════════════════════════════════════════════════════
+        //  CHỐT CHỐNG GHI ĐÈ cho job
+        //
+        //  Hai người mở cùng một job, cùng sửa, cùng bấm Lưu. Payload upload là
+        //  TOÀN BỘ job chứ không phải phần thay đổi, nên người bấm sau ghi đè sạch
+        //  công của người bấm trước — lặng lẽ, không ai biết.
+        //
+        //  Server chặn bằng cột `work.version`. Việc của client chỉ là gửi trả
+        //  đúng con số nhận được ở lần đồng bộ gần nhất, và cất lại số mới sau khi
+        //  lưu xong. Hai hàm dưới làm đúng hai việc đó.
+        // ═══════════════════════════════════════════════════════════════════════
+
+        /**
+         * Đính `baseVersion` vào payload TRƯỚC khi gửi lên.
+         *
+         * Không có bản gốc nào đã cất thì để `null`, và với server thì null mang
+         * nghĩa "job này chưa từng lên server". Nếu thật sự chưa có thì nó tạo mới;
+         * nếu đã có thì đó là 409 — đúng như mong muốn, vì lúc đó client đang mất
+         * dấu vết đồng bộ và không có cơ sở nào để ghi đè.
+         *
+         * @param {object} node         node job trên cây
+         * @param {object} serverPayload payload sắp gửi, bị sửa tại chỗ
+         */
+        async attachJobBaseVersion(node, serverPayload) {
+            if (!serverPayload) return
+            const mrid = node?.mrid || node?.id
+            serverPayload.baseVersion = await getJobBaseVersion(mrid)
+        },
+
+        /**
+         * Cất lại bản gốc SAU khi lưu thành công.
+         *
+         * Gọi sau `syncUploadedNodeServerId`, không phải trước: với job vừa tạo
+         * lần đầu, hàm đó đổi `node.mrid` từ id local sang id đã gắn hậu tố server.
+         * Cất trước thì bản gốc nằm dưới khoá cũ, và lần lưu sau tra không thấy —
+         * ăn 409 ngay ở lần lưu thứ hai của chính máy mình.
+         *
+         * Cất ở dạng **DTO**, không phải payload server. Bản gốc còn phải làm nền
+         * cho phép gộp ba chiều, mà phép đó so ba bản với nhau: bản gốc, bản ở máy
+         * (`JobEntityToDto`) và bản tải về (`mapServerToDto`) — cả ba đều là DTO.
+         * Cất ở dạng payload server thì tên khoá lệch hết và mọi trường đều bị coi
+         * là "đã đổi", biến mỗi lần tải về thành một rừng xung đột giả.
+         *
+         * Bản gốc lúc này không hoàn toàn bằng thứ server đang giữ — server có
+         * chuẩn hoá vài chỗ khi ghi. Chấp nhận được: lần tải về sau sẽ thấy những
+         * chỗ đó "server sửa, client không" và tự lấy theo server.
+         *
+         * @param {object} node     node job, đã đồng bộ id xong
+         * @param {object} dto      bản job ở dạng DTO, đúng thứ vừa gửi lên
+         * @param {object} response phản hồi upload, dạng { mrid, version }
+         */
+        async saveJobBaseAfterUpload(node, dto, response) {
+            const mrid = node?.mrid || node?.id
+            const version = response?.data?.version ?? response?.version
+            if (version === null || version === undefined) {
+                // Server cũ chưa trả version. Không cất gì cả, vì cất một bản gốc
+                // không có phiên bản sẽ khiến lần lưu sau gửi baseVersion = null và
+                // ăn 409 — im lặng bỏ qua thì ít nhất vẫn giữ nguyên hành vi cũ.
+                console.warn('[upload job] phan hoi khong kem version, bo qua buoc cat ban goc', mrid)
+                return
+            }
+            await saveJobSnapshot(mrid, dto, version)
         },
 
         // ═══════════════════════════════════════════════════════════════════════
@@ -798,6 +875,27 @@ export default {
         _handleUploadError(error, assetName = '') {
             const prefix = assetName ? `[Upload ${assetName}]` : '[Upload]'
             console.error(`${prefix} Error:`, error)
+
+            // XUNG ĐỘT PHIÊN BẢN — tách riêng vì đây KHÔNG phải lỗi của người dùng.
+            //
+            // Mọi lỗi khác nghĩa là dữ liệu gửi lên có chỗ sai. Riêng mã này nghĩa là
+            // dữ liệu đúng cả, chỉ có điều người khác đã lưu job này trước. Đổ chung
+            // vào "Server Error: ..." sẽ khiến người dùng đi tìm lỗi trong bản nhập
+            // của mình, mà ở đó không có lỗi nào để tìm.
+            //
+            // Nói thẳng chuyện gì xảy ra và phải làm gì. Người dùng mất phần vừa sửa,
+            // nhưng biết chính xác vì sao — hơn hẳn việc dữ liệu của người kia bị xoá
+            // sạch mà không ai hay.
+            if (error.response?.data?.code === 'VERSION_CONFLICT') {
+                this.$alert(
+                    'Someone else saved this job after your copy was downloaded, '
+                    + 'so your changes were not written over theirs.\n\n'
+                    + 'Download the job again from the server, then re-enter your changes.',
+                    'Job changed on server',
+                    { type: 'warning', confirmButtonText: 'OK' }
+                ).catch(() => {})
+                return
+            }
 
             if (error.response?.data) {
                 const msg = error.response.data.message
