@@ -70,6 +70,32 @@ const flat = (value, defaultUnit, serverUnit) => ({
     unit:  joinUnitFromServer(value, serverUnit || defaultUnit),
 })
 
+const mapCoilComponent = (component, type, index) => {
+    const source = component || {}
+
+    return {
+        mrid:          source.mrid || '',
+        component:     source.component || source.name || `${type} coil ${index + 1}`,
+        rated_current: flat(source.ratedCurrent ?? source.rated_current, 'A', source.ratedCurrentUnit),
+        rated_voltage: flat(source.ratedVoltage ?? source.rated_voltage, 'V', source.ratedVoltageUnit),
+        power:         str(source.power ?? source.dcAc),
+        frequency:     flat(source.frequency, 'Hz', source.frequencyUnit),
+    }
+}
+
+const normalizeCoilComponents = (components, count, type) => {
+    const source = Array.isArray(components) ? components : []
+    const hasConfiguredCount = count !== '' && count !== null && count !== undefined
+    const configuredCount = Number(count)
+    const rowCount = hasConfiguredCount && Number.isFinite(configuredCount) && configuredCount >= 0
+        ? configuredCount
+        : source.length
+
+    return Array.from({ length: rowCount }, (_, index) => (
+        mapCoilComponent(source[index], type, index)
+    ))
+}
+
 const applyServerAssessment = (target, source) => {
     if (!target || !source || typeof target !== 'object' || typeof source !== 'object') return
     Object.keys(source).forEach((key) => {
@@ -198,25 +224,18 @@ export const mapServerToDto = (serverData) => {
     dto.operating.auxiliary_circuits.power         = str(aux.power)
     dto.operating.auxiliary_circuits.frequency     = flat(aux.frequency, 'Hz', aux.frequencyUnit)
 
-    // Trip/Close coil components (arrays)
-    if (Array.isArray(opDetail.tripCoilComponents)) {
-        dto.operating.trip_coil_component = opDetail.tripCoilComponents.map(c => ({
-            component:     c.component || c.name || 'Trip coil',
-            rated_current: flat(c.ratedCurrent || c.rated_current, 'A',  c.ratedCurrentUnit),
-            rated_voltage: flat(c.ratedVoltage || c.rated_voltage, 'V',  c.ratedVoltageUnit),
-            power:         str(c.power),
-            frequency:     flat(c.frequency, 'Hz', c.frequencyUnit),
-        }))
-    }
-    if (Array.isArray(opDetail.closeCoilComponents)) {
-        dto.operating.close_coil_component = opDetail.closeCoilComponents.map(c => ({
-            component:     c.component || c.name || 'Close coil',
-            rated_current: flat(c.ratedCurrent || c.rated_current, 'A'),
-            rated_voltage: flat(c.ratedVoltage || c.rated_voltage, 'V'),
-            power:         str(c.power),
-            frequency:     flat(c.frequency, 'Hz'),
-        }))
-    }
+    // The configured counts are authoritative. Older server records may contain
+    // the counts without component rows, so fill missing rows for the UI.
+    dto.operating.trip_coil_component = normalizeCoilComponents(
+        opDetail.tripCoilComponents,
+        dto.operating.number_of_trip_coil,
+        'Trip'
+    )
+    dto.operating.close_coil_component = normalizeCoilComponents(
+        opDetail.closeCoilComponents,
+        dto.operating.number_of_close_coil,
+        'Close'
+    )
 
 
     // 8. AssessmentLimits — tự define spec, server theo cấu trúc abs/rel
@@ -498,6 +517,54 @@ const leafToServer = (obj) => {
     }
 }
 
+/**
+ * Leaf cho nhóm `ratings` — số 0 và số âm bị hạ về null.
+ *
+ * Server không kiểm "khác null", nó kiểm DƯƠNG:
+ *
+ *     if (dto.getRatedFrequency() != null) validateUtil.requirePositive(..., "Rated frequency");
+ *
+ * `measurementValue()` chỉ đọc `.value`, nên `value: null` làm server bỏ qua cả câu kiểm
+ * — an toàn. Còn `value: 0` thì đi vào `requirePositive` và bị từ chối.
+ *
+ * Ô để 0 ở đây nghĩa là "chưa nhập", không phải "bằng không": tần số, điện áp hay dòng
+ * định mức bằng 0 không có nghĩa vật lý. Nên hạ về null là diễn đạt đúng ý người dùng,
+ * không phải né kiểm tra.
+ *
+ * Đơn vị vẫn gửi — server ghép `multiplier + unit` để lưu riêng, không phụ thuộc value.
+ */
+const positiveLeafToServer = (obj) => {
+    const leaf = leafToServer(obj)
+    if (leaf.value !== null && !(leaf.value > 0)) leaf.value = null
+    return leaf
+}
+
+/**
+ * Leaf cho những trường server đòi "bật cờ thì mới được gửi" (PIR, grading capacitor).
+ *
+ *     if (Boolean.TRUE.equals(dto.getPreInsertionResistors()) && dto.getPirValue() != null) {
+ *         requirePositive(...)
+ *     } else {
+ *         Assert.isTrue(dto.getPirValue() == null && dto.getPirUnit() == null, "pir-must-be-empty")
+ *     }
+ *
+ * Chú ý nhánh `else`: nó đòi CẢ HAI phải rỗng — giá trị VÀ ĐƠN VỊ. `leafToServer` luôn
+ * trả về object có `unit`, nên gửi vô điều kiện là `pirUnit != null` và Assert đổ. Đây
+ * là lý do phần lớn CB không bật PIR đều fail.
+ *
+ * Và ngay cả khi cờ BẬT: value rỗng thì `measurementValue` trả null, luồng vẫn rơi vào
+ * `else`, unit vẫn phá. Nên điều kiện phải là **cờ bật VÀ có số dương**, không chỉ cờ bật.
+ *
+ * Trả `undefined` để chỗ gọi dùng spread mà bỏ hẳn key — cùng cách file này đã xử lý
+ * `ratedOperatingPressure` từ trước.
+ */
+const gatedLeafToServer = (flag, obj) => {
+    if (flag !== true) return undefined
+    const leaf = leafToServer(obj)
+    if (leaf.value === null || !(leaf.value > 0)) return undefined
+    return leaf
+}
+
 export const mapDtoToServer = (dto) => {
     if (!dto) return null
 
@@ -595,6 +662,10 @@ export const mapDtoToServer = (dto) => {
         return result
     }
 
+    // Tính một lần, dùng hai lần (kiểm có gửi hay không, rồi gửi).
+    const pirLeaf       = gatedLeafToServer(cb.hasPIR, cb.pirValue)
+    const capacitorLeaf = gatedLeafToServer(cb.hasGradingCapacitors, cb.capacitorValue)
+
     return {
         // ─── Khung CIM (server có) ───────────────────────────────────────────
         mRID:          p.mrid || null,
@@ -669,19 +740,21 @@ export const mapDtoToServer = (dto) => {
         },
 
         // ─── [SERVER THIẾU] Section nghiệp vụ — bổ sung theo style server ─────
+        // Mọi số ở đây server đòi DƯƠNG, không phải chỉ khác null — nên dùng
+        // positiveLeafToServer để 0 không bị đẩy vào requirePositive rồi bị từ chối.
         ratings: {
-            ratedVoltage:                     leafToServer(r.rated_voltage_ll),
-            ratedCurrent:                     leafToServer(r.rated_current),
-            ratedShortCircuitBreakingCurrent: leafToServer(r.rated_short_circuit_breaking_current),
-            shortCircuitNominalDuration:      leafToServer(r.short_circuit_nominal_duration),
-            ratedInsulationLevel:             leafToServer(r.rated_insulation_level),
-            ratedInterruptingTime:            leafToServer(r.rated_interrupting_time),
+            ratedVoltage:                     positiveLeafToServer(r.rated_voltage_ll),
+            ratedCurrent:                     positiveLeafToServer(r.rated_current),
+            ratedShortCircuitBreakingCurrent: positiveLeafToServer(r.rated_short_circuit_breaking_current),
+            shortCircuitNominalDuration:      positiveLeafToServer(r.short_circuit_nominal_duration),
+            ratedInsulationLevel:             positiveLeafToServer(r.rated_insulation_level),
+            ratedInterruptingTime:            positiveLeafToServer(r.rated_interrupting_time),
             interruptingDutyCycle:            strU(r.interrupting_duty_cycle),
-            ratedPowerAtClosing:              leafToServer(r.rated_power_at_closing),
-            ratedPowerAtOpening:              leafToServer(r.rated_power_at_opening),
-            ratedPowerAtMotorCharge:          leafToServer(r.rated_power_at_motor_charge),
-            ratedFrequency:                   leafToServer(r.rated_frequency),
-            ratedFrequencyCustom:             leafToServer(r.rated_frequency_custom),
+            ratedPowerAtClosing:              positiveLeafToServer(r.rated_power_at_closing),
+            ratedPowerAtOpening:              positiveLeafToServer(r.rated_power_at_opening),
+            ratedPowerAtMotorCharge:          positiveLeafToServer(r.rated_power_at_motor_charge),
+            ratedFrequency:                   positiveLeafToServer(r.rated_frequency),
+            ratedFrequencyCustom:             positiveLeafToServer(r.rated_frequency_custom),
         },
 
         circuitBreaker: {
@@ -689,11 +762,14 @@ export const mapDtoToServer = (dto) => {
             interruptersPerPhase: strU(cb.interruptersPerPhase),
             poleOperation:        cb.poleOperation || null,
             hasPIR:               cb.hasPIR ?? null,
-            pirValue:             leafToServer(cb.pirValue),
             hasGradingCapacitors: cb.hasGradingCapacitors ?? null,
-            capacitorValue:       leafToServer(cb.capacitorValue),
             interruptingMedium:   cb.interruptingMedium || null,
             tankType:             toUpperSnake(cb.tankType),
+            // Bỏ HẲN key khi cờ tắt (hoặc chưa có số dương). Server ở nhánh `else` đòi cả
+            // giá trị lẫn ĐƠN VỊ phải rỗng, mà leafToServer luôn kèm unit — gửi vào là đổ
+            // "pir-must-be-empty" / "capacitor-must-be-empty".
+            ...(pirLeaf       !== undefined ? { pirValue: pirLeaf } : {}),
+            ...(capacitorLeaf !== undefined ? { capacitorValue: capacitorLeaf } : {}),
         },
 
         contactSystem: {

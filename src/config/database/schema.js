@@ -35,6 +35,29 @@ CREATE TABLE IF NOT EXISTS "activity_record" (
 	FOREIGN KEY("mrid") REFERENCES "identified_object"("mrid") ON DELETE CASCADE,
 	FOREIGN KEY("status") REFERENCES "status"("mrid")
 );
+CREATE TABLE IF NOT EXISTS "activity_record_ticket" (
+	"mrid"	TEXT NOT NULL,
+	"ticket_id"	TEXT,
+	"ticket_status"	TEXT,
+	"ticket_severity"	TEXT,
+	"repair_location"	TEXT,
+	"action_note"	TEXT,
+	"created_by"	INTEGER,
+	"updated_at"	TEXT,
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("mrid") REFERENCES "activity_record"("mrid") ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS "activity_record_ticket_component" (
+	"mrid"	TEXT NOT NULL,
+	"activity_record_ticket_id"	TEXT NOT NULL,
+	"component_name"	TEXT NOT NULL,
+	"sequence_number"	INTEGER,
+	"created_at"	TEXT,
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("activity_record_ticket_id") REFERENCES "activity_record_ticket"("mrid") ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS "idx_activity_record_ticket_component_ticket"
+	ON "activity_record_ticket_component"("activity_record_ticket_id");
 CREATE TABLE IF NOT EXISTS "analog" (
 	"mrid"	TEXT NOT NULL,
 	"max_value"	REAL,
@@ -440,6 +463,7 @@ CREATE TABLE IF NOT EXISTS "calibration_record" (
 	"provider"	TEXT,
 	"certificate_number"	TEXT,
 	"result"	TEXT,
+	"status"	TEXT,
 	"notes"	TEXT,
 	PRIMARY KEY("mrid"),
 	FOREIGN KEY("testing_equipment") REFERENCES "testing_equipment"("mrid") on delete cascade
@@ -965,10 +989,17 @@ CREATE TABLE IF NOT EXISTS "impedance" (
 );
 CREATE TABLE IF NOT EXISTS "in_use_date" (
 	"mrid"	TEXT NOT NULL,
+	"asset_id"	TEXT,
+	"date_type"	TEXT,
+	"date_value"	INTEGER,
 	"in_use_date"	INTEGER,
 	"not_ready_for_use_date"	INTEGER,
 	"ready_for_use_date"	INTEGER,
-	PRIMARY KEY("mrid")
+	"note"	TEXT,
+	"created_at"	TEXT,
+	"updated_at"	TEXT,
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("asset_id") REFERENCES "asset"("mrid") ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS "inductance" (
 	"mrid"	TEXT NOT NULL,

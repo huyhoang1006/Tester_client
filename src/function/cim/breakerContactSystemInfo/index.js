@@ -24,6 +24,13 @@ export const getBreakerContactSystemInfoByBreakerInfoId = async (breakerInfoId) 
             [breakerInfoId],
             (err, rows) => {
                 if (err) return reject({ success: false, err, message: 'Get breakerContactSystemInfo by breaker_info_id failed' })
+
+                // `db.get` tra undefined khi khong co dong. Tra success:true kem data
+                // undefined la noi doi voi cho goi: ho kiem `success` roi dung `.data`
+                // ngay, va nhan TypeError. Khong co dong thi phai la success:false.
+                // Callback o day dat ten tham so la `rows`, nhung day la `db.get` nen no
+                // van chi la MOT dong (hoac undefined). Ten goi nham, kiem theo dung ten.
+                if (!rows) return resolve({ success: false, data: null, message: 'Not found' })
                 return resolve({ success: true, data: rows, message: 'Get breakerContactSystemInfo by breaker_info_id completed' })
             }
         )

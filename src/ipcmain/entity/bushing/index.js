@@ -1,6 +1,7 @@
 'use strict'
 import { ipcMain } from 'electron'
 import { entityFunc } from "@/function"
+import { describeFailure } from '@/ipcmain/failureMessage'
 
 export const insertBushingEntity = () => {
     ipcMain.handle('insertBushingEntity', async function (event, data) {
@@ -17,7 +18,7 @@ export const insertBushingEntity = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -45,7 +46,7 @@ export const getBushingEntityByMrid = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -74,7 +75,7 @@ export const deleteBushingEntity = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {

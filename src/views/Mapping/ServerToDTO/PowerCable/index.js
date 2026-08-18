@@ -131,7 +131,16 @@ export const mapServerToDto = (serverData) => {
 
     setMeasurement(dto.ratingsData.rated_voltage, rating.ratedVoltage, rating.ratedVoltageUnit, 'k|V')
     setMeasurement(dto.ratingsData.max_voltage, rating.maximumVoltage, rating.maximumVoltageUnit, 'k|V')
-    setMeasurement(dto.ratingsData.rated_frequency, rating.rateFrequency, rating.rateFrequencyUnit, 'Hz')
+    // `ratedFrequency`, KHÔNG phải `rateFrequency`.
+    //
+    // Field Java bên server tên là `rateFrequency`, nhưng response DTO có
+    // `@JsonProperty("ratedFrequency")` — annotation đó ĐỔI tên lúc ghi JSON, nên JSON về
+    // luôn mang khoá `ratedFrequency`. Đọc theo tên field Java thì được `undefined`, và ô
+    // Rated frequency hiện rỗng trong khi dữ liệu vẫn nằm nguyên trong DB.
+    //
+    // Đây là field duy nhất trong 10 field của powerCableRating bị lệch tên như vậy; 9
+    // field kia dùng một tên ở cả hai chiều.
+    setMeasurement(dto.ratingsData.rated_frequency, rating.ratedFrequency, rating.ratedFrequencyUnit, 'Hz')
     setMeasurement(dto.ratingsData.shortcircuit, rating.shortCircuitCurrent, rating.shortCircuitCurrentUnit, 'k|A')
     setMeasurement(dto.ratingsData.rated_duration, rating.ratedDurationOfShortCircuit, rating.ratedDurationOfShortCircuitUnit, 's')
 
@@ -271,8 +280,12 @@ export const mapDtoToServer = (dto, ownerType) => {
             ratedVoltageUnit: ratedVoltage.unit,
             maximumVoltage: maximumVoltage.value,
             maximumVoltageUnit: maximumVoltage.unit,
-            rateFrequency: rateFrequency.value,
-            rateFrequencyUnit: rateFrequency.unit,
+            // Gửi `ratedFrequency` để KHỚP tên mà response trả về — một field một tên ở cả
+            // hai chiều. Server nhận được vì request DTO có `@JsonAlias("ratedFrequency")`;
+            // `@JsonAlias` THÊM tên hợp lệ lúc đọc chứ không đổi tên, nên cả hai cách viết
+            // đều vào. Không phải chờ server sửa gì.
+            ratedFrequency: rateFrequency.value,
+            ratedFrequencyUnit: rateFrequency.unit,
             shortCircuitCurrent: shortCircuitCurrent.value,
             shortCircuitCurrentUnit: shortCircuitCurrent.unit,
             ratedDurationOfShortCircuit: ratedDuration.value,

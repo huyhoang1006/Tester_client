@@ -81,6 +81,7 @@ const testingEquipmentEntityAPI = entityPreload.testingEquipmentEntityPreload.te
 const syncStateAPI = entityPreload.syncStatePreload.syncStatePreload()
 const auditLogAPI = entityPreload.auditLogPreload.auditLogPreload()
 const compareTestAPI = entityPreload.compareTestPreload.compareTestPreload()
+const userIdentifiedObjectAPI = entityPreload.userIdentifiedObjectPreload.userIdentifiedObjectPreload()
 
 
 // Update API from entity preload
@@ -158,6 +159,7 @@ const ipcMain = Object.assign(
     testingEquipmentEntityAPI,
     syncStateAPI,
     auditLogAPI,
-    compareTestAPI
+    compareTestAPI,
+    userIdentifiedObjectAPI
 )
 contextBridge.exposeInMainWorld('electronAPI', ipcMain)

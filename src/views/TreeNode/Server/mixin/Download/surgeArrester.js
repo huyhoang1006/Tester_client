@@ -4,6 +4,7 @@ import * as SurgeArresterServerMapper from '@/views/Mapping/ServerToDTO/SurgeArr
 import * as SurgeArresterMapper from '@/views/Mapping/SurgeArrester/index.js'
 import SurgeArresterEntity from '@/views/Flatten/SurgeArrester'
 import { fetchWithRetry } from './core-utils.js'
+import { scopeAssetDtoForUser, scopeOwnedBranchIds } from './id-scope'
 import { traverseAndFillMrid, ensureTopLevelFK, FK_KEYS } from './fk-utils.js'
 import { applyDownloadedAssetMedia } from './asset-media-utils.js'
 
@@ -43,6 +44,9 @@ export async function downloadSurgeArresterChain(data, ctx) {
 
     // 1. Map server → serverDto
     const serverDto       = SurgeArresterServerMapper.mapServerToDto(serverData)
+    const currentUserId = ctx.$store.state.user.user_id
+    scopeAssetDtoForUser(serverDto, currentUserId)
+    scopeSurgeArresterOwnedIds(serverDto, currentUserId)
     serverDto.psrId       = data.parentBayId
     serverDto.properties.mrid = sa.mrid
     await applyDownloadedAssetMedia(serverDto, 'Surge arrester', sa.mrid)
@@ -56,6 +60,8 @@ export async function downloadSurgeArresterChain(data, ctx) {
         ? SurgeArresterMapper.mapEntityToDto(clientEntity)
         : null
 
+    scopeAssetDtoForUser(clientDto, currentUserId)
+    scopeSurgeArresterOwnedIds(clientDto, currentUserId)
     // 3. Merge — surge arrester dùng simple merge
     let mergedDto
 
@@ -138,6 +144,8 @@ export async function downloadSurgeArresterChain(data, ctx) {
     // Đảm bảo mọi mrid + FK id được điền trước khi map sang entity (tránh lỗi foreign key)
     traverseAndFillMrid(mergedDto)
     ensureTopLevelFK(mergedDto, FK_KEYS.surgeArrester)
+    scopeAssetDtoForUser(mergedDto, currentUserId)
+    scopeSurgeArresterOwnedIds(mergedDto, currentUserId)
 
     // 5. Build entity từ mergedDto
     const oldEntity = clientEntity || new SurgeArresterEntity()
@@ -173,4 +181,10 @@ export async function downloadSurgeArresterChain(data, ctx) {
 
     //     if (!parentNode.expanded) ctx.$set(parentNode, 'expanded', true)
     // }
+}
+
+const scopeSurgeArresterOwnedIds = (dto, userId) => {
+    if (!dto || !userId) return dto
+    scopeOwnedBranchIds(dto.ratings && dto.ratings.tableRating, userId, 'sa-rating')
+    return dto
 }

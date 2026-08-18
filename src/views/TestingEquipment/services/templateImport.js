@@ -28,13 +28,13 @@ const LEGACY_LEAF_ALIASES = {
     purchase_date: 'in_use_date'
 }
 // Field nested — leaf value có prefix trong FEATURE_TREE
-const CAL_FIELDS = ['calibration_date', 'due_date', 'interval_months', 'provider', 'certificate_number', 'result', 'notes']
+const CAL_FIELDS = ['calibration_date', 'due_date', 'interval_months', 'provider', 'certificate_number', 'result', 'status', 'notes']
 const LIC_FIELDS = ['option_name', 'license_key', 'enabled', 'description', 'activation_date', 'expiry_date']
 const REP_FIELDS = ['created_date_time', 'reason', 'provider', 'cost', 'status']
 const SERIAL_AWARE_PROP_FIELDS = ['name', 'type', 'manufacturer', 'model', 'manufacturer_year',
     'asset_tag', 'status', 'country_of_origin', 'in_use_date', 'comment']
 const SERIAL_AWARE_NESTED_FIELDS = {
-    cal_: ['calibration_date', 'due_date', 'interval_months', 'provider', 'certificate_number', 'result', 'notes'],
+    cal_: ['calibration_date', 'due_date', 'interval_months', 'provider', 'certificate_number', 'result', 'status', 'notes'],
     lic_: ['option_name', 'license_key', 'enabled', 'description', 'activation_date', 'expiry_date'],
     rep_: ['created_date_time', 'reason', 'provider', 'cost', 'status']
 }
@@ -162,6 +162,13 @@ const normalizeRepairStatus = (value) => {
     const key = text.toLowerCase().replace(/[-\s]+/g, ' ')
     return REPAIR_STATUS_ALIASES[key] || REPAIR_STATUS_ALIASES[key.replace(/\s+/g, '')] || text
 }
+const normalizeCalibrationStatus = (value) => {
+    const key = String(value == null ? '' : value).trim().toLowerCase()
+    if (key === 'ready') return 'Ready'
+    if (key === 'expired') return 'Expired'
+    if (key === 'pending') return 'Pending'
+    return 'Pending'
+}
 const isYearOnlyDate = (v) => /^\d{4}$/.test(String(v == null ? '' : v).trim())
 const dateYear = (v) => String(v || '').slice(0, 4)
 const isBlankSerial = (v) => {
@@ -269,7 +276,10 @@ export const templateImport = {
         } else {
             normalizeDateField(dto.properties, 'in_use_date')
         }
-        ;(dto.calibration || []).forEach(record => DATE_NESTED_FIELDS.cal_.forEach(field => normalizeDateField(record, field)))
+        ;(dto.calibration || []).forEach(record => {
+            DATE_NESTED_FIELDS.cal_.forEach(field => normalizeDateField(record, field))
+            record.status = normalizeCalibrationStatus(record.status)
+        })
         ;(dto.licenses || []).forEach(record => DATE_NESTED_FIELDS.lic_.forEach(field => normalizeDateField(record, field)))
         ;(dto.repairs || []).forEach(record => {
             DATE_NESTED_FIELDS.rep_.forEach(field => normalizeDateField(record, field))

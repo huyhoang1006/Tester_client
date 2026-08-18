@@ -82,7 +82,26 @@ export const insertProductAssetModel = async (model) => {
 }
 
 // Transaction: Thêm mới product asset model
+/**
+ * Ghi product_asset_model trong một transaction.
+ *
+ * Cùng lý do với `insertLifecycleDateTransaction`: mrid null ở đây là "không có model để
+ * lưu", không phải lỗi. Không chặn thì nó rơi xuống `insertIdentifiedObjectTransaction`
+ * và nổ `NOT NULL constraint failed: identified_object.mrid`, kéo đổ cả transaction của
+ * asset — người dùng chỉ thấy "fail" mà không biết vì sao.
+ *
+ * Vẫn log khi có dữ liệu thật mà thiếu mrid, để trường hợp mất mrid không bị che.
+ */
 export const insertProductAssetModelTransaction = (model, dbsql) => {
+    if (!model || !model.mrid) {
+        const hasData = model && ['catalogue_number', 'manufacturer', 'model_number',
+            'model_version', 'style_number', 'drawing_number']
+            .some((k) => model[k] !== null && model[k] !== undefined && model[k] !== '')
+        if (hasData) {
+            console.warn('[productAssetModel] CO du lieu nhung KHONG co mrid — bo qua, du lieu nay se mat:', model)
+        }
+        return Promise.resolve({ success: true, data: model, message: 'No product asset model to insert' })
+    }
     return new Promise(async (resolve, reject) => {
         try {
             const identifiedResult = await IdentifiedObjectFunc.insertIdentifiedObjectTransaction(model, dbsql)

@@ -1,6 +1,7 @@
 'use strict'
 import {ipcMain} from 'electron'
 import {cimFunc} from "@/function"
+import { describeFailure } from '@/ipcmain/failureMessage'
 
 export const getSubstationByMrid = () => {
     ipcMain.handle('getSubstationByMrid', async function (event, mrid) {
@@ -15,7 +16,7 @@ export const getSubstationByMrid = () => {
             } else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -47,7 +48,7 @@ export const getSubstationsInOrganisationForUser = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -75,7 +76,7 @@ export const insertSubstation = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -102,7 +103,7 @@ export const updateSubstationByMrid = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -129,7 +130,7 @@ export const deleteSubstationByMrid = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {

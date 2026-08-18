@@ -8,6 +8,7 @@ import constant from '@/utils/constant'
 import {fetchWithRetry} from './core-utils.js'
 import {detectConflicts, applyResolved, mergeWithoutSnapshot, TRANSFORMER_FIELD_DEFS} from '@/utils/conflictUtils.js'
 import { applyDownloadedAssetMedia } from './asset-media-utils.js'
+import { scopeAssetDtoForUser, scopeOwnedBranchIds } from './id-scope'
 
 // ─── Step 1: fetch full info từ server ───────────────────────────────────────
 
@@ -42,6 +43,9 @@ export async function downloadTransformerChain(data, ctx) {
 
     // 1. Map server → serverDto
     const serverDto = TransformerServerMapper.mapServerToDto(serverData)
+    const currentUserId = ctx.$store.state.user.user_id
+    scopeAssetDtoForUser(serverDto, currentUserId, { oldPowerTransformerInfoId: 'ptinfo' })
+    scopeTransformerOwnedIds(serverDto, currentUserId)
     serverDto.psrId = data.parentBayId
     serverDto.properties.mrid = tr.mrid
     await applyDownloadedAssetMedia(serverDto, 'Transformer', tr.mrid)
@@ -53,6 +57,8 @@ export async function downloadTransformerChain(data, ctx) {
     const clientEntity = existingResult.success ? existingResult.data : null
     const clientDto = clientEntity ? TransformerMapper.transformerEntityToDto(clientEntity) : null
 
+    scopeAssetDtoForUser(clientDto, currentUserId, { oldPowerTransformerInfoId: 'ptinfo' })
+    scopeTransformerOwnedIds(clientDto, currentUserId)
     // 3. Merge
     let mergedDto
 
@@ -129,6 +135,8 @@ export async function downloadTransformerChain(data, ctx) {
     ensureShortCircuitTestEndInfo(mergedDto)
     traverseAndFillMrid(mergedDto)
     ensureTopLevelFK(mergedDto)
+    scopeAssetDtoForUser(mergedDto, currentUserId, { oldPowerTransformerInfoId: 'ptinfo' })
+    scopeTransformerOwnedIds(mergedDto, currentUserId)
 
     const oldEntity = clientEntity || new TransformerEntity()
     const newEntity = TransformerMapper.transformerDtoToEntity(mergedDto)
@@ -159,6 +167,25 @@ export async function downloadTransformerChain(data, ctx) {
 
     //     if (!parentNode.expanded) ctx.$set(parentNode, 'expanded', true)
     // }
+}
+
+const scopeTransformerOwnedIds = (dto, userId) => {
+    if (!dto || !userId) return dto
+    const seen = new Map()
+    scopeOwnedBranchIds(dto.ratings, userId, 'tf-rating', { seen })
+    scopeOwnedBranchIds(dto.impedances, userId, 'tf-impedance', { seen })
+    scopeOwnedBranchIds(dto.tap_changers, userId, 'tf-tap', { seen })
+    scopeOwnedBranchIds(dto.bushing_data, userId, 'tf-bushing', { seen })
+    scopeOwnedBranchIds(dto.surge_arrester, userId, 'tf-surge', { seen })
+    scopeOwnedBranchIds(dto.oldTransformerEndInfo, userId, 'tf-end', { seen })
+    scopeOwnedBranchIds(dto.shortCircuitTestTransformerEndInfo, userId, 'tf-sc-link', {
+        seen,
+        refScopes: {
+            short_circuit_test_id: 'tf-impedance',
+            transformer_end_info_id: 'tf-end'
+        }
+    })
+    return dto
 }
 
 // ─── Helper ──────────────────────────────────────────────────────────────────

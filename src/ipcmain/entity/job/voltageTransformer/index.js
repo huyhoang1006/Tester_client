@@ -1,6 +1,7 @@
 'use strict'
 import {ipcMain} from 'electron'
 import {entityFunc} from "@/function"
+import { describeFailure } from '@/ipcmain/failureMessage'
 
 export const insertVoltageTransformerJob = () => {
     ipcMain.handle('insertVoltageTransformerJob', async function (event,old_data, data) {
@@ -17,7 +18,7 @@ export const insertVoltageTransformerJob = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -45,7 +46,7 @@ export const getVoltageTransformerJobByMrid = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -72,7 +73,7 @@ export const deleteVoltageTransformerJobByMrid = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {

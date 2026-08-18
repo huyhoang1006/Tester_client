@@ -103,7 +103,10 @@ export default {
             if (!rawParentId) return null
             // Hậu tố suy từ META của CHA (`lastParent.mode` / `.asset`), không phải của
             // node hiện tại — cùng một id nhưng khác loại thì ra hai hậu tố khác nhau.
-            return lastParent ? toLocalMrid(rawParentId, lastParent) : rawParentId
+            const userId = this.$store && this.$store.state && this.$store.state.user
+                ? this.$store.state.user.user_id
+                : null
+            return lastParent ? toLocalMrid(rawParentId, lastParent, userId) : rawParentId
         },
 
         getDownloadParentNode(node) {
@@ -140,7 +143,10 @@ export default {
             // còn DB local lưu dạng có hậu tố. Không đổi thì hàm này luôn trả về false,
             // và hộp thoại "đã tồn tại, ghi đè?" KHÔNG BAO GIỜ hiện — bản ở máy bị ghi
             // đè lặng lẽ, kể cả khi người dùng vừa sửa dở.
-            const mrid = toLocalMrid(node.mrid || node.id, node)
+            const userId = this.$store && this.$store.state && this.$store.state.user
+                ? this.$store.state.user.user_id
+                : null
+            const mrid = toLocalMrid(node.mrid || node.id, node, userId)
             if (!mrid) return false
 
             try {

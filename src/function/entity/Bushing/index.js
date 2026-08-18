@@ -1,5 +1,6 @@
 import db from '../../datacontext/index'
 import path from 'path'
+import { safePathSegment } from '@/utils/fileName'
 import * as attachmentContext from '../../attachmentcontext/index'
 import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction, deleteDirectory } from '@/function/entity/attachment'
 import { insertBushingTransaction, getBushingById, deleteBushingTransaction } from '@/function/cim/bushing';
@@ -77,7 +78,7 @@ export const insertBushingEntity = async (entity) => {
                 const newPath = []
                 for (let i = 0; i < pathData.length; i++) {
                     const namefile = path.basename(pathData[i].path);
-                    pathData[i].path = path.join(attachmentContext.getAttachmentDir(), entity.bushing.mrid, namefile);
+                    pathData[i].path = path.join(attachmentContext.getAttachmentDir(), safePathSegment(entity.bushing.mrid), namefile);
                     newPath.push(pathData[i]);
                 }
                 entity.attachment.path = JSON.stringify(newPath);
@@ -317,7 +318,7 @@ export const deleteBushingEntity = async (data) => {
                 if (data.attachment && data.attachment.id) {
                     const pathData = JSON.parse(data.attachment.path || '[]')
                     if (Array.isArray(pathData) && pathData.length > 0) {
-                        syncFilesWithDeletion(pathData, null, data.mrid);
+                        syncFilesWithDeletion(pathData, null, data.bushing.mrid);
                     }
                 }
                 if (data.attachment.id) {

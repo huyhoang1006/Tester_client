@@ -1,5 +1,10 @@
 /* eslint-disable */
 export default {
+    data() {
+        return {
+            savingByShortcut: false
+        }
+    },
     mounted() {
         window.addEventListener("keydown", this.handleKeyDown);
     },
@@ -13,16 +18,22 @@ export default {
                 this.saveCtrSInTree();
             }
         },
-        saveCtrSInTree() {
-            if(this.clientSlide) {
-                const clientTabs = this.getClientTabsRef ? this.getClientTabsRef() : this.$refs.clientTabs
-                if(clientTabs) {
-                    clientTabs.saveCtrlS()
+        async saveCtrSInTree() {
+            if (this.savingByShortcut) return
+            this.savingByShortcut = true
+            try {
+                if(this.clientSlide) {
+                    const clientTabs = this.getClientTabsRef ? this.getClientTabsRef() : this.$refs.clientTabs
+                    if(clientTabs) {
+                        await clientTabs.saveCtrlS()
+                    }
+                } else {
+                    if(this.$refs.serverTabs) {
+                        await this.$refs.serverTabs.saveActiveServerTab()
+                    }
                 }
-            } else {
-                if(this.$refs.serverTabs) {
-                    this.$refs.serverTabs.saveActiveServerTab()
-                }
+            } finally {
+                this.savingByShortcut = false
             }
         }
     }

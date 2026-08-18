@@ -50,6 +50,7 @@ import * as CurrentTransformerMapping from '@/views/Mapping/CurrentTransformer/i
 import * as ReactorMapping from '@/views/Mapping/Reactor/index'
 import * as BushingMapping from '@/views/Mapping/Bushing/index'
 import * as rotatingMachineMapping from "@/views/Mapping/RotatingMachine/index"
+import { startLoading } from '@/utils/loading'
 
 export default {
     methods: {
@@ -205,14 +206,20 @@ export default {
                 }
             }
 
-            // Loading like the import-JSON progress dialog
-            this.progressType = 'add'
-            this.progressName = 'Duplicating...'
-            this.progressDone = 0
-            this.progressTotal = includeChildren ? await this._countSubtree(node) : 1
-            this.progressVisible = true
+            // MỘT KIỂU LOADING DUY NHẤT — dùng chung overlay với tải/xoá/nhập/xuất.
+            // Đếm cây con trước cũng phải gọi DB nên mở overlay TRƯỚC khi đếm, chưa biết
+            // tổng thì để 0 rồi đặt lại ngay sau khi đếm xong.
+            const reporter = startLoading(this, {
+                action: 'duplicate',
+                text: 'Counting nodes...',
+                type: 'heavy',
+            })
+            this._dupReporter = reporter
+            this._dupDone = 0
 
             try {
+                const total = includeChildren ? await this._countSubtree(node) : 1
+                reporter.progress('Duplicating...', 0, total)
                 if (includeChildren) {
                     const newRoot = await this._duplicateSubtree(node, null)
                     if (newRoot && newRoot.cancelled) return
@@ -222,7 +229,7 @@ export default {
                     const result = await this._duplicateSingle(node, null)
                     if (result && result.success && result.data) {
                         this._insertDuplicatedNodeIntoTree(node, result.data)
-                        this.progressDone = 1
+                        reporter.progress(null, 1)
                         this.$message.success('Duplicate successful!')
                     } else if (result && result.cancelled) {
                         return
@@ -231,10 +238,16 @@ export default {
                     }
                 }
             } catch (error) {
-                console.error('Error during duplicate:', error)
-                this.$message.error('An error occurred while duplicating')
+                if (error && error.message === 'CANCELED') {
+                    console.warn('[Duplicate] nguoi dung dung nhan ban')
+                    this.$message.warning('Duplicate stopped. Nodes already created were kept.')
+                } else {
+                    console.error('Error during duplicate:', error)
+                    this.$message.error('An error occurred while duplicating')
+                }
             } finally {
-                this.progressVisible = false
+                this._dupReporter = null
+                await reporter.close()
             }
         },
 
@@ -303,11 +316,18 @@ export default {
         // Recursively duplicate the whole subtree. Jobs are duplicated (their tests are copied
         // inside the job entity); standalone test nodes are skipped to avoid double-creating tests.
         async _duplicateSubtree(node, overrideParent) {
+            // Dừng ở ranh giới giữa hai node: node vừa tạo giữ lại, node kế tiếp không
+            // bắt đầu. Nhân bản có GHI dữ liệu nên không thể huỷ giữa một node.
+            if (this._dupReporter) this._dupReporter.throwIfAborted()
+
             const result = await this._duplicateSingle(node, overrideParent)
             if (result && result.cancelled) return result
             if (!result || !result.success || !result.data) return null
-            this.progressDone++
-            this.progressName = result.data.name || node.name || ''
+            this._dupDone = (this._dupDone || 0) + 1
+            if (this._dupReporter) {
+                const label = result.data.name || node.name || node.mrid
+                this._dupReporter.progress(`Duplicating "${label}"`, this._dupDone)
+            }
             const newNode = result.data
             if (!overrideParent) this._insertDuplicatedNodeIntoTree(node, newNode)
             // Job nodes carry their tests internally; don't recurse into their children.

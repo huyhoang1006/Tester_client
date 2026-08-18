@@ -188,7 +188,7 @@ export function mapEntityToDto(entity) {
 const mapDataVTRevert = (entity) => {
     if (!entity || !entity.potentialTransformerTable) return [];
 
-    return entity.potentialTransformerTable.map(item => {
+    return entity.potentialTransformerTable.map((item, index) => {
         // tìm voltage matching
         const voltage = entity.voltage?.find(v => v.mrid === item.usr_rated_voltage);
         // tìm apparentPower matching
@@ -196,7 +196,7 @@ const mapDataVTRevert = (entity) => {
 
         return {
             mrid: item.mrid || null,
-            name: item.name || null,
+            name: item.name || `${index + 1}a${index + 1}n`,
 
             usr_formula: item.usr_formula || '',
 
@@ -236,6 +236,7 @@ const mapDataVTtoArrayPotentialTransformerTable = (dto, entity) => {
 
         // mrid của bảng
         newTable.mrid = table.mrid || null;
+        newTable.name = table.name || `${idx + 1}a${idx + 1}n`;
 
         // usr_formula: lấy value nếu là object {value:...}, hoặc raw nếu là string/number
         newTable.usr_formula = table.usr_formula?.value ?? table.usr_formula ?? null;

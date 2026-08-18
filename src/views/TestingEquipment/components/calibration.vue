@@ -9,6 +9,7 @@
                 <tr>
                     <th style="min-width:150px">Calibration date</th>
                     <th style="min-width:150px">Due date</th>
+                    <th style="width:130px">Status</th>
                     <th style="width:110px">Interval (mo)</th>
                     <th style="min-width:170px">Provider</th>
                     <th style="min-width:160px">Certificate no.</th>
@@ -18,10 +19,17 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-if="!records.length"><td colspan="8" class="empty">No calibration records</td></tr>
+                <tr v-if="!records.length"><td colspan="9" class="empty">No calibration records</td></tr>
                 <tr v-for="(r, i) in records" :key="i">
                     <td><input class="inp" type="date" v-model="r.calibration_date" /></td>
                     <td><input class="inp" type="date" v-model="r.due_date" /></td>
+                    <td>
+                        <select :class="['inp', 'status-select', statusClass(r.status)]" v-model="r.status">
+                            <option value="Ready">Ready</option>
+                            <option value="Expired">Expired</option>
+                            <option value="Pending">Pending</option>
+                        </select>
+                    </td>
                     <td><input class="inp" type="number" min="0" v-model.number="r.interval_months" /></td>
                     <td><input class="inp" v-model="r.provider" placeholder="Calibration lab" /></td>
                     <td><input class="inp" v-model="r.certificate_number" /></td>
@@ -49,7 +57,10 @@ export default {
     methods: {
         addRow() {
             this.records.push({ mrid: '', calibration_date: '', due_date: '', interval_months: 12,
-                provider: '', certificate_number: '', result: '', notes: '' })
+                provider: '', certificate_number: '', result: '', status: 'Pending', notes: '' })
+        },
+        statusClass(status) {
+            return `status-${String(status || 'Pending').toLowerCase()}`
         },
         removeRow(i) { this.records.splice(i, 1) }
     }
@@ -60,13 +71,17 @@ export default {
 .tbl-wrap { --blue-900:#0b2f86; --blue-800:#123c9c; --gray-900:#111827; --gray-700:#374151; --gray-600:#4b5563; --gray-400:#9ca3af; --gray-300:#d1d5db; --gray-200:#e5e7eb; --gray-100:#f3f4f6; overflow-x: auto; }
 .sec-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
 .sec-title h3 { margin: 0; font-size: 16px; color: var(--gray-900); }
-table { width: 100%; min-width: 1040px; border-collapse: collapse; border: 1px solid var(--gray-200); border-radius: 10px; overflow: hidden; background: #fff; }
+table { width: 100%; min-width: 1160px; border-collapse: collapse; border: 1px solid var(--gray-200); border-radius: 10px; overflow: hidden; background: #fff; }
 th { background: var(--gray-100); color: var(--gray-700); text-align: left; padding: 12px 14px; font-size: 12px; font-weight: 800; border-bottom: 1px solid var(--gray-300); white-space: nowrap; }
 td { padding: 8px 12px; border-bottom: 1px solid var(--gray-200); vertical-align: middle; }
 tr:last-child td { border-bottom: 0; }
 .empty { text-align: center; color: var(--gray-400); padding: 22px; font-weight: 600; }
 .inp { width: 100%; border: 1px solid var(--gray-200); border-radius: 7px; padding: 6px 8px; font-size: 13px; color: var(--gray-900); background: #fff; outline: none; }
 .inp:focus { border-color: var(--blue-900); box-shadow: 0 0 0 3px rgba(11,47,134,0.08); }
+.status-select { font-weight: 700; }
+.status-select.status-ready { color: #15803d; background: #f0fdf4; border-color: #bbf7d0; }
+.status-select.status-expired { color: #dc2626; background: #fff1f2; border-color: #fecdd3; }
+.status-select.status-pending { color: #64748b; background: #f1f5f9; border-color: #cbd5e1; }
 .ctr { text-align: center; }
 .del { border: none; background: transparent; color: #d90429; font-size: 15px; cursor: pointer; padding: 4px; border-radius: 6px; }
 .del:hover { background: #fee2e2; }

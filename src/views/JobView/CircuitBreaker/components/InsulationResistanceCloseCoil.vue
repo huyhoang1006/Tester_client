@@ -34,7 +34,7 @@
                         {{ index + 1 }}
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.close_coil_no.value"></el-input>
+                        <el-input size="mini" type="text" disabled v-model="item.close_coil_no.value"></el-input>
                     </td>
                     <td>
                         <el-input size="mini" type="text" number="positive"

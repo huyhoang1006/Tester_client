@@ -12,6 +12,8 @@ import { getDisconnectorChain, downloadDisconnectorChain } from './disconnector.
 import { getSurgeArresterChain, downloadSurgeArresterChain } from './surgeArrester.js'
 import { getCircuitBreakerChain, downloadCircuitBreakerChain } from './circuitBreaker.js'
 import { getTransformerChain, downloadTransformerChain } from './transformer.js'
+import { getPowerCableChain, downloadPowerCableChain } from './powerCable.js'
+import { getBushingChain, downloadBushingChain } from './bushing.js'
 import {
     getTransformerJobChain, getVoltageTransformerJobChain, getCurrentTransformerJobChain,
     getCircuitBreakerJobChain, getDisconnectorJobChain, getSurgeArresterJobChain,
@@ -58,13 +60,14 @@ export async function fetchWithRetry(fn, maxRetries = 3, delayMs = 1000) {
 // giá trị này được, do tầng api/demo tự cắt hậu tố.
 export async function buildOrgAncestors(node) {
     const CLIENT_ROOT = constant.ROOT
+    const userId = node && node._currentUserId
     const chain =[]
     let prevParentId = CLIENT_ROOT
 
     // 1. Quét mảng parentArr
     if (node.parentArr && Array.isArray(node.parentArr)) {
         for (const ancestor of node.parentArr) {
-            const ancestorId = toLocalMrid(ancestor.mrid || ancestor.id, ancestor)
+            const ancestorId = toLocalMrid(ancestor.mrid || ancestor.id, ancestor, userId)
             chain.push({
                 id: ancestorId,
                 mrid: ancestorId,
@@ -80,7 +83,7 @@ export async function buildOrgAncestors(node) {
     }
 
     // 2. Thêm node hiện tại vào cuối chuỗi
-    const nodeId = toLocalMrid(node.mrid || node.id, node)
+    const nodeId = toLocalMrid(node.mrid || node.id, node, userId)
     chain.push({
         id: nodeId,
         mrid: nodeId,
@@ -97,12 +100,13 @@ export async function buildOrgAncestors(node) {
 
 //lấy full thông tin từ chuỗi
 export async function buildSingleNodeChain(node) {
+    const userId = node && node._currentUserId
     const parentArr = Array.isArray(node.parentArr) ? node.parentArr : []
     const lastParent = parentArr.length ? parentArr[parentArr.length - 1] : null
     const rawParentId = node.parentId || lastParent?.mrid || lastParent?.id || constant.ROOT
     // lastParent mang mode của cha → dựng được mrid local đúng loại cho cha
-    const parentId = lastParent ? toLocalMrid(rawParentId, lastParent) : rawParentId
-    const nodeId = toLocalMrid(node.mrid || node.id, node)
+    const parentId = lastParent ? toLocalMrid(rawParentId, lastParent, userId) : rawParentId
+    const nodeId = toLocalMrid(node.mrid || node.id, node, userId)
 
     const chain = [{
         id: nodeId,
@@ -133,6 +137,8 @@ export async function fetchFullInfoForChain(chain) {
             'Surge arrester':      getSurgeArresterChain,
             'Circuit breaker':     getCircuitBreakerChain,
             'Transformer':         getTransformerChain,
+            'Power cable':         getPowerCableChain,
+            'Bushing':             getBushingChain,
         },
         'job': JOB_FETCH_STRATEGIES,
     }
@@ -148,6 +154,20 @@ export async function fetchFullInfoForChain(chain) {
         if (strategy) {
             const fullInfo = await strategy(node.id || node.mrid, node.parentId)
             fullInfoChain.push(fullInfo)
+        } else {
+            // KHÔNG bỏ qua im lặng.
+            //
+            // Bản trước chỉ có `if (strategy)` không nhánh else. Loại nào chưa được đăng ký
+            // (power cable và bushing từng như vậy) thì vòng lặp đi qua, không làm gì, không
+            // báo gì — và `executeDownloadChainWithResults` ghi kết quả `success` vì không có
+            // ngoại lệ nào. Người dùng thấy "tải xong" mà không có gì về.
+            //
+            // Ném lỗi để chỗ gọi bắt và ghi node đó là `failed` kèm lý do đọc được.
+            const kind = node._type === 'asset' ? node.asset
+                : (node._type === 'job' ? node.job : node._type)
+            const message = `No download strategy for "${kind}"`
+            console.error('[Download]', message, node)
+            throw new Error(message)
         }
     }
     console.log('Full info chain:', fullInfoChain)
@@ -193,6 +213,8 @@ export async function downloadChainInfo(chainInfo, ctx) {
             'Surge arrester':      downloadSurgeArresterChain,
             'Circuit breaker':     downloadCircuitBreakerChain,
             'Transformer':         downloadTransformerChain,
+            'Power cable':         downloadPowerCableChain,
+            'Bushing':             downloadBushingChain,
         },
         'job': JOB_DOWNLOAD_STRATEGIES,
     }
@@ -208,6 +230,13 @@ export async function downloadChainInfo(chainInfo, ctx) {
         }
         if (strategy) {
             await strategy(node, ctx)
+            if (ctx && ctx.$store && ctx.$store.state && ctx.$store.state.user
+                && window.electronAPI && window.electronAPI.ensureUserOwnership) {
+                const syncNode = extractDownloadedSyncNode(node)
+                if (syncNode) {
+                    await window.electronAPI.ensureUserOwnership(ctx.$store.state.user.user_id, syncNode.mrid)
+                }
+            }
             if (ctx && ctx.markDownloadedNodeSynced) {
                 const syncNode = extractDownloadedSyncNode(node)
                 if (syncNode) await ctx.markDownloadedNodeSynced(syncNode)

@@ -273,7 +273,7 @@ export const deleteVoltageTransformerEntity = async (data) => {
             if (data.attachment && data.attachment.id) {
                 const pathData = JSON.parse(data.attachment.path || '[]')
                 if (Array.isArray(pathData) && pathData.length > 0) {
-                    syncFilesWithDeletion(pathData, null, data.mrid);
+                    syncFilesWithDeletion(pathData, null, data.asset.mrid);
                 }
             }
             if (data.attachment.id) {
@@ -321,23 +321,28 @@ export const deleteVoltageTransformerEntity = async (data) => {
 
             // Xóa voltage
             for (const voltage of arrVoltage) {
-                if (voltage && voltage.mrid) {
-                    await deleteVoltageByIdTransaction(voltage.mrid, db);
+                const voltageId = typeof voltage === 'object' ? voltage.mrid : voltage;
+                if (voltageId) {
+                    await deleteVoltageByIdTransaction(voltageId, db);
                 }
             }   
 
             // Xóa apparent power
             for (const apparentPower of arrApparentPower) {
-                if (apparentPower && apparentPower.mrid) {
-                    await deleteApparentPowerByIdTransaction(apparentPower.mrid, db);
+                const apparentPowerId = typeof apparentPower === 'object' ? apparentPower.mrid : apparentPower;
+                if (apparentPowerId) {
+                    await deleteApparentPowerByIdTransaction(apparentPowerId, db);
                 }
             }
 
             // Xóa frequency nếu có
-            if (data.OldPotentialTransformerInfo
-                && data.OldPotentialTransformerInfo.rated_frequency
-                && data.OldPotentialTransformerInfo.rated_frequency.mrid) {
-                await deleteFrequencyByIdTransaction(data.OldPotentialTransformerInfo.rated_frequency.mrid, db);
+            if (data.OldPotentialTransformerInfo && data.OldPotentialTransformerInfo.rated_frequency) {
+                const frequencyId = typeof data.OldPotentialTransformerInfo.rated_frequency === 'object'
+                    ? data.OldPotentialTransformerInfo.rated_frequency.mrid
+                    : data.OldPotentialTransformerInfo.rated_frequency;
+                if (frequencyId) {
+                    await deleteFrequencyByIdTransaction(frequencyId, db);
+                }
             }
 
             // Xóa voltage còn lại

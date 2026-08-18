@@ -15,10 +15,14 @@
             <div v-show="activeWorkspaceTab === 'tree'" class="tree-workspace">
                 <div v-show="clientSlide" class="toolbar">
                     <TopBarClient :pathMapClient.sync="pathMapClient" :organisationClientList="organisationClientList"
-                        @clear-selection="clearSelection" />
+                        @clear-selection="clearSelection"
+                        @copy-path="copyCurrentPath('client')"
+                        @go-path="goToPath('client', $event)" />
                 </div>
                 <div v-show="!clientSlide" class="toolbar">
-                    <TopBarServer :pathMapServer="pathMapServer" @reset-all="resetAllServer" @path-click="resetPathServer" />
+                    <TopBarServer :pathMapServer="pathMapServer" @reset-all="resetAllServer" @path-click="resetPathServer"
+                        @copy-path="copyCurrentPath('server')"
+                        @go-path="goToPath('server', $event)" />
                 </div>
                 <div class="tree-workspace-body">
             <ClientTreePanel ref="clientPanel" v-show="activeWorkspaceTab === 'tree' && clientSlide" :organisationClientList="organisationClientList"
@@ -255,14 +259,12 @@
             @update:visible="graftDialogVisible = $event"
             @cancel="handleGraftCancel"
             @confirm="handleGraftConfirm" />
-        
-        <ImportProgressDialog
-            :visible="progressVisible"
-            :current-name="progressName"
-            :current-type="progressType"
-            :done="progressDone"
-            :total="progressTotal" />
 
+        <ImportFailureDialog
+            :visible="importFailureDialogVisible"
+            :failures="importFailures"
+            @close="importFailureDialogVisible = false" />
+        
         <el-dialog
             :title="opResultTitle + ' — result'"
             :visible.sync="opResultVisible"
@@ -407,11 +409,12 @@ import {
     ZeroDiagramDialog,
     ImportConflictDialog,
     ImportGraftDialog,
-    ImportProgressDialog
+    ImportFailureDialog
 } from './dialogs'
 
 
 import mixinTreeNavigation from '@/views/TreeNode/Common/mixinTreeNavigation/mixin'
+import pathNavigate from '@/views/TreeNode/Common/pathNavigate'
 import TopBarServer from './Server/TopBarServer/index.vue'
 import uploadNodeMixin from './Client/mixin/Upload/index.js';
 import downloadNode from './Server/mixin/Download/downloadNode.js';
@@ -497,7 +500,7 @@ export default {
         ZeroDiagramDialog,
         ImportConflictDialog,
         ImportGraftDialog,
-        ImportProgressDialog
+        ImportFailureDialog
     },
     data() {
         return {
@@ -543,6 +546,7 @@ export default {
             signReactor: false,
             activeTab: {},
             activeTabClient: {},
+            serverSaveInProgress: false,
             indexTabData: null,
             tabs: [],
             tabsClient: [],
@@ -811,7 +815,7 @@ export default {
                 : 'app-dialog'
         }
     },
-    mixins: [mixin, mixinTreeNavigation, uploadNodeMixin, downloadNode, mainMixin, contextMenuSync],
+    mixins: [mixin, mixinTreeNavigation, uploadNodeMixin, downloadNode, mainMixin, contextMenuSync, pathNavigate],
     async beforeMount() {
         try {
             const data = await window.electronAPI.getAllConfigurationEvents()
@@ -824,7 +828,6 @@ export default {
         }
     },
     mounted() {
-        window.addEventListener("keydown", this.handleKeyDown);
         compareUiBus.$on(COMPARE_ACTIVE, this.handleCompareActive)
         this.$nextTick(async () => {
             const restored = await this.restoreWorkspaceState();
@@ -834,7 +837,6 @@ export default {
         });
     },
     beforeDestroy() {
-        window.removeEventListener("keydown", this.handleKeyDown);
         compareUiBus.$off(COMPARE_ACTIVE, this.handleCompareActive)
     },
     watch: {
@@ -1267,6 +1269,7 @@ export default {
         },
 
         async handleSaveServerTab({ tab, component }) {
+            if (this.serverSaveInProgress) return
             if (!tab || !component) {
                 this.$message.error('Cannot find active tab data.')
                 return
@@ -1286,6 +1289,7 @@ export default {
                 return
             }
 
+            this.serverSaveInProgress = true
             this.parentOrganization = parentNode
             const { close } = startLoading(this, {
                 action: 'save',
@@ -1340,6 +1344,7 @@ export default {
                 this.$message.error(error.message || 'Save failed')
             } finally {
                 this.parentOrganization = previousParent
+                this.serverSaveInProgress = false
                 await close()
             }
         },

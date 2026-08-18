@@ -1,7 +1,30 @@
 import db from '../../datacontext/index'
 
+const run = (dbsql, sql, params = []) => new Promise((resolve, reject) => {
+    dbsql.run(sql, params, function (err) {
+        if (err) return reject(err)
+        return resolve(this)
+    })
+})
+
+const all = (dbsql, sql, params = []) => new Promise((resolve, reject) => {
+    dbsql.all(sql, params, (err, rows) => {
+        if (err) return reject(err)
+        return resolve(rows || [])
+    })
+})
+
+// Existing installations predate calibration status, so migrate them lazily.
+export const ensureCalibrationRecordSchema = async (dbsql = db) => {
+    const rows = await all(dbsql, 'PRAGMA table_info(calibration_record)')
+    if (!rows.some(row => row.name === 'status')) {
+        await run(dbsql, 'ALTER TABLE calibration_record ADD COLUMN status TEXT')
+    }
+}
+
 // Lấy calibrationRecord theo mrid
 export const getCalibrationRecordById = async (mrid) => {
+    await ensureCalibrationRecordSchema(db)
     return new Promise((resolve, reject) => {
         db.get(
             `SELECT * FROM calibration_record WHERE mrid=?`,
@@ -19,6 +42,7 @@ export const getCalibrationRecordById = async (mrid) => {
 
 // Lấy calibrationRecord theo testing_equipment
 export const getCalibrationRecordByTestingEquipmentId = async (testingEquipmentId) => {
+    await ensureCalibrationRecordSchema(db)
     return new Promise((resolve, reject) => {
         db.all(
             `SELECT * FROM calibration_record WHERE testing_equipment=?`,
@@ -34,6 +58,7 @@ export const getCalibrationRecordByTestingEquipmentId = async (testingEquipmentI
 
 // Thêm mới calibrationRecord
 export const insertCalibrationRecordTransaction = async (calibrationRecord, dbsql) => {
+    await ensureCalibrationRecordSchema(dbsql)
     return new Promise((resolve, reject) => {
         dbsql.run(
             `INSERT INTO calibration_record(
@@ -45,8 +70,9 @@ export const insertCalibrationRecordTransaction = async (calibrationRecord, dbsq
                 provider,
                 certificate_number,
                 result,
+                status,
                 notes
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(mrid) DO UPDATE SET
                 testing_equipment = excluded.testing_equipment,
                 calibration_date = excluded.calibration_date,
@@ -55,6 +81,7 @@ export const insertCalibrationRecordTransaction = async (calibrationRecord, dbsq
                 provider = excluded.provider,
                 certificate_number = excluded.certificate_number,
                 result = excluded.result,
+                status = excluded.status,
                 notes = excluded.notes
             `,
             [
@@ -66,6 +93,7 @@ export const insertCalibrationRecordTransaction = async (calibrationRecord, dbsq
                 calibrationRecord.provider,
                 calibrationRecord.certificate_number,
                 calibrationRecord.result,
+                calibrationRecord.status || 'Pending',
                 calibrationRecord.notes
             ],
             function (err) {
@@ -78,6 +106,7 @@ export const insertCalibrationRecordTransaction = async (calibrationRecord, dbsq
 
 // Cập nhật calibrationRecord
 export const updateCalibrationRecordByIdTransaction = async (mrid, calibrationRecord, dbsql) => {
+    await ensureCalibrationRecordSchema(dbsql)
     return new Promise((resolve, reject) => {
         dbsql.run(
             `UPDATE calibration_record SET
@@ -88,6 +117,7 @@ export const updateCalibrationRecordByIdTransaction = async (mrid, calibrationRe
                 provider = ?,
                 certificate_number = ?,
                 result = ?,
+                status = ?,
                 notes = ?
             WHERE mrid = ?`,
             [
@@ -98,6 +128,7 @@ export const updateCalibrationRecordByIdTransaction = async (mrid, calibrationRe
                 calibrationRecord.provider,
                 calibrationRecord.certificate_number,
                 calibrationRecord.result,
+                calibrationRecord.status || 'Pending',
                 calibrationRecord.notes,
                 mrid
             ],

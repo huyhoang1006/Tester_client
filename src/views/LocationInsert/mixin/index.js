@@ -132,10 +132,28 @@ export default {
             }
         },
 
+        buildLocationName(dto) {
+            return [
+                dto.street,
+                dto.ward_or_commune,
+                dto.city,
+                dto.postal_code,
+                dto.country
+            ]
+                .map((value) => (value == null ? '' : String(value).trim()))
+                .filter((value) => value !== '')
+                .join(', ')
+        },
+
+        ensureLocationName(dto) {
+            const generatedName = this.buildLocationName(dto)
+            dto.locationName = generatedName || dto.locationName || dto.name || ''
+        },
+
         checkTownDetail(dto) {
             if (dto.townDetailId === null || dto.townDetailId === '') {
                 if (dto.city === '' && dto.state_or_province === '' &&
-                    dto.country === '' && dto.district_or_town === '' &&
+                    dto.country === '' && dto.postal_code === '' && dto.district_or_town === '' &&
                     dto.ward_or_commune === '') {
                     dto.townDetailId = null
                 } else {
@@ -400,6 +418,7 @@ export default {
         },
 
         checkSubstation(dto) {
+            this.ensureLocationName(dto)
             this.checkPsrType(dto)
             this.checkStreetDetail(dto)
             this.checkTownDetail(dto)
@@ -440,8 +459,10 @@ export default {
                     ])
                     if (streetAddressData.success && streetAddressData.data) {
                         this.properties.streetAddressId = streetAddressData.data.mrid;
+                        this.properties.postal_code = streetAddressData.data.postal_code || '';
                     } else {
                         this.properties.streetAddressId = null;
+                        this.properties.postal_code = '';
                     }
                     if (streetDetailData.success && streetDetailData.data) {
                         this.properties.street = streetDetailData.data.address_general || '';

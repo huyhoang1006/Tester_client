@@ -2,7 +2,13 @@ import db from '../../datacontext/index'
 import { insertAssetTransaction, getAssetById, deleteAssetByIdTransaction } from '@/function/cim/asset'
 import { insertProductAssetModelTransaction, getProductAssetModelById } from '@/function/cim/productAssetModel'
 import { insertLifecycleDateTransaction, getLifecycleDateById } from '@/function/cim/lifecycleDate'
-import { insertInUseDateTransaction, getInUseDateById } from '@/function/cim/inUseDate'
+import {
+    COMMISSIONING_DATE_TYPE,
+    deleteInUseDateByAssetIdTransaction,
+    getInUseDateByAssetAndType,
+    getInUseDateById,
+    insertInUseDateTransaction
+} from '@/function/cim/inUseDate'
 import {
     insertSoftwareLicenseTransaction,
     getSoftwareLicenseById
@@ -14,6 +20,7 @@ import {
     deleteSoftwareLicenseTestingEquipmentByTestingEquipmentIdTransaction
 } from '@/function/entity/softwareLicenseTestingEquipment'
 import {
+    ensureCalibrationRecordSchema,
     insertCalibrationRecordTransaction,
     getCalibrationRecordByTestingEquipmentId,
     deleteCalibrationRecordByIdTransaction
@@ -25,6 +32,7 @@ import {
     deleteAccessoryTestingEquipmentByEquipmentIdTransaction
 } from '@/function/entity/accessoryTestingEquipment'
 import {
+    ensureActivityRecordSchema,
     insertActivityRecordTransaction,
     getActivityRecordByAssetId,
     deleteActivityRecordByIdTransaction
@@ -52,6 +60,7 @@ const runAsync = (sql, params = []) => {
 // Danh sách rút gọn cho màn hình list (join asset + product_asset_model + đếm repair).
 // Lọc theo user hiện tại qua user_identified_object; loại phụ kiện.
 export const getAllTestingEquipmentList = async (userId) => {
+    await ensureActivityRecordSchema(db)
     return new Promise((resolve, reject) => {
         db.all(
             `SELECT te.mrid AS mrid,
@@ -67,11 +76,16 @@ export const getAllTestingEquipmentList = async (userId) => {
                      ORDER BY substr(cr.calibration_date,7,4)||substr(cr.calibration_date,1,2)||substr(cr.calibration_date,4,2) DESC
                      LIMIT 1) AS calibration_date,
                     te.is_accessory AS is_accessory,
-                    (SELECT COUNT(*) FROM activity_record ar
+                    (SELECT COUNT(*)
+                     FROM activity_record ar
+                     JOIN activity_record_ticket art ON art.mrid = ar.mrid
                      WHERE ar.asset = te.mrid AND ar.type = 'Repair') AS repair_count
                     ,
-                    (SELECT COUNT(*) FROM activity_record ar
-                     WHERE ar.asset = te.mrid AND ar.type = 'Repair' AND ar.severity = 'InProgress') AS repair_in_progress_count
+                    (SELECT COUNT(*)
+                     FROM activity_record ar
+                     JOIN activity_record_ticket art ON art.mrid = ar.mrid
+                     WHERE ar.asset = te.mrid AND ar.type = 'Repair'
+                       AND art.ticket_status IN ('Open', 'In Progress', 'Sent to Vendor')) AS repair_in_progress_count
              FROM testing_equipment te
              JOIN asset a ON a.mrid = te.mrid
              LEFT JOIN identified_object io ON io.mrid = te.mrid
@@ -359,6 +373,9 @@ export const insertTestingEquipmentEntity = async (old_entity, entity) => {
         const oldRepairs      = old_entity.repairs || []
         const oldAccessories  = old_entity.accessories || []
 
+        // Existing installations need lazy schema upgrades before the save transaction starts.
+        await ensureActivityRecordSchema(db)
+        await ensureCalibrationRecordSchema(db)
         await runAsync('BEGIN TRANSACTION')
 
         // 0a) đảm bảo user tồn tại trong bảng user (FK cho user_identified_object)
@@ -380,14 +397,11 @@ export const insertTestingEquipmentEntity = async (old_entity, entity) => {
             await insertLifecycleDateTransaction(entity.lifecycleDate, db)
             entity.asset.lifecycle_date = entity.lifecycleDate.mrid
         }
-        if (entity.inUseDate && entity.inUseDate.mrid) {
-            await insertInUseDateTransaction(entity.inUseDate, db)
-            entity.asset.in_use_date = entity.inUseDate.mrid
-        }
         if (entity.productAssetModel && entity.productAssetModel.mrid) {
             await insertProductAssetModelTransaction(entity.productAssetModel, db)
             entity.asset.product_asset_model = entity.productAssetModel.mrid
         }
+        entity.asset.in_use_date = null
 
         // 1) asset (nền) — nếu vướng FK location thì thử lại với location = null
         let assetResult = await insertAssetTransaction(entity.asset, db)
@@ -397,6 +411,13 @@ export const insertTestingEquipmentEntity = async (old_entity, entity) => {
         }
         if (!assetResult.success) {
             throw new Error(`Insert asset failed: ${assetResult.message}`)
+        }
+
+        if (entity.inUseDate && entity.inUseDate.mrid) {
+            entity.inUseDate.asset_id = teMrid
+            entity.inUseDate.date_type = entity.inUseDate.date_type || COMMISSIONING_DATE_TYPE
+            entity.inUseDate.date_value = entity.inUseDate.date_value || entity.inUseDate.in_use_date || null
+            await insertInUseDateTransaction(entity.inUseDate, db)
         }
 
         // 2) testing_equipment
@@ -532,7 +553,10 @@ export const getTestingEquipmentEntity = async (mrid) => {
             const lcRes = await getLifecycleDateById(entity.asset.lifecycle_date)
             if (lcRes.success && lcRes.data) entity.lifecycleDate = lcRes.data
         }
-        if (entity.asset.in_use_date) {
+        const commissioningRes = await getInUseDateByAssetAndType(mrid, COMMISSIONING_DATE_TYPE)
+        if (commissioningRes.success && commissioningRes.data) {
+            entity.inUseDate = commissioningRes.data
+        } else if (entity.asset.in_use_date) {
             const iudRes = await getInUseDateById(entity.asset.in_use_date)
             if (iudRes.success && iudRes.data) entity.inUseDate = iudRes.data
         }
@@ -592,6 +616,7 @@ export const deleteTestingEquipmentEntity = async (mrid) => {
 
         // xóa testing_equipment (kéo theo calibration_record + link còn lại nhờ cascade)
         await deleteTestingEquipmentByIdTransaction(mrid, db)
+        await deleteInUseDateByAssetIdTransaction(mrid, db)
 
         // xóa asset nền
         await deleteAssetByIdTransaction(mrid, db)

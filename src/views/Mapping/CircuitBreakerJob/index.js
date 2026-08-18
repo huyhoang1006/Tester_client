@@ -33,6 +33,11 @@ const CB_UNIT_BY_MEASUREMENT = (() => {
     return map
 })()
 const unitOf = (measurementId) => (measurementId && CB_UNIT_BY_MEASUREMENT[measurementId]) || ''
+const measurementIdOf = (configMap, testCode, columnCode, fallback) => {
+    const columns = (configMap[testCode] && configMap[testCode].columns) || []
+    const column = columns.find(item => item && item.code === columnCode)
+    return (column && column.mrid) || fallback || null
+}
 
 // Đảm bảo row có ĐỦ mọi cột theo config (cột chưa nhập trong DB sẽ thiếu).
 // Thiếu cột → template đọc item.<col>.value sẽ lỗi "Cannot read property 'value' of undefined".
@@ -136,7 +141,7 @@ export const jobDtoToEntity = (dto) => {
                             analogValue.mrid = value.mrid || null
                             analogValue.value = value.value || null
                             analogValue.alias_name = key || null
-                            analogValue.analog = value['measurement_id'] ? value['measurement_id'] : null
+                            analogValue.analog = measurementIdOf(circuitBreakerTestMap, item.testTypeCode, key, value.measurement_id)
                             analogValue.procedure_dataset_id = data.mrid
                             entity.analogValues.push(analogValue)
                             const procedureDataSetMeasurementValue = new ProcedureDataSetMeasurementValue()
@@ -149,7 +154,7 @@ export const jobDtoToEntity = (dto) => {
                             stringValue.value = value.value || null
                             stringValue.alias_name = key || null
                             stringValue.procedure_dataset_id = data.mrid
-                            stringValue.string_measurement = value['measurement_id'] ? value['measurement_id'] : null
+                            stringValue.string_measurement = measurementIdOf(circuitBreakerTestMap, item.testTypeCode, key, value.measurement_id)
                             entity.stringMeasurementValues.push(stringValue)
                             const procedureDataSetMeasurementValue = new ProcedureDataSetMeasurementValue()
                             procedureDataSetMeasurementValue.procedure_dataset_id = data.mrid || null
@@ -169,7 +174,7 @@ export const jobDtoToEntity = (dto) => {
                             discreteValue.vta_alias_name = value.value || ''
                             discreteValue.alias_name = key || null
                             discreteValue.procedure_dataset_id = data.mrid
-                            discreteValue.discrete = value['measurement_id'] ? value['measurement_id'] : null
+                            discreteValue.discrete = measurementIdOf(circuitBreakerTestMap, item.testTypeCode, key, value.measurement_id)
                             entity.discreteValues.push(discreteValue)
                             const procedureDataSetMeasurementValue = new ProcedureDataSetMeasurementValue()
                             procedureDataSetMeasurementValue.procedure_dataset_id = data.mrid || null
@@ -194,7 +199,7 @@ export const jobDtoToEntity = (dto) => {
                     analogValue.mrid = value.mrid || null
                     analogValue.value = value.value || null
                     analogValue.alias_name = key || null
-                    analogValue.analog = value['measurement_id'] ? value['measurement_id'] : null
+                    analogValue.analog = measurementIdOf(circuitBreakerConditionMap, item.testTypeCode, key, value.measurement_id)
                     analogValue.procedure_dataset_id = testDataCondition.mrid
                     entity.analogValues.push(analogValue)
                     const procedureDataSetMeasurementValue = new ProcedureDataSetMeasurementValue()
@@ -207,7 +212,7 @@ export const jobDtoToEntity = (dto) => {
                     stringValue.value = value.value || null
                     stringValue.alias_name = key || null
                     stringValue.procedure_dataset_id = testDataCondition.mrid
-                    stringValue.string_measurement = value['measurement_id'] ? value['measurement_id'] : null
+                    stringValue.string_measurement = measurementIdOf(circuitBreakerConditionMap, item.testTypeCode, key, value.measurement_id)
                     entity.stringMeasurementValues.push(stringValue)
                     const procedureDataSetMeasurementValue = new ProcedureDataSetMeasurementValue()
                     procedureDataSetMeasurementValue.procedure_dataset_id = testDataCondition.mrid || null
@@ -220,7 +225,7 @@ export const jobDtoToEntity = (dto) => {
                     discreteValue.vta_alias_name = value.value || null
                     discreteValue.alias_name = key || null
                     discreteValue.procedure_dataset_id = testDataCondition.mrid
-                    discreteValue.discrete = value['measurement_id'] ? value['measurement_id'] : null
+                    discreteValue.discrete = measurementIdOf(circuitBreakerConditionMap, item.testTypeCode, key, value.measurement_id)
                     entity.discreteValues.push(discreteValue)
                     const procedureDataSetMeasurementValue = new ProcedureDataSetMeasurementValue()
                     procedureDataSetMeasurementValue.procedure_dataset_id = testDataCondition.mrid || null

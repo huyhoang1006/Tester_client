@@ -8,6 +8,9 @@ class ActivityRecord extends IdentifiedObject {
         this.reason = null; // String
         this.severity = null; // IdentifiedObject
         this.type = null; // ActivityType
+        this.asset = null;
+        this.provider = null;
+        this.cost = null;
     }
     
 }

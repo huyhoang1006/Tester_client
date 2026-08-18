@@ -1,5 +1,6 @@
 import db from '../../datacontext/index'
 import path from 'path'
+import { safePathSegment } from '@/utils/fileName'
 import * as attachmentContext from '../../attachmentcontext/index'
 import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction, deleteDirectory } from '@/function/entity/attachment'
 import { insertOldPowerTransformerInfoTransaction, getOldPowerTransformerInfoById, deleteOldPowerTransformerInfoTransaction } from '@/function/cim/oldPowerTransformerInfo'
@@ -127,7 +128,7 @@ export const insertTransformerEntity = async (old_entity, entity) => {
                 const newPath = []
                 for (let i = 0; i < pathData.length; i++) {
                     const namefile = path.basename(pathData[i].path);
-                    pathData[i].path = path.join(attachmentContext.getAttachmentDir(), entity.asset.mrid, namefile);
+                    pathData[i].path = path.join(attachmentContext.getAttachmentDir(), safePathSegment(entity.asset.mrid), namefile);
                     newPath.push(pathData[i]);
                 }
                 entity.attachment.path = JSON.stringify(newPath);
@@ -542,7 +543,7 @@ export const deleteTransformerEntity = async (data) => {
                 if (data.attachment && data.attachment.id) {
                     const pathData = JSON.parse(data.attachment.path || '[]')
                     if (Array.isArray(pathData) && pathData.length > 0) {
-                        syncFilesWithDeletion(pathData, null, data.mrid);
+                        syncFilesWithDeletion(pathData, null, data.asset.mrid);
                     }
                 }
                 if (data.attachment.id) {

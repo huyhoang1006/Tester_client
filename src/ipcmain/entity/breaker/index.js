@@ -1,6 +1,7 @@
 'use strict'
 import { ipcMain } from 'electron'
 import { entityFunc } from "@/function"
+import { describeFailure } from '@/ipcmain/failureMessage'
 
 export const insertBreakerEntity = () => {
     ipcMain.handle('insertBreakerEntity', async function (event, old_data, data) {
@@ -17,7 +18,7 @@ export const insertBreakerEntity = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -45,7 +46,7 @@ export const updateMotorCharacteristicsLimits = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -73,7 +74,7 @@ export const updateContactResistanceLimits = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -101,7 +102,7 @@ export const updateCoilCharacteristicsLimits = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -129,7 +130,7 @@ export const updatePickupVoltageLimits = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -157,7 +158,7 @@ export const updateUnderVoltageReleaseLimits = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -185,7 +186,7 @@ export const updateOvercurrentReleaseLimits = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -213,7 +214,7 @@ export const updateOperatingTimeLimits = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -241,7 +242,7 @@ export const updateAuxContactsLimits = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -269,7 +270,7 @@ export const updateMiscellaneousLimits = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -297,7 +298,7 @@ export const updateTimingAssessmentLimits = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -325,7 +326,7 @@ export const getBreakerEntityByMrid = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -354,7 +355,7 @@ export const deleteBreakerEntity = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {

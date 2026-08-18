@@ -156,6 +156,9 @@ export default {
             this.bushings_config = bushings_config_arr
         },
         async switchData(data) {
+            if (data === 'Surge Arrester' && typeof this.changeDataBushing === 'function') {
+                this.changeDataBushing()
+            }
             this.switch = data
         },
         updateAttachment(attachment) {

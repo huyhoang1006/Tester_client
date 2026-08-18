@@ -1,6 +1,7 @@
 'use strict'
 import { ipcMain } from 'electron'
 import { entityFunc } from "@/function"
+import { describeFailure } from '@/ipcmain/failureMessage'
 
 export const insertRotatingMachineEntity = () => {
     ipcMain.handle('insertRotatingMachineEntity', async function (event, data) {
@@ -17,7 +18,7 @@ export const insertRotatingMachineEntity = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -45,7 +46,7 @@ export const getRotatingMachineEntityByMrid = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -75,7 +76,7 @@ export const deleteRotatingMachineEntity = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {

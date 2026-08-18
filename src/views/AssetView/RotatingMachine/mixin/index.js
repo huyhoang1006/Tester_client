@@ -21,6 +21,9 @@ export default {
                     console.log("resultEntity", resultEntity)
                     let rs = await window.electronAPI.insertRotatingMachineEntity(resultEntity)
                     if (rs.success) {
+                        if (window.electronAPI.ensureUserOwnership) {
+                            await window.electronAPI.ensureUserOwnership(this.$store.state.user.user_id, result.properties.mrid)
+                        }
                         return {
                             success: true,
                             data: rs.data,

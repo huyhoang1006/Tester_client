@@ -25,6 +25,9 @@ export default {
                     console.log(oldResultEntity);
                     let rs = await window.electronAPI.insertBreakerEntity(oldResultEntity, resultEntity)
                     if (rs.success) {
+                        if (window.electronAPI.ensureUserOwnership) {
+                            await window.electronAPI.ensureUserOwnership(this.$store.state.user.user_id, result.properties.mrid)
+                        }
                         return {
                             success: true,
                             data: rs.data,

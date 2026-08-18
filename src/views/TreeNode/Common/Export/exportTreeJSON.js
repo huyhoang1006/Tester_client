@@ -9,6 +9,7 @@
  * ----------------------------------------------------------------------------
  */
 import { exportBranchToJSON } from '@/views/Export/services/exportJsonService'
+import { startLoading } from '@/utils/loading'
 
 // ==== Mappings asset/substation/... (GIỮ y như import trong export cũ) ====
 import * as SubstationMapping from '@/views/Mapping/Substation'
@@ -90,12 +91,18 @@ export default {
                     warning: (m) => this.$message.warning(m),
                     error: (m) => this.$message.error(m),
                 },
-                loadingHandler: {
-                    start: (text) => {
-                        const l = this.$loading({ lock: true, text: text || 'Exporting...' })
-                        return () => l.close()
-                    },
-                },
+                // MỘT KIỂU LOADING DUY NHẤT. Trước đây chỗ này dùng `this.$loading` của
+                // Element UI — vòng xoáy toàn màn hình, một dòng chữ đứng im, không nói
+                // đang đọc node nào, không có nút dừng, và không có nhịp tim nên treo
+                // thật với chạy lâu trông y như nhau.
+                //
+                // Giờ dùng chung overlay với tải/xoá/nhập: mô tả việc đang làm, đếm giây
+                // thật, và cho dừng.
+                reporter: startLoading(this, {
+                    action: 'export',
+                    text: mode === 'onlyNode' ? 'Reading node...' : 'Reading branch...',
+                    type: 'heavy',
+                }),
             }
             await exportBranchToJSON(nodes, deps, { mode })
         },

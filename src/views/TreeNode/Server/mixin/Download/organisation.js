@@ -5,6 +5,19 @@ import * as demoAPI from '@/api/demo'
 import { fetchWithRetry } from './core-utils.js'
 import { detectConflicts, applyResolved, ORG_FIELD_DEFS } from '@/utils/conflictUtils.js'
 import constant from '@/utils/constant'
+import { scopeDtoIds, scopePositionPointIds } from './id-scope'
+
+const scopeOrganisationDtoForUser = (dto, userId) => {
+    scopeDtoIds(dto, {
+        electronicAddressId: 'ea',
+        telephoneNumberId: 'tel',
+        streetAddressId: 'street-address',
+        streetDetailId: 'street-detail',
+        townDetailId: 'town-detail'
+    }, userId)
+    scopePositionPointIds(dto.positionPoints, userId)
+    return dto
+}
 
 export async function getOrganisationChain(id, parentId) {
     try {
@@ -113,6 +126,7 @@ function removeNodeFromTree(ctx, mrid, keepUnder) {
 }
 
 export async function downloadOrganisationChain(org, ctx) {
+    const userId = ctx.$store.state.user.user_id
     const rawPositionPoints    = org._serverData?.positionPoints || []
     const hasValidPositionData = rawPositionPoints.some(
         p => p.xposition !== null || p.yposition !== null || p.zposition !== null
@@ -137,11 +151,12 @@ export async function downloadOrganisationChain(org, ctx) {
     } 
     // 2. Map server → serverDto
     const serverDto = OrganisationServerMapper.mapServerToDto(serverData)
+    scopeOrganisationDtoForUser(serverDto, userId)
  
     // 3. Lấy client data cũ nếu đã tồn tại
     const existingResult = await window.electronAPI.getOrganisationEntityByMrid(org.mrid)
     const clientDto = existingResult.success
-        ? OrganisationMapper.OrgEntityToOrgDto(existingResult.data)
+        ? scopeOrganisationDtoForUser(OrganisationMapper.OrgEntityToOrgDto(existingResult.data), userId)
         : null
  
     // 4. Merge

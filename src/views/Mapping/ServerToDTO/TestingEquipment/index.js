@@ -53,6 +53,7 @@ export const mapServerToDto = (s) => {
         provider: c.provider || '',
         certificate_number: c.certificateNumber || c.certificate_number || '',
         result: c.result || '',
+        status: ['Ready', 'Expired', 'Pending'].includes(c.status) ? c.status : 'Pending',
         notes: c.notes || ''
     }));
 

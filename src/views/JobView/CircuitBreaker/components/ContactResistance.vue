@@ -15,8 +15,23 @@
             </div>
         </div>
 
-        <div
-            v-if="assetData.circuitBreaker.interruptersPerPhase === 1 || assetData.circuitBreaker.interruptersPerPhase === ''">
+        <div v-if="!hasInterrupterConfig" class="interrupter-warning-card">
+            <div class="interrupter-warning-title">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                Please specify number of interrupters
+            </div>
+            <div class="interrupter-warning-form">
+                <span>Number of interrupters per phase</span>
+                <el-select size="mini" v-model="interrupterDraft" placeholder="Select">
+                    <el-option v-for="item in 16" :key="item" :label="item" :value="item"></el-option>
+                </el-select>
+                <el-button size="mini" type="primary" :loading="savingInterrupterConfig" @click="saveInterrupterConfig">
+                    Save
+                </el-button>
+            </div>
+        </div>
+
+        <div v-else-if="interruptersPerPhase === 1">
             <br />
             <div class="table-scroll"><table class="table-strip-input-data test-table" style="width: 100%; font-size: 12px;">
                 <thead class="test">
@@ -25,8 +40,6 @@
                     <th>Contact resistance (&#181;&#8486;)</th>
                     <th class="assessment-col">Assessment</th>
                     <th class="condition-indicator-col">Condition indicator</th>
-                    <th @click="add()" class="action-col th-btn" title="Add row"><i class="fa-solid fa-plus pointer"></i></th>
-                    <th @click="removeAll()" class="action-col th-btn th-btn-danger" title="Remove all"><i class="fa-solid fa-trash pointer"></i></th>
                 </thead>
                 <tbody>
                     <tr v-for="(item, index) in testData.table.table1" :key="index">
@@ -55,29 +68,21 @@
                             <span v-else-if="item.assessment.value === 'Fail'"
                                 class="fa-solid fa-xmark fail icon-status"></span>
                         </td>
-                        <el-select :class="nameColor(item.condition_indicator.value)" size="mini"
-                            v-model="item.condition_indicator.value">
-                            <el-option value="Good">Good</el-option>
-                            <el-option value="Fair">Fair</el-option>
-                            <el-option value="Poor">Poor</el-option>
-                            <el-option value="Bad">Bad</el-option>
-                        </el-select>
                         <td>
-                            <el-button size="mini" type="primary" class="row-btn" title="Insert row below" @click="addTest(index)">
-                                <i class="fa-solid fa-plus"></i>
-                            </el-button>
-                        </td>
-                        <td>
-                            <el-button size="mini" type="danger" class="row-btn" title="Delete row" @click="deleteTest(index)">
-                                <i class="fas fa-trash"></i>
-                            </el-button>
+                            <el-select :class="nameColor(item.condition_indicator.value)" size="mini"
+                                v-model="item.condition_indicator.value">
+                                <el-option value="Good">Good</el-option>
+                                <el-option value="Fair">Fair</el-option>
+                                <el-option value="Poor">Poor</el-option>
+                                <el-option value="Bad">Bad</el-option>
+                            </el-select>
                         </td>
                     </tr>
                 </tbody>
             </table></div>
         </div>
 
-        <div v-if="assetData.circuitBreaker.interruptersPerPhase > 1">
+        <div v-else>
             <br />
             <div class="table-scroll"><table class="table-strip-input-data test-table" style="width: 100%; font-size: 12px;">
                 <thead class="test">
@@ -87,13 +92,11 @@
                     <th>Contact resistance (&#181;&#8486;)</th>
                     <th class="assessment-col">Assessment</th>
                     <th class="condition-indicator-col">Condition indicator</th>
-                    <th class="action-col"><i class="fa-solid fa-plus pointer"></i></th>
-                    <th class="action-col"><i class="fa-solid fa-trash pointer "></i></th>
                 </thead>
                 <tbody>
                     <tr v-for="(item, index) in testData.table.table1" :key="index">
-                        <td v-if="index % assetData.circuitBreaker.interruptersPerPhase === 0"
-                            :rowspan="assetData.circuitBreaker.interruptersPerPhase">
+                        <td v-if="index % interruptersPerPhase === 0"
+                            :rowspan="interruptersPerPhase">
                             <div style="display: flex; width: 100%;">
                                 <el-select size="mini" v-model="item.phase.value" placeholder="Phase"><el-option label="A" value="A"></el-option><el-option label="B" value="B"></el-option><el-option label="C" value="C"></el-option></el-select>
                                 <div
@@ -102,7 +105,7 @@
                             </div>
                         </td>
                         <td>
-                            <el-input size="mini" v-model="item.interrupter.value"></el-input>
+                            <el-input size="mini" disabled v-model="item.interrupter.value"></el-input>
                         </td>
                         <td>
                             <el-input size="mini" v-model="item.i_test.value"></el-input>
@@ -128,16 +131,6 @@
                                 <el-option value="Poor">Poor</el-option>
                                 <el-option value="Bad">Bad</el-option>
                             </el-select>
-                        </td>
-                        <td>
-                            <el-button size="mini" type="primary" class="row-btn" title="Insert row below" @click="addTest(index)">
-                                <i class="fa-solid fa-plus"></i>
-                            </el-button>
-                        </td>
-                        <td>
-                            <el-button size="mini" type="danger" class="row-btn" title="Delete row" @click="deleteTest(index)">
-                                <i class="fas fa-trash"></i>
-                            </el-button>
                         </td>
                     </tr>
                 </tbody>
@@ -188,6 +181,9 @@
 
 <script>
 import assessmentMixin from './assessmentMixin'
+import circuitBreakerTestMap from '@/config/test-definitions/CircuitBreaker'
+import * as common from '../../Common/index.js'
+import * as BreakerMapping from '@/views/Mapping/Breaker/index'
 export default {
     mixins: [assessmentMixin],
     name: "ContactResistance",
@@ -197,6 +193,8 @@ export default {
             backupLimits: null,
             assessmentIpcChannel: 'updateContactResistanceLimits',
             openConditionIndicatorDialog: false,
+            interrupterDraft: '',
+            savingInterrupterConfig: false,
             asset_: {
                 contactSys: {
                     abs: {
@@ -240,9 +238,41 @@ export default {
         },
         assetData() {
             return this.asset
+        },
+        circuitBreakerConfig() {
+            return (this.assetData && this.assetData.circuitBreaker) ? this.assetData.circuitBreaker : {}
+        },
+        interruptersPerPhase() {
+            const value = parseInt(this.circuitBreakerConfig.interruptersPerPhase, 10)
+            return Number.isFinite(value) && value > 0 ? value : 0
+        },
+        numberOfPhases() {
+            const value = parseInt(this.circuitBreakerConfig.numberOfPhases, 10)
+            return Number.isFinite(value) && value > 0 ? value : 3
+        },
+        hasInterrupterConfig() {
+            return this.interruptersPerPhase > 0
         }
     },
+    mounted() {
+        this.interrupterDraft = this.interruptersPerPhase || ''
+        this.normalizeContactResistanceRows()
+    },
     watch: {
+        'asset.circuitBreaker.interruptersPerPhase': {
+            immediate: true,
+            handler: function (newVal) {
+                const value = parseInt(newVal, 10)
+                this.interrupterDraft = Number.isFinite(value) && value > 0 ? value : ''
+                this.normalizeContactResistanceRows()
+            }
+        },
+        'asset.circuitBreaker.numberOfPhases': function () {
+            this.normalizeContactResistanceRows()
+        },
+        'asset.circuitBreaker.phase': function () {
+            this.normalizeContactResistanceRows()
+        },
         assessLimitsData: {
             deep: true,
             immediate: true,
@@ -278,6 +308,122 @@ export default {
         }
     },
     methods: {
+        getPhaseList() {
+            const phases = ['A', 'B', 'C']
+            if (this.numberOfPhases === 1) {
+                return [this.circuitBreakerConfig.phase || 'A']
+            }
+            return phases.slice(0, Math.min(this.numberOfPhases, phases.length))
+        },
+        buildContactResistanceRow(phase, interrupterNo, existing) {
+            const columns = (circuitBreakerTestMap.ContactResistance && circuitBreakerTestMap.ContactResistance.columns) || []
+            const row = existing ? JSON.parse(JSON.stringify(existing)) : common.buildEmptyTestRow(columns)
+            if (!row.phase) row.phase = { mrid: '', value: '', unit: '', type: 'string' }
+            row.phase.value = phase
+
+            if (this.interruptersPerPhase > 1) {
+                if (!row.interrupter) row.interrupter = { mrid: '', value: '', unit: '', type: 'string' }
+                row.interrupter.value = String(interrupterNo)
+            } else if (row.interrupter) {
+                row.interrupter.value = ''
+            }
+
+            if (!row.i_test) row.i_test = { mrid: '', value: '', unit: 'A', type: 'analog' }
+            if (!row.contact_resistance) row.contact_resistance = { mrid: '', value: '', unit: 'microOhm', type: 'analog' }
+            if (!row.assessment) row.assessment = { mrid: '', value: '', unit: '', type: 'string' }
+            if (!row.condition_indicator) row.condition_indicator = { mrid: '', value: '', unit: '', type: 'string' }
+            return row
+        },
+        normalizeContactResistanceRows() {
+            if (!this.hasInterrupterConfig || !this.testData || !this.testData.table) return
+
+            if (!Array.isArray(this.testData.table.table1)) {
+                this.$set(this.testData.table, 'table1', [])
+            }
+
+            const oldRows = this.testData.table.table1 || []
+            const oldByKey = {}
+            const oldInterrupters = this.readExistingInterrupterCount(oldRows)
+            oldRows.forEach((row, index) => {
+                const inferredPhase = this.phaseFromRowIndex(index, oldInterrupters)
+                const inferredInterrupter = this.interrupterFromRowIndex(index, oldInterrupters)
+                const phase = row && row.phase && row.phase.value ? row.phase.value : inferredPhase
+                const interrupter = row && row.interrupter && row.interrupter.value ? row.interrupter.value : inferredInterrupter
+                if (phase) oldByKey[`${phase}|${interrupter}`] = row
+            })
+
+            const nextRows = []
+            this.getPhaseList().forEach((phase) => {
+                for (let i = 1; i <= this.interruptersPerPhase; i++) {
+                    nextRows.push(this.buildContactResistanceRow(phase, i, oldByKey[`${phase}|${i}`]))
+                }
+            })
+
+            this.$set(this.testData.table, 'table1', nextRows)
+        },
+        readExistingInterrupterCount(rows) {
+            const configured = this.interruptersPerPhase
+            if (!Array.isArray(rows) || rows.length === 0) return configured || 1
+
+            const values = rows
+                .map((row) => parseInt(row && row.interrupter && row.interrupter.value, 10))
+                .filter((value) => Number.isFinite(value) && value > 0)
+            if (values.length) {
+                return Math.max.apply(null, values)
+            }
+
+            const phaseCount = this.getPhaseList().length || 1
+            return Math.max(1, Math.round(rows.length / phaseCount))
+        },
+        phaseFromRowIndex(index, interrupterCount) {
+            const phases = this.getPhaseList()
+            const phaseIndex = Math.floor(index / Math.max(1, interrupterCount))
+            return phases[phaseIndex] || ''
+        },
+        interrupterFromRowIndex(index, interrupterCount) {
+            return String((index % Math.max(1, interrupterCount)) + 1)
+        },
+        async saveInterrupterConfig() {
+            const value = parseInt(this.interrupterDraft, 10)
+            if (!Number.isFinite(value) || value <= 0) {
+                this.$message.warning('Please specify number of interrupters')
+                return
+            }
+            if (!this.assetData || !this.assetData.properties || !this.assetData.properties.mrid) {
+                this.$message.error('Circuit breaker asset is not available')
+                return
+            }
+
+            this.savingInterrupterConfig = true
+            try {
+                const current = await window.electronAPI.getBreakerEntityByMrid(this.assetData.properties.mrid, this.assetData.psrId)
+                const oldDto = current && current.success ? BreakerMapping.mapEntityToDto(current.data) : JSON.parse(JSON.stringify(this.assetData))
+                const newDto = JSON.parse(JSON.stringify(oldDto))
+                if (!newDto.circuitBreaker) newDto.circuitBreaker = {}
+                newDto.circuitBreaker.interruptersPerPhase = value
+
+                const oldEntity = BreakerMapping.mapDtoToEntity(oldDto)
+                const newEntity = BreakerMapping.mapDtoToEntity(newDto)
+                const result = await window.electronAPI.insertBreakerEntity(oldEntity, newEntity)
+                if (!result || !result.success) {
+                    this.$message.error((result && result.message) || 'Failed to save circuit breaker')
+                    return
+                }
+
+                if (!this.assetData.circuitBreaker) {
+                    this.$set(this.assetData, 'circuitBreaker', {})
+                }
+                this.$set(this.assetData.circuitBreaker, 'interruptersPerPhase', value)
+                this.normalizeContactResistanceRows()
+                this.$emit('asset-config-updated', { changed: result.changed === true })
+                this.$message.success('Number of interrupters saved')
+            } catch (error) {
+                console.error('Error saving circuit breaker interrupter config:', error)
+                this.$message.error(error && error.message ? error.message : 'Failed to save circuit breaker')
+            } finally {
+                this.savingInterrupterConfig = false
+            }
+        },
         normalizeAssessmentLimits(data) {
             if (!data || typeof data !== 'object') {
                 data = {}
@@ -462,5 +608,38 @@ th {
 
 .Bad input {
     background: #ff3300;
+}
+
+.interrupter-warning-card {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 12px;
+    padding: 12px 14px;
+    border: 1px solid #e6a23c;
+    border-radius: 6px;
+    background: #fdf6ec;
+    color: #303133;
+}
+
+.interrupter-warning-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #b36b00;
+    font-weight: 600;
+}
+
+.interrupter-warning-form {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.interrupter-warning-form .el-select {
+    width: 140px;
 }
 </style>

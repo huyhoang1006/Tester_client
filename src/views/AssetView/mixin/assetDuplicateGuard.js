@@ -110,6 +110,9 @@ const requestDuplicateKeyUpdate = async (vm, keys) => {
 
 export const ensureUniqueAssetBeforeSave = async (vm, dto) => {
     let keys = getAssetDuplicateKeys(dto)
+    keys.userId = vm && vm.$store && vm.$store.state && vm.$store.state.user
+        ? vm.$store.state.user.user_id
+        : null
 
     while (keys.serialNumber) {
         const result = await window.electronAPI.checkAssetDuplicateByKeys(keys)
@@ -128,6 +131,9 @@ export const ensureUniqueAssetBeforeSave = async (vm, dto) => {
         }
 
         keys = updatedKeys
+        keys.userId = vm && vm.$store && vm.$store.state && vm.$store.state.user
+            ? vm.$store.state.user.user_id
+            : null
     }
 
     return true

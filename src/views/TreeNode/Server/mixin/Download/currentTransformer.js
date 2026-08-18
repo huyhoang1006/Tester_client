@@ -3,6 +3,7 @@ import * as currentAPI from '@/api/demo/CurrentTransformer.js'
 import * as CurrentTransformerServerMapper from '@/views/Mapping/ServerToDTO/CurrentTransformer/index.js'
 import * as CurrentTransformerMapper from '@/views/Mapping/CurrentTransformer/index.js'
 import { fetchWithRetry } from './core-utils.js'
+import { scopeAssetDtoForUser, scopeOwnedBranchIds } from './id-scope'
 import { traverseAndFillMrid, ensureTopLevelFK, FK_KEYS } from './fk-utils.js'
 import { detectConflicts, applyResolved, mergeWithoutSnapshot, CURRENT_TRANSFORMER_FIELD_DEFS } from '@/utils/conflictUtils.js'
 import { applyDownloadedAssetMedia } from './asset-media-utils.js'
@@ -47,6 +48,9 @@ export async function downloadCurrentTransformerChain(data, ctx) {
 
     // 1. Map server → serverDto
     const serverDto       = CurrentTransformerServerMapper.mapServerToDto(serverData)
+    const currentUserId = ctx.$store.state.user.user_id
+    scopeAssetDtoForUser(serverDto, currentUserId)
+    scopeCurrentTransformerOwnedIds(serverDto, currentUserId)
     serverDto.psrId       = data.parentBayId
     serverDto.properties.mrid = ct.mrid
     await applyDownloadedAssetMedia(serverDto, 'Current transformer', ct.mrid)
@@ -60,6 +64,8 @@ export async function downloadCurrentTransformerChain(data, ctx) {
         ? CurrentTransformerMapper.mapEntityToDto(clientEntity)
         : null
 
+    scopeAssetDtoForUser(clientDto, currentUserId)
+    scopeCurrentTransformerOwnedIds(clientDto, currentUserId)
     // 3. Merge
     let mergedDto
 
@@ -104,6 +110,8 @@ export async function downloadCurrentTransformerChain(data, ctx) {
     // Đảm bảo mọi mrid + FK id được điền trước khi map sang entity (tránh lỗi foreign key)
     traverseAndFillMrid(mergedDto)
     ensureTopLevelFK(mergedDto, FK_KEYS.currentTransformer)
+    scopeAssetDtoForUser(mergedDto, currentUserId)
+    scopeCurrentTransformerOwnedIds(mergedDto, currentUserId)
 
     // 5. Build entity từ mergedDto
     const oldEntity = clientEntity || new (require('@/views/Flatten/CurrentTransformer').default)()
@@ -136,4 +144,11 @@ export async function downloadCurrentTransformerChain(data, ctx) {
 
     //     if (!parentNode.expanded) ctx.$set(parentNode, 'expanded', true)
     // }
+}
+
+const scopeCurrentTransformerOwnedIds = (dto, userId) => {
+    if (!dto || !userId) return dto
+    scopeOwnedBranchIds(dto.ratings, userId, 'ct-value')
+    scopeOwnedBranchIds(dto.ctConfiguration, userId, 'ct-config')
+    return dto
 }

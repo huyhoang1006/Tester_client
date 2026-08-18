@@ -70,7 +70,7 @@
                         <colgroup>
                             <col style="width: 45%" /><col style="width: 27.5%" /><col style="width: 27.5%" />
                         </colgroup>
-                        <thead><tr><th>Condition</th><th>Current</th><th>Previous</th></tr></thead>
+                        <thead><tr><th>Condition</th><th>This Test</th><th>Reference Test</th></tr></thead>
                         <tbody>
                             <tr v-for="c in result.conditionDiff" :key="c.key" :class="{ 'is-diff': c.differs }">
                                 <td class="cell-name">{{ c.name }}</td>
@@ -84,14 +84,14 @@
                 <!-- Bảng so sánh: 5 CỘT CỐ ĐỊNH, không phụ thuộc số measurement -->
                 <div v-for="table in flatTables" :key="table.title" class="cmp-block">
                     <!-- Một bảng thì tiêu đề 'table1' vô nghĩa, chỉ hiện khi có nhiều bảng -->
-                    <div v-if="flatTables.length > 1" class="cmp-block-title">{{ table.title }}</div>
+                    <div v-if="flatTables.length > 1" class="cmp-block-title">{{ table.displayTitle || table.title }}</div>
                     <table class="cmp-table">
                         <colgroup>
                             <col style="width: 27%" /><col style="width: 22%" />
                             <col style="width: 14%" /><col style="width: 14%" /><col style="width: 23%" />
                         </colgroup>
                         <thead>
-                            <tr><th>Measurement</th><th>Field</th><th>Current</th><th>Previous</th><th>Δ</th></tr>
+                            <tr><th>Measurement</th><th>Field</th><th>This Test</th><th>Reference Test</th><th>Δ</th></tr>
                         </thead>
                         <tbody>
                             <template v-for="(row, rIdx) in table.rows">
@@ -129,7 +129,7 @@
                     <span>{{ result.summary.comparedCells }} compared</span>
                     <span>{{ result.summary.changedCells }} changed</span>
                     <span v-if="result.summary.onlyCurrent">{{ result.summary.onlyCurrent }} new rows</span>
-                    <span v-if="result.summary.onlyReference">{{ result.summary.onlyReference }} removed rows</span>
+                    <span v-if="result.summary.onlyReference">{{ result.summary.onlyReference }} reference rows</span>
                 </div>
             </div>
         </div>
@@ -141,7 +141,7 @@
 import {
     buildSnapshotFromForm, attachAliasFromColumns, compareSnapshots, deltaPercentLevel
 } from '@/utils/compareTestResults'
-import { resolveCompareKey } from '@/config/compare-keys'
+import { resolveCompareKey, resolveCompareDisplay } from '@/config/compare-keys'
 
 export default {
     name: 'CompareResultsPanel',
@@ -172,6 +172,9 @@ export default {
         compareKey() {
             return resolveCompareKey(this.assetKind, this.testCode, this.columns)
         },
+        compareDisplay() {
+            return resolveCompareDisplay(this.assetKind, this.testCode)
+        },
         hasReferenceData() { return this.referenceRowCount > 0 },
         /**
          * Trải ma trận (dòng × measurement) thành danh sách dọc.
@@ -182,13 +185,14 @@ export default {
             if (!this.result) return []
             return this.result.tables.map(table => ({
                 title: table.title,
+                displayTitle: table.displayTitle,
                 rows: table.rows.map(row => ({
                     label: row.label,
                     status: row.status,
                     statusClass: row.status === 'onlyCurrent' ? 'is-only-current'
                         : (row.status === 'onlyReference' ? 'is-only-reference' : ''),
                     tagClass: row.status === 'onlyCurrent' ? 'tag-cur' : 'tag-ref',
-                    tagText: row.status === 'onlyCurrent' ? 'new' : 'removed',
+                    tagText: row.status === 'onlyCurrent' ? 'new' : 'reference',
                     cells: row.cells
                 }))
             }))
@@ -275,11 +279,11 @@ export default {
                 const rs = await window.electronAPI.getTestSnapshot(this.selectedWorkTaskMrid)
                 const reference = attachAliasFromColumns(
                     (rs && rs.success && rs.data) ? rs.data : { conditions: {}, tables: [] },
-                    this.columns, keys)
+                    this.columns, keys, this.compareDisplay)
                 this.referenceRowCount = (reference.tables || [])
                     .reduce((sum, t) => sum + (t.rows ? t.rows.length : 0), 0)
                 const current = buildSnapshotFromForm(
-                    this.currentTable, this.columns, this.currentConditions, keys)
+                    this.currentTable, this.columns, this.currentConditions, keys, this.compareDisplay)
                 this.result = compareSnapshots(current, reference)
             } catch (error) {
                 console.error('Load reference snapshot failed:', error)

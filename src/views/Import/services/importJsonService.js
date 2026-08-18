@@ -236,6 +236,20 @@ const importJobNode = async (branch, parentNode, deps) => {
     }
 }
 
+const ensureImportedOwnership = async (node, deps) => {
+    if (!node || !node.mrid || !deps || !deps.userId || !deps.electronAPI || !deps.electronAPI.ensureUserOwnership) {
+        return
+    }
+    try {
+        const rs = await deps.electronAPI.ensureUserOwnership(deps.userId, node.mrid)
+        if (!rs || rs.success !== true) {
+            console.warn('[importJson] ensure ownership failed:', node.mrid, rs && rs.message)
+        }
+    } catch (error) {
+        console.warn('[importJson] ensure ownership error:', node.mrid, error)
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Import 1 node thường (organisation/substation/voltageLevel/bay/asset)
 // nodeImporters[type](dto, parentNode, deps) → { entity, newNode } | null
@@ -347,7 +361,7 @@ const branchMrid = (branch) => {
 //    (work_task_id KHÔNG nằm đây — nó là id job-local, phải regen như mọi mrid khác)
 //  - userId / userName / userIdentifiedObjectId: của người dùng
 const ID_KEEP = new Set([
-    'userId', 'userName', 'userIdentifiedObjectId',
+    'userId', 'userName',
     'apparatus_id',
     'measurement_id', 'testTypeId', 'procedure_id',
 ])
@@ -409,7 +423,7 @@ const regenIdsDeep = (root, uuid) => {
             const isRef = (k.endsWith('_id') || k.endsWith('Id') || k.endsWith('mrid'))
             if (isRef && !ID_KEEP.has(k) && typeof v === 'string' && v) {
                 if (idMap[v]) obj[k] = idMap[v]        // tham chiếu nội bộ → trỏ id mới
-                else obj[k] = uuid.newUuid()           // link ngoài → id mới độc lập
+                else obj[k] = null                     // link ngoài không có entity → không tạo FK mồ côi
             } else if (v && typeof v === 'object') {
                 pass2(v)
             }
@@ -489,6 +503,17 @@ const regenBranchIds = (branch, parentNode, uuid) => {
 //  - USE_EXISTING  → KHÔNG đụng node DB (dùng làm parent); con xử lý tiếp.
 // ---------------------------------------------------------------------------
 const importBranch = async (branch, parentNode, deps, decisions, forceNew = false) => {
+    // TÔN TRỌNG LỆNH DỪNG, ở ranh giới GIỮA HAI NODE: node trước đã ghi xong hẳn, node
+    // này chưa bắt đầu. Không kiểm ở đây thì nút Dừng vô nghĩa và ta về đúng lỗi cũ —
+    // overlay tắt mà vòng ghi vẫn chạy.
+    if (deps.isAborted && deps.isAborted()) {
+        if (!deps._abortReported) {
+            deps._abortReported = true
+            console.warn('[importJson] nguoi dung dung import — cac node con lai khong duoc ghi')
+        }
+        return
+    }
+
     const mrid = branchMrid(branch)
     let action = decisions && mrid ? decisions[mrid] : undefined
 
@@ -548,6 +573,9 @@ const importBranch = async (branch, parentNode, deps, decisions, forceNew = fals
             deps._lastError = null
         }
         return
+    }
+    if (action !== CONFLICT_ACTION.USE_EXISTING) {
+        await ensureImportedOwnership(newNode, deps)
     }
     console.log(`%c[BRANCH] ✓ OK type=${branch.type} → newNode.mrid=${newNode.mrid} (recurseChildren=${recurseChildren}, ${(branch.children || []).length} children)`, 'color:#009688')
 

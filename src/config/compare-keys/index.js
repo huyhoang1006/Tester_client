@@ -246,5 +246,63 @@ export const resolveCompareKey = (assetKind, testCode, columns) => {
     return { keys: fallbackCompareKey(columns), declared: false }
 }
 
+const getCellValue = (cells, code) => {
+    const cell = Object.values(cells || {}).find(item => item && item.aliasName === code)
+    if (!cell || cell.value === null || cell.value === undefined || String(cell.value).trim() === '') return ''
+    const text = String(cell.value).trim()
+    const num = Number(text)
+    return Number.isNaN(num) ? text : String(num)
+}
+
+const buildCircuitBreakerRowTitle = (cells) => {
+    const phase = getCellValue(cells, 'phase')
+    const tripCoil = getCellValue(cells, 'trip_coil') || getCellValue(cells, 'trip_coil_no')
+    const closeCoil = getCellValue(cells, 'close_coil_no')
+    const interrupter = getCellValue(cells, 'interrupter')
+    const parts = []
+    if (phase) parts.push(`Phase ${phase}`)
+    if (tripCoil) parts.push(`Trip ${tripCoil}`)
+    if (closeCoil) parts.push(`Close ${closeCoil}`)
+    if (interrupter) parts.push(`Interrupter ${interrupter}`)
+    return parts.join(' - ')
+}
+
+const COMPARE_DISPLAY = {
+    CircuitBreaker: {
+        OTiming: { rowLabel: buildCircuitBreakerRowTitle },
+        CTiming: { rowLabel: buildCircuitBreakerRowTitle },
+        OCTiming: { rowLabel: buildCircuitBreakerRowTitle },
+        COTiming: { rowLabel: buildCircuitBreakerRowTitle },
+        OCOTiming: { rowLabel: buildCircuitBreakerRowTitle },
+        COCOTiming: { rowLabel: buildCircuitBreakerRowTitle },
+        OCOCOTiming: { rowLabel: buildCircuitBreakerRowTitle },
+        ContactResistance: { rowLabel: buildCircuitBreakerRowTitle },
+        DCWindingTripCoil: { rowLabel: buildCircuitBreakerRowTitle },
+        DCWindingCloseCoil: { rowLabel: buildCircuitBreakerRowTitle },
+        InsulationResistanceTripCoil: { rowLabel: buildCircuitBreakerRowTitle },
+        InsulationResistanceCloseCoil: { rowLabel: buildCircuitBreakerRowTitle },
+        OverCurrentRelease: { rowLabel: buildCircuitBreakerRowTitle },
+        UnderVoltageRelease: { rowLabel: buildCircuitBreakerRowTitle },
+        MinimumPickup: { rowLabel: buildCircuitBreakerRowTitle },
+        SF6GasAnalysis: {
+            tableLabels: {
+                table1: 'Decomposition of SF6',
+                table2: 'SO2 + SOF2',
+                table3: 'HF'
+            }
+        }
+    }
+}
+
+const DISPLAY_BY_NORMALIZED_KIND = Object.keys(COMPARE_DISPLAY).reduce((acc, kind) => {
+    acc[normalizeAssetKind(kind)] = COMPARE_DISPLAY[kind]
+    return acc
+}, {})
+
+export const resolveCompareDisplay = (assetKind, testCode) => {
+    const byKind = DISPLAY_BY_NORMALIZED_KIND[normalizeAssetKind(assetKind)]
+    return (byKind && byKind[testCode]) || {}
+}
+
 export { COMPARE_KEYS, normalizeAssetKind }
 export default COMPARE_KEYS

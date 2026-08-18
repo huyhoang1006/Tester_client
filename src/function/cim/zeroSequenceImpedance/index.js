@@ -67,6 +67,26 @@ export const updateZeroSequenceImpedanceTransaction = async (mrid, info, dbsql) 
 }
 
 
+/**
+ * Lấy zero_sequence_impedance theo power_transformer_info_id.
+ *
+ * ─── VÌ SAO KHÔNG CÒN success:true KHI KHÔNG CÓ DÒNG ─────────────────────────
+ *
+ * `db.get` trả `undefined` khi không tìm thấy. Bản trước vẫn `success: true, data: row`,
+ * nên chỗ gọi làm đúng bài mà vẫn nổ:
+ *
+ *     if (dataZeroSequenceImpedance.success) {          // true
+ *         entity.zeroSequenceImpedance = data;          // undefined
+ *         baseVoltageIds.push(entity.zeroSequenceImpedance.base_voltage)   // TypeError
+ *     }
+ *
+ * Đó chính là `Cannot read property 'base_voltage' of undefined`. Người viết chỗ gọi đã
+ * kiểm `success` — cách duy nhất họ biết để tự vệ — nhưng `success` đang nói dối.
+ *
+ * Mọi hàm `get...ById` khác trong `function/cim` đều trả `success: false` khi không có
+ * dòng (xem `getLifecycleDateById`, `getAssetById`…). Hàm này lệch chuẩn, và lệch đúng ở
+ * chỗ nguy hiểm nhất: nó biến "không có dữ liệu" thành "có dữ liệu, giá trị undefined".
+ */
 export const getZeroSequenceImpedanceByTransformerInfoId = async (powerTransformerInfoId) => {
     return new Promise((resolve, reject) => {
         db.get(
@@ -76,6 +96,11 @@ export const getZeroSequenceImpedanceByTransformerInfoId = async (powerTransform
             [powerTransformerInfoId],
             (err, row) => {
                 if (err) return reject({ success: false, err, message: "Query failed" })
+                if (!row) return resolve({
+                    success: false,
+                    data: null,
+                    message: "Zero sequence impedance not found"
+                })
 
                 return resolve({
                     success: true,

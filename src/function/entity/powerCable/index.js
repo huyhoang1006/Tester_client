@@ -1,5 +1,5 @@
 import db from '../../datacontext/index'
-import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType } from '@/function/entity/attachment'
+import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteAttachmentFolder } from '@/function/entity/attachment'
 import { insertVoltageTransaction, deleteVoltageByIdTransaction, getVoltageByIds } from '@/function/cim/voltage';
 import { insertCurrentFlowTransaction, getCurrentFlowByIds, deleteCurrentFlowByIdTransaction } from '@/function/cim/currentFlow';
 import { insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction } from '@/function/cim/lifecycleDate';
@@ -354,6 +354,14 @@ export const deletePowerCableEntity = async (entity) => {
         for (const item of entity.area || []) await deleteUnitSafely(deleteAreaByIdTransaction, item.mrid, db);
 
         await runAsync('COMMIT');
+
+        // Xoá HẲN thư mục file. Power cable trước đây chỉ gọi syncFilesWithDeletion —
+        // xoá được file bên trong (mrid đúng, khác 6 chỗ truyền `data.mrid`) nhưng thư
+        // mục thì ở lại, vì hàm đó bỏ qua thư mục và còn mkdir nếu chưa có.
+        if (entity.asset && entity.asset.mrid) {
+            deleteAttachmentFolder(entity.asset.mrid);
+        }
+
         await writeAssetDeleteAuditLog('Power cable', entity)
         return { success: true, message: 'Power cable entity deleted successfully' };
     } catch (error) {

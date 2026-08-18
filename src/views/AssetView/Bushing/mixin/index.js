@@ -20,6 +20,9 @@ export default {
                     const resultEntity = Mapping.mapDtoToEntity(result);
                     let rs = await window.electronAPI.insertBushingEntity(resultEntity)
                     if (rs.success) {
+                        if (window.electronAPI.ensureUserOwnership) {
+                            await window.electronAPI.ensureUserOwnership(this.$store.state.user.user_id, result.properties.mrid)
+                        }
                         return {
                             success: true,
                             data: rs.data,

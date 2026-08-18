@@ -13,6 +13,9 @@
  */
 import { importBranchFromJSON, collectGraftBranches, isOrgIntoOrg, nodeModeOf } from '@/views/Import/services/importJsonService'
 import { scanTreeConflicts, CONFLICT_ACTION } from '@/views/TreeNode/Common/Import/mridConflictScan'
+import { hasUserSuffix, getUserSuffix, replaceUserSuffix, isLocalMrid, appendUserSuffix } from '@/utils/serverId'
+import { ID_POLICY_USER_SCOPED } from '@/views/Export/services/exportJsonService'
+import { startLoading } from '@/utils/loading'
 
 // ==== DTO→Entity mappers cho node thường + asset (chiều xuôi import) ====
 import { OrgDtoToOrgEntity } from '@/views/Mapping/Organisation'
@@ -52,11 +55,12 @@ export default {
             pendingImportContext: null,
             graftDialogVisible: false,
             graftInfo: null,
-            progressVisible: false,
-            progressDone: 0,
-            progressTotal: 0,
-            progressName: '',
-            progressType: '',
+            // Reporter của overlay chung; không để trong `data` vì không cần reactive và
+            // Vue sẽ đi làm reactive cả closure bên trong.
+            _importReporter: null,
+            _importDone: 0,
+            importFailures: [],
+            importFailureDialogVisible: false,
         }
     },
     methods: {
@@ -81,6 +85,90 @@ export default {
         },
 
         // Helper: mo file picker, parse JSON, QUET TRUNG, roi import (hoac mo dialog)
+        _retargetImportedJsonOwnership(value, userId) {
+            if (!value || !userId) return value
+            const walk = (item) => {
+                if (Array.isArray(item)) {
+                    item.forEach(walk)
+                    return
+                }
+                if (!item || typeof item !== 'object') return
+                for (const key of Object.keys(item)) {
+                    const current = item[key]
+                    if (key === 'userId' || key === 'user_id') {
+                        item[key] = String(userId)
+                    } else if (key === 'userIdentifiedObjectId') {
+                        // Liên kết ownership thuộc bản export cũ; bản import sẽ tạo lại
+                        // cho tài khoản hiện tại sau khi node được insert thành công.
+                        item[key] = ''
+                    } else if (typeof current === 'string' && hasUserSuffix(current) && getUserSuffix(current) !== String(userId)) {
+                        item[key] = replaceUserSuffix(current, userId)
+                    } else if (isLocalMrid(current) && !hasUserSuffix(current)) {
+                        // mrid CÓ hậu tố loại nhưng CHƯA có hậu tố người dùng — file export
+                        // từ trước khi tách theo người dùng. Phải gắn thêm, nếu không:
+                        //
+                        //   import  ->  '1000@org'         (giu nguyen)
+                        //   tai ve  ->  '1000@org@u-21'    (toLocalMrid gan them)
+                        //
+                        // Hai mrid khác nhau cho cùng một tổ chức => HAI dòng trong DB =>
+                        // hai node ADMIN trên cây. Nhánh `hasUserSuffix` ở trên không bắt
+                        // được vì nó chỉ đổi hậu tố của NGƯỜI KHÁC, còn đây là KHÔNG CÓ.
+                        //
+                        // `isLocalMrid` kiểm hậu tố có thuộc danh sách loại đã biết, nên
+                        // email ('evn@mail.com') và mrid cấu hình (UUID trần) không bị đụng.
+                        item[key] = appendUserSuffix(current, userId)
+                    } else if (current && typeof current === 'object') {
+                        walk(current)
+                    }
+                }
+            }
+            walk(value)
+            return value
+        },
+
+        /**
+         * Kiểm chính sách id của file TRƯỚC khi ghi bất cứ thứ gì.
+         *
+         * Bản import này chỉ biết một cách xử lý: đổi hậu tố `@u-<người export>` sang tài
+         * khoản đang đăng nhập. File khai một chính sách khác nghĩa là nó được sinh bởi
+         * bản mới hơn theo quy ước khác — ghi bừa thì id sai và không có cách lần ngược.
+         * Dừng lại rõ ràng tốt hơn.
+         *
+         * File CŨ không có `idPolicy` thì vẫn cho qua: hoặc là chưa có hậu tố (dữ liệu
+         * trước khi tách theo người dùng), hoặc có và bước retarget xử lý được.
+         *
+         * @returns {boolean} true = được phép import
+         */
+        _checkImportIdPolicy(content) {
+            if (Array.isArray(content)) return true   // file cũ: mảng roots trần
+            const policy = content && content.idPolicy
+            if (!policy) {
+                console.warn('[IMPORT] file khong khai idPolicy → coi la file cu, van import')
+                return true
+            }
+            if (policy !== ID_POLICY_USER_SCOPED) {
+                console.error('[IMPORT] idPolicy khong nhan dang:', policy)
+                this.$message.error(
+                    `This file uses an unsupported id policy ("${policy}"). ` +
+                    'Please update the application before importing it.'
+                )
+                return false
+            }
+            // Cùng chính sách nhưng KHÁC người export → mọi mrid sẽ bị đổi hậu tố. Nói ra,
+            // vì người dùng cần biết bản import là BẢN RIÊNG của mình chứ không phải cùng
+            // một bản ghi với người gửi file.
+            const exporter = content.exportedByUserId
+            const me = String(this.$store.state.user.user_id)
+            if (exporter && String(exporter) !== me) {
+                console.log(`[IMPORT] file export boi user ${exporter}, import voi user ${me} → doi hau to`)
+                this.$message.info(
+                    `This file was exported by another account (user ${exporter}). ` +
+                    'It will be imported as your own copy.'
+                )
+            }
+            return true
+        },
+
         async _pickFileAndImport(targetNode) {
             try {
                 console.log('%c[IMPORT] ===== START =====', 'color:#2196F3;font-weight:bold')
@@ -117,6 +205,10 @@ export default {
                     this.$message.warning('JSON file is empty')
                     return
                 }
+                // Kiểm chính sách id TRƯỚC khi đổi hậu tố — không hiểu file thì không sửa nó.
+                if (!this._checkImportIdPolicy(content)) return
+
+                content = this._retargetImportedJsonOwnership(content, this.$store.state.user.user_id)
 
                 // ── BƯỚC 1: kiểm tra GHÉP ĐÚNG CẤP (Cách A) ─────────────────────
                 // Nếu cây file bắt đầu cao hơn node đích → cần bỏ cấp → hỏi xác nhận.
@@ -194,6 +286,7 @@ export default {
                 try {
                     const scan = await scanTreeConflicts(branchesToScan, {
                         electronAPI: window.electronAPI,
+                        userId: this.$store.state.user.user_id,
                         opts: { resolvePath: true, targetMrid: targetNode.mrid },
                     })
                     conflicts = (scan && scan.conflicts) || []
@@ -486,6 +579,9 @@ export default {
                     },
                     voltageLevel: async (dto, parent) => {
                         dto.substationId = parent.mrid
+                        // Export cũ có thể chỉ mang locationId nhưng không mang entity
+                        // Location. Không được giữ/sinh một FK không có bản ghi đích.
+                        if (!dto.location || !dto.location.mrid) dto.locationId = null
                         console.log('%c[INS vl] DTO (parent sub=' + parent.mrid + '):', 'color:#4CAF50', JSON.parse(JSON.stringify(dto)))
                         const entity = volDtoToVolEntity(dto)
                         console.log('[INS vl] entity.voltageLevel:', entity && entity.voltageLevel)
@@ -528,42 +624,53 @@ export default {
                     warning: (m) => this.$message.warning(m),
                     error: (m) => this.$message.error(m),
                 },
+                // MỘT KIỂU LOADING DUY NHẤT. Trước đây import có hộp thoại tiến trình
+                // riêng (ImportProgressDialog) — hình thức khác, không nhịp tim, không
+                // nút dừng. Giờ dùng chung overlay với tải/xoá/export.
+                //
+                // Import BIẾT trước tổng số node (onProgressInit), nên đây là một trong
+                // ít chỗ thanh phần trăm là số thật.
                 loadingHandler: {
                     start: () => {
-                        // Mở dialog tiến trình (modal, chặn tương tác, không làm mờ toàn app).
-                        this.progressVisible = true
-                        this.progressDone = 0
-                        this.progressTotal = 0
-                        this.progressName = ''
-                        this.progressType = ''
-                        return () => { this.progressVisible = false }
+                        this._importReporter = startLoading(this, {
+                            action: 'import',
+                            text: 'Reading file...',
+                            type: 'heavy',
+                        })
+                        this._importDone = 0
+                        return () => {
+                            const r = this._importReporter
+                            this._importReporter = null
+                            return r ? r.close() : undefined
+                        }
                     },
                 },
                 onProgressInit: (total) => {
-                    this.progressTotal = total
-                    this.progressDone = 0
+                    this._importDone = 0
+                    if (this._importReporter) this._importReporter.progress(null, 0, total)
                 },
                 onProgress: ({ name, type }) => {
-                    this.progressName = name || ''
-                    this.progressType = type || ''
-                    this.progressDone = Math.min(this.progressTotal, this.progressDone + 1)
+                    this._importDone = (this._importDone || 0) + 1
+                    if (this._importReporter) {
+                        const label = name || 'node'
+                        this._importReporter.progress(`Importing ${type || 'node'} "${label}"`, this._importDone)
+                    }
                 },
-                // Node fail (mọi cấp) → hiện notification chi tiết, giữ trên màn hình
-                // đến khi người dùng đóng (duration 0) — trước đây lỗi chỉ nằm console.
+                // Tôn trọng nút Dừng. Kiểm ở ranh giới giữa hai node: node đang ghi xong
+                // hẳn rồi mới thoát, nên không để lại node nào ghi được một nửa.
+                isAborted: () => Boolean(this._importReporter && this._importReporter.aborted()),
+                // Node fail → mở HỘP THOẠI BẢNG, không phải notification.
+                //
+                // Bản trước nhồi vào một `$notify` với `<ul>` cắt ở 10 dòng và phần còn lại
+                // ghi "...and 29 more (see console)". Ba vấn đề: cắt mất dữ liệu, không sao
+                // chép được, và mọi dòng lặp lại cùng một câu lỗi nên đọc 10 dòng vẫn không
+                // rõ có mấy nguyên nhân.
+                //
+                // Hộp thoại gộp theo THÔNG BÁO LỖI: 39 thiết bị hỏng cùng một nguyên nhân là
+                // MỘT vấn đề, không phải 39.
                 onImportFailures: (failures) => {
-                    const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-                    const MAX = 10
-                    const lines = failures.slice(0, MAX).map(f => {
-                        const label = f.asset || f.type || 'node'
-                        return `<li><b>${esc(f.name)}</b> (${esc(label)}): ${esc(f.message)}</li>`
-                    })
-                    const more = failures.length > MAX ? `<li>...and ${failures.length - MAX} more (see console)</li>` : ''
-                    this.$notify.error({
-                        title: `Import failed for ${failures.length} item(s)`,
-                        dangerouslyUseHTMLString: true,
-                        message: `<ul style="margin:0;padding-left:16px;max-height:220px;overflow:auto">${lines.join('')}${more}</ul>`,
-                        duration: 0,
-                    })
+                    this.importFailures = failures || []
+                    this.importFailureDialogVisible = this.importFailures.length > 0
                 },
             }
             await importBranchFromJSON(fileContent, targetNode, deps, decisions)

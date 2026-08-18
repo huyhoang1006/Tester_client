@@ -37,6 +37,7 @@ export function mapDtoToEntity(dto) {
     entity.streetAddress.street_detail = dto.streetDetailId || null
     entity.streetAddress.town_detail = dto.townDetailId || null
     entity.streetAddress.mrid = dto.streetAddressId || null
+    entity.streetAddress.postal_code = dto.postal_code || null
 
     //location
     entity.location.mrid = dto.locationId || null
@@ -131,6 +132,7 @@ export function mapEntityToDto(entity) {
 
     // StreetAddress
     dto.streetAddressId = entity.streetAddress.mrid || ""
+    dto.postal_code = entity.streetAddress.postal_code || ""
 
     // TownDetail
     dto.townDetailId = entity.townDetail.mrid || ""

@@ -62,6 +62,46 @@ const mapTapTable = (table) => ({
     type:  TAP_TYPE_TO_SERVER[table?.type] || table?.type || null,
 })
 
+const withTapVisibility = (tap) => {
+    if (!tap) return null
+
+    return {
+        ...tap,
+        table: {
+            ...(tap.table || {}),
+            isShow: false,
+        },
+    }
+}
+
+const mapNestedCtConfiguration = (configuration) => {
+    const config = configuration || {}
+
+    return {
+        ...config,
+        cores: str(config.cores),
+        dataCT: (config.dataCT || []).map(core => {
+            const fallbackFullTap = new FullTapDto()
+            const fullTap = withTapVisibility(core.fullTap)
+
+            return {
+                ...core,
+                taps: str(core.taps),
+                commonTap: str(core.commonTap),
+                fullTap: fullTap || fallbackFullTap,
+                mainTap: {
+                    ...(core.mainTap || {}),
+                    data: (core.mainTap?.data || []).map(withTapVisibility),
+                },
+                interTap: {
+                    ...(core.interTap || {}),
+                    data: (core.interTap?.data || []).map(withTapVisibility),
+                },
+            }
+        }),
+    }
+}
+
 const mapSmallClassRating = (cr) => ({
     mrid:               cr?.mrid || null,
     rated_burden:       mapBurden(cr?.rated_burden),
@@ -77,6 +117,53 @@ const mapSystemVoltageType = (value) => {
     return str(raw)
 }
 
+/**
+ * Trộn dữ liệu server vào một nhánh DTO mà KHÔNG phá cấu trúc mặc định.
+ *
+ * ─── VÌ SAO KHÔNG DÙNG Object.assign ─────────────────────────────────────────
+ *
+ * `RatingsDto` cho mỗi trường một hình dạng mặc định `{ mrid, value, unit }`, và
+ * `Mapping/CurrentTransformer` đọc thẳng `.mrid` / `.value` trên từng trường đó:
+ *
+ *     entity.oldCurrentTransformerInfo.system_voltage_type = dto.ratings.system_voltage_type.value
+ *
+ * `Object.assign(dto.ratings, ratings)` sao chép mù. Server trả
+ * `system_voltage_type: null` thì cái object mặc định BỊ THAY bằng `null`, và câu
+ * trên nổ "Cannot read property 'value' of null".
+ *
+ * Chỗ vá cũ chỉ chặn trường hợp server trả một giá trị nguyên thuỷ (`typeof !== 'object'`)
+ * — mà `null` thì falsy nên trượt qua cả điều kiện đầu tiên.
+ *
+ * Và sửa riêng `system_voltage_type` thì chỉ dời lỗi sang trường kế tiếp: mapper còn đọc
+ * `.mrid` trên `u_lightning_peak`, `icth`, `idyn_peak`, `ith_rms`, `ith_duration`,
+ * `system_voltage`, `bil`, `rating_factor_temp`, `um_rms`, `u_withstand_rms`,
+ * `rated_frequency`, `standard` — bất kỳ trường nào server trả null cũng nổ y như vậy.
+ *
+ * Ba quy tắc:
+ *   - null / undefined  -> BỎ QUA, giữ mặc định (mặc định vốn là rỗng, đúng nghĩa "chưa có")
+ *   - mặc định là ô {value} mà server trả số/chuỗi -> gói vào `.value`, giữ mrid + unit
+ *   - mặc định là ô {value} mà server trả object   -> trộn nông, giữ field server không gửi
+ */
+const isValueCell = (v) => v !== null && typeof v === 'object' && !Array.isArray(v) && 'value' in v
+
+const mergeIntoDto = (target, source) => {
+    if (!target || !source || typeof source !== 'object') return target
+    for (const key of Object.keys(source)) {
+        const incoming = source[key]
+        if (incoming === null || incoming === undefined) continue
+
+        const current = target[key]
+        if (isValueCell(current)) {
+            target[key] = (incoming !== null && typeof incoming === 'object')
+                ? { ...current, ...incoming }
+                : { ...current, value: incoming }
+            continue
+        }
+        target[key] = incoming
+    }
+    return target
+}
+
 // ─── Mapper: server response → DTO (download) ────────────────────────────────
 
 export const mapServerToDto = (serverData) => {
@@ -89,32 +176,33 @@ export const mapServerToDto = (serverData) => {
         const properties = ct.properties || {}
         const ratings = ct.ratings || {}
 
-        Object.assign(dto.properties, properties)
+        mergeIntoDto(dto.properties, properties)
         dto.properties.asset_type = ASSET_TYPE_MAP[properties.asset_type || properties.type] || properties.asset_type || properties.type || ''
         dto.properties.type = dto.properties.asset_type
         dto.properties.kind = properties.kind || 'Current transformer'
         dto.properties.manufacturer_year = properties.manufacturer_year || properties.manufacturing_year || ''
         dto.properties.manufacturing_year = properties.manufacturing_year || properties.manufacturer_year || ''
 
-        Object.assign(dto.ratings, ratings)
+        // mergeIntoDto đã lo việc gói giá trị nguyên thuỷ vào `.value` và bỏ qua null,
+        // nên không cần chặn riêng `system_voltage_type` nữa.
+        mergeIntoDto(dto.ratings, ratings)
+
+        // `standard` vẫn cần xử lý riêng: server gửi 'IEC_60044', client dùng 'IEC60044'.
+        // Đây là đổi ĐỊNH DẠNG giá trị, không phải đổi hình dạng object.
         if (ratings.standard) {
+            const raw = (ratings.standard !== null && typeof ratings.standard === 'object')
+                ? ratings.standard.value
+                : ratings.standard
             dto.ratings.standard = {
                 ...dto.ratings.standard,
-                ...ratings.standard,
-                value: ratings.standard.value ? String(ratings.standard.value).replace(/_/g, '') : ''
-            }
-        }
-        if (ratings.system_voltage_type && typeof ratings.system_voltage_type !== 'object') {
-            dto.ratings.system_voltage_type = {
-                ...dto.ratings.system_voltage_type,
-                value: ratings.system_voltage_type
+                value: raw ? String(raw).replace(/_/g, '') : ''
             }
         }
         if (ct.ctConfiguration) {
-            Object.assign(dto.ctConfiguration, ct.ctConfiguration)
+            mergeIntoDto(dto.ctConfiguration, mapNestedCtConfiguration(ct.ctConfiguration))
         }
         if (ct.config) {
-            Object.assign(dto.config, ct.config)
+            mergeIntoDto(dto.config, ct.config)
         }
         dto.assetInfoId = ct.assetInfoId || ''
         dto.productAssetModelId = ct.productAssetModelId || ''

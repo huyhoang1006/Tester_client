@@ -101,12 +101,23 @@ const getNodeName = async (def, row) => {
     return row.serial_number || row.name || ''
 }
 
-const findMridInModes = async (mrid, modes) => {
+const isVisibleForUser = async (mrid, userId) => {
+    if (!userId) return true
+    const link = await safeGet(
+        `SELECT 1 FROM user_identified_object
+         WHERE user_id = ? AND identified_object_id = ?
+         LIMIT 1`,
+        [String(userId), String(mrid)]
+    )
+    return Boolean(link)
+}
+
+const findMridInModes = async (mrid, modes, userId = null) => {
     for (const mode of modes) {
         const def = MRID_TABLES[mode]
         if (!def) continue
         const row = await safeGet(`SELECT * FROM ${def.table} WHERE mrid = ? LIMIT 1`, [mrid])
-        if (row) return { mode, row, def }
+        if (row && await isVisibleForUser(mrid, userId)) return { mode, row, def }
     }
     return null
 }
@@ -117,7 +128,7 @@ const ASSET_TYPES = new Set(['transformer', 'voltageTransformer', 'currentTransf
 const normalizeType = (type) => (ASSET_TYPES.has(type) ? 'asset' : type)
 
 // 1) CHECK tồn tại: items [{mrid, type}] → { success, data:[{mrid, mode, name}] }
-export const checkMridsExist = async (items) => {
+export const checkMridsExist = async (items, userId = null) => {
     const existing = []
     for (const it of (items || [])) {
         const mrid = it.mrid
@@ -125,17 +136,35 @@ export const checkMridsExist = async (items) => {
         const wantMode = normalizeType(it.type)
 
         let hit = null
+        let foreignOwner = false
         if (wantMode && MRID_TABLES[wantMode]) {
-            hit = await findMridInModes(mrid, [wantMode])
+            hit = await findMridInModes(mrid, [wantMode], userId)
+            if (!hit && userId) {
+                const globalHit = await findMridInModes(mrid, [wantMode])
+                if (globalHit) {
+                    hit = globalHit
+                    foreignOwner = true
+                }
+            }
         }
         if (!hit) {
             hit = await findMridInModes(mrid,
-                ['asset', 'job', 'bay', 'voltageLevel', 'substation', 'organisation'])
+                ['asset', 'job', 'bay', 'voltageLevel', 'substation', 'organisation'],
+                userId
+            )
+            if (!hit && userId) {
+                const globalHit = await findMridInModes(mrid,
+                    ['asset', 'job', 'bay', 'voltageLevel', 'substation', 'organisation'])
+                if (globalHit) {
+                    hit = globalHit
+                    foreignOwner = true
+                }
+            }
         }
         if (hit) {
             const name = await getNodeName(hit.def, hit.row)
             console.log(`[MRID-CHECK] mrid=${mrid} type=${it.type} -> CO o bang="${hit.def.table}"`)
-            existing.push({ mrid, mode: hit.mode, name, _table: hit.def.table })
+            existing.push({ mrid, mode: hit.mode, name, _table: hit.def.table, foreignOwner })
         } else {
             console.log(`[MRID-CHECK] mrid=${mrid} type=${it.type} -> KHONG co`)
         }

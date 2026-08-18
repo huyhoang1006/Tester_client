@@ -19,6 +19,7 @@ export const OrgDtoToOrgEntity = (orgDto) => {
     orgEntity.streetAddress.mrid = orgDto.streetAddressId || null;
     orgEntity.streetAddress.town_detail = orgDto.townDetailId || null;
     orgEntity.streetAddress.street_detail = orgDto.streetDetailId || null;
+    orgEntity.streetAddress.postal_code = orgDto.postal_code || null;
 
     //Street detail
     orgEntity.streetDetail.mrid = orgDto.streetDetailId || null;

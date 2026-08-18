@@ -4,6 +4,7 @@ import * as CircuitBreakerServerMapper from '@/views/Mapping/ServerToDTO/Circuit
 import * as CircuitBreakerMapper from '@/views/Mapping/Breaker/index.js'
 import CircuitBreakerEntity from '@/views/Flatten/CircuitBreaker'
 import { fetchWithRetry } from './core-utils.js'
+import { scopeAssetDtoForUser, scopeOwnedBranchIds } from './id-scope'
 import { detectConflicts, applyResolved, mergeWithoutSnapshot, CIRCUIT_BREAKER_FIELD_DEFS } from '@/utils/conflictUtils.js'
 import { applyDownloadedAssetMedia } from './asset-media-utils.js'
 
@@ -40,6 +41,9 @@ export async function downloadCircuitBreakerChain(data, ctx) {
 
     // 1. Map server → serverDto
     const serverDto       = CircuitBreakerServerMapper.mapServerToDto(serverData)
+    const currentUserId = ctx.$store.state.user.user_id
+    scopeAssetDtoForUser(serverDto, currentUserId, { breakerRatingInfoId: 'br-rating', breakerOtherInfoId: 'br-other', breakerContactSystemInfoId: 'br-contact', assessmentLimitBreakerInfoId: 'br-limit', operatingMechanismId: 'op-mech', operatingMechanismInfoId: 'op-mech-info', operatingMechanismLifecycleDateId: 'op-mech-lifecycle', operatingMechanismProductAssetModelId: 'op-mech-pam' })
+    scopeCircuitBreakerOwnedIds(serverDto, currentUserId)
     serverDto.psrId       = data.parentBayId
     serverDto.properties.mrid = cb.mrid
     await applyDownloadedAssetMedia(serverDto, 'Circuit breaker', cb.mrid)
@@ -53,6 +57,8 @@ export async function downloadCircuitBreakerChain(data, ctx) {
         ? CircuitBreakerMapper.mapEntityToDto(clientEntity)
         : null
 
+    scopeAssetDtoForUser(clientDto, currentUserId, { breakerRatingInfoId: 'br-rating', breakerOtherInfoId: 'br-other', breakerContactSystemInfoId: 'br-contact', assessmentLimitBreakerInfoId: 'br-limit', operatingMechanismId: 'op-mech', operatingMechanismInfoId: 'op-mech-info', operatingMechanismLifecycleDateId: 'op-mech-lifecycle', operatingMechanismProductAssetModelId: 'op-mech-pam' })
+    scopeCircuitBreakerOwnedIds(clientDto, currentUserId)
     // 3. Merge
     let mergedDto
 
@@ -106,6 +112,8 @@ export async function downloadCircuitBreakerChain(data, ctx) {
     // 5. Build entity từ mergedDto — fill mọi UUID/FK còn thiếu (tương đương checkBreakerData)
     traverseAndFillMrid(mergedDto)
     ensureTopLevelFK(mergedDto)
+    scopeAssetDtoForUser(mergedDto, currentUserId, { breakerRatingInfoId: 'br-rating', breakerOtherInfoId: 'br-other', breakerContactSystemInfoId: 'br-contact', assessmentLimitBreakerInfoId: 'br-limit', operatingMechanismId: 'op-mech', operatingMechanismInfoId: 'op-mech-info', operatingMechanismLifecycleDateId: 'op-mech-lifecycle', operatingMechanismProductAssetModelId: 'op-mech-pam' })
+    scopeCircuitBreakerOwnedIds(mergedDto, currentUserId)
 
     const oldEntity = clientEntity || new CircuitBreakerEntity()
     const newEntity = CircuitBreakerMapper.mapDtoToEntity(mergedDto)
@@ -139,6 +147,17 @@ export async function downloadCircuitBreakerChain(data, ctx) {
 
     //     if (!parentNode.expanded) ctx.$set(parentNode, 'expanded', true)
     // }
+}
+
+const scopeCircuitBreakerOwnedIds = (dto, userId) => {
+    if (!dto || !userId) return dto
+    scopeOwnedBranchIds(dto.circuitBreaker, userId, 'cb-config')
+    scopeOwnedBranchIds(dto.ratings, userId, 'cb-rating')
+    scopeOwnedBranchIds(dto.contactSystem, userId, 'cb-contact')
+    scopeOwnedBranchIds(dto.others, userId, 'cb-other')
+    scopeOwnedBranchIds(dto.operating, userId, 'cb-operating')
+    scopeOwnedBranchIds(dto.assessmentLimits, userId, 'cb-assessment')
+    return dto
 }
 
 // ─── Helper — sinh UUID cho tất cả mrid rỗng trong nested object ─────────────

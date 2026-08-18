@@ -3,8 +3,6 @@ import db from '../../datacontext/index'
 export const insertPotentialTransformerTable = async (potentialTransformerTable, dbsql) => {
     return new Promise(async (resolve, reject) => {
         try {
-            console.log('insertPotentialTransformerTable check poin1 ' + potentialTransformerTable)
-
             dbsql.run(`INSERT INTO potential_transformer_table(mrid, name, usr_formula, rated_burden, rated_power_factor, usr_rated_voltage, potential_transformer_info_id)
                  VALUES (?, ?, ?, ?, ?, ?, ?)
                  ON CONFLICT(mrid) DO UPDATE SET

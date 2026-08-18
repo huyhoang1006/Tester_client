@@ -3,6 +3,7 @@ import uuid from "@/utils/uuid";
 import * as surgeArresterJobMapping from "@/views/Mapping/SurgerArresterJob/index"
 import SurgeArresterJobDto from "@/views/Dto/Job/SurgeArrester/index";
 import mixins from '../components/SelectTest/mixin'
+import { validateTestingEquipmentRows } from '@/views/JobView/Common/testingEquipmentValidation'
 
 export default {
     mixins: [mixins],
@@ -14,6 +15,11 @@ export default {
     },
     methods: {
         async saveJob() {
+            const validation = validateTestingEquipmentRows(this.surgeArresterJobDto.testingEquipmentData, this.$constant.ROOT)
+            if (!validation.valid) {
+                this.$message.warning(validation.message)
+                return { success: false, validation: true, message: validation.message }
+            }
             try {
                 if (!this.surgeArresterJobDto.properties.name || this.surgeArresterJobDto.properties.name === '') {
                     this.$message.error('Name is required');
@@ -24,6 +30,9 @@ export default {
                     const old_entity = surgeArresterJobMapping.jobDtoToEntity(this.surgeArresterJobDtoOld);
                     const rs = await window.electronAPI.insertSurgeArresterJob(old_entity, entity)
                     if (rs.success) {
+                        if (window.electronAPI.ensureUserOwnership) {
+                            await window.electronAPI.ensureUserOwnership(this.$store.state.user.user_id, resultDto.properties.mrid)
+                        }
                         return {
                             success: true,
                             data: rs.data,

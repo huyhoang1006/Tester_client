@@ -149,20 +149,23 @@ export const mapServerToDto = (serverData) => {
 
     // 4. VT Configuration
     dto.vt_Configuration.windings = core.windings || '';
-    dto.vt_Configuration.dataVT   = configList.map(config => {
-        const usrMultUI = MULTIPLIER_MAP[config.usrMultiplier] || '';
+    dto.vt_Configuration.dataVT   = configList.map((config, index) => {
+        const usrFormulaUI = MULTIPLIER_MAP[config.usrMultiplier]
+            || MULTIPLIER_MAP[config.usrFormula]
+            || config.usrFormula
+            || '';
         const burdenMultUI = MULTIPLIER_MAP[config.ratedBurdenMultiplier] || '';
 
         return {
             mrid:               config.id ? String(config.id) : uuid.newUuid(),
-            name:               config.name || '',
-            usr_formula:        MULTIPLIER_MAP[config.usrFormula] || config.usrFormula || '',
+            name:               config.name || `${index + 1}a${index + 1}n`,
+            usr_formula:        usrFormulaUI,
             rated_power_factor: config.cos !== null && config.cos !== undefined ? Number(config.cos) : '',
             usr_rated_voltage: {
                 mrid:       uuid.newUuid(),
                 value:      config.usrValue !== null ? String(config.usrValue) : '',
-                unit:       usrMultUI ? `${usrMultUI}|${config.usrUnit || 'V'}` : (config.usrUnit || 'V'),
-                multiplier: usrMultUI,
+                unit:       config.usrUnit || 'V',
+                multiplier: '',
             },
             rated_burden: {
                 mrid:       uuid.newUuid(),
@@ -268,12 +271,13 @@ export const mapDtoToServer = (dto) => {
 
             vt_Configuration: {
                 windings: dto.vt_Configuration?.windings || 0,
-                dataVT: (dto.vt_Configuration?.dataVT || []).map(vt => {
+                dataVT: (dto.vt_Configuration?.dataVT || []).map((vt, index) => {
                     const usrVoltage = splitMultiplierUnit(vt.usr_rated_voltage)
                     const burden = splitMultiplierUnit(vt.rated_burden)
 
                     return {
                     mrid: vt.mrid || null,
+                    name: vt.name || `${index + 1}a${index + 1}n`,
 
                     // DTO usr_formula là string "3sqrt" → map vào value, convert sang server format
                     usr_formula: {

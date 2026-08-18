@@ -45,6 +45,12 @@ export default {
                 const dataResult = this.checkBay(data);
                 const result = await window.electronAPI.insertBayEntity(dataResult);
                 if (result.success) {
+                    if (window.electronAPI.ensureUserOwnership) {
+                        await window.electronAPI.ensureUserOwnership(
+                            this.$store.state.user.user_id,
+                            dataResult.mrid
+                        )
+                    }
                     return result
                 } else {
                     console.error("Failed to save bay:", result);

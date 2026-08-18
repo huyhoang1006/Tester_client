@@ -60,11 +60,26 @@ export default {
         }
     },
     watch: {
+        data: {
+            deep: true,
+            handler: function (newVal) {
+                const nextValue = JSON.parse(JSON.stringify(newVal || {
+                    prim: [],
+                    sec: [],
+                    tert: []
+                }))
+                if (JSON.stringify(this.surgeArrester) !== JSON.stringify(nextValue)) {
+                    this.surgeArrester = nextValue
+                }
+            }
+        },
         surgeArrester: {
             deep: true,
             immediate : true,
             handler: function (newVal) {
-                this.$emit('update', newVal)
+                if (JSON.stringify(this.data || {}) !== JSON.stringify(newVal || {})) {
+                    this.$emit('update', newVal)
+                }
             }
         }
     },

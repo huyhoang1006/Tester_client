@@ -1,5 +1,17 @@
 import db from "@/function/datacontext/index";
-import { backupAllFilesInDir, syncFilesWithDeletion, restoreFiles, deleteBackupFiles } from "@/function/entity/attachment";
+// Gộp về MỘT câu import từ '@/function/entity/attachment'. Trước đây file này có hai
+// câu (dòng 2 và dòng 20) — chạy được, nhưng khi cần thêm một hàm thì không rõ nên thêm
+// vào đâu, và dễ tưởng hàm mình cần chưa được import trong khi nó đã nằm ở câu kia.
+import {
+    backupAllFilesInDir,
+    syncFilesWithDeletion,
+    restoreFiles,
+    deleteBackupFiles,
+    deleteAttachmentFolder,
+    getAttachmentByForeignIdAndType,
+    deleteAttachmentByIdTransaction,
+    uploadAttachmentTransaction
+} from "@/function/entity/attachment";
 import { insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction } from "@/function/cim/productAssetModel";
 import { insertOldCurrentTransformerInfoTransaction, getOldCurrentTransformerInfoById } from "@/function/cim/oldCurrentTransformerInfo";
 import { insertVoltageTransaction, getVoltageById, deleteVoltageByIdTransaction } from "@/function/cim/voltage";
@@ -17,7 +29,6 @@ import { insertAssetPsrTransaction, getAssetPsrByAssetIdAndPsrId, deleteAssetPsr
 import { insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction } from "@/function/cim/lifecycleDate";
 import CurrentTransformerEntity from "@/views/Flatten/CurrentTransformer";
 import { getAssetInfoById, insertAssetInfoTransaction, deleteAssetInfoByIdTransaction } from "@/function/cim/assetInfo";
-import { getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction, uploadAttachmentTransaction } from "@/function/entity/attachment";
 import path from "path";
 import * as attachmentContext from "@/function/attachmentcontext/index";
 import { writeAssetSaveAuditLog, writeAssetDeleteAuditLog } from "../assetAudit/index";
@@ -380,7 +391,7 @@ export const deleteCurrentTransformerEntity = async (data) => {
                 if (data.attachment && data.attachment.id) {
                     const pathData = JSON.parse(data.attachment.path || '[]')
                     if (Array.isArray(pathData) && pathData.length > 0) {
-                        syncFilesWithDeletion(pathData, null, data.mrid);
+                        syncFilesWithDeletion(pathData, null, data.oldCurrentTransformerInfo.mrid);
                     }
                 }
                 if (data.attachment.id) {
@@ -460,6 +471,18 @@ export const deleteCurrentTransformerEntity = async (data) => {
 
                 // 8. Commit transaction để lưu tất cả thay đổi
                 await runAsync('COMMIT');
+
+                // Xoá HẲN thư mục file. Đây là 1 trong 2 loại asset trước đây KHÔNG có
+                // bước này (loại kia là power cable) — 9 loại còn lại đều gọi
+                // deleteDirectory, nên xoá current transformer để lại cả file lẫn thư mục.
+                //
+                // Thư mục đặt theo `oldCurrentTransformerInfo.mrid` — không phải
+                // `asset.mrid` như phần lớn asset khác; lấy đúng theo đường LƯU của chính
+                // file này (dòng 38) chứ không suy theo quy ước chung.
+                if (data.oldCurrentTransformerInfo && data.oldCurrentTransformerInfo.mrid) {
+                    deleteAttachmentFolder(data.oldCurrentTransformerInfo.mrid);
+                }
+
                 await writeAssetDeleteAuditLog('Current transformer', data)
                 return { success: true, message: 'Current Transformer entity deleted successfully' };
 

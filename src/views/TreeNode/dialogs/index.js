@@ -27,3 +27,4 @@ export { default as TestingEquipmentDialog } from './TestingEquipmentDialog.vue'
 
 // Thêm dòng này vào cuối file
 export { default as ZeroDiagramDialog } from './ZeroDiagramDialog.vue'
+export { default as ImportFailureDialog } from './ImportFailureDialog.vue'

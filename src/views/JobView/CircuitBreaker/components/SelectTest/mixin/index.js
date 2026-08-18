@@ -566,8 +566,19 @@ export default {
             let table1 = []
             let phase = ['A', 'B', 'C']
 
-            for (let i = 0; i < assetData.circuitBreaker.numberOfPhases; i++) {
-                for (let j = 0; j < assetData.circuitBreaker.interruptersPerPhase; j++) {
+            const interruptersPerPhase = parseInt(assetData.circuitBreaker.interruptersPerPhase, 10)
+            if (!Number.isFinite(interruptersPerPhase) || interruptersPerPhase <= 0) {
+                return {
+                    rowDataExampleCondition,
+                    table: {
+                        table1: []
+                    }
+                }
+            }
+
+            const numberOfPhases = parseInt(assetData.circuitBreaker.numberOfPhases, 10) || 3
+            for (let i = 0; i < numberOfPhases; i++) {
+                for (let j = 0; j < interruptersPerPhase; j++) {
                     const row = JSON.parse(JSON.stringify(rowDataExample))
 
                     if (row.phase) {
@@ -576,7 +587,7 @@ export default {
                         row.name.value = phase[i] || `Phase ${i + 1}`
                     }
 
-                    if (assetData.circuitBreaker.interruptersPerPhase > 1) {
+                    if (interruptersPerPhase > 1) {
                         if (row.interrupter) {
                             row.interrupter.value = (j + 1).toString()
                         } else {

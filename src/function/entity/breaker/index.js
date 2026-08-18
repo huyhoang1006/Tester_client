@@ -1,6 +1,7 @@
 
 import db from '../../datacontext/index'
 import path from 'path'
+import { safePathSegment } from '@/utils/fileName'
 import * as attachmentContext from '../../attachmentcontext/index'
 import circuitBreakerEntity from '@/views/Flatten/CircuitBreaker'
 import * as breaker_constant from '@/views/AssetView/CircuitBreaker/components/assessment'
@@ -114,7 +115,7 @@ export const insertBreakerEntity = async (old_entity, entity) => {
 
                     if (assetResult.success) {
                     } else {
-                        console.error('[DEBUG] Retry Insert Asset also FAILED:', assetResult.err);
+                        console.error('Retry Insert Asset also FAILED:', assetResult.err);
                         // Có thể throw error ở đây nếu muốn dừng hẳn, hoặc để nó trôi qua (nhưng sẽ mất asset)
                         throw new Error(`Critical: Failed to insert Asset even with NULL location. Error: ${assetResult.err.message}`);
                     }
@@ -122,7 +123,7 @@ export const insertBreakerEntity = async (old_entity, entity) => {
                     throw new Error(`Insert Asset failed: ${assetResult.message}`);
                 }
             } catch (err) {
-                console.error('[DEBUG] Critical Exception during Asset Insert:', err);
+                console.error('Critical Exception during Asset Insert:', err);
                 throw err; // Ném lỗi để Rollback toàn bộ transaction vì mất Asset là mất tất cả
             }
 
@@ -169,7 +170,7 @@ export const insertBreakerEntity = async (old_entity, entity) => {
                 const newPath = []
                 for (let i = 0; i < pathData.length; i++) {
                     const namefile = path.basename(pathData[i].path);
-                    pathData[i].path = path.join(attachmentContext.getAttachmentDir(), entity.asset.mrid, namefile);
+                    pathData[i].path = path.join(attachmentContext.getAttachmentDir(), safePathSegment(entity.asset.mrid), namefile);
                     newPath.push(pathData[i]);
                 }
                 entity.attachment.path = JSON.stringify(newPath);
@@ -751,7 +752,7 @@ export const getBreakerEntity = async (id, psrId) => {
                             for (const resistance of entity.contactResistanceBreakerInfo) {
                                 resistanceIds.push(resistance.r_min); resistanceIds.push(resistance.r_max); resistanceIds.push(resistance.r_ref); resistanceIds.push(resistance.r_dev);
                             }
-                        } else { console.warn('[DEBUG] Failed to fetch contactResistanceBreakerInfo'); }
+                        }
 
                         const dataOperatingTime = await getOperatingTimeBreakerInfoByAssessmentLimitBreakerInfoId(entity.assessmentLimitBreakerInfo.mrid);
                         if (dataOperatingTime.success) {
@@ -759,7 +760,7 @@ export const getBreakerEntity = async (id, psrId) => {
                             for (const time of entity.operatingTimeBreakerInfo) {
                                 secondIds.push(time.t_min); secondIds.push(time.t_max); secondIds.push(time.t_ref); secondIds.push(time.t_dev_position); secondIds.push(time.t_dev_negative);
                             }
-                        } else { console.warn('[DEBUG] Failed to fetch operatingTimeBreakerInfo'); }
+                        }
 
                         const dataContactTravel = await getContactTravelBreakerInfoByAssessmentLimitBreakerInfoId(entity.assessmentLimitBreakerInfo.mrid);
                         if (dataContactTravel.success) {
@@ -767,7 +768,7 @@ export const getBreakerEntity = async (id, psrId) => {
                             for (const travel of entity.contactTravelBreakerInfo) {
                                 lengthIds.push(travel.d_min); lengthIds.push(travel.d_max); lengthIds.push(travel.d_ref); lengthIds.push(travel.d_dev);
                             }
-                        } else { console.warn('[DEBUG] Failed to fetch contactTravelBreakerInfo'); }
+                        }
 
                         const dataMiscellaneous = await getMiscellaneousBreakerInfoByAssessmentLimitId(entity.assessmentLimitBreakerInfo.mrid);
                         if (dataMiscellaneous.success) {
@@ -775,7 +776,7 @@ export const getBreakerEntity = async (id, psrId) => {
                             for (const misc of entity.miscellaneousBreakerInfo) {
                                 quantityIds.push(misc.min); quantityIds.push(misc.max); quantityIds.push(misc.ref); quantityIds.push(misc.dev);
                             }
-                        } else { console.warn('[DEBUG] Failed to fetch miscellaneousBreakerInfo'); }
+                        }
 
                         const dataCoilCharacteristics = await getCoilCharacteristicsBreakerInfoByAssessmentLimitId(entity.assessmentLimitBreakerInfo.mrid);
                         if (dataCoilCharacteristics.success) {
@@ -783,7 +784,7 @@ export const getBreakerEntity = async (id, psrId) => {
                             for (const coil of entity.coilCharacteristicsBreakerInfo) {
                                 quantityIds.push(coil.min); quantityIds.push(coil.max); quantityIds.push(coil.ref); quantityIds.push(coil.dev_positive); quantityIds.push(coil.dev_negative);
                             }
-                        } else { console.warn('[DEBUG] Failed to fetch coilCharacteristicsBreakerInfo'); }
+                        }
 
                         const dataPickupVoltage = await getPickupVoltageBreakerInfoByAssessmentLimitId(entity.assessmentLimitBreakerInfo.mrid);
                         if (dataPickupVoltage.success) {
@@ -791,7 +792,7 @@ export const getBreakerEntity = async (id, psrId) => {
                             for (const pickup of entity.pickupVoltageBreakerInfo) {
                                 voltageIds.push(pickup.v_min); voltageIds.push(pickup.v_max); voltageIds.push(pickup.v_ref); voltageIds.push(pickup.v_dev);
                             }
-                        } else { console.warn('[DEBUG] Failed to fetch pickupVoltageBreakerInfo'); }
+                        }
 
                         const dataMotorCharacteristics = await getMotorCharacteristicsBreakerInfoByAssessmentLimitId(entity.assessmentLimitBreakerInfo.mrid);
                         if (dataMotorCharacteristics.success) {
@@ -799,7 +800,7 @@ export const getBreakerEntity = async (id, psrId) => {
                             for (const motor of entity.motorCharacteristicsBreakerInfo) {
                                 quantityIds.push(motor.min); quantityIds.push(motor.max); quantityIds.push(motor.ref); quantityIds.push(motor.dev);
                             }
-                        } else { console.warn('[DEBUG] Failed to fetch motorCharacteristicsBreakerInfo'); }
+                        }
 
                         const dataUnderVoltage = await getUnderVoltageReleaseBreakerInfoByAssessmentLimitId(entity.assessmentLimitBreakerInfo.mrid);
                         if (dataUnderVoltage.success) {
@@ -807,7 +808,7 @@ export const getBreakerEntity = async (id, psrId) => {
                             for (const under of entity.underVoltageReleaseBreakerInfo) {
                                 voltageIds.push(under.min); voltageIds.push(under.max); voltageIds.push(under.ref); voltageIds.push(under.dev);
                             }
-                        } else { console.warn('[DEBUG] Failed to fetch underVoltageReleaseBreakerInfo'); }
+                        }
 
                         const dataOvercurrent = await getOvercurrentReleaseBreakerInfoByAssessmentLimitId(entity.assessmentLimitBreakerInfo.mrid);
                         if (dataOvercurrent.success) {
@@ -815,7 +816,7 @@ export const getBreakerEntity = async (id, psrId) => {
                             for (const over of entity.overcurrentReleaseBreakerInfo) {
                                 currentFlowIds.push(over.min); currentFlowIds.push(over.max); currentFlowIds.push(over.ref); currentFlowIds.push(over.dev);
                             }
-                        } else { console.warn('[DEBUG] Failed to fetch overcurrentReleaseBreakerInfo'); }
+                        }
                     }
                 }
 
@@ -938,7 +939,7 @@ export const getBreakerEntity = async (id, psrId) => {
                     message: 'Breaker entity retrieved successfully'
                 }
             } else {
-                console.warn('[DEBUG] getAssetById FAILED for ID:', id, dataBreaker.error || 'No data returned');
+                console.warn('getAssetById FAILED for ID:', id, dataBreaker.error || 'No data returned');
                 // FIX: Thử kiểm tra lại nếu Asset đã được import nhưng chưa commit xong (rất hiếm, nhưng phòng hờ)
                 // Hoặc trả về lỗi rõ ràng hơn
                 return {
@@ -949,7 +950,7 @@ export const getBreakerEntity = async (id, psrId) => {
             }
         }
     } catch (error) {
-        console.error("[DEBUG] Error retrieving breaker entity by ID (CATCH BLOCK):", error);
+        console.error("Error retrieving breaker entity by ID (CATCH BLOCK):", error);
         return { success: false, error, message: 'Error retrieving breaker entity by ID' };
     }
 }
@@ -961,7 +962,7 @@ export const deleteBreakerEntity = async (entity) => {
         if (entity.attachment && entity.attachment.id) {
             await deleteAttachmentByIdTransaction(entity.attachment.id, db);
             if (entity.asset && entity.asset.mrid) {
-                const dirPath = path.join(attachmentContext.getAttachmentDir(), entity.asset.mrid);
+                const dirPath = path.join(attachmentContext.getAttachmentDir(), safePathSegment(entity.asset.mrid));
                 deleteDirectory(dirPath);
             }
         }
@@ -1079,7 +1080,7 @@ export const deleteBreakerEntity = async (entity) => {
             try {
                 await deleteAssessmentLimitBreakerInfoTransaction(limitId, db);
             } catch (err) {
-                console.error('[DEBUG] FAILED to delete assessmentLimitBreakerInfo:', err);
+                console.error('FAILED to delete assessmentLimitBreakerInfo:', err);
                 throw new Error('Delete assessmentLimitBreakerInfo failed');
             }
         }
@@ -1098,7 +1099,7 @@ export const deleteBreakerEntity = async (entity) => {
             } catch (err) {
                 const code = (err && err.err && err.err.err && err.err.err.code) || (err && err.err && err.err.code) || (err && err.code);
                 if (code === 'SQLITE_CONSTRAINT') {
-                    console.warn(`[DEBUG] Skipped deleting oldOperatingMechanism ${entity.oldOperatingMechanism.mrid} due to foreign key constraint (likely shared).`);
+                    console.warn(`Skipped deleting oldOperatingMechanism ${entity.oldOperatingMechanism.mrid} due to foreign key constraint (likely shared).`);
                 } else {
                     throw err;
                 }
@@ -1111,7 +1112,7 @@ export const deleteBreakerEntity = async (entity) => {
             } catch (err) {
                 const code = (err && err.err && err.err.err && err.err.err.code) || (err && err.err && err.err.code) || (err && err.code);
                 if (code === 'SQLITE_CONSTRAINT') {
-                    console.warn(`[DEBUG] Skipped deleting operatingLifecycleDate ${entity.operatingLifecycleDate.mrid} due to foreign key constraint (likely shared).`);
+                    console.warn(`Skipped deleting operatingLifecycleDate ${entity.operatingLifecycleDate.mrid} due to foreign key constraint (likely shared).`);
                 } else {
                     throw err;
                 }
@@ -1124,7 +1125,7 @@ export const deleteBreakerEntity = async (entity) => {
             } catch (err) {
                 const code = (err && err.err && err.err.err && err.err.err.code) || (err && err.err && err.err.code) || (err && err.code);
                 if (code === 'SQLITE_CONSTRAINT') {
-                    console.warn(`[DEBUG] Skipped deleting oldOperatingMechanismInfo ${entity.oldOperatingMechanismInfo.mrid} due to foreign key constraint (likely shared).`);
+                    console.warn(`Skipped deleting oldOperatingMechanismInfo ${entity.oldOperatingMechanismInfo.mrid} due to foreign key constraint (likely shared).`);
                 } else {
                     throw err;
                 }
@@ -1137,7 +1138,7 @@ export const deleteBreakerEntity = async (entity) => {
             } catch (err) {
                 const code = (err && err.err && err.err.err && err.err.err.code) || (err && err.err && err.err.code) || (err && err.code);
                 if (code === 'SQLITE_CONSTRAINT') {
-                    console.warn(`[DEBUG] Skipped deleting operatingProductAssetModel ${entity.operatingProductAssetModel.mrid} due to foreign key constraint (likely shared).`);
+                    console.warn(`Skipped deleting operatingProductAssetModel ${entity.operatingProductAssetModel.mrid} due to foreign key constraint (likely shared).`);
                 } else {
                     throw err;
                 }
@@ -1166,7 +1167,7 @@ export const deleteBreakerEntity = async (entity) => {
             } catch (err) {
                 const code = (err && err.err && err.err.err && err.err.err.code) || (err && err.err && err.err.code) || (err && err.code);
                 if (code === 'SQLITE_CONSTRAINT') {
-                    console.warn(`[DEBUG] Skipped deleting lifecycleDate ${entity.lifecycleDate.mrid} due to foreign key constraint (likely shared).`);
+                    console.warn(`Skipped deleting lifecycleDate ${entity.lifecycleDate.mrid} due to foreign key constraint (likely shared).`);
                 } else {
                     throw err;
                 }
@@ -1182,9 +1183,9 @@ export const deleteBreakerEntity = async (entity) => {
                 const code = (err && err.err && err.err.err && err.err.err.code) || (err && err.err && err.err.code) || (err && err.code);
 
                 if (code === 'SQLITE_CONSTRAINT') {
-                    console.warn(`[DEBUG] Skipped deleting oldBreakerInfo ${entity.oldBreakerInfo.mrid} due to foreign key constraint (likely shared).`);
+                    console.warn(`Skipped deleting oldBreakerInfo ${entity.oldBreakerInfo.mrid} due to foreign key constraint (likely shared).`);
                 } else {
-                    console.error('[DEBUG] oldBreakerInfo delete failed with unknown error structure:', JSON.stringify(err, null, 2));
+                    console.error('oldBreakerInfo delete failed with unknown error structure:', JSON.stringify(err, null, 2));
                     throw err;
                 }
             }
@@ -1196,7 +1197,7 @@ export const deleteBreakerEntity = async (entity) => {
             } catch (err) {
                 const code = (err && err.err && err.err.err && err.err.err.code) || (err && err.err && err.err.code) || (err && err.code);
                 if (code === 'SQLITE_CONSTRAINT') {
-                    console.warn(`[DEBUG] Skipped deleting productAssetModel ${entity.productAssetModel.mrid} due to foreign key constraint (likely shared).`);
+                    console.warn(`Skipped deleting productAssetModel ${entity.productAssetModel.mrid} due to foreign key constraint (likely shared).`);
                 } else {
                     throw err;
                 }
@@ -1211,7 +1212,7 @@ export const deleteBreakerEntity = async (entity) => {
                 } catch (err) {
                     const code = (err && err.err && err.err.err && err.err.err.code) || (err && err.err && err.err.code) || (err && err.code);
                     if (code === 'SQLITE_CONSTRAINT') {
-                        console.warn(`[DEBUG] Skipped deleting voltage ${data.mrid} due to foreign key constraint.`);
+                        console.warn(`Skipped deleting voltage ${data.mrid} due to foreign key constraint.`);
                     } else { throw err; }
                 }
             }
@@ -1224,7 +1225,7 @@ export const deleteBreakerEntity = async (entity) => {
                 } catch (err) {
                     const code = (err && err.err && err.err.err && err.err.err.code) || (err && err.err && err.err.code) || (err && err.code);
                     if (code === 'SQLITE_CONSTRAINT') {
-                        console.warn(`[DEBUG] Skipped deleting currentFlow ${data.mrid} due to foreign key constraint.`);
+                        console.warn(`Skipped deleting currentFlow ${data.mrid} due to foreign key constraint.`);
                     } else { throw err; }
                 }
             }
@@ -1237,7 +1238,7 @@ export const deleteBreakerEntity = async (entity) => {
                 } catch (err) {
                     const code = (err && err.err && err.err.err && err.err.err.code) || (err && err.err && err.err.code) || (err && err.code);
                     if (code === 'SQLITE_CONSTRAINT') {
-                        console.warn(`[DEBUG] Skipped deleting second ${data.mrid} due to foreign key constraint.`);
+                        console.warn(`Skipped deleting second ${data.mrid} due to foreign key constraint.`);
                     } else { throw err; }
                 }
             }
@@ -1250,7 +1251,7 @@ export const deleteBreakerEntity = async (entity) => {
                 } catch (err) {
                     const code = (err && err.err && err.err.err && err.err.err.code) || (err && err.err && err.err.code) || (err && err.code);
                     if (code === 'SQLITE_CONSTRAINT') {
-                        console.warn(`[DEBUG] Skipped deleting resistance ${data.mrid} due to foreign key constraint.`);
+                        console.warn(`Skipped deleting resistance ${data.mrid} due to foreign key constraint.`);
                     } else { throw err; }
                 }
             }
@@ -1263,7 +1264,7 @@ export const deleteBreakerEntity = async (entity) => {
                 } catch (err) {
                     const code = (err && err.err && err.err.err && err.err.err.code) || (err && err.err && err.err.code) || (err && err.code);
                     if (code === 'SQLITE_CONSTRAINT') {
-                        console.warn(`[DEBUG] Skipped deleting capacitance ${data.mrid} due to foreign key constraint.`);
+                        console.warn(`Skipped deleting capacitance ${data.mrid} due to foreign key constraint.`);
                     } else { throw err; }
                 }
             }
@@ -1276,7 +1277,7 @@ export const deleteBreakerEntity = async (entity) => {
                 } catch (err) {
                     const code = (err && err.err && err.err.err && err.err.err.code) || (err && err.err && err.err.code) || (err && err.code);
                     if (code === 'SQLITE_CONSTRAINT') {
-                        console.warn(`[DEBUG] Skipped deleting activePower ${data.mrid} due to foreign key constraint.`);
+                        console.warn(`Skipped deleting activePower ${data.mrid} due to foreign key constraint.`);
                     } else { throw err; }
                 }
             }
@@ -1289,7 +1290,7 @@ export const deleteBreakerEntity = async (entity) => {
                 } catch (err) {
                     const code = (err && err.err && err.err.err && err.err.err.code) || (err && err.err && err.err.code) || (err && err.code);
                     if (code === 'SQLITE_CONSTRAINT') {
-                        console.warn(`[DEBUG] Skipped deleting length ${data.mrid} due to foreign key constraint.`);
+                        console.warn(`Skipped deleting length ${data.mrid} due to foreign key constraint.`);
                     } else { throw err; }
                 }
             }
@@ -1302,7 +1303,7 @@ export const deleteBreakerEntity = async (entity) => {
                 } catch (err) {
                     const code = (err && err.err && err.err.err && err.err.err.code) || (err && err.err && err.err.code) || (err && err.code);
                     if (code === 'SQLITE_CONSTRAINT') {
-                        console.warn(`[DEBUG] Skipped deleting mass ${data.mrid} due to foreign key constraint.`);
+                        console.warn(`Skipped deleting mass ${data.mrid} due to foreign key constraint.`);
                     } else { throw err; }
                 }
             }
@@ -1315,7 +1316,7 @@ export const deleteBreakerEntity = async (entity) => {
                 } catch (err) {
                     const code = (err && err.err && err.err.err && err.err.err.code) || (err && err.err && err.err.code) || (err && err.code);
                     if (code === 'SQLITE_CONSTRAINT') {
-                        console.warn(`[DEBUG] Skipped deleting volume ${data.mrid} due to foreign key constraint.`);
+                        console.warn(`Skipped deleting volume ${data.mrid} due to foreign key constraint.`);
                     } else { throw err; }
                 }
             }
@@ -1328,7 +1329,7 @@ export const deleteBreakerEntity = async (entity) => {
                 } catch (err) {
                     const code = (err && err.err && err.err.err && err.err.err.code) || (err && err.err && err.err.code) || (err && err.code);
                     if (code === 'SQLITE_CONSTRAINT') {
-                        console.warn(`[DEBUG] Skipped deleting temperature ${data.mrid} due to foreign key constraint.`);
+                        console.warn(`Skipped deleting temperature ${data.mrid} due to foreign key constraint.`);
                     } else { throw err; }
                 }
             }
@@ -1341,7 +1342,7 @@ export const deleteBreakerEntity = async (entity) => {
                 } catch (err) {
                     const code = (err && err.err && err.err.err && err.err.err.code) || (err && err.err && err.err.code) || (err && err.code);
                     if (code === 'SQLITE_CONSTRAINT') {
-                        console.warn(`[DEBUG] Skipped deleting frequency ${data.mrid} due to foreign key constraint.`);
+                        console.warn(`Skipped deleting frequency ${data.mrid} due to foreign key constraint.`);
                     } else { throw err; }
                 }
             }
@@ -1354,7 +1355,7 @@ export const deleteBreakerEntity = async (entity) => {
                 } catch (err) {
                     const code = (err && err.err && err.err.err && err.err.err.code) || (err && err.err && err.err.code) || (err && err.code);
                     if (code === 'SQLITE_CONSTRAINT') {
-                        console.warn(`[DEBUG] Skipped deleting quantity ${data.mrid} due to foreign key constraint.`);
+                        console.warn(`Skipped deleting quantity ${data.mrid} due to foreign key constraint.`);
                     } else { throw err; }
                 }
             }
@@ -1367,7 +1368,7 @@ export const deleteBreakerEntity = async (entity) => {
                 } catch (err) {
                     const code = (err && err.err && err.err.err && err.err.err.code) || (err && err.err && err.err.code) || (err && err.code);
                     if (code === 'SQLITE_CONSTRAINT') {
-                        console.warn(`[DEBUG] Skipped deleting pressure ${data.mrid} due to foreign key constraint.`);
+                        console.warn(`Skipped deleting pressure ${data.mrid} due to foreign key constraint.`);
                     } else { throw err; }
                 }
             }

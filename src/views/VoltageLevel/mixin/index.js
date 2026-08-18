@@ -58,6 +58,12 @@ export default {
                     const resultEntity = voltageMapper.volDtoToVolEntity(result);
                     const resultData = await window.electronAPI.insertVoltageLevelEntity(resultEntity)
                     if (resultData.success) {
+                        if (window.electronAPI.ensureUserOwnership) {
+                            await window.electronAPI.ensureUserOwnership(
+                                this.$store.state.user.user_id,
+                                result.voltageLevelId
+                            )
+                        }
                         return {
                             success: true,
                             data: resultData.data,

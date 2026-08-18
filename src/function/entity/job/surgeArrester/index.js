@@ -2,7 +2,7 @@ import db from '../../../datacontext/index.js'
 import * as attachmentContext from '../../../attachmentcontext/index'
 import path from 'path'
 import { writeJobSaveAuditLog, writeJobDeleteAuditLog } from '../jobAudit'
-import { uploadAttachmentTransaction, deleteAttachmentByIdTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType } from '@/function/entity/attachment'
+import { uploadAttachmentTransaction, deleteAttachmentByIdTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteAttachmentFolder } from '@/function/entity/attachment'
 import {insertOldWorkTransaction, getOldWorkById, deleteOldWorkByIdTransaction} from "@/function/cim/oldWork/index"
 import { insertTestingEquipmentTransaction, getTestingEquipmentByWorkId, ensureTestingEquipmentAssetTransaction, persistJobCalibrationTransaction, unlinkTestingEquipmentFromWorkTransaction } from '../../testingEquipment/index.js'
 import SurgeArresterJobEntity from '@/views/Flatten/Job/SurgeArrester/index.js'
@@ -595,6 +595,25 @@ export const deleteSurgeArresterJobEntity = async (entity) => {
                         syncFilesWithDeletion(pathData, null, attachment.id_foreign);
                     }
                 }
+            }
+        }
+
+        // Xoá HẲN thư mục file của job và của từng bài test.
+        //
+        // Khối `syncFilesWithDeletion` ở trên chỉ xoá FILE bên trong rồi bỏ qua thư mục
+        // (dòng `if (isDirectory()) continue`), và nó còn `mkdirSync` thư mục nếu chưa
+        // có — nên nó là hàm ĐỒNG BỘ KHI LƯU, không phải hàm xoá. Kết quả: mỗi job bị
+        // xoá để lại một thư mục rỗng, và job chưa từng có file thì lại được tạo mới một
+        // thư mục rỗng.
+        //
+        // Phải đặt SAU khối đó, không phải trước: đảo thứ tự thì `syncFilesWithDeletion`
+        // sẽ mkdir lại đúng thư mục vừa xoá.
+        if (entity.oldWork && entity.oldWork.mrid) {
+            deleteAttachmentFolder(entity.oldWork.mrid);
+        }
+        if (entity.attachmentTest && entity.attachmentTest.length > 0) {
+            for (const attachment of entity.attachmentTest) {
+                if (attachment && attachment.id_foreign) deleteAttachmentFolder(attachment.id_foreign);
             }
         }
 

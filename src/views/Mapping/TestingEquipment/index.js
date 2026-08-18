@@ -49,21 +49,46 @@ const splitRepairReason = (value) => {
 const normalizeRepairDtos = (repairs) => {
     const seen = new Set()
     return (repairs || []).flatMap((r) => {
-        const reasons = splitRepairReason(r.reason || '')
+        const components = Array.isArray(r.components) ? r.components.map(component => ({
+            mrid: component.mrid || component.id || '',
+            name: component.name || component.component_name || ''
+        })).filter(component => component.name) : []
+        const legacySeverity = r.activity_severity != null ? r.activity_severity : r.severity
+        const legacyProgress = ['Completed', 'InProgress'].includes(legacySeverity) ? legacySeverity : ''
+        const ticketStatus = r.ticket_status || (
+            legacyProgress === 'Completed' || r.status === 'Completed' ? 'Closed' : 'In Progress'
+        )
+        const repairStatus = ['Closed', 'Repaired'].includes(ticketStatus) ? 'Completed' : 'InProgress'
+        const isStructuredTicket = !!(
+            r.ticket_id || r.action_note || r.repair_location || components.length ||
+            (r.ticket_severity || (r.severity && !legacyProgress))
+        )
+        const reasons = isStructuredTicket ? [r.reason || ''] : splitRepairReason(r.reason || '')
         return (reasons.length ? reasons : ['']).map((reason, index) => ({
             mrid: index === 0 ? (r.mrid || '') : '',
             type: r.type || 'Repair',
             created_date_time: r.created_date_time || '',
             reason,
+            fault_description: reason,
+            note: index === 0 ? (r.action_note || '') : '',
             provider: r.provider || '',
             cost: r.cost || '',
-            status: r.severity || r.status || 'Completed'
+            status: repairStatus,
+            ticket_id: index === 0 ? (r.ticket_id || '') : '',
+            ticket_status: ticketStatus,
+            severity: r.ticket_severity || (legacyProgress ? '' : (r.severity || '')),
+            repair_location: index === 0 ? (r.repair_location || '') : '',
+            created_by: index === 0 && r.created_by != null ? r.created_by : null,
+            updated_at: index === 0 ? (r.updated_at || '') : '',
+            component: index === 0 ? components.map(component => component.name).join(', ') : '',
+            components: index === 0 ? components : []
         }))
     }).filter((r) => {
-        const key = [r.reason, r.created_date_time, r.provider, r.cost, r.status].join('|').toLowerCase()
+        const key = [r.ticket_id, r.reason, r.created_date_time, r.provider, r.cost, r.status].join('|').toLowerCase()
         if (seen.has(key)) return false
         seen.add(key)
-        return r.reason || r.created_date_time || r.provider || r.cost
+        return r.ticket_id || r.reason || r.created_date_time || r.provider || r.cost ||
+            r.component || r.repair_location
     })
 }
 
@@ -85,6 +110,9 @@ export const mapDtoToEntity = (dto) => {
 
     // --- in_use_date ---
     entity.inUseDate.mrid = dto.inUseDateId || null;
+    entity.inUseDate.asset_id = mrid;
+    entity.inUseDate.date_type = 'COMMISSIONING';
+    entity.inUseDate.date_value = p.in_use_date || null;
     entity.inUseDate.in_use_date = p.in_use_date || null;
 
     // --- asset (nền) + identified_object ---
@@ -99,7 +127,7 @@ export const mapDtoToEntity = (dto) => {
     entity.asset.in_use_state = p.status || null;             // UI/import status: Available/InUse/UnderRepair/Retired
     entity.asset.product_asset_model = entity.productAssetModel.mrid;
     entity.asset.lifecycle_date = entity.lifecycleDate.mrid;
-    entity.asset.in_use_date = entity.inUseDate.mrid;
+    entity.asset.in_use_date = null;
 
     // --- testing_equipment ---
     entity.testingEquipment.mrid = mrid;
@@ -146,6 +174,7 @@ export const mapDtoToEntity = (dto) => {
         r.provider = c.provider || null;
         r.certificate_number = c.certificate_number || null;
         r.result = c.result || null;
+        r.status = ['Ready', 'Expired', 'Pending'].includes(c.status) ? c.status : 'Pending';
         r.notes = c.notes || null;
         return r;
     });
@@ -156,11 +185,23 @@ export const mapDtoToEntity = (dto) => {
         r.mrid = rp.mrid || null;
         r.type = 'Repair';
         r.created_date_time = rp.created_date_time || null;
-        r.reason = rp.reason || null;
-        // activity_record.status là FK -> status(mrid), không nhét text được.
-        // Tiến độ Repair (InProgress|Completed) lưu vào cột severity (text tự do).
+        r.reason = rp.fault_description || rp.reason || null;
+        // activity_record.status remains a CIM FK. Repair workflow uses ticket_status text.
         r.status = null;
-        r.severity = rp.status || 'Completed';
+        r.ticket_id = rp.ticket_id || null;
+        r.ticket_status = rp.ticket_status || (rp.status === 'Completed' ? 'Closed' : 'In Progress');
+        r.severity = null;
+        r.ticket_severity = rp.severity || null;
+        r.repair_location = rp.repair_location || rp.location || null;
+        r.action_note = rp.note || rp.action_note || null;
+        r.created_by = rp.created_by != null ? rp.created_by : (dto.userId || null);
+        r.updated_at = new Date().toISOString();
+        r.components = Array.isArray(rp.components)
+            ? rp.components.map(component => ({
+                mrid: component.mrid || component.id || null,
+                name: component.name || component.component_name || ''
+            })).filter(component => component.name)
+            : String(rp.component || '').split(',').map(name => ({ mrid: null, name: name.trim() })).filter(component => component.name);
         r.asset = mrid;
         r.provider = rp.provider || null;
         r.cost = rp.cost || null;
@@ -240,7 +281,7 @@ export const mapEntityToDto = (entity) => {
     dto.properties.manufacturer = pam.manufacturer || '';
     dto.properties.model = pam.model_number || '';
     dto.properties.manufacturer_year = lc.manufactured_date || '';
-    dto.properties.in_use_date = iud.in_use_date || lc.purchase_date || '';
+    dto.properties.in_use_date = iud.date_value || iud.in_use_date || lc.purchase_date || '';
 
     dto.licenses = (entity.softwareLicenses || []).map((l) => ({
         mrid: l.mrid || '',
@@ -260,6 +301,7 @@ export const mapEntityToDto = (entity) => {
         provider: c.provider || '',
         certificate_number: c.certificate_number || '',
         result: c.result || '',
+        status: ['Ready', 'Expired', 'Pending'].includes(c.status) ? c.status : 'Pending',
         notes: c.notes || ''
     }));
 

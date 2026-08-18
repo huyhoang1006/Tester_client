@@ -3,6 +3,7 @@ import * as disconnectorAPI from '@/api/demo/Disconnector.js'
 import * as DisconnectorServerMapper from '@/views/Mapping/ServerToDTO/Disconnector/index.js'
 import * as DisconnectorMapper from '@/views/Mapping/Disconnector/index.js'
 import { fetchWithRetry } from './core-utils.js'
+import { scopeAssetDtoForUser, scopeOwnedBranchIds } from './id-scope'
 import { traverseAndFillMrid, ensureTopLevelFK, FK_KEYS } from './fk-utils.js'
 import { detectConflicts, applyResolved, mergeWithoutSnapshot, DISCONNECTOR_FIELD_DEFS } from '@/utils/conflictUtils.js'
 import { applyDownloadedAssetMedia } from './asset-media-utils.js'
@@ -40,6 +41,9 @@ export async function downloadDisconnectorChain(data, ctx) {
 
     // 1. Map server → serverDto
     const serverDto       = DisconnectorServerMapper.mapServerToDto(serverData)
+    const currentUserId = ctx.$store.state.user.user_id
+    scopeAssetDtoForUser(serverDto, currentUserId)
+    scopeDisconnectorOwnedIds(serverDto, currentUserId)
     serverDto.psrId       = data.parentBayId
     serverDto.properties.mrid = dc.mrid
     await applyDownloadedAssetMedia(serverDto, 'Disconnector', dc.mrid)
@@ -53,6 +57,8 @@ export async function downloadDisconnectorChain(data, ctx) {
         ? DisconnectorMapper.disconnectorEntityToDto(clientEntity)
         : null
 
+    scopeAssetDtoForUser(clientDto, currentUserId)
+    scopeDisconnectorOwnedIds(clientDto, currentUserId)
     // 3. Merge
     let mergedDto
 
@@ -98,6 +104,8 @@ export async function downloadDisconnectorChain(data, ctx) {
     // Đảm bảo mọi mrid + FK id được điền trước khi map sang entity (tránh lỗi foreign key)
     traverseAndFillMrid(mergedDto)
     ensureTopLevelFK(mergedDto, FK_KEYS.disconnector)
+    scopeAssetDtoForUser(mergedDto, currentUserId)
+    scopeDisconnectorOwnedIds(mergedDto, currentUserId)
 
     // 5. Build entity từ mergedDto
     const entity = DisconnectorMapper.disconnectorDtoToEntity(mergedDto)
@@ -130,4 +138,10 @@ export async function downloadDisconnectorChain(data, ctx) {
 
     //     if (!parentNode.expanded) ctx.$set(parentNode, 'expanded', true)
     // }
+}
+
+const scopeDisconnectorOwnedIds = (dto, userId) => {
+    if (!dto || !userId) return dto
+    scopeOwnedBranchIds(dto.ratings, userId, 'dc-value')
+    return dto
 }

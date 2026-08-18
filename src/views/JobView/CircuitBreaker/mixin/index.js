@@ -3,6 +3,7 @@ import uuid from '@/utils/uuid'
 import * as circuitBreakerJobMapping from '@/views/Mapping/CircuitBreakerJob/index'
 import CircuitBreakerJobDto from '@/views/Dto/Job/CircuitBreaker/index'
 import mixins from '../components/SelectTest/mixin'
+import { validateTestingEquipmentRows } from '@/views/JobView/Common/testingEquipmentValidation'
 
 export default {
     mixins: [mixins],
@@ -14,6 +15,11 @@ export default {
     },
     methods: {
         async saveJob() {
+            const validation = validateTestingEquipmentRows(this.circuitBreakerJobDto.testingEquipmentData, this.$constant.ROOT)
+            if (!validation.valid) {
+                this.$message.warning(validation.message)
+                return { success: false, validation: true, message: validation.message }
+            }
             try {
                 if (!this.circuitBreakerJobDto.properties.name || this.circuitBreakerJobDto.properties.name === '') {
                     this.$message.error('Name is required')
@@ -24,6 +30,9 @@ export default {
                     const old_entity = circuitBreakerJobMapping.jobDtoToEntity(this.circuitBreakerJobDtoOld)
                     const rs = await window.electronAPI.insertCircuitBreakerJob(old_entity, entity)
                     if (rs.success) {
+                        if (window.electronAPI.ensureUserOwnership) {
+                            await window.electronAPI.ensureUserOwnership(this.$store.state.user.user_id, resultDto.properties.mrid)
+                        }
                         return {
                             success: true,
                             data: rs.data,
@@ -72,6 +81,12 @@ export default {
             this.assetData = assetData
             this.productAssetModelData = productAssetModelData
             this.locationData = locationData
+        },
+
+        async handleAssetConfigUpdated(payload = {}) {
+            if (payload.changed === true) {
+                this.$emit('reload', { savedData: this.circuitBreakerJobDto, changed: true })
+            }
         },
 
         async checkJob(data) {

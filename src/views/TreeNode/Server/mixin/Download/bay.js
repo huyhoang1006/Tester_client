@@ -2,6 +2,8 @@
 import * as demoAPI from '@/api/demo'
 import * as BayServerMapper from '@/views/Mapping/ServerToDTO/Bay/index.js'
 import { fetchWithRetry } from './core-utils.js'
+import { scopeDtoIds } from './id-scope'
+import { getTypeSuffix } from '@/utils/serverId'
 
 // Bay chỉ có name — không cần conflict dialog
 // Nhưng vẫn giữ snapshot để base cho lần sau nếu cần mở rộng
@@ -34,14 +36,42 @@ export async function getBayChain(id, parentId) {
 
 export async function downloadBayChain(data, ctx) {
     const bay        = data.bay
-    const serverData = { ...bay._serverData, mRID: bay.mrid, voltageLevel: { mRID: data.parentVlId } }
+    const userId     = ctx.$store.state.user.user_id
+
+    // NGĂN CÓ HAI LOẠI CHA. Bảng `bay` khai hai khoá ngoại — `substation` và
+    // `voltage_level` — vì ngăn treo trực tiếp dưới trạm cũng được, mà treo dưới cấp
+    // điện áp cũng được.
+    //
+    // Trước đây chỗ này ép cứng `voltageLevel`, nên ngăn thuộc trạm bị ghi id trạm
+    // vào cột `voltage_level`, trỏ sang bảng không có dòng đó và khoá ngoại chặn.
+    // Triệu chứng đúng như quan sát: ngăn dưới cấp điện áp thì tải được, ngăn dưới
+    // trạm thì không.
+    //
+    // Loại cha đọc từ chính hậu tố của id ('108050@sub@u-21' -> 'sub'), nên không cần
+    // truyền thêm gì từ tầng dựng chuỗi.
+    const parentId          = data.parentVlId
+    const parentIsSubstation = getTypeSuffix(parentId) === 'sub'
+
+    // Đặt bên KIA về null một cách tường minh: `bay._serverData` có thể mang sẵn cả
+    // hai từ server, và để lẫn thì ngăn treo hai chỗ cùng lúc.
+    const serverData = {
+        ...bay._serverData,
+        mRID: bay.mrid,
+        ...(parentIsSubstation
+            ? { substation: { mRID: parentId }, voltageLevel: null }
+            : { voltageLevel: { mRID: parentId }, substation: null })
+    }
 
     // 1. Map server → dto (bay dto cũng là entity luôn)
     const serverDto = BayServerMapper.mapServerToDto(serverData)
+    scopeDtoIds(serverDto, { bayId: 'bay' }, userId)
+    const localBayId = serverDto.bayId
 
     // 2. Lấy client data cũ
-    const existingResult = await window.electronAPI.getBayEntityByMrid(bay.mrid)
-    const clientDto      = existingResult.success ? existingResult.data : null
+    const existingResult = await window.electronAPI.getBayEntityByMrid(localBayId)
+    const clientDto      = existingResult.success
+        ? scopeDtoIds(existingResult.data, { bayId: 'bay' }, userId)
+        : null
 
     // 3. Merge — bay đơn giản, chỉ server wins nếu client rỗng
     let mergedDto
@@ -60,9 +90,16 @@ export async function downloadBayChain(data, ctx) {
         }
     }
 
-    // 4. Set context IDs
-    mergedDto.mrid         = bay.mrid
-    mergedDto.voltage_level = data.parentVlId
+    // 4. Set context IDs — ghi đúng MỘT trong hai khoá ngoại, khoá kia phải là null
+    mergedDto.mrid = localBayId
+    mergedDto.bayId = localBayId
+    if (parentIsSubstation) {
+        mergedDto.substation    = parentId
+        mergedDto.voltage_level = null
+    } else {
+        mergedDto.voltage_level = parentId
+        mergedDto.substation    = null
+    }
 
     // 5. Insert DB + snapshot trong cùng 1 transaction
     const insertResult = await window.electronAPI.insertBayEntity(mergedDto, serverDto)
@@ -72,7 +109,7 @@ export async function downloadBayChain(data, ctx) {
     const parentNode = ctx.findNodeById(data.parentVlId, ctx.organisationClientList)
     if (parentNode) {
         const newNode = {
-            mrid:      bay.mrid,
+            mrid:      localBayId,
             name:      bay.name,
             aliasName: bay.aliasName,
             parentId:  data.parentVlId,
@@ -82,7 +119,7 @@ export async function downloadBayChain(data, ctx) {
         if (!parentNode.children) {
             ctx.$set(parentNode, 'children', [newNode])
         } else {
-            const idx = parentNode.children.findIndex(c => c.mrid === bay.mrid)
+            const idx = parentNode.children.findIndex(c => c.mrid === localBayId)
             if (idx >= 0) parentNode.children.splice(idx, 1, newNode)
             else parentNode.children.push(newNode)
         }

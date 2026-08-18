@@ -1,6 +1,7 @@
 'use strict'
 import {ipcMain} from 'electron'
 import {entityFunc} from "@/function"
+import { describeFailure } from '@/ipcmain/failureMessage'
 
 export const insertCircuitBreakerJob = () => {
     ipcMain.handle('insertCircuitBreakerJob', async function (event,old_data, data) {
@@ -17,7 +18,8 @@ export const insertCircuitBreakerJob = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    error: rs.error,
+                    message: rs.message || (rs.error && rs.error.message) || "Failed to save Circuit Breaker job",
                 }
             }
         } catch (error) {
@@ -45,7 +47,7 @@ export const getCircuitBreakerJobByMrid = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -72,7 +74,7 @@ export const deleteCircuitBreakerJobByMrid = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {

@@ -4,21 +4,8 @@
             <div class="panel">
                 <div class="panel-header">Identification</div>
                 <div class="frow">
-                    <div class="flabel">Name</div>
+                    <div class="flabel">Equipment name</div>
                     <div class="fvalue"><input class="inp" v-model="form.name" placeholder="e.g. OMICRON CMC 356" /></div>
-                </div>
-                <div class="frow">
-                    <div class="flabel">Equipment type</div>
-                    <div class="fvalue">
-                        <select class="inp" v-model="form.type">
-                            <option value="TestSet">Relay / Test set</option>
-                            <option value="Insulation">Insulation tester</option>
-                            <option value="WindingRes">Winding resistance</option>
-                            <option value="TurnsRatio">Turns ratio</option>
-                            <option value="PowerQuality">Power quality</option>
-                            <option value="Misc">Miscellaneous</option>
-                        </select>
-                    </div>
                 </div>
                 <div class="frow">
                     <div class="flabel">Serial no. <span class="req">*</span></div>
@@ -43,15 +30,15 @@
                         <input class="inp" type="date" v-model="form.manufacturer_year" />
                     </div>
                 </div>
+                <div class="frow">
+                    <div class="flabel">Commissioning date</div>
+                    <div class="fvalue"><input class="inp" type="date" v-model="form.in_use_date" /></div>
+                </div>
             </div>
 
             <div class="ov-side">
                 <div class="panel">
                     <div class="panel-header">Inventory & Status</div>
-                    <div class="frow">
-                        <div class="flabel">Asset tag</div>
-                        <div class="fvalue"><input class="inp" v-model="form.asset_tag" placeholder="Internal tag" /></div>
-                    </div>
                     <div class="frow">
                         <div class="flabel">Status</div>
                         <div class="fvalue">
@@ -80,10 +67,6 @@
                                 <option v-for="c in countryOptions" :key="c" :value="c">{{ c }}</option>
                             </select>
                         </div>
-                    </div>
-                    <div class="frow">
-                        <div class="flabel">In use date</div>
-                        <div class="fvalue"><input class="inp" type="date" v-model="form.in_use_date" /></div>
                     </div>
                 </div>
 

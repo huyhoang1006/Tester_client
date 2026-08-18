@@ -61,6 +61,7 @@ import * as transformerJobServerMapper from '@/views/Mapping/ServerToDTO/Transfo
 import { fetchWithRetry } from './core-utils.js'
 import { saveJobSnapshot, getJobSnapshot } from '@/utils/jobSnapshot'
 import { normalizeJobDto } from '@/utils/jobDtoNormalize'
+import { scopeJobDtoForUser } from './job-id-scope'
 import { mergeJob, applyJobResolution } from '@/utils/jobConflict'
 import { showJobConflictDialog } from '@/views/TreeNode/dialogs/showJobConflictDialog'
 
@@ -200,7 +201,11 @@ async function saveJobChain(assetType, data, ctx) {  // eslint-disable-line no-u
     const jobName = jobRef.name || mrid
 
     // 1. server -> dto, rồi vá những chỗ mapper không chịu được null
-    const serverDto = normalizeJobDto(entry.toDto(jobRef._serverData), entry.linkKey, assetType)
+    const userId = ctx && ctx.$store && ctx.$store.state && ctx.$store.state.user
+        ? ctx.$store.state.user.user_id
+        : null
+    const serverDto = normalizeJobDto(entry.toDto(jobRef._serverData), entry.linkKey, assetType, userId)
+    scopeJobDtoForUser(serverDto, userId, entry.linkKey)
     serverDto.properties = serverDto.properties || {}
     serverDto.properties.mrid = mrid
 
@@ -219,7 +224,12 @@ async function saveJobChain(assetType, data, ctx) {  // eslint-disable-line no-u
     // `entityToDto`, bản server qua `mapServerToDto`, còn bản gốc thì được cất
     // sẵn ở dạng DTO ngay từ lúc ghi — nếu cất ở dạng payload server thì mọi khoá
     // đều lệch tên và phép so ra "khác nhau hết".
-    const clientDto = clientEntity ? entry.entityToDto(clientEntity) : null
+    // Gắn hậu tố cho CẢ HAI bản trước khi so. Bản ở máy vốn đã mang hậu tố, nên đây
+    // là thao tác vô hại với nó; nhưng bỏ qua thì bản server còn id trần, phép so đem
+    // 'abc@val@u-21' đối chiếu với 'abc' và sinh xung đột giả ở mọi ô.
+    const clientDto = clientEntity
+        ? scopeJobDtoForUser(entry.entityToDto(clientEntity), userId, entry.linkKey)
+        : null
     const baseDto = clientDto ? await getJobSnapshot(mrid) : null
 
     let finalDto
@@ -237,7 +247,7 @@ async function saveJobChain(assetType, data, ctx) {  // eslint-disable-line no-u
             const decided = await showJobConflictDialog(conflicts, jobName)
             finalDto = applyJobResolution(baseDto, clientDto, serverDto, decided)
         }
-        normalizeJobDto(finalDto, entry.linkKey, assetType)
+        normalizeJobDto(finalDto, entry.linkKey, assetType, userId)
         finalDto.properties = finalDto.properties || {}
         finalDto.properties.mrid = mrid
     }

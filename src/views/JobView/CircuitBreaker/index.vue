@@ -52,7 +52,8 @@
                                     :testCondition="item.testCondition"
                                     :testAssessment="item.testAssessment"
                                     :compare-open="!!compareOpen[item.testTypeCode + index]"
-                                    @toggle-compare="toggleCompare(item.testTypeCode + index)">
+                                    @toggle-compare="toggleCompare(item.testTypeCode + index)"
+                                    @asset-config-updated="handleAssetConfigUpdated">
                                 </component>
                             </el-tab-pane>
                         </el-tabs>

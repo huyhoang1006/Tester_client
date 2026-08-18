@@ -1084,7 +1084,11 @@ export default {
             this.activeTab = tab;
             this.indexTab = index;
             this.$emit('input', tab);
+            const needsRestoreLoad = !!(tab && tab._needsRestoreLoad)
             await this.loadRestoredTabIfNeeded(tab, index);
+            if (tab && tab.mode === 'job' && !needsRestoreLoad) {
+                await this.loadData(tab, index);
+            }
 
             this.$nextTick(() => {
                 const id = tab.mrid || tab.id;

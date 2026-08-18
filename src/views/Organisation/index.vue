@@ -20,17 +20,14 @@
                             <el-form-item label="Street">
                                 <el-input v-model="properties.street"></el-input>
                             </el-form-item>
-                            <el-form-item label="Ward/ Commune">
+                            <el-form-item label="Ward / Suburb">
                                 <el-input v-model="properties.ward_or_commune"></el-input>
                             </el-form-item>
-                            <el-form-item label="District/ Town">
-                                <el-input v-model="properties.district_or_town"></el-input>
-                            </el-form-item>
-                            <el-form-item label="City">
+                            <el-form-item label="City / Province / State">
                                 <el-input v-model="properties.city"></el-input>
                             </el-form-item>
-                            <el-form-item label="State/ Province">
-                                <el-input v-model="properties.state_or_province"></el-input>
+                            <el-form-item label="Postcode">
+                                <el-input v-model="properties.postal_code"></el-input>
                             </el-form-item>
                             <el-form-item label="Country">
                                 <el-select filterable v-model="properties.country">

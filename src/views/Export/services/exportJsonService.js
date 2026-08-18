@@ -26,6 +26,19 @@
  * ----------------------------------------------------------------------------
  */
 
+/**
+ * Chính sách id của file export.
+ *
+ * 'user-scoped' — mrid trong file mang hậu tố `@u-<exportedByUserId>` của người export.
+ * Bên import PHẢI đổi hậu tố sang tài khoản đang đăng nhập trước khi ghi, nếu không hai
+ * người sẽ tranh nhau cùng một khoá chính.
+ *
+ * Hiện tại đây là giá trị DUY NHẤT. Đặt tên cho nó không phải để hôm nay chọn giữa hai
+ * kiểu, mà để hôm nay tuyên bố kiểu — file sau này có chính sách khác thì bản import cũ
+ * nhận ra là mình không hiểu và dừng, thay vì ghi bừa.
+ */
+export const ID_POLICY_USER_SCOPED = 'user-scoped'
+
 const sanitizeFileName = (name) => {
     if (!name) return 'export-data'
     return name.replace(/[<>:"/\\|?*]/g, '').trim() || 'export-data'
@@ -230,7 +243,28 @@ const fetchJobSelfDto = async (node, deps) => {
 //    withChildren=false → chỉ build node đó (Export only Node)
 //    withChildren=true  → đệ quy cả con cháu (Export Full Tree)
 // ===========================================================================
-const buildBranch = async (node, deps, withChildren = true) => {
+/** Tên loại node cho người đọc, dùng trong dòng mô tả tiến độ. */
+const describeNode = (node) => {
+    if (node.mode === 'asset') return node.asset || 'asset'
+    if (node.mode === 'voltageLevel') return 'voltage level'
+    return node.mode || 'node'
+}
+
+const buildBranch = async (node, deps, withChildren = true, counter = { done: 0 }) => {
+    const reporter = deps.reporter
+
+    // Dừng ở RANH GIỚI GIỮA HAI NODE. Export chỉ ĐỌC nên dừng giữa đường không hỏng dữ
+    // liệu, nhưng file sẽ thiếu — nên phải báo lỗi ra ngoài, không được lặng lẽ ghi ra
+    // một nhánh cụt rồi nói "thành công".
+    if (reporter && reporter.aborted && reporter.aborted()) throw new Error('CANCELED')
+
+    if (reporter && reporter.progress) {
+        const label = node.aliasName || node.name || node.serial_number || node.mrid
+        // Không biết trước tổng số node (phải đọc mới biết có con), nên KHÔNG vẽ phần
+        // trăm. Đếm số node đã đọc và đưa vào chính dòng mô tả: đó là số thật.
+        reporter.progress(`Reading ${describeNode(node)} "${label}" (${counter.done} done)`)
+    }
+
     let self
     if (node.mode === 'job') {
         self = await fetchJobSelfDto(node, deps)
@@ -238,6 +272,7 @@ const buildBranch = async (node, deps, withChildren = true) => {
         self = await fetchNodeSelfDto(node, deps)
     }
     if (!self) return null
+    counter.done++
 
     const branch = { ...self, children: [] }
 
@@ -245,7 +280,7 @@ const buildBranch = async (node, deps, withChildren = true) => {
     if (withChildren && node.mode !== 'job') {
         const childNodes = await fetchChildNodes(node, deps)
         for (const child of childNodes) {
-            const childBranch = await buildBranch(child, deps, true)
+            const childBranch = await buildBranch(child, deps, true, counter)
             if (childBranch) branch.children.push(childBranch)
         }
     }
@@ -258,26 +293,23 @@ const buildBranch = async (node, deps, withChildren = true) => {
 //                  'onlyNode'            = chỉ node được chọn
 // ===========================================================================
 export const exportBranchToJSON = async (nodes, deps, options = {}) => {
-    const { electronAPI, messageHandler, loadingHandler } = deps
+    const { electronAPI, messageHandler, reporter, userId } = deps
     const mode = options.mode || 'fullTree'
     const withChildren = mode !== 'onlyNode'
     const nodesArray = Array.isArray(nodes) ? nodes : (nodes ? [nodes] : [])
 
     if (nodesArray.length === 0) {
         messageHandler && messageHandler.warning('No node selected to export')
+        if (reporter) await reporter.close()
         return
-    }
-
-    let closeLoading = null
-    if (loadingHandler && loadingHandler.start) {
-        closeLoading = loadingHandler.start(withChildren ? 'Exporting full branch...' : 'Exporting node...')
     }
 
     try {
         // Build cho từng node gốc được chọn
+        const counter = { done: 0 }
         const roots = []
         for (const node of nodesArray) {
-            const branch = await buildBranch(node, deps, withChildren)
+            const branch = await buildBranch(node, deps, withChildren, counter)
             if (branch) roots.push(branch)
         }
 
@@ -286,10 +318,20 @@ export const exportBranchToJSON = async (nodes, deps, options = {}) => {
             return
         }
 
-        // Payload: { version, exportMode, exportedAt, roots: [...] }
+        // Payload: { version, exportMode, exportedByUserId, idPolicy, exportedAt, roots }
+        //
+        // exportedByUserId + idPolicy TỰ KHAI mrid bên trong file thuộc dạng nào. Không
+        // có hai field này thì bên import phải SUY từ dữ liệu: gặp `108050@sub@u-21` mà
+        // không biết 21 là ai, cũng không biết hậu tố đó là cố ý hay là rác. Ghi ra thì
+        // đọc thẳng.
+        //
+        // idPolicy chỉ có MỘT giá trị hợp lệ hôm nay: 'user-scoped' — mọi mrid mang hậu
+        // tố `@u-<exportedByUserId>` và bên import sẽ đổi sang hậu tố của mình.
         const payload = {
             version: 'tree-json-v1',
             exportMode: mode,                 // ghi rõ kiểu export vào file
+            exportedByUserId: userId != null ? String(userId) : null,
+            idPolicy: ID_POLICY_USER_SCOPED,
             exportedAt: new Date().toISOString(),
             roots,
         }
@@ -300,7 +342,9 @@ export const exportBranchToJSON = async (nodes, deps, options = {}) => {
         const suffix = withChildren ? 'full-tree' : 'node'
         const fileName = `${sanitizeFileName(baseName)}-${suffix}.json`
 
-        if (closeLoading) { closeLoading(); closeLoading = null }
+        // Đóng overlay TRƯỚC khi mở hộp thoại chọn chỗ lưu — hộp thoại của hệ điều hành
+        // chờ người dùng, mà overlay thì đếm nhịp tim; để chung sẽ bị coi là treo.
+        if (reporter) await reporter.close()
 
         const result = await electronAPI.exportJSON(payload, {
             defaultFileName: fileName,
@@ -314,11 +358,19 @@ export const exportBranchToJSON = async (nodes, deps, options = {}) => {
         } else if (result && result.message !== 'Export cancelled') {
             messageHandler && messageHandler.error(result.message || 'Export JSON failed')
         }
+        return
     } catch (err) {
+        if (err && err.message === 'CANCELED') {
+            console.warn('[exportJson] nguoi dung dung export')
+            messageHandler && messageHandler.warning('Export stopped. No file was written.')
+            return
+        }
         console.error('[exportJson] Export error:', err)
         messageHandler && messageHandler.error('An error occurred while exporting JSON')
         throw err
     } finally {
-        if (closeLoading) closeLoading()
+        // Đóng lần nữa là vô hại (RESET không phụ thuộc trạng thái) và cần thiết cho mọi
+        // đường thoát sớm: không có gì để export, lỗi, hoặc người dùng bấm dừng.
+        if (reporter) await reporter.close()
     }
 }

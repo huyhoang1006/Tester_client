@@ -59,6 +59,12 @@ export default {
                     const data = orgMapper.OrgDtoToOrgEntity(dtoData)
                     const result = await window.electronAPI.insertParentOrganizationEntity(data)
                     if (result.success) {
+                        if (window.electronAPI.ensureUserOwnership) {
+                            await window.electronAPI.ensureUserOwnership(
+                                this.$store.state.user.user_id,
+                                dtoData.organisationId
+                            )
+                        }
                         return {
                             data: result.data,
                             success: true,
@@ -113,7 +119,7 @@ export default {
         checkTownDetail(dto) {
             if (dto.townDetailId === null || dto.townDetailId === '') {
                 if (dto.city === '' && dto.state_or_province === '' &&
-                    dto.country === '' && dto.district_or_town === '' &&
+                    dto.country === '' && dto.postal_code === '' && dto.district_or_town === '' &&
                     dto.ward_or_commune === '') {
                     dto.townDetailId = null
                 } else {

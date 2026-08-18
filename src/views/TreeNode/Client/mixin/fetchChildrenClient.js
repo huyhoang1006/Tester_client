@@ -1,6 +1,21 @@
 import Vue from 'vue'
 export default {
     methods: {
+        async filterRowsByCurrentUserOwnership(rows) {
+            const userId = this.$store && this.$store.state && this.$store.state.user
+                ? this.$store.state.user.user_id
+                : null
+            if (!userId || !window.electronAPI || !window.electronAPI.getIdentifiedObjectIdsByUser) {
+                return rows
+            }
+            const rs = await window.electronAPI.getIdentifiedObjectIdsByUser(userId)
+            if (!rs || rs.success !== true || !Array.isArray(rs.data)) {
+                return rows
+            }
+            const ownedIds = new Set(rs.data)
+            return rows.filter((row) => !row || !row.mrid || ownedIds.has(row.mrid))
+        },
+
         async fetchChildren(node) {
             // Lưu children hiện có (nếu có) để merge sau
             // Điều này đảm bảo không mất asset đã add trước đó khi node chưa được expand
@@ -711,6 +726,7 @@ export default {
                         }
                     }
                     // Merge với children hiện có (nếu có) để không mất asset đã add trước đó
+                    newRows = await this.filterRowsByCurrentUserOwnership(newRows)
                     if (existingChildren.length > 0) {
                         // Tạo map của mrid để tránh duplicate
                         const existingMrids = new Set(existingChildren.map((c) => c.mrid))

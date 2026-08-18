@@ -1,5 +1,6 @@
 import db from '../../datacontext/index'
 import path from 'path'
+import { safePathSegment } from '@/utils/fileName'
 import * as attachmentContext from '../../attachmentcontext/index'
 import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction, deleteDirectory } from '@/function/entity/attachment'
 import { insertVoltageTransaction, getVoltageByIds, deleteVoltageByIdTransaction } from '@/function/cim/voltage';
@@ -189,7 +190,7 @@ export const insertCapacitorEntity = async (old_entity, entity) => {
                 const newPath = [];
                 for (let i = 0; i < pathData.length; i++) {
                     const namefile = path.basename(pathData[i].path);
-                    pathData[i].path = path.join(attachmentContext.getAttachmentDir(), entity.asset.mrid, namefile);
+                    pathData[i].path = path.join(attachmentContext.getAttachmentDir(), safePathSegment(entity.asset.mrid), namefile);
                     newPath.push(pathData[i]);
                 }
                 entity.attachment.path = JSON.stringify(newPath);
@@ -432,7 +433,7 @@ export const deleteCapacitorEntity = async (entity) => {
         if (entity.attachment && entity.attachment.id) {
             await runAsync("DELETE FROM attachment WHERE id=?", [entity.attachment.id]);
             if (entity.asset && entity.asset.mrid) {
-                const dirPath = path.join(attachmentContext.getAttachmentDir(), entity.asset.mrid);
+                const dirPath = path.join(attachmentContext.getAttachmentDir(), safePathSegment(entity.asset.mrid));
                 await deleteDirectory(dirPath);
             }
         }

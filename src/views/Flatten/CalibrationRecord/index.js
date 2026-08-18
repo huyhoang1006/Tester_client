@@ -9,6 +9,7 @@ class CalibrationRecord {
         this.provider = '';
         this.certificate_number = '';
         this.result = '';
+        this.status = 'Pending';
         this.notes = '';
     }
 }

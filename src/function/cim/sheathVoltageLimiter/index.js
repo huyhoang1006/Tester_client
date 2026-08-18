@@ -61,6 +61,11 @@ export const getSheathVoltageLimiterById = async (mrid, dbsql) => {
             [mrid],
             (err, row) => {
                 if (err) return reject({ success: false, err });
+
+                // `db.get` tra undefined khi khong co dong. Tra success:true kem data
+                // undefined la noi doi voi cho goi: ho kiem `success` roi dung `.data`
+                // ngay, va nhan TypeError. Khong co dong thi phai la success:false.
+                if (!row) return resolve({ success: false, data: null, message: 'Not found' })
                 resolve({ success: true, data: row });
             }
         );

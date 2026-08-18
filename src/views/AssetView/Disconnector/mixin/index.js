@@ -44,39 +44,39 @@ export default {
                 const assetMrid = this.disconnector && this.disconnector.properties && this.disconnector.properties.mrid
                 const psrId = this.parentData && this.parentData.mrid ? this.parentData.mrid : null
                 if (!assetMrid) {
-                    this.$message.error('Không tìm thấy MRID của asset để xóa')
+                    this.$message.error('Asset MRID was not found')
                     return { success: false }
                 }
 
-                await this.$confirm('Xóa Disconnector này và toàn bộ dữ liệu liên quan?', 'Cảnh báo', {
+                await this.$confirm('Delete this Disconnector and all related data?', 'Warning', {
                     type: 'warning',
                     confirmButtonText: 'OK',
-                    cancelButtonText: 'Hủy'
+                    cancelButtonText: 'Cancel'
                 })
 
                 // Lấy entity đầy đủ theo MRID để xóa theo đúng quan hệ
                 const entityRs = await window.electronAPI.getDisconnectorEntityByMrid(assetMrid, psrId)
                 if (!entityRs || !entityRs.success || !entityRs.data) {
-                    this.$message.error('Không lấy được dữ liệu entity để xóa')
+                    this.$message.error('Unable to load the entity for deletion')
                     return { success: false }
                 }
 
                 const rt = await window.electronAPI.deleteDisconnectorEntity(entityRs.data)
                 if (rt && rt.success) {
-                    this.$message.success('Đã xóa Disconnector')
+                    this.$message.success('Disconnector deleted')
                     // Optional: điều hướng về danh sách hoặc đóng tab hiện tại
                     if (this.$router) {
                         this.$router.back()
                     }
                     return { success: true }
                 }
-                this.$message.error(rt && rt.message ? rt.message : 'Xóa thất bại')
+                this.$message.error(rt && rt.message ? rt.message : 'Delete failed')
                 return { success: false }
             } catch (err) {
                 // Người dùng bấm Cancel hoặc lỗi runtime
                 if (err !== 'cancel') {
                     console.error('Delete Disconnector error:', err)
-                    this.$message.error('Xóa thất bại')
+                    this.$message.error('Delete failed')
                 }
                 return { success: false }
             }
@@ -90,6 +90,9 @@ export default {
                     const resultEntity = Mapping.disconnectorDtoToEntity(result);
                     let rs = await window.electronAPI.insertDisconnectorEntity(resultEntity)
                     if (rs.success) {
+                        if (window.electronAPI.ensureUserOwnership) {
+                            await window.electronAPI.ensureUserOwnership(this.$store.state.user.user_id, result.properties.mrid)
+                        }
                         return {
                             success: true,
                             data: rs.data,

@@ -47,7 +47,7 @@
                                 </div>
                             </td>
                             <td>
-                                <el-input size="mini" v-model="item.interrupter.value"></el-input>
+                                <el-input size="mini" disabled v-model="item.interrupter.value"></el-input>
                             </td>
                             <td>
                                 <el-input size="mini" type="text" number="positive"

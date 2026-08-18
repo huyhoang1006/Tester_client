@@ -75,7 +75,7 @@ export const scanTreeConflicts = async (roots, deps) => {
     // 1) check tồn tại (1 lần cho cả mảng)
     const checkItems = items.map(i => ({ mrid: i.mrid, type: i.type }))
     console.log('[SCAN] gửi checkMridsExist:', JSON.stringify(checkItems))
-    const res = await electronAPI.checkMridsExist(checkItems)
+    const res = await electronAPI.checkMridsExist(checkItems, deps && deps.userId)
     console.log('[SCAN] checkMridsExist trả về RAW:', JSON.stringify(res))
     // API trả { success, message, data: [{ mrid, mode, name }] } — data = các mrid TỒN TẠI.
     const existingList = (res && (res.data || res.existing)) || []
@@ -116,6 +116,7 @@ export const scanTreeConflicts = async (roots, deps) => {
         // TRÙNG NHƯNG Ở NHÁNH KHÁC → auto "create new", không cần hỏi.
         // Chỉ auto khi biết CHẮC cả 2 cha và chúng KHÁC nhau; thiếu thông tin → hỏi (an toàn).
         let autoNew = !!(intendedParent && dbParentMrid && intendedParent !== dbParentMrid)
+        if (ex.foreignOwner) autoNew = true
 
         // TRÙNG mrid nhưng KHÁC LOẠI (file: asset, DB: bay...) → overwrite sẽ phá record
         // khác loại. Coi là danh tính khác → auto new (app lớn: id trùng khác kind = new).

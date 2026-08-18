@@ -109,7 +109,7 @@
                             </td>
                             <td>
                                 <el-input size="mini" type="text" number="positive"
-                                    v-model="item.interrupter.value"></el-input>
+                                    disabled v-model="item.interrupter.value"></el-input>
                             </td>
                             <td>
                                 <el-input size="mini" type="text" number="positive"

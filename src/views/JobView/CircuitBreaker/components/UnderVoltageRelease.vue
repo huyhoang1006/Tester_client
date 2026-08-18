@@ -33,7 +33,7 @@
                             {{ index + 1 }}
                         </td>
                         <td>
-                            <el-input size="mini" type="text" number="positive"
+                            <el-input size="mini" type="text" number="positive" disabled
                                 v-model="item.trip_coil_no.value"></el-input>
                         </td>
                         <td>

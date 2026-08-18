@@ -1,6 +1,7 @@
 'use strict'
 import { ipcMain } from 'electron'
 import { entityFunc } from "@/function"
+import { describeFailure } from '@/ipcmain/failureMessage'
 
 // Tạo mới / cập nhật toàn bộ thông tin của 1 testing equipment
 export const insertTestingEquipmentEntity = () => {
@@ -18,7 +19,7 @@ export const insertTestingEquipmentEntity = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -39,7 +40,7 @@ export const getAllTestingEquipmentList = () => {
             if (rs.success == true) {
                 return { success: true, message: "Success", data: rs.data }
             } else {
-                return { success: false, message: "fail" }
+                return { success: false, message: describeFailure(rs) }
             }
         } catch (error) {
             return { error, success: false, message: (error && error.message) ? error.message : "Internal error" }
@@ -55,7 +56,7 @@ export const getAllAccessories = () => {
             if (rs.success == true) {
                 return { success: true, message: "Success", data: rs.data }
             } else {
-                return { success: false, message: "fail" }
+                return { success: false, message: describeFailure(rs) }
             }
         } catch (error) {
             return { error, success: false, message: (error && error.message) ? error.message : "Internal error" }
@@ -79,7 +80,7 @@ export const getTestingEquipmentEntityByMrid = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -101,7 +102,7 @@ export const getTestingEquipmentUsage = () => {
             if (rs.success == true) {
                 return { success: true, message: "Success", data: rs.data }
             } else {
-                return { success: false, message: "fail" }
+                return { success: false, message: describeFailure(rs) }
             }
         } catch (error) {
             return { error, success: false, message: (error && error.message) ? error.message : "Internal error" }
@@ -124,7 +125,7 @@ export const deleteTestingEquipmentEntity = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {

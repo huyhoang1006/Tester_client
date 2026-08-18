@@ -46,7 +46,24 @@ export default {
             }
 
             try {
-                for (const child of children) {
+                for (let i = 0; i < children.length; i++) {
+                    const child = children[i]
+
+                    // TÔN TRỌNG LỆNH DỪNG, và dừng ở ranh giới an toàn: xong node đang
+                    // làm, không bắt đầu node kế tiếp. Không kiểm ở đây thì lệnh dừng
+                    // vô nghĩa và ta về đúng lỗi cũ — overlay tắt mà vòng xoá vẫn chạy.
+                    if (this.isDeleteAborted && this.isDeleteAborted()) {
+                        console.warn('[Delete] stopped by user,', children.length - i, 'node(s) not deleted')
+                        return { success: false, failedNode: child, aborted: true }
+                    }
+
+                    // BÁO ĐANG XOÁ CÁI GÌ. Vừa để người dùng biết, vừa là nhịp tim giữ
+                    // overlay đứng lại — hẹn giờ im lặng đặt lại mỗi lần gọi.
+                    if (this.reportDeleteProgress) {
+                        const label = child.aliasName || child.name || child.mrid
+                        this.reportDeleteProgress(`Deleting ${this.describeNodeKind(child)} "${label}"`)
+                    }
+
                     this.$message = silentMessage
                     try {
                         await this.deleteDataClient(child, true)
@@ -62,6 +79,19 @@ export default {
             }
 
             return { success: true }
+        },
+
+        /** Tên loại node cho người đọc, dùng trong dòng mô tả tiến độ. */
+        describeNodeKind(node) {
+            const byMode = {
+                organisation: 'organisation',
+                substation: 'substation',
+                voltageLevel: 'voltage level',
+                bay: 'bay',
+                job: 'job',
+            }
+            if (node && node.mode === 'asset') return node.asset || 'asset'
+            return (node && byMode[node.mode]) || 'node'
         }
     }
 }

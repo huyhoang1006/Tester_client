@@ -1,6 +1,7 @@
 'use strict'
 import { ipcMain } from 'electron'
 import { entityFunc } from "@/function"
+import { describeFailure } from '@/ipcmain/failureMessage'
 
 export const insertCurrentTransformerEntity = () => {
     ipcMain.handle('insertCurrentTransformerEntity', async function (event, old_data, data) {
@@ -17,7 +18,7 @@ export const insertCurrentTransformerEntity = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         }
@@ -47,7 +48,7 @@ export const getCurrentTransformerEntityByMrid = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         }
@@ -76,7 +77,7 @@ export const deleteCurrentTransformerEntity = () => {
             }else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {

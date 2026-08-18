@@ -395,6 +395,18 @@ export var deepImportService = {
     return null
   },
 
+  async _withOwnership(rs, userId) {
+    var mrid = this._extractMrid(rs)
+    if (rs && rs.success === true && mrid && userId && window.electronAPI && window.electronAPI.ensureUserOwnership) {
+      try {
+        await window.electronAPI.ensureUserOwnership(userId, mrid)
+      } catch (error) {
+        console.warn('[deepImport] ensure ownership failed:', mrid, error)
+      }
+    }
+    return { success: !!(rs && rs.success === true), mrid: mrid, message: rs && rs.message }
+  },
+
   async insertEntity(lv, data, ctx, _passedUserId) {
     // Support cả short keys (org/sub/vl) lẫn long keys (organisation/substation/voltageLevel)
     var orgMrid   = (ctx.org && ctx.org.mrid)  || (ctx.organisation && ctx.organisation.mrid)
@@ -439,7 +451,7 @@ export var deepImportService = {
       if (!entity) return { success: false, message: 'Failed to map Organisation DTO to entity' }
 
       rs = await window.electronAPI.insertParentOrganizationEntity(entity)
-      return { success: !!(rs && rs.success === true), mrid: this._extractMrid(rs), message: rs && rs.message }
+      return await this._withOwnership(rs, userId)
     }
 
     // ── Substation ───────────────────────────────────────────────────────
@@ -483,7 +495,7 @@ export var deepImportService = {
       if (!entity) return { success: false, message: 'Failed to map Substation DTO to entity' }
 
       rs = await window.electronAPI.insertSubstationEntity(entity)
-      return { success: !!(rs && rs.success === true), mrid: this._extractMrid(rs), message: rs && rs.message }
+      return await this._withOwnership(rs, userId)
     }
 
     // ── VoltageLevel ─────────────────────────────────────────────────────
@@ -519,7 +531,7 @@ export var deepImportService = {
       // volDtoToVolEntity — tên đúng từ VoltageLevel/index.js
       entity = volDtoToVolEntity(dto)
       rs = await window.electronAPI.insertVoltageLevelEntity(entity)
-      return { success: !!(rs && rs.success === true), mrid: this._extractMrid(rs), message: rs && rs.message }
+      return await this._withOwnership(rs, userId)
     }
 
     // ── Bay ───────────────────────────────────────────────────────────────
@@ -544,7 +556,7 @@ export var deepImportService = {
       dto.userId                 = userId
 
       rs = await window.electronAPI.insertBayEntity(dto)
-      return { success: !!(rs && rs.success === true), mrid: this._extractMrid(rs), message: rs && rs.message }
+      return await this._withOwnership(rs, userId)
     }
 
     // ── Asset ─────────────────────────────────────────────────────────────
@@ -830,7 +842,7 @@ export var deepImportService = {
       } else {
         rs = await window.electronAPI[cfg.api](oldEntity, entity)
       }
-      return { success: !!(rs && rs.success === true), mrid: this._extractMrid(rs), message: rs && rs.message }
+      return await this._withOwnership(rs, userId)
     }
 
     // ── Job ───────────────────────────────────────────────────────────────
@@ -933,7 +945,7 @@ export var deepImportService = {
       }
 
 
-      return { success: !!(rs && rs.success === true), mrid: this._extractMrid(rs), message: rs && rs.message }
+      return await this._withOwnership(rs, userId)
     }
 
     return { success: false, message: 'Unknown level: ' + lv.id }

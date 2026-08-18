@@ -3,9 +3,9 @@ import {ipcMain} from 'electron'
 import {entityFunc} from "@/function"
 
 export const checkMridsExist = () => {
-    ipcMain.handle('checkMridsExist', async function (event, items) {
+    ipcMain.handle('checkMridsExist', async function (event, items, userId = null) {
         try {
-            const rs = await entityFunc.mRIDCheckFunc.checkMridsExist(items || [])
+            const rs = await entityFunc.mRIDCheckFunc.checkMridsExist(items || [], userId)
             if (rs.success === true) {
                 return {
                     success: true,

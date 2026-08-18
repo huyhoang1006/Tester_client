@@ -27,7 +27,7 @@
                     <div class="table-scroll">
                         <table class="table-strip-input-data fixed-table">
                             <colgroup>
-                                <col style="width: 80px" />
+                                <col style="width: 140px" />
                                 <col style="width: 360px" />
                                 <col style="width: 190px" />
                                 <col style="width: 140px" />
@@ -41,7 +41,11 @@
                             <tbody v-for="(item, index) in this.configsData.dataVT" :key="index">
                                 <tr>
                                     <td>
-                                        {{ `${index + 1}a${index + 1}n` }}
+                                        <el-input
+                                            size="mini"
+                                            :value="item.name || defaultWindingName(index)"
+                                            @input="updateWindingName(item, index, $event)"
+                                        ></el-input>
                                     </td>
                                     <td>
                                         <el-row :gutter="8">
@@ -111,8 +115,10 @@ export default {
 
             if (lengthData < target) {
                 for (let i = 0; i < target - lengthData; i++) {
+                    const rowIndex = lengthData + i;
                     this.configsData.dataVT.push({
                         mrid: '',
+                        name: this.defaultWindingName(rowIndex),
                         usr_formula: '',           // default
                         usr_rated_voltage: {
                             mrid: '',
@@ -133,6 +139,13 @@ export default {
                 // xoá từ vị trí 'target' số phần tử thừa
                 this.configsData.dataVT.splice(target, lengthData - target);
             }
+        },
+        defaultWindingName(index) {
+            const winding = index + 1;
+            return `${winding}a${winding}n`;
+        },
+        updateWindingName(item, index, value) {
+            this.$set(item, 'name', value || this.defaultWindingName(index));
         }
     }
 }

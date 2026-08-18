@@ -46,13 +46,22 @@ export const getZeroSequenceImpedanceTableByZeroSequenceImpedanceId = async (zer
                 if (err)
                     return reject({ success: false, err, message: "Get by zero_sequence_impedance failed" })
 
-                if(rows.length === 0) {
-                    return reject({ success: false, err, message: "Get by zero_sequence_impedance failed" })
-                }
-
+                // KHÔNG reject khi danh sách rỗng.
+                //
+                // Bản trước `if (rows.length === 0) return reject(...)` — biến "không có
+                // dòng nào" thành một ngoại lệ, và vì `err` lúc đó là null nên thông báo
+                // đọc ra là `{ err: null, message: 'Get by zero_sequence_impedance failed' }`:
+                // nói hỏng mà không nói hỏng cái gì. Ngoại lệ đó thoát ra ngoài và giết cả
+                // `getTransformerEntityById`, nên máy biến áp không có bảng trở kháng thứ tự
+                // không là không đọc được nữa.
+                //
+                // Với truy vấn DANH SÁCH, mảng rỗng LÀ câu trả lời đúng — không phải lỗi.
+                // Đây là mặt ngược của lỗi vừa sửa ở `getZeroSequenceImpedanceByTransformerInfoId`:
+                // ở đó "không có gì" bị báo là thành công, ở đây bị báo là hỏng. Cùng một
+                // nhầm lẫn — lẫn giữa "không có dữ liệu" với một trạng thái khác.
                 return resolve({
                     success: true,
-                    data: rows,
+                    data: rows || [],
                     message: "Completed"
                 })
             }

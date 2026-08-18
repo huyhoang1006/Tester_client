@@ -3,6 +3,7 @@ import uuid from "@/utils/uuid";
 import * as capacitorJobMapping from "@/views/Mapping/CapacitorJob/index"
 import CapacitorJobDto from "@/views/Dto/Job/Capacitor/index";
 import mixins from '../components/SelectTest/mixin'
+import { validateTestingEquipmentRows } from '@/views/JobView/Common/testingEquipmentValidation'
 /* eslint-disable */
 
 export default {
@@ -15,6 +16,11 @@ export default {
     },
     methods: {
         async saveJob() {
+            const validation = validateTestingEquipmentRows(this.capacitorJobDto.testingEquipmentData, this.$constant.ROOT)
+            if (!validation.valid) {
+                this.$message.warning(validation.message)
+                return { success: false, validation: true, message: validation.message }
+            }
             try { 
                 if (!this.capacitorJobDto.properties.name || this.capacitorJobDto.properties.name === '') {              
                     this.$message.error('Name is required');
@@ -24,7 +30,10 @@ export default {
                     const entity = capacitorJobMapping.jobDtoToEntity(resultDto);
                     const old_entity = capacitorJobMapping.jobDtoToEntity(this.capacitorJobDtoOld);
                     const rs = await window.electronAPI.insertCapacitorJob(old_entity, entity);
-                    if (rs.success) {                        
+                    if (rs.success) {
+                        if (window.electronAPI.ensureUserOwnership) {
+                            await window.electronAPI.ensureUserOwnership(this.$store.state.user.user_id, resultDto.properties.mrid)
+                        }
                         return {
                             success: true,
                             data: rs.data,
@@ -238,4 +247,3 @@ export default {
         },
     }
 }
-

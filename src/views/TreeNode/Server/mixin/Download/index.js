@@ -8,10 +8,37 @@ import * as coreUtils from './core-utils.js'
  * @param chain mảng node dạng { id, mrid, name, aliasName, parentId, _type, asset }
  * @returns {Promise<Array>} [{ key, name, typeLabel, status, message }]
  */
-export async function executeDownloadChainWithResults(chain, ctx) {
+/**
+ * Tải một danh sách node, có báo tiến độ và tôn trọng lệnh dừng.
+ *
+ * @param {Array} chain  các node đã xếp cha trước con
+ * @param {object} ctx   component gọi
+ * @param {object} reporter `{ progress, aborted }` từ `startLoading`. Không truyền thì
+ *                          vẫn chạy như cũ — chỉ là overlay không biết gì để hiện.
+ */
+export async function executeDownloadChainWithResults(chain, ctx, reporter = null) {
     const results = []
 
-    for (const ref of chain) {
+    for (let index = 0; index < chain.length; index++) {
+        const ref = chain[index]
+
+        // Dừng ở RANH GIỚI GIỮA HAI NODE: node đang tải xong hẳn rồi mới thoát, nên
+        // không để lại node nào ghi được một nửa.
+        if (reporter && reporter.aborted && reporter.aborted()) {
+            console.warn('[Download] stopped by user,', chain.length - index, 'node(s) not downloaded')
+            results.push({
+                key: 'aborted', mrid: null, name: `${chain.length - index} node(s) remaining`,
+                typeLabel: '', status: 'skipped', message: 'Stopped by user'
+            })
+            break
+        }
+
+        if (reporter && reporter.progress) {
+            const label = ref.aliasName || ref.name || ref.mrid || ref.id
+            const kind = ref._type === 'asset' ? (ref.asset || 'asset') : (ref._type || 'node')
+            reporter.progress(`Downloading ${kind} "${label}"`, index)
+        }
+
         const row = {
             key: `${ref._type || ''}:${ref.asset || ''}:${ref.mrid || ref.id || ''}`,
             mrid: ref.mrid || ref.id || null,
@@ -60,9 +87,15 @@ export async function executeDownload(node, ctx, options = {}) {
     });
 
     try {
+        const nodeWithUser = {
+            ...node,
+            _currentUserId: ctx && ctx.$store && ctx.$store.state && ctx.$store.state.user
+                ? ctx.$store.state.user.user_id
+                : null
+        }
         const chain = includePath
-            ? await coreUtils.buildOrgAncestors(node)
-            : await coreUtils.buildSingleNodeChain(node)
+            ? await coreUtils.buildOrgAncestors(nodeWithUser)
+            : await coreUtils.buildSingleNodeChain(nodeWithUser)
         const fullInfoChain = await coreUtils.fetchFullInfoForChain(chain)
         await coreUtils.downloadChainInfo(fullInfoChain, ctx)
         if (ctx.applySyncStatesToTree) {

@@ -3,6 +3,7 @@ import uuid from "@/utils/uuid";
 import * as disconnectorJobMapping from "@/views/Mapping/DisconnectorJob/index"
 import DisconnectorJobDto from "@/views/Dto/Job/Disconnector/index";
 import mixins from '../components/SelectTest/mixin'
+import { validateTestingEquipmentRows } from '@/views/JobView/Common/testingEquipmentValidation'
 
 export default {
     mixins: [mixins],
@@ -14,6 +15,11 @@ export default {
     },
     methods: {
         async saveJob() {
+            const validation = validateTestingEquipmentRows(this.disconnectorJobDto.testingEquipmentData, this.$constant.ROOT)
+            if (!validation.valid) {
+                this.$message.warning(validation.message)
+                return { success: false, validation: true, message: validation.message }
+            }
             try { 
                 if (!this.disconnectorJobDto.properties.name || this.disconnectorJobDto.properties.name === '') {              
                     this.$message.error('Name is required');
@@ -23,7 +29,10 @@ export default {
                     const entity = disconnectorJobMapping.jobDtoToEntity(resultDto);
                     const old_entity = disconnectorJobMapping.jobDtoToEntity(this.disconnectorJobDtoOld);
                     const rs = await window.electronAPI.insertDisconnectorJob(old_entity, entity);
-                    if (rs.success) {                        
+                    if (rs.success) {
+                        if (window.electronAPI.ensureUserOwnership) {
+                            await window.electronAPI.ensureUserOwnership(this.$store.state.user.user_id, resultDto.properties.mrid)
+                        }
                         return {
                             success: true,
                             data: rs.data,

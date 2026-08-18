@@ -94,7 +94,7 @@
                                 </div>
                             </el-option>
                         </el-select>
-                        <div v-if="testList.length === 0" class="te-hint">Chưa chọn bài test nào ở tab Test settings</div>
+                        <div v-if="testList.length === 0" class="te-hint">No tests have been selected in the Test settings tab.</div>
                     </td>
                     <td class="col-act">
                         <el-tooltip content="Add row below" placement="top">

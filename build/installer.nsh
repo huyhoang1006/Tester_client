@@ -6,52 +6,52 @@
 !include "nsDialogs.nsh"
 
 ; --------------------------------------
-; 🔑 CẤU HÌNH KHÓA CÀI ĐẶT (KEY)
+; 🔑 TRANG NHẬP MÃ KÍCH HOẠT — ĐANG TẮT
 ; --------------------------------------
-; Khai báo biến
-Var Dialog
-Var Label
-Var TextKey
-Var InputKey
-
-; --- HÀM HIỂN THỊ TRANG NHẬP KEY ---
-Function ShowKeyPage
-  nsDialogs::Create 1018
-  Pop $Dialog
-
-  ${If} $Dialog == error
-    Abort
-  ${EndIf}
-
-  ; Tạo nhãn hướng dẫn
-  ${NSD_CreateLabel} 0 0 100% 12u "Vui lòng nhập Mã Kích Hoạt để tiếp tục cài đặt:"
-  Pop $Label
-
-  ; Tạo ô nhập liệu (Text Box)
-  ${NSD_CreateText} 0 13u 100% 12u ""
-  Pop $TextKey
-  
-  ; Focus vào ô nhập liệu
-  ${NSD_SetFocus} $TextKey
-
-  nsDialogs::Show
-FunctionEnd
-
-; --- HÀM KIỂM TRA KEY KHI BẤM NEXT ---
-Function ValidateKey
-  ; Lấy giá trị người dùng nhập vào
-  ${NSD_GetText} $TextKey $InputKey
-  
-  ; === 🔒 ĐỔI KEY CỦA BẠN Ở DÒNG DƯỚI ===
-  ${If} $InputKey != "AT-DIGITAL-2026" 
-      MessageBox MB_OK|MB_ICONSTOP "Mã kích hoạt không đúng! Vui lòng liên hệ quản trị viên."
-      Abort ; Dừng lại, không cho qua trang sau
-  ${EndIf}
-FunctionEnd
-
-; 👇 QUAN TRỌNG: ĐĂNG KÝ TRANG TÙY CHỈNH
-; Trang này sẽ hiện ra đầu tiên trong quá trình cài đặt
-Page custom ShowKeyPage ValidateKey
+; Tạm bỏ để cài đặt không bị chặn. Sẽ tính lại sau.
+;
+; Toàn bộ phần dưới đây được giữ nguyên trong comment thay vì xoá, để bật lại chỉ là
+; bỏ dấu `;` — khỏi phải viết lại trang nsDialogs từ đầu.
+;
+; LƯU Ý KHI BẬT LẠI: cách kiểm này chỉ là so chuỗi ngay trong bộ cài, nên mã nằm dạng
+; chữ thường trong file .exe và ai mở bằng trình xem chuỗi cũng đọc được. Nó chặn được
+; người cài nhầm, KHÔNG chặn được người cố tình. Cần chặn thật thì phải kiểm ở phía
+; server lúc chạy, không phải ở bước cài.
+;
+; Var Dialog
+; Var Label
+; Var TextKey
+; Var InputKey
+;
+; Function ShowKeyPage
+;   nsDialogs::Create 1018
+;   Pop $Dialog
+;
+;   ${If} $Dialog == error
+;     Abort
+;   ${EndIf}
+;
+;   ${NSD_CreateLabel} 0 0 100% 12u "Vui lòng nhập Mã Kích Hoạt để tiếp tục cài đặt:"
+;   Pop $Label
+;
+;   ${NSD_CreateText} 0 13u 100% 12u ""
+;   Pop $TextKey
+;
+;   ${NSD_SetFocus} $TextKey
+;
+;   nsDialogs::Show
+; FunctionEnd
+;
+; Function ValidateKey
+;   ${NSD_GetText} $TextKey $InputKey
+;
+;   ${If} $InputKey != "AT-DIGITAL-2026"
+;       MessageBox MB_OK|MB_ICONSTOP "Mã kích hoạt không đúng! Vui lòng liên hệ quản trị viên."
+;       Abort
+;   ${EndIf}
+; FunctionEnd
+;
+; Page custom ShowKeyPage ValidateKey
 ; --------------------------------------
 
 ; 🧩 BẮT NSIS LUÔN DÙNG CONTEXT CỦA USER HIỆN TẠI

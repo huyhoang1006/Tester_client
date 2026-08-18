@@ -1,6 +1,24 @@
 const WORKSPACE_STATE_KEY = 'ATD_WORKSPACE_STATE'
 const RESTORE_AFTER_LOGIN_KEY = 'ATD_RESTORE_AFTER_LOGIN'
 
+const getStoredUserId = () => {
+    if (!hasStorage()) return ''
+
+    try {
+        const rawUser = window.localStorage.getItem('user')
+        if (!rawUser) return ''
+        const user = JSON.parse(rawUser)
+        return user && (user.user_id || user.id) ? String(user.user_id || user.id) : ''
+    } catch (error) {
+        return ''
+    }
+}
+
+const scopedKey = (baseKey, userId = null) => {
+    const id = userId === null || userId === undefined ? getStoredUserId() : String(userId || '')
+    return id ? `${baseKey}@u-${id}` : null
+}
+
 const NODE_FIELDS = [
     'id',
     'mrid',
@@ -65,7 +83,9 @@ export const saveWorkspaceState = (state) => {
     if (!hasStorage()) return
 
     try {
-        window.localStorage.setItem(WORKSPACE_STATE_KEY, JSON.stringify(normalizeWorkspaceState(state)))
+        const key = scopedKey(WORKSPACE_STATE_KEY)
+        if (!key) return
+        window.localStorage.setItem(key, JSON.stringify(normalizeWorkspaceState(state)))
     } catch (error) {
         console.warn('Cannot save workspace restore state:', error)
     }
@@ -75,7 +95,9 @@ export const loadWorkspaceState = () => {
     if (!hasStorage()) return null
 
     try {
-        const rawState = window.localStorage.getItem(WORKSPACE_STATE_KEY)
+        const key = scopedKey(WORKSPACE_STATE_KEY)
+        if (!key) return null
+        const rawState = window.localStorage.getItem(key)
         return rawState ? JSON.parse(rawState) : null
     } catch (error) {
         console.warn('Cannot load workspace restore state:', error)
@@ -85,14 +107,20 @@ export const loadWorkspaceState = () => {
 
 export const markRestoreAfterLogin = () => {
     if (hasStorage()) {
-        window.localStorage.setItem(RESTORE_AFTER_LOGIN_KEY, '1')
+        const key = scopedKey(RESTORE_AFTER_LOGIN_KEY)
+        if (key) window.localStorage.setItem(key, '1')
     }
 }
 
-export const shouldRestoreAfterLogin = () => hasStorage() && window.localStorage.getItem(RESTORE_AFTER_LOGIN_KEY) === '1'
+export const shouldRestoreAfterLogin = () => {
+    if (!hasStorage()) return false
+    const key = scopedKey(RESTORE_AFTER_LOGIN_KEY)
+    return !!key && window.localStorage.getItem(key) === '1'
+}
 
 export const clearRestoreAfterLogin = () => {
     if (hasStorage()) {
-        window.localStorage.removeItem(RESTORE_AFTER_LOGIN_KEY)
+        const key = scopedKey(RESTORE_AFTER_LOGIN_KEY)
+        if (key) window.localStorage.removeItem(key)
     }
 }

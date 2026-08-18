@@ -25,6 +25,11 @@ export const getSyncStateByMrid = async (nodeMrid) => {
             [nodeMrid],
             (err, row) => {
                 if (err) return reject({ success: false, err, message: 'Get sync state failed' })
+
+                // `db.get` tra undefined khi khong co dong. Tra success:true kem data
+                // undefined la noi doi voi cho goi: ho kiem `success` roi dung `.data`
+                // ngay, va nhan TypeError. Khong co dong thi phai la success:false.
+                if (!row) return resolve({ success: false, data: null, message: 'Not found' })
                 return resolve({ success: true, data: row || null, message: 'Get sync state completed' })
             }
         )

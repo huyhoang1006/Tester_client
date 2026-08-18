@@ -26,6 +26,9 @@ export default {
                     console.log("entity: ", entity)
                     let rs = await window.electronAPI.insertCurrentTransformerEntity(oldEntity, entity)
                     if (rs.success) {
+                        if (window.electronAPI.ensureUserOwnership) {
+                            await window.electronAPI.ensureUserOwnership(this.$store.state.user.user_id, result.properties.mrid)
+                        }
                         return {
                             success: true,
                             data: rs.data,

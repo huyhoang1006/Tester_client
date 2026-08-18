@@ -61,6 +61,7 @@ export const templateExport = {
             cal_provider:           bulletList(cal.map(x => x.provider)),
             cal_certificate_number: bulletList(cal.map(x => x.certificate_number)),
             cal_result:             bulletList(cal.map(x => x.result)),
+            cal_status:             bulletList(cal.map(x => x.status || 'Pending')),
             cal_notes:              bulletList(cal.map(x => x.notes)),
             lic_option_name:        bulletList(lic.map(x => x.option_name)),
             lic_license_key:        bulletList(lic.map(x => x.license_key)),

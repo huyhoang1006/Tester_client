@@ -447,7 +447,7 @@ export const deleteSurgeArresterEntity = async (data) => {
                 if (data.attachment && data.attachment.id) {
                     const pathData = JSON.parse(data.attachment.path || '[]')
                     if (Array.isArray(pathData) && pathData.length > 0) {
-                        syncFilesWithDeletion(pathData, null, data.mrid);
+                        syncFilesWithDeletion(pathData, null, data.surgeArrester.mrid);
                     }
                 }
                 if (data.attachment.id) {

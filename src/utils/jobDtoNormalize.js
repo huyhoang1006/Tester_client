@@ -72,7 +72,7 @@ function labelDiscreteCells(cellHolder) {
  *                           dựng lại `asset_id` ở dạng local — xem ghi chú bên dưới
  * @returns {object} chính `dto`, để gọi lồng cho gọn
  */
-export function normalizeJobDto(dto, linkKey, assetType) {
+export function normalizeJobDto(dto, linkKey, assetType, userId = null) {
     if (!dto) throw new Error('Server returned an empty job payload')
 
     // ── asset_id: SỐ của server -> CHUỖI dạng local ──────────────────────────
@@ -95,7 +95,7 @@ export function normalizeJobDto(dto, linkKey, assetType) {
             dto.properties.asset_id = toLocalMrid(String(rawAssetId), {
                 mode: 'asset',
                 asset: assetType
-            })
+            }, userId)
         } else {
             // Prop khai kiểu String nên null cũng làm Vue kêu. Chuỗi rỗng là giá trị
             // mặc định của chính prop đó.

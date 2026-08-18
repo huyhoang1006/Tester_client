@@ -67,6 +67,7 @@ export const FEATURE_TREE = {
             provider:           { label: 'Provider',           value: 'cal_provider' },
             certificate_number: { label: 'Certificate number', value: 'cal_certificate_number' },
             result:             { label: 'Result',             value: 'cal_result' },
+            status:             { label: 'Status',             value: 'cal_status' },
             notes:              { label: 'Notes',              value: 'cal_notes' }
         }},
         LicenseDto: { label: 'Software license', children: {

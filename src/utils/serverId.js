@@ -17,6 +17,8 @@
  */
 
 export const SERVER_ID_SEPARATOR = '@'
+export const USER_SUFFIX_PREFIX = 'u-'
+const LEGACY_USER_SUFFIX_PREFIXES = ['u:', 'user:']
 
 const SUFFIX_BY_ASSET = {
     'Transformer': 'tf',
@@ -62,19 +64,106 @@ export const suffixForNode = (node) => {
 }
 
 /** id server -> mrid local (gắn hậu tố). Idempotent: đã có hậu tố thì giữ nguyên. */
-export const toLocalMrid = (serverId, node) => {
-    if (serverId === null || serverId === undefined || serverId === '') return serverId
-    const id = String(serverId)
-    if (id.indexOf(SERVER_ID_SEPARATOR) !== -1) return id
-    const suffix = suffixForNode(node)
-    return suffix ? `${id}${SERVER_ID_SEPARATOR}${suffix}` : id
+const splitLocalId = (value) => String(value).split(SERVER_ID_SEPARATOR)
+
+const isUserSuffixPart = (part) =>
+    part.indexOf(USER_SUFFIX_PREFIX) === 0
+    || LEGACY_USER_SUFFIX_PREFIXES.some(prefix => part.indexOf(prefix) === 0)
+
+export const hasUserSuffix = (localMrid) =>
+    typeof localMrid === 'string'
+    && splitLocalId(localMrid).some(part => isUserSuffixPart(part))
+
+export const getUserSuffix = (localMrid) => {
+    if (typeof localMrid !== 'string') return null
+    const found = splitLocalId(localMrid).find(part => isUserSuffixPart(part))
+    if (!found) return null
+    if (found.indexOf(USER_SUFFIX_PREFIX) === 0) return found.slice(USER_SUFFIX_PREFIX.length)
+    const legacyPrefix = LEGACY_USER_SUFFIX_PREFIXES.find(prefix => found.indexOf(prefix) === 0)
+    return legacyPrefix ? found.slice(legacyPrefix.length) : null
 }
 
-/** mrid local -> id server (cắt hậu tố). Không có hậu tố thì trả nguyên giá trị. */
+/**
+ * Hậu tố LOẠI NODE đọc ngược từ một mrid local.
+ *
+ *     '108050@sub@u-21'  ->  'sub'
+ *     '206495@vl@u-21'   ->  'vl'
+ *     'abc-uuid'         ->  null   (node tạo tại máy, chưa từng lên server)
+ *
+ * Dùng khi chỗ nhận chỉ có id mà cần biết cha thuộc loại nào. Ví dụ rõ nhất là ngăn:
+ * bảng `bay` có HAI khoá ngoại, `substation` và `voltage_level`, và ngăn có thể treo
+ * trực tiếp dưới trạm hoặc dưới cấp điện áp. Ghi nhầm cột là khoá ngoại trỏ vào bảng
+ * không có dòng đó.
+ *
+ * Bỏ qua phần hậu tố người dùng, nên đọc được cả id đã gắn lẫn chưa gắn.
+ *
+ * @param {string} localMrid
+ * @returns {string|null}
+ */
+export const getTypeSuffix = (localMrid) => {
+    if (typeof localMrid !== 'string') return null
+    const parts = splitLocalId(localMrid)
+    if (parts.length < 2) return null
+    return parts.slice(1).find(part => !isUserSuffixPart(part)) || null
+}
+
+/** Mọi hậu tố LOẠI hợp lệ. 'asset' là mức lui của `suffixForAssetKind`. */
+const KNOWN_KIND_SUFFIXES = new Set([
+    ...Object.values(SUFFIX_BY_ASSET),
+    ...Object.values(SUFFIX_BY_MODE),
+    'asset',
+])
+
+/**
+ * Chuỗi này có phải mrid local (đã gắn hậu tố loại) không?
+ *
+ * Chỉ dựa vào dấu `@` là KHÔNG đủ — email cũng có `@`, và `evn@mail.com` mà bị coi là
+ * mrid rồi gắn thêm `@u-21` thì hỏng dữ liệu người dùng. Nên phải kiểm phần hậu tố có
+ * nằm trong danh sách loại đã biết hay không.
+ *
+ * Tiện thể: mrid cấu hình (procedure, measurement, tiêu chuẩn cố định) là UUID trần,
+ * không có `@`, nên tự động bị loại — đúng yêu cầu "phần config chung, không được sửa".
+ *
+ *     '1000@org'          -> true
+ *     '108050@sub@u-21'   -> true
+ *     'evn@mail.com'      -> false   ('mail.com' khong phai hau to loai)
+ *     'abc-uuid'          -> false
+ */
+export const isLocalMrid = (value) => {
+    if (typeof value !== 'string' || value.indexOf(SERVER_ID_SEPARATOR) === -1) return false
+    const kind = getTypeSuffix(value)
+    return Boolean(kind) && KNOWN_KIND_SUFFIXES.has(kind)
+}
+
+export const appendUserSuffix = (id, userId) => {
+    if (userId === null || userId === undefined || userId === '') return id
+    if (hasUserSuffix(id)) return replaceUserSuffix(id, userId)
+    return `${id}${SERVER_ID_SEPARATOR}${USER_SUFFIX_PREFIX}${userId}`
+}
+
+export const replaceUserSuffix = (localMrid, userId) => {
+    if (localMrid === null || localMrid === undefined || localMrid === '') return localMrid
+    const value = String(localMrid)
+    if (!userId || value.indexOf(SERVER_ID_SEPARATOR) === -1) return value
+    const parts = splitLocalId(value).filter(part => !isUserSuffixPart(part))
+    return `${parts.join(SERVER_ID_SEPARATOR)}${SERVER_ID_SEPARATOR}${USER_SUFFIX_PREFIX}${userId}`
+}
+
+/** id server -> mrid local (gắn hậu tố loại node, và tùy chọn hậu tố user). */
+export const toLocalMrid = (serverId, node, userId = null) => {
+    if (serverId === null || serverId === undefined || serverId === '') return serverId
+    const id = String(serverId)
+    if (id.indexOf(SERVER_ID_SEPARATOR) !== -1) return appendUserSuffix(id, userId)
+    const suffix = suffixForNode(node)
+    const localId = suffix ? `${id}${SERVER_ID_SEPARATOR}${suffix}` : id
+    return appendUserSuffix(localId, userId)
+}
+
+/** mrid local -> id server (cắt toàn bộ hậu tố local). Không có hậu tố thì trả nguyên giá trị. */
 export const toServerId = (localMrid) => {
     if (localMrid === null || localMrid === undefined) return localMrid
     const value = String(localMrid)
-    const index = value.lastIndexOf(SERVER_ID_SEPARATOR)
+    const index = value.indexOf(SERVER_ID_SEPARATOR)
     if (index === -1) return localMrid
     return value.slice(0, index)
 }

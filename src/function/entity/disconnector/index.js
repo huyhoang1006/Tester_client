@@ -1,21 +1,20 @@
 import db from '../../datacontext/index'
 import path from 'path'
+import { safePathSegment } from '@/utils/fileName'
 import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction, deleteDirectory } from '@/function/entity/attachment'
 import * as attachmentContext from '@/function/attachmentcontext'
-import { insertVoltageTransaction, deleteVoltageByIdTransaction } from '@/function/cim/voltage';
-import { insertSecondsTransaction, deleteSecondsByIdTransaction } from '@/function/cim/seconds';
-import { insertCurrentFlowTransaction, deleteCurrentFlowByIdTransaction } from '@/function/cim/currentFlow';
-import { insertFrequencyTransaction, deleteFrequencyByIdTransaction } from '@/function/cim/frequency';
+// Mỗi module MỘT câu import. Trước đây năm module bị chia đôi (insert/delete ở trên,
+// get ở dưới) — chạy được, nhưng khi cần thêm một hàm thì không rõ thêm vào đâu, và dễ
+// tưởng hàm mình cần chưa có trong khi nó đã nằm ở câu kia.
+import { insertVoltageTransaction, deleteVoltageByIdTransaction, getVoltageById } from '@/function/cim/voltage';
+import { insertSecondsTransaction, deleteSecondsByIdTransaction, getSecondById } from '@/function/cim/seconds';
+import { insertCurrentFlowTransaction, deleteCurrentFlowByIdTransaction, getCurrentFlowById } from '@/function/cim/currentFlow';
+import { insertFrequencyTransaction, deleteFrequencyByIdTransaction, getFrequencyById } from '@/function/cim/frequency';
+import { insertAssetTransaction, getAssetById, deleteAssetByIdTransaction } from '@/function/cim/asset';
 import { getDisconnectorInfoById, insertDisconnectorInfoTransaction, deleteDisconnectorInfoTransaction } from '@/function/cim/disconnectorInfo';
 import { getSwitchInfoById } from '@/function/cim/switchInfo';
 import { getOldSwitchInfoById } from '@/function/cim/oldSwitchInfo';
-import { getVoltageById } from '@/function/cim/voltage';
-import { getFrequencyById } from '@/function/cim/frequency';
-import { getCurrentFlowById } from '@/function/cim/currentFlow';
-import { getSecondById } from '@/function/cim/seconds';
 import DisconnectorEntity from '@/views/Flatten/Disconnector';
-import { insertAssetTransaction, getAssetById } from '@/function/cim/asset';
-import { deleteAssetByIdTransaction } from '@/function/cim/asset';
 import { insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from '@/function/entity/assetPsr'
 import { insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction } from '@/function/cim/lifecycleDate';
 import { insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction } from '@/function/cim/productAssetModel';
@@ -117,7 +116,7 @@ export const insertDisconnectorEntity = async (entity) => {
                 const newPath = []
                 for (let i = 0; i < pathData.length; i++) {
                     const namefile = path.basename(pathData[i].path);
-                    pathData[i].path = path.join(attachmentContext.getAttachmentDir(), entity.asset.mrid, namefile);
+                    pathData[i].path = path.join(attachmentContext.getAttachmentDir(), safePathSegment(entity.asset.mrid), namefile);
                     newPath.push(pathData[i]);
                 }
                 entity.attachment.path = JSON.stringify(newPath);

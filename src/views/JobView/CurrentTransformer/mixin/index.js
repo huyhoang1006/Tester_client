@@ -3,6 +3,7 @@ import uuid from "@/utils/uuid";
 import * as currentTransformerJobMapping from "@/views/Mapping/CurrentTransformerJob/index"
 import CurrentTransformerJobDto from "@/views/Dto/Job/CurrentTransformer/index";
 import mixins from '../components/SelectTest/mixin'
+import { validateTestingEquipmentRows } from '@/views/JobView/Common/testingEquipmentValidation'
 
 export default {
     mixins: [mixins],
@@ -14,6 +15,11 @@ export default {
     },
     methods: {
         async saveJob() {
+            const validation = validateTestingEquipmentRows(this.currentTransformerJobDto.testingEquipmentData, this.$constant.ROOT)
+            if (!validation.valid) {
+                this.$message.warning(validation.message)
+                return { success: false, validation: true, message: validation.message }
+            }
             try { 
                 if (!this.currentTransformerJobDto.properties.name || this.currentTransformerJobDto.properties.name === '') {              
                     this.$message.error('Name is required');
@@ -23,7 +29,10 @@ export default {
                     const entity = currentTransformerJobMapping.jobDtoToEntity(resultDto);
                     const old_entity = currentTransformerJobMapping.jobDtoToEntity(this.currentTransformerJobDtoOld);
                     const rs = await window.electronAPI.insertCurrentTransformerJob(old_entity, entity);
-                    if (rs.success) {                        
+                    if (rs.success) {
+                        if (window.electronAPI.ensureUserOwnership) {
+                            await window.electronAPI.ensureUserOwnership(this.$store.state.user.user_id, resultDto.properties.mrid)
+                        }
                         return {
                             success: true,
                             data: rs.data,

@@ -3,6 +3,7 @@ import constant from '@/utils/constant'
 import { executeDownloadChainWithResults } from './index.js'
 import * as coreUtils from './core-utils.js'
 import { toLocalMrid } from '@/utils/serverId'
+import { startLoading } from '@/utils/loading'
 
 /**
  * Download nhiều node một lượt, có bảng kết quả và bỏ qua node lỗi.
@@ -27,30 +28,46 @@ export default {
             }
             const node = this.selectedNodes[this.selectedNodes.length - 1]
 
-            this.$store.dispatch('loading/start', { action: 'download', type: 'heavy' })
+            // Mở overlay TRƯỚC khi dựng chuỗi, vì gom con cháu cũng phải gọi mạng và
+            // có thể mất vài giây. Chưa biết tổng nên `total` để 0; đặt lại ngay sau
+            // khi dựng xong chuỗi, và từ đó thanh tiến độ là số thật.
+            const reporter = startLoading(this, {
+                action: 'download',
+                text: 'Collecting nodes...',
+                type: 'heavy'
+            })
 
             let results = []
             try {
+                const userId = this.$store && this.$store.state && this.$store.state.user
+                    ? this.$store.state.user.user_id
+                    : null
                 // buildOrgAncestors trả về gốc → node, đúng thứ tự cha trước con
-                const chain = await coreUtils.buildOrgAncestors(node)
+                const chain = await coreUtils.buildOrgAncestors({ ...node, _currentUserId: userId })
 
                 if (includeDescendants) {
                     const descendants = await this.collectDownloadDescendants(node)
                     const seen = new Set(chain.map(item => String(item.mrid || item.id)))
-                    let prevParentId = String(node.mrid || node.id)
                     for (const child of descendants) {
                         // đổi sang mrid local (có hậu tố loại node) như buildOrgAncestors
-                        const childId = String(toLocalMrid(child.mrid || child.id, child))
+                        const childId = String(toLocalMrid(child.mrid || child.id, child, userId))
                         if (seen.has(childId)) continue
                         seen.add(childId)
+                        const parentArr = Array.isArray(child.parentArr) ? child.parentArr : []
+                        const parentMeta = parentArr.length ? parentArr[parentArr.length - 1] : null
+                        const rawParentId = child.parentId || parentMeta?.mrid || parentMeta?.id || node.mrid || node.id || constant.ROOT
+                        const localParentId = parentMeta
+                            ? toLocalMrid(rawParentId, parentMeta, userId)
+                            : toLocalMrid(rawParentId, node, userId)
                         chain.push({
                             id: childId,
                             mrid: childId,
                             name: child.name || '',
                             aliasName: child.aliasName || '',
-                            parentId: String(child.parentId || prevParentId || constant.ROOT),
+                            parentId: String(localParentId),
                             _type: child.mode,
-                            asset: child.asset || null
+                            asset: child.asset || null,
+                            job: child.job || null
                         })
                     }
                 }
@@ -60,13 +77,32 @@ export default {
                     return
                 }
 
-                results = await executeDownloadChainWithResults(chain, this)
+                // In ra chuỗi TRƯỚC khi tải. Mọi `parentId` phải mang hậu tố người
+                // dùng; còn id trần nghĩa là node đó sẽ trỏ khoá ngoại vào một bản ghi
+                // không tồn tại và lượt ghi đổ với thông báo trống rỗng ("fail").
+                const unscoped = chain.filter(item => item.parentId
+                    && String(item.parentId) !== String(constant.ROOT)
+                    && String(item.parentId).indexOf('@') === -1)
+                if (unscoped.length) {
+                    console.error('[Download tree] CO NODE CHA CHUA GAN HAU TO:',
+                        unscoped.map(i => ({ node: i.mrid, type: i._type, parentId: i.parentId })))
+                }
+                console.log('[Download tree] chuoi tai xuong:',
+                    chain.map(i => `${i._type}:${i.mrid} <- ${i.parentId}`))
+
+                // Từ đây đã biết tổng số node, nên thanh tiến độ hiện số thật thay vì
+                // vạch chạy vô định.
+                reporter.progress(`Preparing to download ${chain.length} node(s)`, 0, chain.length)
+
+                results = await executeDownloadChainWithResults(chain, this, reporter)
             } catch (error) {
                 console.error('[Download tree] error:', error)
-                this.$message.error('Error in download: ' + (error.message || 'Unknown error'))
+                if (error.message !== 'CANCELED') {
+                    this.$message.error('Error in download: ' + (error.message || 'Unknown error'))
+                }
                 return
             } finally {
-                this.$store.dispatch('loading/stop')
+                await reporter.close()
             }
 
             await this.writeSyncLogBatch('DOWNLOAD', results)

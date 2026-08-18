@@ -75,6 +75,20 @@ import Icon from '@/views/Common/Icon.vue'
 
 const COLLAPSE_KEY = 'treeToolbarCollapsed'
 
+const getCurrentUserSuffix = () => {
+    try {
+        const rawUser = localStorage.getItem('user')
+        if (!rawUser) return ''
+        const user = JSON.parse(rawUser)
+        const userId = user && (user.user_id || user.id)
+        return userId ? `@u-${userId}` : ''
+    } catch (error) {
+        return ''
+    }
+}
+
+const getCollapseKey = () => `${COLLAPSE_KEY}${getCurrentUserSuffix()}`
+
 export default {
     name: 'TreeToolbar',
     components: {
@@ -89,14 +103,14 @@ export default {
     data() {
         return {
             activeTab: 'explorer',
-            collapsed: localStorage.getItem(COLLAPSE_KEY) === '1',
+            collapsed: localStorage.getItem(getCollapseKey()) === '1',
             showFmeca: false
         }
     },
     methods: {
         setCollapsed(value) {
             this.collapsed = value
-            localStorage.setItem(COLLAPSE_KEY, value ? '1' : '0')
+            localStorage.setItem(getCollapseKey(), value ? '1' : '0')
         },
         handleExplorer() {
             this.activeTab = 'explorer'

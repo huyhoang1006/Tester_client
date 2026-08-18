@@ -51,7 +51,7 @@ import { mapSubstationEntityToServer }   from '@/utils/MapperClient/mapSubstatio
 import { mapVoltageLevelEntityToServer } from '@/utils/MapperClient/mapVoltageLevelToServer.js'
 import { mapBayEntityToServer }          from '@/utils/MapperClient/mapBayToServer.js'
 import { uploadAssetMediaFromAttachmentData } from '@/utils/assetMedia.js'
-import { toLocalMrid, toServerId } from '@/utils/serverId'
+import { toLocalMrid, toServerId, stripServerIdsDeep } from '@/utils/serverId'
 
 // ───JOB DTO → Server (dùng chung cho upload & submit)──────────────────────────────
 import * as voltageTransformerJobMappingServer from '@/views/Mapping/ServerToDTO/VoltageTransformerJob/index.js'
@@ -536,6 +536,18 @@ export default {
             if (!serverPayload) return
             const mrid = node?.mrid || node?.id
             serverPayload.baseVersion = await getJobBaseVersion(mrid)
+
+            // CẮT HẬU TỐ khỏi MỌI định danh trong payload, không chỉ mrid của job.
+            //
+            // Ở máy, mỗi tài khoản có bản riêng: bài test, dòng bảng, từng ô đo đều
+            // mang '@u-21'. Nhưng trên server thì đó là MỘT job duy nhất. Gửi nguyên
+            // hậu tố lên là hai người tạo ra hai bộ bản ghi khác nhau cho cùng một
+            // job, và chốt phiên bản mất hết ý nghĩa vì chẳng ai đụng vào ai.
+            //
+            // `stripServerIdsDeep` duyệt sâu và chỉ đụng vào những khoá chắc chắn là
+            // định danh (`mrid`, `*_id`, `*Id`), nên id danh mục như `measurement_id`
+            // đi qua vô hại — chúng vốn không có dấu phân tách nào để mà cắt.
+            stripServerIdsDeep(serverPayload)
         },
 
         /**
@@ -817,8 +829,14 @@ export default {
             const oldId = node.mrid || node.id
             // Server đánh id riêng theo từng bảng nên id trần dễ đụng nhau giữa các
             // loại node khi về chung identified_object/asset → gắn hậu tố loại node.
-            const newId = toLocalMrid(serverId, node)
+            const userId = this.$store && this.$store.state && this.$store.state.user
+                ? this.$store.state.user.user_id
+                : null
+            const newId = toLocalMrid(serverId, node, userId)
             if (!oldId || oldId === newId) {
+                if (window.electronAPI && window.electronAPI.ensureUserOwnership && userId) {
+                    await window.electronAPI.ensureUserOwnership(userId, newId)
+                }
                 if (window.electronAPI && window.electronAPI.markNodeSynced) {
                     await window.electronAPI.markNodeSynced(newId, this.getSyncNodeType ? this.getSyncNodeType(node) : (node.mode || ''), toServerId(newId))
                 }
@@ -838,6 +856,9 @@ export default {
             this.$set(node, 'id', newId)
 
             this.syncUploadedChildrenParentId(node, oldId, newId)
+            if (window.electronAPI && window.electronAPI.ensureUserOwnership && userId) {
+                await window.electronAPI.ensureUserOwnership(userId, newId)
+            }
             if (window.electronAPI && window.electronAPI.markNodeSynced) {
                 await window.electronAPI.markNodeSynced(newId, this.getSyncNodeType ? this.getSyncNodeType(node) : (node.mode || ''), toServerId(newId))
             }

@@ -36,27 +36,17 @@
                             </el-form-item>
 
                             <div class="sub-section">Location</div>
-                            <el-form-item label="Location name">
-                                <el-select @change="changeLocationName" filterable allow-create v-model="locationTemp">
-                                    <el-option v-for="(item, index) in locationListData" :key="index"
-                                        :label="item && item.name ? item.name : ''"
-                                        :value="item && item.mrid ? item.mrid : ''"> </el-option>
-                                </el-select>
-                            </el-form-item>
                             <el-form-item label="Street">
                                 <el-input v-model="properties.street"></el-input>
                             </el-form-item>
-                            <el-form-item label="Ward/ Commune">
+                            <el-form-item label="Ward / Suburb">
                                 <el-input v-model="properties.ward_or_commune"></el-input>
                             </el-form-item>
-                            <el-form-item label="District/ Town">
-                                <el-input v-model="properties.district_or_town"></el-input>
-                            </el-form-item>
-                            <el-form-item label="City">
+                            <el-form-item label="City / Province / State">
                                 <el-input v-model="properties.city"></el-input>
                             </el-form-item>
-                            <el-form-item label="State/ Province">
-                                <el-input v-model="properties.state_or_province"></el-input>
+                            <el-form-item label="Postcode">
+                                <el-input v-model="properties.postal_code"></el-input>
                             </el-form-item>
                             <el-form-item label="Country">
                                 <el-select filterable v-model="properties.country">

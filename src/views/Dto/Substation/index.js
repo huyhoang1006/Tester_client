@@ -13,6 +13,7 @@ class SubstationDto {
         this.district_or_town = ''
         this.city = ''
         this.state_or_province = ''
+        this.postal_code = ''
         this.country = ''
         this.personName = ''
         this.department = ''

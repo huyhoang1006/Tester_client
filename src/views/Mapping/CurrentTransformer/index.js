@@ -333,7 +333,7 @@ export const mapEntityToDto = (entity) => {
     dto.ctConfiguration.dataCT = [];
 
     const dataCT = (entity.CtCoreInfo || []).sort((a, b) => a.core_index - b.core_index);
-    dataCT.forEach(coreInfo => {
+    dataCT.forEach((coreInfo, corePosition) => {
         const core = new CoreDto();
         core.mrid = coreInfo.mrid;
         
@@ -419,32 +419,33 @@ export const mapEntityToDto = (entity) => {
 
         // --- FIX START: Tự động điền (Fill gaps) và SINH TÊN cho Main/Inter Taps ---
         const tapsCount = parseInt(core.taps);
-        const coreIndex = coreInfo.core_index;
+        // Core numbers are positional in the CT configuration. Using the row's
+        // stale core_index can generate identical tap names after a core change.
+        const coreIndex = corePosition + 1;
         const totalCores = parseInt(dto.ctConfiguration.cores);
+
+        const terminalName = terminal => totalCores === 1
+            ? `S${terminal}`
+            : `${coreIndex}S${terminal}`;
+        const tapName = (left, right) => `${terminalName(left)} - ${terminalName(right)}`;
+        const commonTap = parseInt(core.commonTap);
+        const commonTapAtEnd = commonTap === tapsCount;
 
         // 1. Luôn sinh lại tên cho Full Tap để đảm bảo đúng format
         // Logic: Nếu chỉ có 1 core -> "S1 - S[Taps]", nếu nhiều core -> "1S1 - 1S[Taps]"
         if (core.fullTap && core.fullTap.table) {
-            if (totalCores === 1) {
-                core.fullTap.table.name = `S1 - S${tapsCount}`;
-            } else {
-                core.fullTap.table.name = `${coreIndex}S1 - ${coreIndex}S${tapsCount}`;
-            }
+            core.fullTap.table.name = tapName(1, tapsCount);
         }
 
-        // 2. Logic sinh tên Main Tap (giả sử Common Tap = 1 như UI mặc định)
+        // 2. Sinh Main Tap theo common tap hiện tại, cùng quy tắc với UI.
         const expectedMainNames = [];
-        for (let i = 0; i < tapsCount - 2; i++) {
-            // Logic: Nếu 1 core -> S1 - S2, S1 - S3..., nếu nhiều core -> 1S1 - 1S2, 1S1 - 1S3...
-            // i=0 -> S2, i=1 -> S3...
-            if (totalCores === 1) {
-                expectedMainNames.push(`S1 - S${i + 2}`);
-            } else {
-                expectedMainNames.push(`${coreIndex}S1 - ${coreIndex}S${i + 2}`);
-            }
+        for (let terminal = 2; terminal < tapsCount; terminal++) {
+            expectedMainNames.push(commonTapAtEnd
+                ? tapName(terminal, tapsCount)
+                : tapName(1, terminal));
         }
 
-        const requiredMainTaps = tapsCount > 2 ? tapsCount - 2 : 0;
+        const requiredMainTaps = expectedMainNames.length;
         while (core.mainTap.data.length < requiredMainTaps) {
             const idx = core.mainTap.data.length;
             core.mainTap.data.push({
@@ -464,30 +465,36 @@ export const mapEntityToDto = (entity) => {
                     burdenCos: '',
                     operatingBurden: { mrid: '', value: '', unit: UnitSymbol.VA },
                     operatingBurdenCos: '',
-                    core_index: coreInfo.core_index
+                    core_index: coreIndex
                 }
             });
         }
 
-        // 3. Logic sinh tên Inter Tap
+        if (core.mainTap.data.length > requiredMainTaps) {
+            core.mainTap.data.splice(requiredMainTaps);
+        }
+        core.mainTap.data.forEach((tap, index) => {
+            tap.table.name = expectedMainNames[index];
+            tap.table.type = 'maintap';
+        });
+
+        // 3. Sinh Inter Tap theo common tap hiện tại, cùng quy tắc với UI.
         const expectedInterNames = [];
-        // Logic loop giống hệt UI: chosenCommonTap
-        for (let i = 2; i <= tapsCount; i++) {
-            for (let j = i + 1; j <= tapsCount; j++) {
-                // Name: Nếu 1 core -> S2 - S3, S2 - S4..., nếu nhiều core -> 1S2 - 1S3, 1S2 - 1S4...
-                if (totalCores === 1) {
-                    expectedInterNames.push(`S${i} - S${j}`);
-                } else {
-                    expectedInterNames.push(`${coreIndex}S${i} - ${coreIndex}S${j}`);
+        if (commonTapAtEnd) {
+            for (let right = tapsCount - 1; right > 1; right--) {
+                for (let left = right - 1; left >= 1; left--) {
+                    expectedInterNames.push(tapName(left, right));
+                }
+            }
+        } else {
+            for (let left = 2; left <= tapsCount; left++) {
+                for (let right = left + 1; right <= tapsCount; right++) {
+                    expectedInterNames.push(tapName(left, right));
                 }
             }
         }
 
-        let requiredInterTaps = 0;
-        if (tapsCount > 2) {
-            const totalCombinations = (tapsCount * (tapsCount - 1)) / 2;
-            requiredInterTaps = totalCombinations - 1 - (tapsCount - 2);
-        }
+        const requiredInterTaps = expectedInterNames.length;
 
         while (core.interTap.data.length < requiredInterTaps) {
             const idx = core.interTap.data.length;
@@ -508,10 +515,18 @@ export const mapEntityToDto = (entity) => {
                     burdenCos: '',
                     operatingBurden: { mrid: '', value: '', unit: UnitSymbol.VA },
                     operatingBurdenCos: '',
-                    core_index: coreInfo.core_index
+                    core_index: coreIndex
                 }
             });
         }
+
+        if (core.interTap.data.length > requiredInterTaps) {
+            core.interTap.data.splice(requiredInterTaps);
+        }
+        core.interTap.data.forEach((tap, index) => {
+            tap.table.name = expectedInterNames[index];
+            tap.table.type = 'intertap';
+        });
         // --- FIX END ---
 
         dto.ctConfiguration.dataCT.push(core);

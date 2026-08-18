@@ -37,10 +37,17 @@ export default {
             .then(async () => {
                 // Sử dụng Wrapper để bắt đầu loading
                 // Xóa cả cây con chạy lâu hơn nhiều nên dùng timeout 'heavy'
-                const { close, timeoutValue } = startLoading(this, {
+                const { close, progress, aborted } = startLoading(this, {
                     action: 'delete',
+                    text: `Deleting "${nodeName}"`,
                     type: cascade ? 'heavy' : 'default'
                 });
+
+                // Cầu nối để vòng xoá bên trong báo tiến độ và đọc được lệnh dừng.
+                // Đặt lên `this` vì `deleteDescendantsClient` là mixin cùng component,
+                // không nhận tham số nào để truyền hai hàm này xuống.
+                this.reportDeleteProgress = (text) => progress(text);
+                this.isDeleteAborted = aborted;
 
                 // Intercept messages để hiển thị sau khi loading đóng
                 const originalMessage = this.$message;
@@ -67,22 +74,21 @@ export default {
                     // Delay 0.2s để loading hiển thị trước khi bắt đầu xóa
                     await new Promise(resolve => setTimeout(resolve, 200));
 
-                    const deletePromise = this.clientSlide
+                    // CHỜ XOÁ XONG THẬT, không đặt hạn giờ ở đây nữa.
+                    //
+                    // Bản trước dùng `Promise.race` với một hạn giờ cố định. Hạn giờ
+                    // thắng thì hàm này đi tiếp và đóng overlay, NHƯNG vòng xoá vẫn
+                    // chạy — giao diện báo xong trong khi DB còn đang ghi, và mỗi node
+                    // còn lại bắn một toast thật ra màn hình vì `$message` đã được
+                    // restore trong `finally`.
+                    //
+                    // Việc canh "treo hay không" giờ do overlay lo, và nó canh theo NHỊP
+                    // TIM: mỗi node xoá xong là một lần `progress()`, hẹn giờ im lặng
+                    // đặt lại từ đầu. Im lặng quá lâu thì nó bật cờ dừng, và vòng xoá
+                    // tự thoát ở ranh giới an toàn thay vì bị bỏ rơi.
+                    await (this.clientSlide
                         ? this.deleteDataClient(node, cascade)
-                        : this.deleteDataServer(node);
-
-                    // Xóa cả cây con không giới hạn thời gian: nếu race timeout thắng thì
-                    // $message được restore trong finally trong khi vòng xóa vẫn chạy tiếp,
-                    // mỗi node còn lại sẽ bắn 1 toast thật ra màn hình.
-                    if (timeoutValue > 0 && !cascade) {
-                        const timeoutPromise = new Promise((_, reject) => 
-                            setTimeout(() => reject(new Error('Timeout')), timeoutValue)
-                        );
-                        
-                        await Promise.race([deletePromise, timeoutPromise]);
-                    } else {
-                        await deletePromise;
-                    }
+                        : this.deleteDataServer(node));
 
                 } catch (error) {
                     // Restore original message
@@ -101,11 +107,27 @@ export default {
                 } finally {
                     // Restore original message
                     this.$message = originalMessage;
+                    // Gỡ cầu nối, không để rớt lại sang lượt xoá sau
+                    this.reportDeleteProgress = null;
+                    this.isDeleteAborted = null;
                 }
+
+                const wasAborted = aborted();
 
                 // Đóng loading và đợi modal biến mất hoàn toàn
                 await close();
-                
+
+                // DỪNG GIỮA ĐƯỜNG THÌ NÓI THẲNG. Xoá cây con là thao tác xoá dần từng
+                // node, nên dừng giữa đường để lại một cây xoá dở — báo "thành công" ở
+                // đây là nói dối, mà báo lỗi thì cũng sai vì phần đã xoá là xoá thật.
+                if (wasAborted) {
+                    this.$message.warning(
+                        `Stopped while deleting "${nodeName}". Part of the subtree may already be deleted \u2014 check before continuing.`
+                    );
+                    this.selectedNodes = [];
+                    return;
+                }
+
                 // Hiển thị messages SAU KHI loading đã đóng
                 if (capturedMessages.length > 0) {
                     const last = capturedMessages[capturedMessages.length - 1];

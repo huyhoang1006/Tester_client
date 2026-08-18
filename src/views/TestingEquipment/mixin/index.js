@@ -116,39 +116,39 @@ export default {
             const empty = (v) => v == null || String(v).trim() === ''
 
             // ---- Bắt buộc ----
-            if (empty(p.serial_no)) errors.push('Serial no. là bắt buộc')
-            if (empty(p.manufacturer)) errors.push('Manufacturer là bắt buộc')
+            if (empty(p.serial_no)) errors.push('Serial number is required')
+            if (empty(p.manufacturer)) errors.push('Manufacturer is required')
 
             // Overview (định dạng)
             if (p.manufacturer_year && !normalizeDateField(p, 'manufacturer_year'))
                 errors.push('Manufacturing date is invalid (YYYY-MM-DD)')
             if (p.in_use_date && !normalizeDateField(p, 'in_use_date'))
-                errors.push('In use date không hợp lệ (YYYY-MM-DD)')
+                errors.push('In use date is invalid (YYYY-MM-DD)')
 
             // Calibration
             ;(dto.calibration || []).forEach((c, i) => {
                 const n = `Calibration #${i + 1}`
-                if (c.calibration_date && !normalizeDateField(c, 'calibration_date')) errors.push(`${n}: Calibration date không hợp lệ`)
-                if (c.due_date && !normalizeDateField(c, 'due_date')) errors.push(`${n}: Due date không hợp lệ`)
+                if (c.calibration_date && !normalizeDateField(c, 'calibration_date')) errors.push(`${n}: Calibration date is invalid`)
+                if (c.due_date && !normalizeDateField(c, 'due_date')) errors.push(`${n}: Due date is invalid`)
                 if (c.interval_months !== '' && c.interval_months != null && !isIntNonNeg(c.interval_months))
-                    errors.push(`${n}: Interval (months) phải là số nguyên ≥ 0`)
+                    errors.push(`${n}: Interval (months) must be a non-negative integer`)
                 if (isDate(c.calibration_date) && isDate(c.due_date) && Date.parse(c.due_date) < Date.parse(c.calibration_date))
-                    errors.push(`${n}: Due date phải sau Calibration date`)
+                    errors.push(`${n}: Due date must be after Calibration date`)
             })
 
             // Software license
             ;(dto.licenses || []).forEach((l, i) => {
                 const n = `License #${i + 1}`
-                if (l.activation_date && !normalizeDateField(l, 'activation_date')) errors.push(`${n}: Activation date không hợp lệ`)
-                if (l.expiry_date && !normalizeDateField(l, 'expiry_date')) errors.push(`${n}: Expiry date không hợp lệ`)
+                if (l.activation_date && !normalizeDateField(l, 'activation_date')) errors.push(`${n}: Activation date is invalid`)
+                if (l.expiry_date && !normalizeDateField(l, 'expiry_date')) errors.push(`${n}: Expiry date is invalid`)
                 if (isDate(l.activation_date) && isDate(l.expiry_date) && Date.parse(l.expiry_date) < Date.parse(l.activation_date))
-                    errors.push(`${n}: Expiry phải sau Activation`)
+                    errors.push(`${n}: Expiry date must be after Activation date`)
             })
 
             // Repair
             ;(dto.repairs || []).forEach((r, i) => {
                 if (r.created_date_time && !normalizeDateField(r, 'created_date_time'))
-                    errors.push(`Repair #${i + 1}: ngày sửa không hợp lệ`)
+                    errors.push(`Repair #${i + 1}: Repair date is invalid`)
             })
 
             return errors
@@ -159,7 +159,7 @@ export default {
             try {
                 const errors = this.validateBeforeSave(this.testingEquipmentDto)
                 if (errors.length) {
-                    const msg = errors.length === 1 ? errors[0] : `${errors.length} lỗi cần sửa — ${errors[0]}`
+                    const msg = errors.length === 1 ? errors[0] : `${errors.length} fields need attention: ${errors[0]}`
                     if (this.$message) this.$message.error(msg)
                     return { success: false, errors }
                 }

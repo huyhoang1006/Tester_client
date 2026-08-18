@@ -4,6 +4,17 @@ import * as VoltageLevelServerMapper from '@/views/Mapping/ServerToDTO/VoltageLe
 import * as VoltageLevelMapper from '@/views/Mapping/VoltageLevel/index.js'
 import { fetchWithRetry } from './core-utils.js'
 import { detectConflicts, applyResolved, mergeWithoutSnapshot, VOLTAGE_LEVEL_FIELD_DEFS } from '@/utils/conflictUtils.js'
+import { scopeDtoIds } from './id-scope'
+
+const scopeVoltageLevelDtoForUser = (dto, userId) => {
+    return scopeDtoIds(dto, {
+        locationId: 'loc',
+        baseVoltageId: 'base-voltage',
+        nominalVoltageId: 'voltage',
+        highVoltageLimitId: 'voltage',
+        lowVoltageLimitId: 'voltage'
+    }, userId)
+}
 
 // ─── Step 1: fetch full info từ server ───────────────────────────────────────
 // Được gọi trong fetchFullInfoForChain
@@ -36,6 +47,7 @@ export async function getVoltageLevelChain(id, parentId) {
 
 export async function downloadVoltageLevelChain(data, ctx) {
     const voltageLevel = data.voltageLevel
+    const userId = ctx.$store.state.user.user_id
     const serverData   = {
         ...voltageLevel._serverData,
         mRID:       voltageLevel.mrid,
@@ -44,11 +56,12 @@ export async function downloadVoltageLevelChain(data, ctx) {
 
     // 1. Map server → serverDto
     const serverDto = VoltageLevelServerMapper.mapServerToDto(serverData)
+    scopeVoltageLevelDtoForUser(serverDto, userId)
 
     // 2. Lấy client data cũ nếu đã tồn tại
     const existingResult = await window.electronAPI.getVoltageLevelEntityByMrid(voltageLevel.mrid)
     const clientDto = existingResult.success
-        ? VoltageLevelMapper.volEntityToVolDto(existingResult.data)
+        ? scopeVoltageLevelDtoForUser(VoltageLevelMapper.volEntityToVolDto(existingResult.data), userId)
         : null
 
     // 3. Merge

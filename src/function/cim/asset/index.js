@@ -6,17 +6,16 @@ export const getAssetById = async (mrid) => {
     try {
         const identifiedResult = await IdentifiedObjectFunc.getIdentifiedObjectById(mrid)
         if (!identifiedResult.success) {
-            console.warn(`[DEBUG] IdentifiedObject NOT found for MRID: ${mrid}`, identifiedResult);
             return { success: false, data: null, message: 'Identified object not found' }
         }
         return new Promise((resolve, reject) => {
             db.get("SELECT * FROM asset WHERE mrid=?", [mrid], (err, row) => {
                 if (err) {
-                    console.error(`[DEBUG] SQLite Error in getAssetById for MRID: ${mrid}`, err);
+                    console.error(`SQLite Error in getAssetById for MRID: ${mrid}`, err);
                     return reject({ success: false, err: err, message: 'Get asset by id failed' })
                 }
                 if (!row) {
-                    console.warn(`[DEBUG] Asset Table row NOT found for MRID: ${mrid} (but IdentifiedObject existed)`);
+                    console.warn(`Asset Table row NOT found for MRID: ${mrid} (but IdentifiedObject existed)`);
                     return resolve({ success: false, data: null, message: 'Asset not found' })
                 }
                 const data = { ...identifiedResult.data, ...row }
@@ -24,7 +23,7 @@ export const getAssetById = async (mrid) => {
             })
         })
     } catch (err) {
-        console.error(`[DEBUG] Unexpected Exception in getAssetById for MRID: ${mrid}`, err);
+        console.error(`Unexpected Exception in getAssetById for MRID: ${mrid}`, err);
         return { success: false, err: err, message: 'Get asset by id failed' }
     }
 }
@@ -39,7 +38,7 @@ export const getAssetByAssetInfoId = async (assetInfoId) => {
                 [assetInfoId],
                 async (err, row) => {
                     if (err) {
-                        console.error(`[DEBUG] SQLite Error in getAssetByAssetInfoId for AssetInfoId: ${assetInfoId}`, err);
+                        console.error(`SQLite Error in getAssetByAssetInfoId for AssetInfoId: ${assetInfoId}`, err);
                         return reject({ success: false, err: err, message: 'Find Asset by AssetInfoId failed' });
                     }
 
@@ -58,7 +57,7 @@ export const getAssetByAssetInfoId = async (assetInfoId) => {
             )
         })
     } catch (err) {
-        console.error(`[DEBUG] Unexpected Exception in getAssetByAssetInfoId`, err);
+        console.error(`Unexpected Exception in getAssetByAssetInfoId`, err);
         return { success: false, err: err, message: 'Get Asset by AssetInfoId failed' };
     }
 }
@@ -143,11 +142,12 @@ export const getAssetByPsrIdAndKind = (psrId, kind) => {
 
 
 // Thêm mới asset
-export const checkAssetDuplicateByKeys = async ({ serialNumber, manufacturer, assetType, excludeMrid } = {}) => {
+export const checkAssetDuplicateByKeys = async ({ serialNumber, manufacturer, assetType, excludeMrid, userId } = {}) => {
     const serial = String(serialNumber || '').trim()
     const maker = String(manufacturer || '').trim()
     const type = String(assetType || '').trim()
     const currentMrid = String(excludeMrid || '').trim()
+    const ownerUserId = userId === null || userId === undefined ? '' : String(userId).trim()
 
     if (!serial) {
         return { success: true, exists: false, data: null, message: 'Duplicate check skipped because serial number is empty' }
@@ -169,10 +169,19 @@ export const checkAssetDuplicateByKeys = async ({ serialNumber, manufacturer, as
               AND LOWER(TRIM(COALESCE(pam.manufacturer, ''))) = LOWER(TRIM(?))
               AND LOWER(TRIM(COALESCE(a.type, ''))) = LOWER(TRIM(?))
               AND (? = '' OR a.mrid <> ?)
+              AND (
+                ? = ''
+                OR EXISTS (
+                    SELECT 1
+                    FROM user_identified_object uio
+                    WHERE uio.user_id = ?
+                      AND uio.identified_object_id = a.mrid
+                )
+              )
             LIMIT 1
         `
 
-        db.get(query, [serial, maker, type, currentMrid, currentMrid], (err, row) => {
+        db.get(query, [serial, maker, type, currentMrid, currentMrid, ownerUserId, ownerUserId], (err, row) => {
             if (err) {
                 return reject({ success: false, err, message: 'Check asset duplicate failed' })
             }
@@ -439,10 +448,9 @@ export const insertAssetTransaction = (asset, dbsql) => {
                 ],
                 function (err) {
                     if (err) {
-                        console.error(`[DEBUG] insertAssetTransaction FAILED for MRID: ${asset.mrid}`, err);
+                        console.error(`insertAssetTransaction FAILED for MRID: ${asset.mrid}`, err);
                         return resolve({ success: false, err: err, message: 'Insert asset transaction failed' })
                     }
-                    console.log(`[DEBUG] insertAssetTransaction SUCCESS for MRID: ${asset.mrid}`);
                     return resolve({ success: true, data: asset, message: 'Insert asset transaction completed' })
                 }
             )

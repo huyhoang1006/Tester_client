@@ -1,21 +1,27 @@
 <template>
-    <div class="toolbar">
-        <div style="display: flex; align-items: center">
-            <div @click="resetAllClient" class="path-hover">Organisation</div>
-            <i v-if="pathMapClient && pathMapClient.length > 0" style="margin-left: 10px"
-                class="fa-solid fa-angle-right"></i>
-        </div>
-        <div style="display: flex; align-items: center" v-for="(item, index) in pathMapClient"
-            :key="`client-${item.id}-${index}`">
-            <div @click="resetPathClient(index)" class="path-hover">{{ item.parent }}</div>
-            <i v-if="index < pathMapClient.length - 1" style="margin-left: 10px" class="fa-solid fa-angle-right"></i>
-        </div>
-    </div>
+    <PathBar
+        :path="pathMapClient"
+        key-prefix="client"
+        @reset-all="resetAllClient"
+        @path-click="resetPathClient"
+        @go-path="$emit('go-path', $event)"
+        @copy-path="$emit('copy-path')" />
 </template>
+
 <script>
+/**
+ * Thanh đường dẫn của cây CLIENT.
+ *
+ * Phần hiển thị và chế độ sửa nằm hết trong `PathBar` dùng chung với cây server — file này
+ * chỉ còn nối dữ liệu và hai hành động riêng của phía client (`resetAllClient`,
+ * `resetPathClient` nằm trong mixin bên dưới).
+ */
+import PathBar from '@/views/TreeNode/Common/PathBar.vue'
 import mixin from './mixin'
+
 export default {
     name: "ClientSideTopBar",
+    components: { PathBar },
     props: {
         pathMapClient: {
             type: Array,
@@ -39,25 +45,3 @@ export default {
     mixins: [mixin],
 }
 </script>
-<style scoped>
-.toolbar {
-    background-color: #d9d9d9;
-    height: 30px;
-    display: flex;
-    gap: 10px;
-    border-bottom: 1px solid #cccccc;
-    /* Độ dày 2px, màu đen */
-    align-items: center;
-    font-size: 12px;
-    color: #555;
-    font-weight: 600;
-    box-sizing: border-box;
-    width: 100%;
-    padding-left: 10px;
-}
-.path-hover:hover {
-    color: black;
-    text-decoration: underline;
-    cursor: pointer;
-}
-</style>

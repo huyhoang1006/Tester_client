@@ -4,6 +4,24 @@ import * as SubstationServerMapper from '@/views/Mapping/ServerToDTO/Substation/
 import * as SubstationMapper from '@/views/Mapping/Substation/index.js'
 import { fetchWithRetry } from './core-utils.js'
 import { detectConflicts, applyResolved, SUBSTATION_FIELD_DEFS } from '@/utils/conflictUtils.js'
+import { replaceUserSuffix } from '@/utils/serverId'
+import { scopeDtoIds, scopePositionPointIds } from './id-scope'
+
+const scopeSubstationDtoForUser = (dto, userId) => {
+    scopeDtoIds(dto, {
+        psrTypeId: 'psrtype',
+        locationId: 'loc',
+        streetAddressId: 'street-address',
+        streetDetailId: 'street-detail',
+        townDetailId: 'town-detail',
+        electronicAddressId: 'ea',
+        telephoneNumberId: 'tel',
+        personId: 'person',
+        personRoleId: 'person-role'
+    }, userId)
+    scopePositionPointIds(dto.positionPoints, userId)
+    return dto
+}
 
 export async function getSubstationChain(id, parentId) {
     try {
@@ -29,10 +47,12 @@ export async function getSubstationChain(id, parentId) {
 
 export async function downloadSubstationChain(data, ctx) {
     const substation = data.substation
+    const userId = ctx.$store.state.user.user_id
     const serverData = { ...substation._serverData, mRID: substation.mrid }
 
     // 1. Map server → serverDto
     const serverDto = SubstationServerMapper.mapServerToDto(serverData)
+    scopeSubstationDtoForUser(serverDto, userId)
 
     // 2. Lấy client data cũ nếu đã tồn tại
     const existingResult = await window.electronAPI.getSubstationEntityByMrid(
@@ -41,7 +61,7 @@ export async function downloadSubstationChain(data, ctx) {
         data.parentOrgId
     )
     const clientDto = existingResult.success
-        ? SubstationMapper.mapEntityToDto(existingResult.data)
+        ? scopeSubstationDtoForUser(SubstationMapper.mapEntityToDto(existingResult.data), userId)
         : null
 
     // 3. Merge
@@ -117,7 +137,10 @@ export async function downloadSubstationChain(data, ctx) {
     mergedDto.organisationId       = data.parentOrgId
     mergedDto.userId               = ctx.$store.state.user.user_id
     mergedDto.userName             = ctx.$store.state.user.username
-    mergedDto.userIdentifiedObjectId = clientDto?.userIdentifiedObjectId || ctx.generateUuid()
+    const userOwnedSubstationId = String(substation.mrid).indexOf('@') !== -1
+        ? replaceUserSuffix(substation.mrid, userId)
+        : `${substation.mrid}@u-${userId}`
+    mergedDto.userIdentifiedObjectId = clientDto?.userIdentifiedObjectId || userOwnedSubstationId
     mergedDto.organisationPsrId      = clientDto?.organisationPsrId      || ctx.generateUuid()
     mergedDto.organisationLocationId = clientDto?.organisationLocationId  || ctx.generateUuid()
     mergedDto.organisationPersonId   = clientDto?.organisationPersonId    || ctx.generateUuid()

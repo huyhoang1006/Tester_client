@@ -41,6 +41,10 @@ export const FK_KEYS = {
     voltageTransformer:  ['assetInfoId', 'productAssetModelId', 'lifecycleDateId', 'assetPsrId'],
     disconnector:        ['assetInfoId', 'productAssetModelId', 'lifecycleDateId', 'assetPsrId'],
     surgeArrester:       ['assetInfoId', 'productAssetModelId', 'lifecycleDateId', 'assetPsrId'],
+    bushing:             ['assetInfoId', 'productAssetModelId', 'lifecycleDateId', 'assetPsrId'],
+    // power cable có thêm `oldCableInfoId` — bảng thông tin cáp riêng, không dùng chung
+    // khuôn 4 field như các asset khác. Thiếu nó thì insert vi phạm khoá ngoại.
+    powerCable:          ['assetInfoId', 'productAssetModelId', 'lifecycleDateId', 'assetPsrId', 'oldCableInfoId'],
     transformer: [
         'oldPowerTransformerInfoId', 'productAssetModelId', 'lifecycleDateId', 'assetPsrId',
     ],

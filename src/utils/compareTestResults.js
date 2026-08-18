@@ -44,6 +44,19 @@ const toNumber = (value) => {
     return isNaN(num) ? null : num
 }
 
+const buildDisplayRowLabel = (cells, keyCodes, options = {}) => {
+    if (typeof options.rowLabel === 'function') {
+        const label = options.rowLabel(cells, keyCodes)
+        if (!isBlank(label)) return label
+    }
+    return buildRowLabel(cells, keyCodes)
+}
+
+const buildDisplayTableTitle = (title, options = {}) => {
+    const labels = options.tableLabels || {}
+    return labels[title] || title
+}
+
 /**
  * Chuẩn hoá một mảnh khoá.
  *
@@ -105,7 +118,7 @@ export const buildRowLabel = (cells, keyCodes) => {
  * @param conditions item.testCondition.condition
  * @param keyCodes   mã các cột mốc, lấy từ config/compare-keys
  */
-export const buildSnapshotFromForm = (tableData, columns, conditions, keyCodes = []) => {
+export const buildSnapshotFromForm = (tableData, columns, conditions, keyCodes = [], options = {}) => {
     const columnByCode = {}
     for (const col of (columns || [])) columnByCode[col.code] = col
     const keys = keyCodes || []
@@ -132,9 +145,14 @@ export const buildSnapshotFromForm = (tableData, columns, conditions, keyCodes =
                     isKey: keys.includes(code)
                 }
             }
-            outRows.push({ key: buildRowKey(cells, keys), label: buildRowLabel(cells, keys), cells })
+            outRows.push({
+                key: buildRowKey(cells, keys),
+                label: buildDisplayRowLabel(cells, keys, options),
+                rawLabel: buildRowLabel(cells, keys),
+                cells
+            })
         }
-        tables.push({ title, rows: outRows })
+        tables.push({ title, displayTitle: buildDisplayTableTitle(title, options), rows: outRows })
     }
 
     const outConditions = {}
@@ -155,7 +173,7 @@ export const buildSnapshotFromForm = (tableData, columns, conditions, keyCodes =
  * là measurementId, và ánh xạ measurementId → code nằm ở file test-definitions.
  * Vì vậy phải gắn ở renderer, nơi có sẵn mảng columns.
  */
-export const attachAliasFromColumns = (snapshot, columns, keyCodes = []) => {
+export const attachAliasFromColumns = (snapshot, columns, keyCodes = [], options = {}) => {
     if (!snapshot) return snapshot
     const codeByMrid = {}
     for (const col of (columns || [])) if (col && col.mrid) codeByMrid[col.mrid] = col.code
@@ -163,6 +181,7 @@ export const attachAliasFromColumns = (snapshot, columns, keyCodes = []) => {
     snapshot.keyCodes = keys.slice()
 
     for (const table of (snapshot.tables || [])) {
+        table.displayTitle = buildDisplayTableTitle(table.title, options)
         for (const row of (table.rows || [])) {
             for (const cellKey of Object.keys(row.cells || {})) {
                 const cell = row.cells[cellKey]
@@ -172,7 +191,8 @@ export const attachAliasFromColumns = (snapshot, columns, keyCodes = []) => {
                 cell.isKey = keys.includes(cell.aliasName)
             }
             row.key = buildRowKey(row.cells, keys)
-            row.label = buildRowLabel(row.cells, keys)
+            row.rawLabel = buildRowLabel(row.cells, keys)
+            row.label = buildDisplayRowLabel(row.cells, keys, options)
         }
     }
     return snapshot
@@ -302,8 +322,10 @@ export const compareSnapshots = (current, reference) => {
     let comparedCells = 0
 
     for (const title of titles) {
-        const currentRows = (currentTables.find(t => t.title === title) || {}).rows || []
-        const referenceRows = (referenceTables.find(t => t.title === title) || {}).rows || []
+        const currentTable = currentTables.find(t => t.title === title) || {}
+        const referenceTable = referenceTables.find(t => t.title === title) || {}
+        const currentRows = currentTable.rows || []
+        const referenceRows = referenceTable.rows || []
         const columns = buildColumns(currentRows, referenceRows)
         // Bỏ cột mốc (đã hiện ở cột nhãn bên trái, và hai dòng ghép được thì mốc
         // giống nhau) và bỏ assessment / condition_indicator (xem isExcludedFromCompare).
@@ -327,7 +349,12 @@ export const compareSnapshots = (current, reference) => {
             })
         }))
 
-        tables.push({ title, columns: valueColumns, rows })
+        tables.push({
+            title,
+            displayTitle: currentTable.displayTitle || referenceTable.displayTitle || title,
+            columns: valueColumns,
+            rows
+        })
     }
 
     // Điều kiện thí nghiệm: R60s phụ thuộc mạnh vào nhiệt độ nên phải cho người

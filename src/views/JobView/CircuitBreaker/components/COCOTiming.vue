@@ -42,10 +42,10 @@
                                 </div>
                             </td>
                             <td>
-                                <el-input size="mini" type="text" v-model="item.trip_coil.value"></el-input>
+                                <el-input size="mini" type="text" disabled v-model="item.trip_coil.value"></el-input>
                             </td>
                             <td>
-                                <el-input size="mini" type="text" v-model="item.interrupter.value"></el-input>
+                                <el-input size="mini" type="text" disabled v-model="item.interrupter.value"></el-input>
                             </td>
                             <td>
                                 <el-input size="mini" type="text" number="positive"

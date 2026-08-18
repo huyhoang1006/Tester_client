@@ -3,9 +3,44 @@ import * as voltageAPI from '@/api/demo/VoltageTransformer.js'
 import * as VoltageTransformerServerMapper from '@/views/Mapping/ServerToDTO/VoltageTransformer/index.js'
 import * as VoltageTransformerMapper from '@/views/Mapping/VoltageTransformer/index.js'
 import { fetchWithRetry } from './core-utils.js'
+import { scopeAssetDtoForUser, scopeDownloadedId } from './id-scope'
 import { traverseAndFillMrid, ensureTopLevelFK, FK_KEYS } from './fk-utils.js'
 import { detectConflicts, applyResolved, mergeWithoutSnapshot, VOLTAGE_TRANSFORMER_FIELD_DEFS } from '@/utils/conflictUtils.js'
 import { applyDownloadedAssetMedia } from './asset-media-utils.js'
+
+const scopeVoltageTransformerOwnedValueIds = (dto, userId) => {
+    if (!dto || !userId) return dto
+
+    const ratings = dto.ratings || {}
+    if (ratings.rated_frequency && ratings.rated_frequency.mrid) {
+        ratings.rated_frequency.mrid = scopeDownloadedId(ratings.rated_frequency.mrid, 'freq', userId)
+    }
+    if (ratings.rated_voltage && ratings.rated_voltage.mrid) {
+        ratings.rated_voltage.mrid = scopeDownloadedId(ratings.rated_voltage.mrid, 'voltage', userId)
+    }
+    if (ratings.c1 && ratings.c1.mrid) {
+        ratings.c1.mrid = scopeDownloadedId(ratings.c1.mrid, 'capacitance', userId)
+    }
+    if (ratings.c2 && ratings.c2.mrid) {
+        ratings.c2.mrid = scopeDownloadedId(ratings.c2.mrid, 'capacitance', userId)
+    }
+
+    const dataVT = dto.vt_Configuration && Array.isArray(dto.vt_Configuration.dataVT)
+        ? dto.vt_Configuration.dataVT
+        : []
+    for (const row of dataVT) {
+        if (!row || typeof row !== 'object') continue
+        if (row.mrid) row.mrid = scopeDownloadedId(row.mrid, 'pt-table', userId)
+        if (row.usr_rated_voltage && row.usr_rated_voltage.mrid) {
+            row.usr_rated_voltage.mrid = scopeDownloadedId(row.usr_rated_voltage.mrid, 'voltage', userId)
+        }
+        if (row.rated_burden && row.rated_burden.mrid) {
+            row.rated_burden.mrid = scopeDownloadedId(row.rated_burden.mrid, 'apparent-power', userId)
+        }
+    }
+
+    return dto
+}
 
 // ─── Step 1: fetch full info từ server ───────────────────────────────────────
 
@@ -40,6 +75,9 @@ export async function downloadVoltageTransformerChain(data, ctx) {
 
     // 1. Map server → serverDto
     const serverDto       = VoltageTransformerServerMapper.mapServerToDto(serverData)
+    const currentUserId = ctx.$store.state.user.user_id
+    scopeAssetDtoForUser(serverDto, currentUserId)
+    scopeVoltageTransformerOwnedValueIds(serverDto, currentUserId)
     serverDto.psrId       = data.parentBayId
     serverDto.properties.mrid = vt.mrid
     await applyDownloadedAssetMedia(serverDto, 'Voltage transformer', vt.mrid)
@@ -53,6 +91,8 @@ export async function downloadVoltageTransformerChain(data, ctx) {
         ? VoltageTransformerMapper.mapEntityToDto(clientEntity)
         : null
 
+    scopeAssetDtoForUser(clientDto, currentUserId)
+    scopeVoltageTransformerOwnedValueIds(clientDto, currentUserId)
     // 3. Merge
     let mergedDto
 
@@ -98,6 +138,8 @@ export async function downloadVoltageTransformerChain(data, ctx) {
     // Đảm bảo mọi mrid + FK id được điền trước khi map sang entity (tránh lỗi foreign key)
     traverseAndFillMrid(mergedDto)
     ensureTopLevelFK(mergedDto, FK_KEYS.voltageTransformer)
+    scopeAssetDtoForUser(mergedDto, currentUserId)
+    scopeVoltageTransformerOwnedValueIds(mergedDto, currentUserId)
 
     // 5. Build entity từ mergedDto
     const oldEntity = clientEntity || new (require('@/views/Flatten/VoltageTransformer').default)()

@@ -52,7 +52,38 @@ export const insertLifecycleDate = async (data) => {
 }
 
 // Transaction: Thêm mới lifecycle date
+/**
+ * Ghi lifecycle_date trong một transaction.
+ *
+ * ─── VÌ SAO BỎ QUA KHI KHÔNG CÓ MRID ─────────────────────────────────────────
+ *
+ * `lifecycle_date.mrid` là NOT NULL. Gọi hàm này với `mrid` null thì SQLite ném
+ * `SQLITE_CONSTRAINT: NOT NULL constraint failed: lifecycle_date.mrid`, và vì lời gọi
+ * nằm giữa transaction của asset nên CẢ asset đó đổ — thông báo lên tới người dùng chỉ
+ * còn hai chữ "fail".
+ *
+ * Mrid null ở đây là chuyện BÌNH THƯỜNG, không phải lỗi: mapper gán
+ * `entity.lifecycleDate.mrid = dto.lifecycleDateId || null`, còn `_fillNullMrids` bên
+ * import CỐ Ý không cấp mrid cho object rỗng — để khỏi tạo ra một bản ghi ngày tháng
+ * trống trơn. Thiết bị không nhập ngày sản xuất nào thì đúng là không có gì để ghi.
+ *
+ * Nên "không có mrid" phải hiểu là "không có ngày để lưu", và bỏ qua là đúng. Cả 11 loại
+ * asset đều gọi hàm này KHÔNG kiểm gì trước, nên chốt đặt ở đây vá được tất cả cùng lúc
+ * thay vì rải 11 câu `if` giống nhau.
+ *
+ * Vẫn ghi log: bỏ qua thì được, nhưng bỏ qua im lặng thì không — nếu có ngày tháng thật
+ * mà mrid bị mất ở đâu đó, dòng log này là thứ duy nhất chỉ ra.
+ */
 export const insertLifecycleDateTransaction = (data, dbsql) => {
+    if (!data || !data.mrid) {
+        const hasDates = data && ['installation_date', 'manufactured_date', 'purchase_date',
+            'received_date', 'removal_date', 'retired_date']
+            .some((k) => data[k] !== null && data[k] !== undefined && data[k] !== '')
+        if (hasDates) {
+            console.warn('[lifecycleDate] CO ngay thang nhung KHONG co mrid — bo qua, du lieu nay se mat:', data)
+        }
+        return Promise.resolve({ success: true, data: data, message: 'No lifecycle date to insert' })
+    }
     return new Promise((resolve, reject) => {
         dbsql.run(
             `INSERT INTO lifecycle_date(

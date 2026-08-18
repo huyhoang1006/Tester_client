@@ -1,6 +1,7 @@
 'use strict'
 import { ipcMain } from 'electron'
 import { entityFunc } from "@/function"
+import { describeFailure } from '@/ipcmain/failureMessage'
 
 export const getAllNotifications = () => {
     ipcMain.handle('getAllNotifications', async function (event) {
@@ -16,7 +17,7 @@ export const getAllNotifications = () => {
             } else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -43,7 +44,7 @@ export const getNotificationById = () => {
             } else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -70,7 +71,7 @@ export const insertNotification = () => {
             } else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -97,7 +98,7 @@ export const updateNotification = () => {
             } else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -122,7 +123,7 @@ export const markAsRead = () => {
             } else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -147,7 +148,7 @@ export const hmrideNotification = () => {
             } else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -172,7 +173,7 @@ export const deleteNotification = () => {
             } else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -197,7 +198,7 @@ export const deleteAllNotifications = () => {
             } else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {

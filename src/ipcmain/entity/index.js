@@ -27,6 +27,7 @@ import * as ipcTestingEquipment from './testingEquipment/index.js'
 import * as ipcSyncState from './syncState/index.js'
 import * as ipcAuditLog from './auditLog/index.js'
 import * as ipcCompareTest from './compareTest/index.js'
+import * as ipcUserIdentifiedObject from './userIdentifiedObject/index.js'
 
 
 export const active = () => {
@@ -59,4 +60,5 @@ export const active = () => {
     ipcSyncState.active()
     ipcAuditLog.active()
     ipcCompareTest.active()
+    ipcUserIdentifiedObject.active()
 }

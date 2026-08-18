@@ -1,6 +1,7 @@
 'use strict'
 import {ipcMain} from 'electron'
 import {cimFunc} from "@/function"
+import { describeFailure } from '@/ipcmain/failureMessage'
 
 export const getParentOrganizationByMrid = () => {
     ipcMain.handle('getParentOrganizationByMrid', async function (event, mrid) {
@@ -17,7 +18,7 @@ export const getParentOrganizationByMrid = () => {
             } else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -49,7 +50,7 @@ export const getParentOrganizationByParentMrid = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -76,7 +77,7 @@ export const insertParentOrganization = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -102,7 +103,7 @@ export const updateParentOrganizationByMrid = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {
@@ -128,7 +129,7 @@ export const deleteParentOrganizationByMrid = () => {
             else {
                 return {
                     success: false,
-                    message: "fail",
+                    message: describeFailure(rs),
                 }
             }
         } catch (error) {

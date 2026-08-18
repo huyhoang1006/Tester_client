@@ -1,15 +1,45 @@
 import { v4 as newUuid } from 'uuid'
 import db from '../../datacontext/index'
 import * as attachmentContext from '../../attachmentcontext/index'
+import { safePathSegment } from '@/utils/fileName'
 import fs from 'fs';
 import path from 'path';
 
+/**
+ * Lấy attachment của MỘT đối tượng.
+ *
+ * Mỗi (id_foreign, type) đúng ra chỉ có MỘT dòng: một asset một bộ file, một job một
+ * bộ, mỗi work_task một bộ. Nhưng bảng `attachment` không có ràng buộc nào bắt điều đó
+ * — nó chỉ có PRIMARY KEY(id), không có UNIQUE(id_foreign, type) và cũng không có khoá
+ * ngoại nào (id_foreign là con trỏ đa hình: cùng cột trỏ sang asset, work, work_task…
+ * tuỳ `type`). Nên SQLite không thể tự dọn theo, và cũng không chặn được dòng thứ hai.
+ *
+ * `db.get` chỉ trả về dòng ĐẦU TIÊN. Nếu có hai dòng thì dòng còn lại vô hình với mọi
+ * lệnh đọc — và vì đường xoá chỉ xoá đúng `entity.attachment.id` vừa đọc được, dòng kia
+ * thành rác vĩnh viễn. Đó là cách bảng attachment phình lên.
+ *
+ * Giờ đếm và cảnh báo, để tình trạng đó không còn im lặng nữa.
+ */
 export const getAttachmentByForeignIdAndType = async (id_foreign, type) => {
     return new Promise((resolve, reject) => {
-        db.get("SELECT * FROM attachment where id_foreign=? and type=?", [id_foreign, type], (err, row) => {
+        db.all("SELECT * FROM attachment where id_foreign=? and type=?", [id_foreign, type], (err, rows) => {
             if (err)  return reject({success: false, err : err, message: 'Get all attachments failed'})
-            if (!row) return resolve({ success: false, data: null, message: 'Attachment not found' })
-            return resolve({success: true, data: row, message: 'Get all attachments completed'})
+            if (!rows || rows.length === 0) return resolve({ success: false, data: null, message: 'Attachment not found' })
+            if (rows.length > 1) {
+                console.warn(`[attachment] CO ${rows.length} dong cho (${id_foreign}, ${type}) — dang la rac, chi 1 dong duoc dung`,
+                    rows.map(r => r.id))
+            }
+            return resolve({success: true, data: rows[0], message: 'Get all attachments completed'})
+        })
+    })
+}
+
+/** Mọi dòng attachment của một đối tượng — dùng khi cần dọn cho sạch, không chỉ đọc. */
+export const getAllAttachmentsByForeignIdAndType = async (id_foreign, type) => {
+    return new Promise((resolve, reject) => {
+        db.all("SELECT * FROM attachment where id_foreign=? and type=?", [id_foreign, type], (err, rows) => {
+            if (err) return reject({ success: false, err, message: 'Get attachments by foreign id failed' })
+            return resolve({ success: true, data: rows || [] })
         })
     })
 }
@@ -68,10 +98,48 @@ export const uploadAttachment = async (attachment) => {
 };
 
 
+/**
+ * Ghi attachment cho một đối tượng.
+ *
+ * ─── VÌ SAO PHẢI DỌN DÒNG CŨ TRƯỚC ───────────────────────────────────────────
+ *
+ * `ON CONFLICT(id)` chỉ tránh trùng theo KHOÁ CHÍNH. Nhưng danh tính thật của một
+ * attachment là **(id_foreign, type)** — "bộ file của asset X" — chứ không phải `id`.
+ * Hai thứ đó không trùng nhau, và đó là chỗ sinh rác:
+ *
+ *   - Lần lưu đầu: id = A, id_foreign = asset-1  ->  1 dong
+ *   - Lần sau chỗ gọi cấp id MỚI (import sinh uuid, nhân bản, tải về từ server đều
+ *     làm vậy): id = B, id_foreign = asset-1  ->  ON CONFLICT(id) khong khop
+ *                                               ->  THEM dong thu hai
+ *
+ * Từ đó `getAttachmentByForeignIdAndType` chỉ thấy một trong hai, và lệnh xoá node chỉ
+ * xoá đúng dòng nó đọc được. Dòng còn lại không ai đọc, không ai xoá — nằm lại mãi.
+ * Đây là nguyên nhân bảng `attachment` đầy dòng mồ côi.
+ *
+ * Nên trước khi ghi, xoá mọi dòng CÙNG (id_foreign, type) mà KHÁC id. Vậy bất biến
+ * "một đối tượng một dòng" được giữ ngay tại chỗ ghi, thay vì trông vào lời hứa rằng
+ * mọi chỗ gọi đều truyền lại đúng id cũ.
+ */
 export const uploadAttachmentTransaction = async (attachment, dbsql) => {
     return new Promise((resolve, reject) => {
         const id = attachment.id || newUuid();
         dbsql.run(
+            `DELETE FROM attachment
+              WHERE id_foreign = ? AND type = ? AND id <> ?`,
+            [attachment.id_foreign, attachment.type, id],
+            function (cleanupErr) {
+                if (cleanupErr) return reject({ success: false, err: cleanupErr, message: 'Upload attachment failed' })
+                if (this && this.changes > 0) {
+                    console.warn(`[attachment] da don ${this.changes} dong cu cho (${attachment.id_foreign}, ${attachment.type})`)
+                }
+                writeAttachmentRow(attachment, id, dbsql, resolve, reject)
+            }
+        )
+    })
+}
+
+const writeAttachmentRow = (attachment, id, dbsql, resolve, reject) => {
+    dbsql.run(
             `INSERT INTO attachment (id, path, id_foreign, type, name)
              VALUES (?, ?, ?, ?, ?)
              ON CONFLICT(id) DO UPDATE SET
@@ -94,8 +162,7 @@ export const uploadAttachmentTransaction = async (attachment, dbsql) => {
                     message: 'Upload attachment completed'
                 });
             }
-        );
-    });
+    );
 };
 
 /**
@@ -302,6 +369,51 @@ export const deleteDirectory = (directory, fatherMrid) => {
         fs.rmSync(directory, { recursive: true, force: true });
     }
 };
+
+/**
+ * Xoá HẲN thư mục file của một đối tượng (asset / job / work_task / substation…).
+ *
+ * ─── VÌ SAO CẦN HÀM RIÊNG, KHÔNG GỌI deleteDirectory TRỰC TIẾP ────────────────
+ *
+ * `deleteDirectory(null, undefined)` cho ra `path.join(<goc attachment>, undefined)`
+ * và `fs.rmSync(recursive: true, force: true)` sẽ xoá SẠCH thư mục attachment gốc —
+ * toàn bộ file của mọi node, không hỏi lại, không hoàn tác được.
+ *
+ * Đó không phải lo xa. Sáu đường xoá từng truyền `data.mrid`, mà các lớp Flatten
+ * (SubstationEntity, CurrentTransformerEntity…) KHÔNG có `this.mrid` — chúng chỉ có
+ * `this.substation.mrid`, `this.asset.mrid`. Nên tham số đó vẫn luôn là `undefined`,
+ * và may là nó rơi vào `syncFilesWithDeletion` (hàm này bỏ qua thư mục con) chứ không
+ * rơi vào `rmSync`.
+ *
+ * Nên chốt an toàn nằm ở đây, một chỗ: mrid rỗng thì TỪ CHỐI và ghi log, thay vì tin
+ * rằng mười ba chỗ gọi đều truyền đúng.
+ *
+ * ─── VÀ VÌ SAO KHÔNG DÙNG syncFilesWithDeletion ĐỂ XOÁ ───────────────────────
+ *
+ * `syncFilesWithDeletion` là hàm ĐỒNG BỘ KHI LƯU: nó `mkdirSync` thư mục nếu chưa có,
+ * rồi bỏ qua mọi thư mục con. Dùng nó để xoá thì folder ở lại — và nếu đối tượng chưa
+ * từng có folder, nó còn TẠO một folder rỗng mới.
+ *
+ * @returns {boolean} đã xoá được hay không
+ */
+export const deleteAttachmentFolder = (mrid) => {
+    const owner = mrid === null || mrid === undefined ? '' : String(mrid).trim()
+    if (!owner) {
+        console.warn('[attachment] deleteAttachmentFolder bi goi voi mrid rong — bo qua de khong xoa sach thu muc goc')
+        return false
+    }
+    const directory = path.join(attachmentContext.getAttachmentDir(), safePathSegment(owner))
+    if (!fs.existsSync(directory)) return false
+    try {
+        fs.rmSync(directory, { recursive: true, force: true })
+        return true
+    } catch (error) {
+        // Không ném ra ngoài: DB đã COMMIT xong, và một file bị khoá không đáng để
+        // báo cho người dùng là "xoá thất bại" khi bản ghi đã biến mất thật.
+        console.warn('[attachment] khong xoa duoc thu muc', directory, error && error.message)
+        return false
+    }
+}
 
 
 export const restoreFiles = (backupDir, destDir, fatherMrid) => {

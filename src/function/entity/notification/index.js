@@ -13,6 +13,11 @@ export const getNotificationById = async (mrid) => {
     return new Promise((resolve, reject) => {
         db.get(`SELECT * FROM notification WHERE mrid = ?`, [mrid], (err, row) => {
             if (err) reject(err)
+
+                // `db.get` tra undefined khi khong co dong. Tra success:true kem data
+                // undefined la noi doi voi cho goi: ho kiem `success` roi dung `.data`
+                // ngay, va nhan TypeError. Khong co dong thi phai la success:false.
+            if (!row) return resolve({ success: false, data: null, message: 'Not found' })
             else if (row) resolve({ success: true, data: row, message: 'Notification retrieved successfully' })
             else resolve({ success: false, message: 'Notification not found' })
         })
