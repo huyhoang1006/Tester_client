@@ -78,6 +78,21 @@ export const normalizeMridOnce = async () => {
 export const updateDatabase = async () => {
     const LATEST_DB_VERSION = 2;
     const oldVersion = await databaseInitFunc.getDbVersion(db)
+
+    // Tạo những BẢNG còn thiếu, ở mọi lần khởi động.
+    //
+    // Cố ý đặt NGOÀI cơ chế version: bảng mới thêm vào schema.js không kèm chuyển đổi dữ
+    // liệu nào, mà nếu chờ tăng version thì nhánh nâng cấp còn chạy lại cả createProcedure
+    // — nặng hơn nhiều so với việc cần làm, và chỉ để có một cái bảng rỗng.
+    //
+    // Không chặn khởi động nếu hỏng: app còn chạy được với những bảng đã có, và log nói rõ
+    // tính năng nào sẽ lỗi.
+    try {
+        await databaseInitFunc.syncSchemaTables(db)
+    } catch (schemaError) {
+        console.error('[DB] Sync schema failed, tinh nang dung bang moi se loi:', schemaError)
+    }
+
     if(!oldVersion) {
         try {
             console.warn('No version found in database. Assuming first run. Setting version to current app version.')

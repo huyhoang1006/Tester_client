@@ -72,6 +72,53 @@ export const ensureUserIdentifiedObjectTransaction = async (userId, identifiedOb
     }, dbsql)
 }
 
+/**
+ * MỘT NGƯỜI DÙNG — MỘT ĐỐI TƯỢNG — ĐÚNG MỘT DÒNG QUYỀN SỞ HỮU.
+ *
+ * ─── VÌ SAO PHẢI DỌN THAY VÌ TIN VÀO KHOÁ ───────────────────────────────────
+ *
+ * Bảng chỉ có PRIMARY KEY trên `mrid`, KHÔNG có ràng buộc duy nhất trên cặp
+ * (user_id, identified_object_id). Nghĩa là hai dòng khác mrid nhưng cùng một cặp là hợp
+ * lệ với SQLite, và `ON CONFLICT(mrid)` không hề phát hiện.
+ *
+ * Trong mã đang có HAI quy ước sinh mrid khác nhau cho cùng một việc:
+ *
+ *   ensureUserIdentifiedObject   ->  '<id đối tượng>@u-<user id>'
+ *   checkUserIdentifiedObject    ->  uuid ngẫu nhiên   (mixin substation, mapper thiết bị thử)
+ *
+ * Luồng import Word chạy CẢ HAI cho cùng một trạm: `insertSubstationEntity` ghi dòng theo
+ * quy ước uuid, rồi `_withOwnership` ghi tiếp dòng theo quy ước '@u-'. Kết quả là hai dòng
+ * cho cùng một cặp — và truy vấn cây nào JOIN bảng này mà thiếu DISTINCT sẽ trả node ra
+ * HAI LẦN. Đúng triệu chứng "hai node ADMIN" đã gặp.
+ *
+ * Thống nhất quy ước ở tất cả các chỗ gọi thì tốt hơn, nhưng không đủ: dữ liệu cũ đã có
+ * sẵn dòng trùng, và bất kỳ chỗ gọi mới nào cũng có thể lặp lại. Nên chốt ở đây — tầng
+ * DUY NHẤT mà mọi luồng đều đi qua.
+ *
+ * Không thêm UNIQUE INDEX vì nó sẽ dựng không nổi trên máy đã có dòng trùng, và dựng lỗi
+ * lúc khởi động thì mất luôn những bảng tạo sau nó.
+ */
+const dedupeOwnership = (runner, row) => {
+    return new Promise((resolve) => {
+        if (!row || !row.user_id || !row.identified_object_id) return resolve()
+        runner.run(
+            `DELETE FROM user_identified_object
+              WHERE user_id = ? AND identified_object_id = ? AND mrid <> ?`,
+            [row.user_id, row.identified_object_id, row.mrid],
+            function (err) {
+                // Không chặn: dọn hỏng thì tệ nhất là còn dòng thừa như trước, còn chặn ở
+                // đây là mất luôn quyền sở hữu và node biến khỏi cây.
+                if (err) console.warn('[userIdentifiedObject] don dong trung that bai:', err.message || err)
+                else if (this && this.changes > 0) {
+                    console.warn(`[userIdentifiedObject] da don ${this.changes} dong quyen so huu trung cho`,
+                        row.identified_object_id)
+                }
+                resolve()
+            }
+        )
+    })
+}
+
 // Thêm mới UserIdentifiedObject
 export const insertUserIdentifiedObject = async (userIdentifiedObject) => {
     return new Promise((resolve, reject) => {
@@ -97,7 +144,9 @@ export const insertUserIdentifiedObject = async (userIdentifiedObject) => {
                     success: false, err,
                     message: `Insert userIdentifiedObject failed: ${err.message || err}`
                 })
-                return resolve({ success: true, data: userIdentifiedObject, message: 'Insert userIdentifiedObject completed' })
+                // Dọn dòng trùng CẶP (khác mrid) — xem giải thích ở dedupeOwnership.
+                dedupeOwnership(db, userIdentifiedObject).then(() =>
+                    resolve({ success: true, data: userIdentifiedObject, message: 'Insert userIdentifiedObject completed' }))
             }
         )
     })
@@ -127,7 +176,9 @@ export const insertUserIdentifiedObjectTransaction = async (userIdentifiedObject
                     success: false, err,
                     message: `Insert userIdentifiedObject failed: ${err.message || err}`
                 })
-                return resolve({ success: true, data: userIdentifiedObject, message: 'Insert userIdentifiedObject completed' })
+                // Dọn dòng trùng CẶP (khác mrid) — xem giải thích ở dedupeOwnership.
+                dedupeOwnership(dbsql, userIdentifiedObject).then(() =>
+                    resolve({ success: true, data: userIdentifiedObject, message: 'Insert userIdentifiedObject completed' }))
             }
         )
     })

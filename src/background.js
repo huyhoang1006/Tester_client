@@ -13,7 +13,7 @@ import * as updateStart from '@/update/index'
 
 // import {userFunc} from '@/function'
 // import {ipcUploadCustom} from '@/ipcmain'
-import {ipcCim, ipcEntity, ipcAppOption,} from '@/ipcmain'
+import {ipcCim, ipcEntity, ipcAppOption, ipcPtm} from '@/ipcmain'
 let win
 let importerProcess = null
 
@@ -332,6 +332,9 @@ app.on('ready', async () => {
 
     //app option
     ipcAppOption.active()
+
+    //doc file .ptm cua OMICRON
+    ipcPtm.active()
 
     // await: chuẩn hoá mrid phải xong TRƯỚC khi người dùng kịp upload/download,
     // nếu không sẽ có lúc thao tác chạy trên dữ liệu chưa chuẩn hoá.

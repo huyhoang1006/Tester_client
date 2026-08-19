@@ -26,6 +26,7 @@ import * as testingEquipmentEntityPreload from './testingEquipment/index.js'
 import * as syncStatePreload from './syncState/index.js'
 import * as auditLogPreload from './auditLog/index.js'
 import * as compareTestPreload from './compareTest/index.js'
+import * as treeSearchPreload from './treeSearch/index'
 import * as userIdentifiedObjectPreload from './userIdentifiedObject/index.js'
 
 export {
@@ -35,5 +36,5 @@ export {
     bushingEntityPreload, disconnectorEntityPreload, rotatingMachineEntityPreload, currentTransformerEntityPreload,
     capacitorEntityPreload, breakerEntityPreload, reactorEntityPreload, exportPreload, assetPsrPreload, notificationEntityPreload,
     entitySnapshotPreload, templatePreload, mRIDCheckPreload, testingEquipmentEntityPreload, syncStatePreload,
-    auditLogPreload, compareTestPreload, userIdentifiedObjectPreload
+    auditLogPreload, compareTestPreload, userIdentifiedObjectPreload, treeSearchPreload
 }

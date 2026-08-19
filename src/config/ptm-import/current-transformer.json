@@ -1,0 +1,110 @@
+{
+  "_doc": [
+    "ÁNH XẠ BÀI TEST CỦA OMICRON (.ptm) SANG BÀI TEST CỦA CLIENT — máy biến dòng.",
+    "",
+    "QUY TẮC QUAN TRỌNG NHẤT: file này KHÔNG chứa mrid nào.",
+    "Nó chỉ nói tới MÃ CỘT ('i_knee', 'v_knee'...). mrid được tra lúc chạy từ",
+    "src/config/test-definitions/CurrentTransformer/*.json.",
+    "Chép mrid vào đây là tạo NGUỒN THỨ HAI cho cùng một định danh — đúng thứ đã bắt",
+    "phải viết tools/fix-export-json.js để đi sửa các file export mang measurement_id cũ.",
+    "",
+    "'factor' là hệ số nhân từ đơn vị PTM sang đơn vị client. CT excitation dùng A và V ở",
+    "cả hai phía nên factor = 1; giữ trường này để loại bài khác (giây → mili giây, Ohm →",
+    "micro-ohm) không phải đổi cấu trúc file."
+  ],
+
+  "_asset": {
+    "_doc": [
+      "ÁNH XẠ THÔNG SỐ THIẾT BỊ, dùng khi người dùng chọn GHI ĐÈ asset đang có.",
+      "",
+      "CHỈ ánh xạ những trường mà ĐƠN VỊ HAI BÊN THẬT SỰ KHỚP. Ba trường dưới đây cố ý",
+      "BỎ QUA vì lệch đơn vị — map bừa là ghi số sai vào hồ sơ thiết bị, và sai kiểu đó",
+      "không ai phát hiện ra cho tới lúc dùng số đó để đánh giá:",
+      "",
+      "  Icth  PTM '%' vs client 'A'   — PTM ghi dòng nhiệt theo PHẦN TRĂM dòng định mức,",
+      "                                  client mong một trị tuyệt đối tính bằng ampe.",
+      "  Ipn   chua ro tuong ung cot nao trong ctConfiguration",
+      "  Isn   nhu tren",
+      "",
+      "Muốn thêm thì phải xác định rõ quy đổi trước, đừng thêm vào đây rồi tính sau."
+    ],
+    "properties": {
+      "serial_no":         { "from": "SerialNumber" },
+      "manufacturer":      { "from": "Manufacturer" },
+      "manufacturer_type": { "from": "ManufacturerType" },
+      "manufacturer_year": { "from": "ManufacturingYear" },
+      "comment":           { "from": "Comment" },
+      "apparatus_id":      { "from": "ApparatusId", "fallback": "AssetSystemCode" }
+    },
+    "ratings": {
+      "rated_frequency":    { "from": "RatedFrequency",    "ptmUnit": "Hz", "unit": "Hz",   "factor": 1 },
+      "system_voltage":     { "from": "SystemVoltage",     "ptmUnit": "V",  "unit": "V",    "factor": 1 },
+      "u_withstand_rms":    { "from": "Uwithstand",        "ptmUnit": "V",  "unit": "V",    "factor": 1 },
+      "u_lightning_peak":   { "from": "Ulighting",         "ptmUnit": "V",  "unit": "V",    "factor": 1 },
+      "ith_rms":            { "from": "Ith",               "ptmUnit": "A",  "unit": "A",    "factor": 1 },
+      "idyn_peak":          { "from": "Idyn",              "ptmUnit": "A",  "unit": "A",    "factor": 1 },
+      "ith_duration":       { "from": "IthTime",           "ptmUnit": "s",  "unit": "s",    "factor": 1 },
+      "bil":                { "from": "Bil",               "ptmUnit": "V",  "unit": "V",    "factor": 1 },
+      "rating_factor_temp": { "from": "RfTemperature",     "ptmUnit": "C",  "unit": "degC", "factor": 1 }
+    },
+    "plain": {
+      "_doc": "Trường không có đơn vị, gán thẳng.",
+      "ratings.rating_factor": { "from": "Rf" }
+    }
+  },
+
+  "CTExcitation": {
+    "ptmType": "CTExcitationTest",
+    "ptmName": "CT Excitation",
+    "reader": "ctExcitation",
+    "rowName": {
+      "_doc": "Tên dòng ghép từ hai tap: '1S1' + '-' + '1S3'. Đúng cách kỹ thuật viên gọi.",
+      "from": ["firstTapName", "secondTapName"],
+      "join": "-"
+    },
+    "columns": {
+      "i_knee": { "from": "kneeCurrent", "unit": "A", "factor": 1 },
+      "v_knee": { "from": "kneeVoltage", "unit": "V", "factor": 1 }
+    },
+    "assessment": {
+      "_doc": [
+        "PTM dùng None/Pass/Fail; client chỉ có Pass/Fail.",
+        "'None' nghĩa là CHƯA ĐÁNH GIÁ — để trống, KHÔNG suy thành Fail.",
+        "Ràng buộc đã chốt: chỉ acceptable mới là Pass, còn lại Fail — nhưng điều đó áp",
+        "cho KẾT QUẢ ĐÃ ĐÁNH GIÁ, không áp cho ô chưa ai đánh giá."
+      ],
+      "from": "assessment",
+      "map": { "Pass": "Pass", "Fail": "Fail", "None": "", "Empty": "" }
+    },
+    "kneePoints": {
+      "_doc": [
+        "ĐIỂM KNEE THEO TỪNG TIÊU CHUẨN, lưu ở bảng ct_excitation_knee_point.",
+        "",
+        "OMICRON tính knee theo BA cách và ghi cả ba vào file: IEC, ANSI45, ANSI30. Trên",
+        "chính file mẫu chúng ra 673 / 499 / 598 V — lệch nhau thật, không phải làm tròn.",
+        "Bảng test của client chỉ có MỘT cặp ô i_knee/v_knee nên chỉ giữ được tiêu chuẩn",
+        "OMICRON đang chọn ('KneePointCalculation'); hai cái còn lại lưu ở bảng riêng.",
+        "",
+        "'is_selected' đánh dấu tiêu chuẩn đã sinh ra con số trên bảng. Không có cờ này thì",
+        "nhìn ba dòng knee không biết dòng nào khớp bảng, mà đoán sai thì kết luận sai.",
+        "",
+        "KHÔNG suy diễn tiêu chuẩn nào 'đúng hơn' — chỉ chép nguyên cả ba."
+      ],
+      "from": "kneePoints",
+      "method": "method",
+      "x": "current",
+      "y": "voltage",
+      "factor": 1,
+      "selectedFrom": "kneePointCalculation"
+    },
+    "curve": {
+      "_doc": [
+        "Đường cong từ hoá: 32–39 cặp (dòng, áp) mỗi dòng, lưu ở bảng ct_excitation_point.",
+        "THỨ TỰ trong mảng chính là thứ tự đo, tầng lưu dùng đúng vị trí làm sequence_number."
+      ],
+      "from": "points",
+      "x": "current",
+      "y": "voltage"
+    }
+  }
+}

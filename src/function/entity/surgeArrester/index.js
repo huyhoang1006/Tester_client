@@ -10,6 +10,7 @@ import { insertAssetPsrTransaction, getAssetPsrByAssetIdAndPsrId, deleteAssetPsr
 import { insertOldSurgeArresterInfoTransaction, getOldSurgeArresterInfoBySurgeArresterId, deleteOldSurgeArresterInfoByIdTransaction } from '@/function/cim/oldSurgeArresterInfo';
 import SurgeArresterEntity from '@/views/Flatten/SurgeArrester';
 import { writeAssetSaveAuditLog, writeAssetDeleteAuditLog } from '../assetAudit/index'
+import { rollbackQuietly } from '@/function/datacontext/rollback'
 
 export const insertSurgeArresterEntity = async (old_entity, entity) => {
     try {
@@ -151,7 +152,7 @@ export const insertSurgeArresterEntity = async (old_entity, entity) => {
         restoreFiles(null, null, entity.surgeArrester.mrid);
         deleteBackupFiles(null, entity.surgeArrester.mrid);
         console.error('Error retrieving surge arrester entity:', error);
-        await runAsync('ROLLBACK');
+        await rollbackQuietly(runAsync, error);
         return { success: false, error, message: 'Error retrieving surge arrester entity' };
     }
 }
@@ -500,7 +501,7 @@ export const deleteSurgeArresterEntity = async (data) => {
                 await writeAssetDeleteAuditLog('Surge arrester', data)
                 return { success: true, message: 'Surge Arrester entity deleted successfully' };
             } catch (error) {
-                await runAsync('ROLLBACK');
+                await rollbackQuietly(runAsync, error);
                 console.error('Error deleting Surge Arrester entity:', error);
                 return { success: false, error, message: 'Error deleting Surge Arrester entity' };
             }

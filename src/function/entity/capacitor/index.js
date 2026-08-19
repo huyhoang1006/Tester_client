@@ -19,6 +19,7 @@ import { insertCapacitanceTransaction, getCapacitanceById, deleteCapacitanceById
 import { insertPercentTransaction, getPercentById, deletePercentByIdTransaction } from '@/function/cim/percent';
 import { insertMassTransaction, getMassById, deleteMassByIdTransaction } from '@/function/cim/mass';
 import { writeAssetSaveAuditLog, writeAssetDeleteAuditLog } from '../assetAudit/index'
+import { rollbackQuietly } from '@/function/datacontext/rollback'
 
 // Helper to safely delete with FK check
 const tryDelete = async (deleteFunc, id, dbsql, name) => {
@@ -211,7 +212,7 @@ export const insertCapacitorEntity = async (old_entity, entity) => {
             stack: error.stack,
             entity: JSON.stringify(entity, null, 2)
         });
-        await runAsync('ROLLBACK');
+        await rollbackQuietly(runAsync, error);
         return { success: false, error, message: `Error saving Capacitor entity: ${error.message || 'Unknown error'}` };
     }
 }
@@ -544,7 +545,7 @@ export const deleteCapacitorEntity = async (entity) => {
         await writeAssetDeleteAuditLog('Capacitor', entity)
         return { success: true, message: 'Capacitor entity deleted successfully' };
     } catch (error) {
-        await runAsync('ROLLBACK');
+        await rollbackQuietly(runAsync, error);
         console.error('Error deleting Capacitor entity:', error);
         return { success: false, error, message: 'Error deleting Capacitor entity' };
     }

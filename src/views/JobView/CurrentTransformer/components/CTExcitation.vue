@@ -21,6 +21,9 @@
                 <el-button size="mini" :type="compareOpen ? 'primary' : ''" @click="$emit('toggle-compare')">
                     <i class="fa-solid fa-scale-balanced"></i> Compare with previous results
                 </el-button>
+                <el-button size="mini" @click="showCurve = true">
+                    <i class="fa-solid fa-chart-line"></i> Excitation curve
+                </el-button>
             </div>
         </div>
 
@@ -84,6 +87,20 @@
         </table>
         </div>
 
+        <!--
+          Đường cong mở trong DIALOG, không sổ inline.
+          Khối này gồm đồ thị + bảng 39 điểm; đặt inline thì nó đẩy toàn bộ phần dưới
+          xuống và chiếm chỗ ngay giữa màn hình nhập liệu. Dialog cho nó chiều rộng thật
+          — cần thiết vì có tới 8 đường trên cùng một đồ thị log-log.
+
+          `v-if` trên component con: chưa mở thì không dựng, nên không có vòng truy vấn
+          đọc điểm đo nào. Mở tab test mà lần nào cũng nạp 286 điểm là phí.
+        -->
+        <el-dialog title="Excitation curve" :visible.sync="showCurve"
+                   width="min(1180px, 95vw)" top="6vh" append-to-body destroy-on-close>
+            <CtExcitationCurve v-if="showCurve" ref="curve" :rows="testData.table.table1" />
+        </el-dialog>
+
         <!-- Assessment settings -->
         <el-dialog title="Assessment settings" :visible.sync="openAssessmentDialog" width="min(860px, 92vw)" append-to-body>
             <el-form size="small" label-position="left" label-width="140px">
@@ -125,18 +142,23 @@ import currentTransformerTestMap from '@/config/test-definitions/CurrentTransfor
 import currentTransformerAssessmentMap from '@/config/testing-assessment/CurrentTransformer'
 import * as common from '../../Common/index'
 import GroupNode from '../../Common/GroupNode.vue'
+import CtExcitationCurve from './CtExcitationCurve.vue'
 import { changeTestStandard } from '../../Common'
 
 export default {
     name: "CTExcitation",
     components: {
-        GroupNode
+        GroupNode,
+        CtExcitationCurve
     },
     data() {
         return {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
-            option: null
+            option: null,
+            // Mac dinh DONG: duong cong la thu xem them, va chua mo thi khong ton
+            // mot vong truy van nao.
+            showCurve: false
         }
     },
     mounted() {
@@ -681,4 +703,5 @@ export default {
 .default-label { font-style: italic; color: #909399; font-size: 13px; }
 .pass { color: #67C23A; font-weight: bold; }
 .fail { color: #F56C6C; font-weight: bold; }
+
 </style>

@@ -4,6 +4,7 @@ import { insertBaseVoltageTransaction, getBaseVoltageById, deleteBaseVoltageById
 import { insertVoltageLevelTransaction, getVoltageLevelById, deleteVoltageLevelByIdTransaction } from '@/function/cim/voltageLevel';
 import { deleteBayByIdTransaction, getBayByVoltageLevelOrSubstation } from '@/function/cim/bay';
 import { normaliseAuditValue, tryWriteAuditLog } from '../auditLog/index'
+import { rollbackQuietly } from '@/function/datacontext/rollback'
 
 const readLogValue = (entity, group, field) => {
     if (!entity || !entity[group]) return null
@@ -108,7 +109,7 @@ export const insertVoltageLevelEntity = async (entity) => {
         }
     } catch (error) {
         console.error('Error retrieving voltage entity:', error);
-        await runAsync('ROLLBACK');
+        await rollbackQuietly(runAsync, error);
         return { success: false, error, message: 'Error retrieving voltage entity' };
     }
 }
@@ -189,7 +190,7 @@ export const deleteVoltageLevelById = async (data) => {
         console.log('VoltageLevel deleted successfully')
         return { success: true, data: data, message: 'Voltage level deleted successfully' };
     } catch (error) {
-        await runAsync('ROLLBACK');
+        await rollbackQuietly(runAsync, error);
         console.error('Error deleting voltage level by id:', error);
         return { success: false, error, message: 'Delete voltage failed' };
     }

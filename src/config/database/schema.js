@@ -919,6 +919,58 @@ CREATE TABLE IF NOT EXISTS "epa_standard" (
 	PRIMARY KEY("mrid"),
 	FOREIGN KEY("mrid") REFERENCES "standard"("mrid") on delete cascade
 );
+-- Đường cong từ hoá của bài CT Excitation: 32–39 cặp (dòng, áp) cho MỖI cuộn.
+-- Mỗi dòng của bảng test (procedure_dataset) có một đường cong riêng.
+--
+-- Đặt tên theo đúng đại lượng thay vì x/y chung chung: quét cả hai file .ptm mẫu thì
+-- CHỈ tCTExcitationTest có chuỗi điểm trong XML. Đường cong hành trình / dòng cuộn cắt
+-- của CIBANO nằm trong file .blob nhị phân, chưa đọc được. Làm bảng chung lúc này là
+-- khái quát cho trường hợp chưa xác minh là có.
+--
+-- sequence_number NOT NULL: đường cong CÓ thứ tự, mà SQLite không hứa gì nếu thiếu
+-- ORDER BY. Mất thứ tự thì nối điểm ra hình zigzag, và không phân biệt được là dữ liệu
+-- sai hay vẽ sai. Đây là bài học từ procedure_dataset bên server (migration V3).
+--
+-- current/voltage là TEXT để giữ nguyên chuỗi gốc ('0.53407399999999994'). Ép sang REAL
+-- là một vòng float→chuỗi→float, số in ra sau này lệch với báo cáo của OMICRON.
+CREATE TABLE IF NOT EXISTS "ct_excitation_point" (
+	"mrid"	TEXT NOT NULL,
+	"procedure_dataset_id"	TEXT NOT NULL,
+	"sequence_number"	INTEGER NOT NULL,
+	"current"	TEXT,
+	"voltage"	TEXT,
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("procedure_dataset_id") REFERENCES "procedure_dataset"("mrid") ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS "idx_ct_excitation_point_dataset"
+	ON "ct_excitation_point"("procedure_dataset_id","sequence_number");
+-- Điểm knee theo TỪNG TIÊU CHUẨN.
+--
+-- OMICRON tính điểm knee theo ba tiêu chuẩn cùng lúc (IEC, ANSI45, ANSI30) và chênh lệch
+-- là THẬT, không phải làm tròn — lõi 3 trong file mẫu: 673 / 499 / 598 V.
+--
+-- Bảng test chính chỉ có MỘT cặp i_knee/v_knee, và nó nhận giá trị của tiêu chuẩn đang
+-- được chọn (KneePointCalculation). Hai tiêu chuẩn còn lại không có chỗ nào chứa — nếu
+-- không lưu ở đây thì import xong là mất, muốn xem lại phải import lại file gốc.
+--
+-- KHÔNG dùng dấu backtick trong comment của file này: toàn bộ schema nằm trong một
+-- template literal, một dấu backtick lạc là đóng chuỗi và webpack báo lỗi cú pháp ở
+-- tận dòng khác.
+--
+-- is_selected đánh dấu tiêu chuẩn mà số liệu trên bảng chính đang lấy, để sau này nhìn
+-- vào biết con số đó từ đâu ra thay vì phải đoán.
+CREATE TABLE IF NOT EXISTS "ct_excitation_knee_point" (
+	"mrid"	TEXT NOT NULL,
+	"procedure_dataset_id"	TEXT NOT NULL,
+	"method"	TEXT NOT NULL,
+	"voltage"	TEXT,
+	"current"	TEXT,
+	"is_selected"	INTEGER,
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("procedure_dataset_id") REFERENCES "procedure_dataset"("mrid") ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS "idx_ct_excitation_knee_point_dataset"
+	ON "ct_excitation_knee_point"("procedure_dataset_id");
 CREATE TABLE IF NOT EXISTS "equipment" (
 	"mrid"	TEXT NOT NULL,
 	"aggregate"	TEXT,

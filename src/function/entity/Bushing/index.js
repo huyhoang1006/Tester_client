@@ -15,6 +15,7 @@ import { insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrI
 import { insertOldBushingInfoTransaction, getOldBushingInfoById, deleteOldBushingInfoTransaction } from '@/function/cim/oldBushingInfo';
 import BushingEntity from '@/views/Flatten/Bushing';
 import { writeAssetSaveAuditLog, writeAssetDeleteAuditLog } from '../assetAudit/index'
+import { rollbackQuietly } from '@/function/datacontext/rollback'
 
 export const insertBushingEntity = async (entity) => {
     try {
@@ -94,7 +95,7 @@ export const insertBushingEntity = async (entity) => {
         restoreFiles(null, null, entity.bushing.mrid);
         deleteBackupFiles(null, entity.bushing.mrid);
         console.error('Error retrieving bushing entity:', error);
-        await runAsync('ROLLBACK');
+        await rollbackQuietly(runAsync, error);
         return { success: false, error, message: 'Error retrieving bushing entity' };
     }
 }
@@ -368,7 +369,7 @@ export const deleteBushingEntity = async (data) => {
                 await writeAssetDeleteAuditLog('Bushing', data)
                 return { success: true, message: 'Bushing entity deleted successfully' };
             } catch (error) {
-                await runAsync('ROLLBACK');
+                await rollbackQuietly(runAsync, error);
                 console.error('Error deleting Bushing entity:', error);
                 return { success: false, error, message: 'Error deleting Bushing entity' };
             }

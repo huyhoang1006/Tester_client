@@ -27,6 +27,10 @@ export default {
             } else if (cmd === 'importJSON') {
                 // JSON: không qua dialog — chọn node đích → chọn file → import luôn
                 this.handleImportJSONFromFile()
+            } else if (cmd === 'importPTM') {
+                // PTM: đọc file → XEM TRƯỚC trong dialog → mới ghi. Khác JSON vì file .ptm
+                // luôn kèm thiết bị, nên phải đối chiếu trùng và hỏi trước khi đụng CSDL.
+                this.handleImportPtmFromContext()
             }
         },
 

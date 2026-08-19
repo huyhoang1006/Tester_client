@@ -46,6 +46,7 @@ import {
     getUserIdentifiedObjectByIdentifiedObjectId
 } from '@/function/entity/userIdentifiedObject'
 import { insertUserTransaction } from '@/function/entity/user'
+import { rollbackQuietly } from '@/function/datacontext/rollback'
 
 // Chạy 1 câu lệnh SQL trực tiếp trên connection chính (dùng cho BEGIN/COMMIT/ROLLBACK)
 const runAsync = (sql, params = []) => {
@@ -513,7 +514,7 @@ export const insertTestingEquipmentEntity = async (old_entity, entity) => {
         await runAsync('COMMIT')
         return { success: true, data: entity, message: 'Testing equipment entity saved successfully' }
     } catch (error) {
-        await runAsync('ROLLBACK')
+        await rollbackQuietly(runAsync, error);
         console.error('Error in insertTestingEquipmentEntity:', error)
         return { success: false, error, message: `Error saving testing equipment entity: ${error.message || 'Unknown error'}` }
     }
@@ -624,7 +625,7 @@ export const deleteTestingEquipmentEntity = async (mrid) => {
         await runAsync('COMMIT')
         return { success: true, data: null, message: 'Testing equipment entity deleted successfully' }
     } catch (error) {
-        await runAsync('ROLLBACK')
+        await rollbackQuietly(runAsync, error);
         console.error('Error in deleteTestingEquipmentEntity:', error)
         return { success: false, error, message: `Error deleting testing equipment entity: ${error.message || 'Unknown error'}` }
     }

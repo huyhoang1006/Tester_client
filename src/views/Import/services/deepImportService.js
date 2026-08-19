@@ -33,6 +33,7 @@ import organisationDto  from '@/views/Dto/Organisation'
 import substationDto    from '@/views/Dto/Substation'
 import voltageLevelDto  from '@/views/Dto/VoltageLevel'
 import bayDto           from '@/views/Dto/Bay'
+import { normaliseUnitsDeep } from '@/utils/unitNormalise'
 // Asset mappers — mỗi loại có mapDtoToEntity riêng
 // Asset DTO classes
 
@@ -395,19 +396,63 @@ export var deepImportService = {
     return null
   },
 
-  async _withOwnership(rs, userId) {
-    var mrid = this._extractMrid(rs)
-    if (rs && rs.success === true && mrid && userId && window.electronAPI && window.electronAPI.ensureUserOwnership) {
+  /**
+   * Ghi quyền sở hữu cho node vừa tạo.
+   *
+   * ─── `knownMrid` LÀ ĐƯỜNG CHÍNH, `_extractMrid` CHỈ LÀ ĐƯỜNG LÙI ──────────
+   *
+   * Mỗi chỗ gọi ĐÃ TỰ SINH mrid trước khi insert (`dto.voltageLevelId`, `bayMridNew`…),
+   * nên truyền thẳng vào là chắc chắn đúng. `_extractMrid` phải đi ĐOÁN vị trí mrid trong
+   * kết quả trả về, mà mỗi loại entity lại có hình khác nhau:
+   *
+   *   bay           -> data.mrid                  (đoán trúng)
+   *   voltage level -> data.voltageLevel.mrid     (ĐOÁN TRƯỢT)
+   *   substation    -> data.substation.mrid       (ĐOÁN TRƯỢT)
+   *
+   * Đoán trượt thì trả null, rồi câu `if` nuốt luôn — node được tạo nhưng KHÔNG có chủ,
+   * nên nằm trong CSDL mà không hiện trên cây. Đó chính là lỗi cấp điện áp import từ Excel
+   * không hiện ra.
+   *
+   * Substation không dính vì nó còn một đường ghi quyền sở hữu khác (qua
+   * `dto.userIdentifiedObjectId`), nên lỗi này ẩn mình sau một luồng vẫn chạy được.
+   */
+  async _withOwnership(rs, userId, knownMrid) {
+    var mrid = knownMrid || this._extractMrid(rs)
+    if (!(rs && rs.success === true)) {
+      return { success: false, mrid: mrid, message: rs && rs.message }
+    }
+    if (!mrid) {
+      // KHÔNG im lặng. Không có mrid nghĩa là không thể ghi quyền sở hữu, nghĩa là node
+      // sẽ không hiện trên cây — người dùng phải biết ngay chứ không phải tự đi tìm.
+      console.error('[deepImport] khong xac dinh duoc mrid cua node vua tao — se KHONG hien tren cay:', rs)
+      return { success: false, mrid: null, message: 'Imported but the new node has no id, so ownership could not be recorded' }
+    }
+    if (userId && window.electronAPI && window.electronAPI.ensureUserOwnership) {
       try {
-        await window.electronAPI.ensureUserOwnership(userId, mrid)
+        const own = await window.electronAPI.ensureUserOwnership(userId, mrid)
+        if (!own || own.success !== true) {
+          console.error('[deepImport] ghi quyen so huu that bai:', mrid, own && own.message)
+          return {
+            success: false, mrid: mrid,
+            message: `Imported but ownership could not be recorded, so it will not appear in the tree: ${(own && own.message) || 'unknown error'}`,
+          }
+        }
       } catch (error) {
-        console.warn('[deepImport] ensure ownership failed:', mrid, error)
+        console.error('[deepImport] ghi quyen so huu loi:', mrid, error)
+        return { success: false, mrid: mrid, message: 'Imported but ownership could not be recorded, so it will not appear in the tree' }
       }
     }
-    return { success: !!(rs && rs.success === true), mrid: mrid, message: rs && rs.message }
+    return { success: true, mrid: mrid, message: rs && rs.message }
   },
 
   async insertEntity(lv, data, ctx, _passedUserId) {
+    // Đơn vị hỏng bị chặn NGAY TẠI CỬA, trước khi dựng bất kỳ DTO nào.
+    //
+    // File Excel/Word do người dùng soạn có thể chép đơn vị từ một bản export cũ, mà bản
+    // export đang lưu hành có chuỗi kiểu `null|Hz`. Vào được CSDL rồi thì upload lên máy
+    // chủ sẽ bị từ chối, và lúc đó rất khó lần ngược về file nguồn.
+    normaliseUnitsDeep(data, 'import Excel/Word')
+
     // Support cả short keys (org/sub/vl) lẫn long keys (organisation/substation/voltageLevel)
     var orgMrid   = (ctx.org && ctx.org.mrid)  || (ctx.organisation && ctx.organisation.mrid)
     var subMrid   = (ctx.sub && ctx.sub.mrid)  || (ctx.substation   && ctx.substation.mrid)
@@ -451,7 +496,7 @@ export var deepImportService = {
       if (!entity) return { success: false, message: 'Failed to map Organisation DTO to entity' }
 
       rs = await window.electronAPI.insertParentOrganizationEntity(entity)
-      return await this._withOwnership(rs, userId)
+      return await this._withOwnership(rs, userId, dto.organisationId)
     }
 
     // ── Substation ───────────────────────────────────────────────────────
@@ -495,7 +540,7 @@ export var deepImportService = {
       if (!entity) return { success: false, message: 'Failed to map Substation DTO to entity' }
 
       rs = await window.electronAPI.insertSubstationEntity(entity)
-      return await this._withOwnership(rs, userId)
+      return await this._withOwnership(rs, userId, dto.subsId)
     }
 
     // ── VoltageLevel ─────────────────────────────────────────────────────
@@ -531,7 +576,7 @@ export var deepImportService = {
       // volDtoToVolEntity — tên đúng từ VoltageLevel/index.js
       entity = volDtoToVolEntity(dto)
       rs = await window.electronAPI.insertVoltageLevelEntity(entity)
-      return await this._withOwnership(rs, userId)
+      return await this._withOwnership(rs, userId, dto.voltageLevelId)
     }
 
     // ── Bay ───────────────────────────────────────────────────────────────
@@ -556,7 +601,7 @@ export var deepImportService = {
       dto.userId                 = userId
 
       rs = await window.electronAPI.insertBayEntity(dto)
-      return await this._withOwnership(rs, userId)
+      return await this._withOwnership(rs, userId, bayMridNew)
     }
 
     // ── Asset ─────────────────────────────────────────────────────────────
@@ -842,7 +887,7 @@ export var deepImportService = {
       } else {
         rs = await window.electronAPI[cfg.api](oldEntity, entity)
       }
-      return await this._withOwnership(rs, userId)
+      return await this._withOwnership(rs, userId, dto.properties.mrid)
     }
 
     // ── Job ───────────────────────────────────────────────────────────────
@@ -945,7 +990,7 @@ export var deepImportService = {
       }
 
 
-      return await this._withOwnership(rs, userId)
+      return await this._withOwnership(rs, userId, data._overwriteMrid || jobMrid)
     }
 
     return { success: false, message: 'Unknown level: ' + lv.id }
@@ -953,6 +998,14 @@ export var deepImportService = {
 
     // ── 7. Overwrite entity (giữ MRID, ghi đè fields) ────────────────────
   async overwriteEntity(lv, existing, data, ctx, userId) {
+    // Ghi đè cũng phải ĐẢM BẢO quyền sở hữu, không chỉ lúc tạo mới.
+    //
+    // `findExistingByName` tìm node theo TÊN, và node tìm được có thể đang không thuộc về
+    // người dùng hiện tại — ví dụ node mồ côi do một lần import hỏng trước đó. Cập nhật
+    // xong mà không cấp quyền thì nó vẫn không hiện trên cây, và người dùng lại tưởng
+    // import không chạy.
+    //
+    // Ghi lại nhiều lần vô hại: tầng ghi đã dọn dòng trùng theo cặp (user, đối tượng).
     // Insert functions đều là upsert (ON CONFLICT mrid → update)
     // → dùng lại đúng hàm insert, truyền existing.mrid để update đúng record
     var mrid = existing.mrid
@@ -962,28 +1015,28 @@ export var deepImportService = {
       if (!rs || !rs.success || !rs.data) return { success: false }
       var e = rs.data
       this._applyFlat(e, data, ['name','aliasName','tax_code','street','ward_or_commune','district_or_town','city','state_or_province','postal_code','country','phoneNumber','fax','email','comment'])
-      return await window.electronAPI.insertParentOrganizationEntity(e)  // upsert
+      return await this._withOwnership(await window.electronAPI.insertParentOrganizationEntity(e), userId, mrid)  // upsert
     }
     if (lv.id === 'sub') {
       var rs = await window.electronAPI.getSubstationEntityByMrid(mrid)
       if (!rs || !rs.success || !rs.data) return { success: false }
       var e = rs.data
       this._applyFlat(e, data, ['name','aliasName','type','generation','industry','locationName','street','ward_or_commune','district_or_town','state_or_province','city','country','personName','department','position','phoneNumber','fax','email','comment'])
-      return await window.electronAPI.insertSubstationEntity(e)  // upsert
+      return await this._withOwnership(await window.electronAPI.insertSubstationEntity(e), userId, mrid)  // upsert
     }
     if (lv.id === 'vl') {
       var rs = await window.electronAPI.getVoltageLevelEntityByMrid(mrid)
       if (!rs || !rs.success || !rs.data) return { success: false }
       var e = rs.data
       this._applyFlat(e, data, ['name','comment','high_voltage_limit_value','low_voltage_limit_value','base_voltage_value'])
-      return await window.electronAPI.insertVoltageLevelEntity(e)  // upsert
+      return await this._withOwnership(await window.electronAPI.insertVoltageLevelEntity(e), userId, mrid)  // upsert
     }
     if (lv.id === 'bay') {
       var rs = await window.electronAPI.getBayEntityByMrid(mrid)
       if (!rs || !rs.success || !rs.data) return { success: false }
       var e = rs.data
       this._applyFlat(e, data, ['name','aliasName','breaker_configuration','bus_bar_configuration'])
-      return await window.electronAPI.insertBayEntity(e)  // upsert
+      return await this._withOwnership(await window.electronAPI.insertBayEntity(e), userId, mrid)  // upsert
     }
     if (lv.id === 'asset') {
       // Upsert: truyền existing.mrid qua _overwriteMrid để insertEntity dùng mrid cũ

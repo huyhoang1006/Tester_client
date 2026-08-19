@@ -61,6 +61,7 @@ import * as surgeArresterJobMappingServer from '@/views/Mapping/ServerToDTO/Surg
 import * as disconnectorJobMappingServer from '@/views/Mapping/ServerToDTO/DisconnectorJob/index.js'
 import * as transformerJobMappingServer from '@/views/Mapping/ServerToDTO/TransformerJob/index.js'
 import { getJobBaseVersion, saveJobSnapshot } from '@/utils/jobSnapshot'
+import { normaliseUnitsDeep } from '@/utils/unitNormalise'
 
 /**
  * Mixin chứa các hàm xử lý upload từng loại entity lên server.
@@ -73,6 +74,26 @@ import { getJobBaseVersion, saveJobSnapshot } from '@/utils/jobSnapshot'
  */
 export default {
     methods: {
+        /**
+         * Chuẩn hoá ô đơn vị của DTO ngay trước khi đóng gói gửi lên máy chủ.
+         *
+         * Đặt ở ĐÂY chứ không ở từng mapper: mỗi loại thiết bị đặt tên trường đơn vị một
+         * kiểu trong payload, còn DTO thì loại nào cũng dùng chung một quy ước. Một chỗ
+         * chặn được cho cả 22 luồng upload.
+         *
+         * Trả về chính DTO đó để lồng thẳng vào lời gọi mapper.
+         */
+        _normaliseUnits(dto) {
+            try {
+                normaliseUnitsDeep(dto, 'upload')
+            } catch (error) {
+                // Không chặn upload vì bước làm sạch: dữ liệu sạch sẵn thì hàm này vô hại,
+                // còn nó hỏng thì máy chủ vẫn là chốt cuối và sẽ báo lỗi cụ thể.
+                console.error('[unit] chuan hoa don vi that bai:', error)
+            }
+            return dto
+        },
+
 
         // ═══════════════════════════════════════════════════════════════════════
         //  CONTAINER: Substation / VoltageLevel / Bay
@@ -175,7 +196,7 @@ export default {
                 // (mapEntityToDto trả về psr_id local nên bắt buộc ghi đè)
                 dto.psrId = node.parentId
 
-                const serverPayload = PowerCableServerMapper.mapDtoToServer(dto, ownerType)
+                const serverPayload = PowerCableServerMapper.mapDtoToServer(this._normaliseUnits(dto), ownerType)
                 const response = await powerCableAPI.createPowerCable(serverPayload)
 
                 await this.syncUploadedAssetAndMedia(node, response, 'Power cable', dto)
@@ -199,7 +220,7 @@ export default {
                 const ownerType = this._resolveOwnerType(parentNode)
 
                 const dto = transformerMapping.transformerEntityToDto(entityRes.data)
-                const serverPayload = transformerMappingServer.mapDtoToServer(dto, ownerType)
+                const serverPayload = transformerMappingServer.mapDtoToServer(this._normaliseUnits(dto), ownerType)
                 const response = await transformerAPI.createTransformer(serverPayload)
 
                 await this.syncUploadedAssetAndMedia(node, response, 'Transformer', dto)
@@ -228,7 +249,7 @@ export default {
                 if (!ownerType) throw new Error(`Cannot resolve ownerType for parent node with mode: ${parentNode?.mode}`)
 
                 const dto = voltageTransformerMapping.mapEntityToDto(entityRes.data)
-                const serverPayload = voltageTransformerMappingServer.mapDtoToServer(dto, ownerType)
+                const serverPayload = voltageTransformerMappingServer.mapDtoToServer(this._normaliseUnits(dto), ownerType)
                 const response = await voltageAPI.createVoltageTransformer(serverPayload, node.parentId, ownerType)
 
                 await this.syncUploadedAssetAndMedia(node, response, 'Voltage transformer', dto)
@@ -253,7 +274,7 @@ export default {
                 if (!ownerType) throw new Error(`Cannot resolve ownerType for parent node with mode: ${parentNode?.mode}`)
 
                 const dto = currentTransformerMapping.mapEntityToDto(entityRes.data)
-                const serverPayload = currentTransformerMappingServer.mapDtoToServer(dto, ownerType)
+                const serverPayload = currentTransformerMappingServer.mapDtoToServer(this._normaliseUnits(dto), ownerType)
                 const response = await currentAPI.createCurrentTransformer(serverPayload, node.parentId, ownerType)
                 await this.syncUploadedAssetAndMedia(node, response, 'Current transformer', dto)
                 this.$message.success(`Upload Current Transformer "${this.getUploadNodeName(node)}" successfully!`)
@@ -277,7 +298,7 @@ export default {
                 if (!ownerType) throw new Error(`Cannot resolve ownerType for parent node with mode: ${parentNode?.mode}`)
 
                 const dto = circuitBreakerMapping.mapEntityToDto(entityRes.data)
-                const serverPayload = circuitBreakerMappingServer.mapDtoToServer(dto, ownerType)
+                const serverPayload = circuitBreakerMappingServer.mapDtoToServer(this._normaliseUnits(dto), ownerType)
                 const response = await circuitBreakerAPI.createCircuitBreaker(serverPayload, node.parentId, ownerType)
 
                 await this.syncUploadedAssetAndMedia(node, response, 'Circuit breaker', dto)
@@ -301,7 +322,7 @@ export default {
                 const ownerType = this._resolveOwnerType(parentNode)
 
                 const dto = disconnectorMapping.disconnectorEntityToDto(entityRes.data)
-                const serverPayload = disconnectorMappingServer.mapDtoToServer(dto, ownerType)
+                const serverPayload = disconnectorMappingServer.mapDtoToServer(this._normaliseUnits(dto), ownerType)
                 const response = await disconnectorAPI.createDisconnector(serverPayload)
 
                 await this.syncUploadedAssetAndMedia(node, response, 'Disconnector', dto)
@@ -325,7 +346,7 @@ export default {
                 const ownerType = this._resolveOwnerType(parentNode)
 
                 const dto = surgeArresterMapping.surgeArresterEntityToDto(entityRes.data)
-                const serverPayload = surgeArresterMappingServer.mapDtoToServer(dto, ownerType)
+                const serverPayload = surgeArresterMappingServer.mapDtoToServer(this._normaliseUnits(dto), ownerType)
                 const response = await surgeArresterAPI.createSurgeArrester(serverPayload, node.parentId, ownerType)
 
                 await this.syncUploadedAssetAndMedia(node, response, 'Surge arrester', dto)
@@ -355,7 +376,7 @@ export default {
 
                 const dto = bushingMapping.mapEntityToDto(entityRes.data)
                 dto.psrId = node.parentId
-                const serverPayload = bushingMappingServer.mapDtoToServer(dto, ownerType)
+                const serverPayload = bushingMappingServer.mapDtoToServer(this._normaliseUnits(dto), ownerType)
                 const response = await bushingAPI.createBushing(serverPayload)
 
                 console.log('[Upload Bushing] Response:', response)
@@ -381,7 +402,7 @@ export default {
                 const ownerType = this._resolveOwnerType(parentNode)
 
                 const dto = voltageTransformerJobMapping.JobEntityToDto(entityRes.data)
-                const serverPayload = voltageTransformerJobMappingServer.mapDtoToServer(dto, ownerType)
+                const serverPayload = voltageTransformerJobMappingServer.mapDtoToServer(this._normaliseUnits(dto), ownerType)
                 await this.attachJobBaseVersion(node, serverPayload)
                 const response = await voltageTransformerJobAPI.createVoltageTransformerJob(serverPayload, node.parentId)
 
@@ -404,7 +425,7 @@ export default {
                 const ownerType = this._resolveOwnerType(parentNode)
 
                 const dto = currentTransformerJobMapping.JobEntityToDto(entityRes.data)
-                const serverPayload = currentTransformerJobMappingServer.mapDtoToServer(dto, ownerType)
+                const serverPayload = currentTransformerJobMappingServer.mapDtoToServer(this._normaliseUnits(dto), ownerType)
                 await this.attachJobBaseVersion(node, serverPayload)
                 const response = await currentTransformerJobAPI.createCurrentTransformerJob(serverPayload, node.parentId)
 
@@ -427,7 +448,7 @@ export default {
                 const ownerType = this._resolveOwnerType(parentNode)
 
                 const dto = circuitBreakerJobMapping.JobEntityToDto(entityRes.data)
-                const serverPayload = circuitBreakerJobMappingServer.mapDtoToServer(dto, ownerType)
+                const serverPayload = circuitBreakerJobMappingServer.mapDtoToServer(this._normaliseUnits(dto), ownerType)
                 await this.attachJobBaseVersion(node, serverPayload)
                 const response = await circuitBreakerJobAPI.createCircuitBreakerJob(serverPayload, node.parentId)
 
@@ -450,7 +471,7 @@ export default {
                 const ownerType = this._resolveOwnerType(parentNode)
 
                 const dto = surgeArresterJobMapping.JobEntityToDto(entityRes.data)
-                const serverPayload = surgeArresterJobMappingServer.mapDtoToServer(dto, ownerType)
+                const serverPayload = surgeArresterJobMappingServer.mapDtoToServer(this._normaliseUnits(dto), ownerType)
                 await this.attachJobBaseVersion(node, serverPayload)
                 const response = await surgeArresterJobAPI.createSurgeArresterJob(serverPayload, node.parentId)
 
@@ -473,7 +494,7 @@ export default {
                 const ownerType = this._resolveOwnerType(parentNode)
 
                 const dto = disconnectorJobMapping.JobEntityToDto(entityRes.data)
-                const serverPayload = disconnectorJobMappingServer.mapDtoToServer(dto, ownerType)
+                const serverPayload = disconnectorJobMappingServer.mapDtoToServer(this._normaliseUnits(dto), ownerType)
                 await this.attachJobBaseVersion(node, serverPayload)
                 const response = await disconnectorJobAPI.createDisconnectorJob(serverPayload, node.parentId)
 
@@ -496,7 +517,7 @@ export default {
                 const ownerType = this._resolveOwnerType(parentNode)
 
                 const dto = transformerJobMapping.JobEntityToDto(entityRes.data)
-                const serverPayload = transformerJobMappingServer.mapDtoToServer(dto, ownerType)
+                const serverPayload = transformerJobMappingServer.mapDtoToServer(this._normaliseUnits(dto), ownerType)
                 await this.attachJobBaseVersion(node, serverPayload)
                 const response = await transformerJobAPI.createTransformerJob(serverPayload, node.parentId)
 
@@ -733,42 +754,42 @@ export default {
 
         async createAssetDtoOnServer(assetType, dto, parentId, ownerType, serverTab = null) {
             if (assetType === 'Transformer') {
-                const response = await transformerAPI.createTransformer(this.applyServerTabIdToPayload(transformerMappingServer.mapDtoToServer(dto, ownerType), serverTab))
+                const response = await transformerAPI.createTransformer(this.applyServerTabIdToPayload(transformerMappingServer.mapDtoToServer(this._normaliseUnits(dto), ownerType), serverTab))
                 await this.uploadAssetMedia(assetType, dto, this.extractUploadedServerId(response) || serverTab?.id || serverTab?.mrid || dto?.properties?.mrid)
                 return response
             }
             if (assetType === 'Bushing') {
-                const response = await bushingAPI.createBushing(this.applyServerTabIdToPayload(bushingMappingServer.mapDtoToServer(dto, ownerType), serverTab))
+                const response = await bushingAPI.createBushing(this.applyServerTabIdToPayload(bushingMappingServer.mapDtoToServer(this._normaliseUnits(dto), ownerType), serverTab))
                 await this.uploadAssetMedia(assetType, dto, this.extractUploadedServerId(response) || serverTab?.id || serverTab?.mrid || dto?.properties?.mrid)
                 return response
             }
             if (assetType === 'Surge arrester') {
-                const response = await surgeArresterAPI.createSurgeArrester(this.applyServerTabIdToPayload(surgeArresterMappingServer.mapDtoToServer(dto, ownerType), serverTab), parentId, ownerType)
+                const response = await surgeArresterAPI.createSurgeArrester(this.applyServerTabIdToPayload(surgeArresterMappingServer.mapDtoToServer(this._normaliseUnits(dto), ownerType), serverTab), parentId, ownerType)
                 await this.uploadAssetMedia(assetType, dto, this.extractUploadedServerId(response) || serverTab?.id || serverTab?.mrid || dto?.properties?.mrid)
                 return response
             }
             if (assetType === 'Circuit breaker') {
-                const response = await circuitBreakerAPI.createCircuitBreaker(this.applyServerTabIdToPayload(circuitBreakerMappingServer.mapDtoToServer(dto, ownerType), serverTab), parentId, ownerType)
+                const response = await circuitBreakerAPI.createCircuitBreaker(this.applyServerTabIdToPayload(circuitBreakerMappingServer.mapDtoToServer(this._normaliseUnits(dto), ownerType), serverTab), parentId, ownerType)
                 await this.uploadAssetMedia(assetType, dto, this.extractUploadedServerId(response) || serverTab?.id || serverTab?.mrid || dto?.properties?.mrid)
                 return response
             }
             if (assetType === 'Current transformer') {
-                const response = await currentAPI.createCurrentTransformer(this.applyServerTabIdToPayload(currentTransformerMappingServer.mapDtoToServer(dto, ownerType), serverTab), parentId, ownerType)
+                const response = await currentAPI.createCurrentTransformer(this.applyServerTabIdToPayload(currentTransformerMappingServer.mapDtoToServer(this._normaliseUnits(dto), ownerType), serverTab), parentId, ownerType)
                 await this.uploadAssetMedia(assetType, dto, this.extractUploadedServerId(response) || serverTab?.id || serverTab?.mrid || dto?.properties?.mrid)
                 return response
             }
             if (assetType === 'Voltage transformer') {
-                const response = await voltageAPI.createVoltageTransformer(this.applyServerTabIdToPayload(voltageTransformerMappingServer.mapDtoToServer(dto, ownerType), serverTab), parentId, ownerType)
+                const response = await voltageAPI.createVoltageTransformer(this.applyServerTabIdToPayload(voltageTransformerMappingServer.mapDtoToServer(this._normaliseUnits(dto), ownerType), serverTab), parentId, ownerType)
                 await this.uploadAssetMedia(assetType, dto, this.extractUploadedServerId(response) || serverTab?.id || serverTab?.mrid || dto?.properties?.mrid)
                 return response
             }
             if (assetType === 'Power cable') {
-                const response = await powerCableAPI.createPowerCable(this.applyServerTabIdToPayload(PowerCableServerMapper.mapDtoToServer(dto, ownerType), serverTab))
+                const response = await powerCableAPI.createPowerCable(this.applyServerTabIdToPayload(PowerCableServerMapper.mapDtoToServer(this._normaliseUnits(dto), ownerType), serverTab))
                 await this.uploadAssetMedia(assetType, dto, this.extractUploadedServerId(response) || serverTab?.id || serverTab?.mrid || dto?.properties?.mrid)
                 return response
             }
             if (assetType === 'Disconnector') {
-                const response = await disconnectorAPI.createDisconnector(this.applyServerTabIdToPayload(disconnectorMappingServer.mapDtoToServer(dto, ownerType), serverTab))
+                const response = await disconnectorAPI.createDisconnector(this.applyServerTabIdToPayload(disconnectorMappingServer.mapDtoToServer(this._normaliseUnits(dto), ownerType), serverTab))
                 await this.uploadAssetMedia(assetType, dto, this.extractUploadedServerId(response) || serverTab?.id || serverTab?.mrid || dto?.properties?.mrid)
                 return response
             }

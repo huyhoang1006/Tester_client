@@ -39,6 +39,7 @@ import TransformerEntity from '@/views/Flatten/Transformer/index';
 import SurgeArrester from '@/views/Flatten/SurgeArrester'
 import * as bushingFunc from '../Bushing/index'
 import { writeAssetSaveAuditLog, writeAssetDeleteAuditLog } from '../assetAudit/index'
+import { rollbackQuietly } from '@/function/datacontext/rollback'
 
 // Helper to check if a value is used in a column of a table
 const isUsedInTable = async (table, column, id, db) => {
@@ -258,7 +259,7 @@ export const insertTransformerEntity = async (old_entity, entity) => {
         restoreFiles(null, null, entity.asset.mrid);
         deleteBackupFiles(null, entity.asset.mrid);
         console.error('Error retrieving transformer entity:', error);
-        await runAsync('ROLLBACK');
+        await rollbackQuietly(runAsync, error);
         return { success: false, error, message: 'Error retrieving transformer entity' };
     }
 }
@@ -739,7 +740,7 @@ export const deleteTransformerEntity = async (data) => {
                 await writeAssetDeleteAuditLog('Transformer', data)
                 return { success: true, message: 'Transformer entity deleted successfully' };
             } catch (error) {
-                await runAsync('ROLLBACK');
+                await rollbackQuietly(runAsync, error);
                 console.error('Error deleting Transformer entity:', error);
                 return { success: false, error, message: 'Error deleting Transformer entity' };
             }

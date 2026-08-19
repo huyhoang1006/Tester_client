@@ -26,6 +26,7 @@ import * as bushingPreload from './bushing/index'
 import * as powerCablePreload from './powerCable/index'
 import * as procedurePreload from './procedure/index'
 import * as licensePreload from './license/index'
+import * as ctExcitationPointPreload from './ctExcitationPoint/index'
 
 export {
     parentOrganizationPreload, substationPreload, locationPreload,
@@ -34,5 +35,5 @@ export {
     positionPointPreload, voltageLevelPreload, bayPreload, powerSystemResourcePreload,
     SurgeArresterPreload, productAssetModelPreload, oldWorkPreload, assetPreload, analogPreload,
     stringMeasurementPreload, discretePreload, valueToAliasPreload, valueAliasSetPreload, bushingPreload,
-    powerCablePreload, procedurePreload, licensePreload
+    powerCablePreload, procedurePreload, licensePreload, ctExcitationPointPreload
 }

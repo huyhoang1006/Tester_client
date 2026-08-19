@@ -99,7 +99,12 @@ export const jobDtoToEntity = (dto) => {
         entity.workTasks.push(workTask);
 
         //attachment
-        entity.attachmentTest.push(item.testCondition.attachment);
+        // Chi day khi THAT SU co — day `undefined` vao mang thi tang luu doc `.id` cua no
+        // la no TypeError TRUOC khi mo giao dich, va thong bao den tay nguoi dung lai la loi
+        // cua lenh ROLLBACK, chang lien quan gi toi tep dinh kem.
+        if (item.testCondition && item.testCondition.attachment) {
+            entity.attachmentTest.push(item.testCondition.attachment);
+        }
 
         for (const key in item.data.table) {
             for (const data of item.data.table[key]) {

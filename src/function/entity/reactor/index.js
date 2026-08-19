@@ -16,6 +16,7 @@ import { insertReactivePowerTransaction, getReactivePowerByIds, deleteReactivePo
 import { insertMassTransaction, getMassById, deleteMassByIdTransaction } from '@/function/cim/mass';
 import { insertInductanceTransaction, getInductanceById, deleteInductanceByIdTransaction } from '@/function/cim/inductance';
 import { writeAssetSaveAuditLog, writeAssetDeleteAuditLog } from '../assetAudit/index'
+import { rollbackQuietly } from '@/function/datacontext/rollback'
 
 export const insertReactorEntity = async (old_entity, entity) => {
     try {
@@ -133,7 +134,7 @@ export const insertReactorEntity = async (old_entity, entity) => {
             stack: error.stack,
             entity: JSON.stringify(entity, null, 2)
         });
-        await runAsync('ROLLBACK');
+        await rollbackQuietly(runAsync, error);
         return { success: false, error, message: `Error saving Reactor entity: ${error.message || 'Unknown error'}` };
     }
 }
@@ -378,7 +379,7 @@ export const deleteReactorEntity = async (entity) => {
         await writeAssetDeleteAuditLog('Reactor', entity)
         return { success: true, message: 'Reactor entity deleted successfully' };
     } catch (error) {
-        await runAsync('ROLLBACK');
+        await rollbackQuietly(runAsync, error);
         console.error('Error deleting Reactor entity:', error);
         return { success: false, error, message: 'Error deleting Reactor entity' };
     }

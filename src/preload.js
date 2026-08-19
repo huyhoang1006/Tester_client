@@ -1,6 +1,6 @@
 import { userPreload } from '@/preload/index.js'
 import { importPreload } from '@/preload/index.js'
-import { entityPreload, cimPreload, uploadCustomPreload, appOptionPreload } from '@/preload/index.js'
+import { entityPreload, cimPreload, uploadCustomPreload, appOptionPreload, ptmPreload } from '@/preload/index.js'
 
 const { contextBridge, ipcRenderer } = require('electron')
 const windowControlAPI = {
@@ -73,6 +73,12 @@ const reactorEntityAPI = entityPreload.reactorEntityPreload.reactorEntityPreload
 const assetPsrAPI = entityPreload.assetPsrPreload.assetPsrPreload()
 const procedureAPI = cimPreload.procedurePreload.procedurePreload()
 const licenseAPI = cimPreload.licensePreload.licensePreload()
+const ctExcitationPointAPI = cimPreload.ctExcitationPointPreload.ctExcitationPointPreload()
+// HAI cấp, không phải ba: `ptmPreload` là namespace của src/preload/ptm/index.js, và hàm
+// nằm ngay trong đó. Những dòng ba cấp ở trên (cimPreload.xPreload.xPreload) có thêm một
+// tầng gom nhóm ở src/preload/cim/index.js — ptm không có tầng đó.
+const ptmAPI = ptmPreload.ptmPreload()
+const treeSearchAPI = entityPreload.treeSearchPreload.treeSearchPreload()
 const notificationEntityAPI = entityPreload.notificationEntityPreload.notificationEntityPreload()
 const entitySnapshotAPI = entityPreload.entitySnapshotPreload.entitySnapshotPreload()
 const templateAPI = entityPreload.templatePreload.templatePreload()
@@ -149,6 +155,9 @@ const ipcMain = Object.assign(
     procedureAPI,
     windowControlAPI,
     licenseAPI,
+    ctExcitationPointAPI,
+    ptmAPI,
+    treeSearchAPI,
     notificationEntityAPI,
     updateAPI,
     fileConverterAPI,

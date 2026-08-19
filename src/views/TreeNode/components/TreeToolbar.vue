@@ -22,6 +22,10 @@
                         <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon>
                         Import from JSON
                     </el-dropdown-item>
+                    <el-dropdown-item command="importPTM">
+                        <i class="fa-solid fa-file-zipper" style="font-size:12px"></i>
+                        Import from PTM (OMICRON)
+                    </el-dropdown-item>
                     <el-dropdown-item command="importExcel">
                         <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon>
                         Import from Excel
@@ -57,6 +61,26 @@
                 </el-dropdown-menu>
             </el-dropdown>
 
+            <!--
+              Ô tìm kiếm nằm ngay dưới icon export. Rail chỉ rộng ~46px nên không nhét
+              được ô nhập vào đây; bấm nút thì mở panel bên phải, trong đó mới có ô nhập
+              và danh sách kết quả.
+            -->
+            <el-popover
+                v-if="clientSlide"
+                v-model="searchOpen"
+                placement="right-start"
+                trigger="click"
+                :visible-arrow="false"
+                popper-class="tree-search-popper"
+                width="380"
+                @after-enter="onSearchOpened">
+                <TreeSearchPanel ref="searchPanel" @select="onSearchSelect" @close="searchOpen = false" />
+                <button slot="reference" type="button" class="rail-tab" :class="{ active: searchOpen }" title="Search">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+            </el-popover>
+
             <div class="rail-spacer"></div>
 
             <button type="button" class="rail-tab rail-collapse" title="Collapse sidebar tabs" @click="setCollapsed(true)">
@@ -72,6 +96,7 @@
 
 <script>
 import Icon from '@/views/Common/Icon.vue'
+import TreeSearchPanel from '@/views/TreeNode/components/TreeSearchPanel.vue'
 
 const COLLAPSE_KEY = 'treeToolbarCollapsed'
 
@@ -92,7 +117,8 @@ const getCollapseKey = () => `${COLLAPSE_KEY}${getCurrentUserSuffix()}`
 export default {
     name: 'TreeToolbar',
     components: {
-        Icon
+        Icon,
+        TreeSearchPanel
     },
     props: {
         clientSlide: {
@@ -104,10 +130,21 @@ export default {
         return {
             activeTab: 'explorer',
             collapsed: localStorage.getItem(getCollapseKey()) === '1',
-            showFmeca: false
+            showFmeca: false,
+            searchOpen: false
         }
     },
     methods: {
+        onSearchOpened() {
+            // Mở panel là con trỏ nhảy thẳng vào ô nhập — mở ra rồi phải bấm thêm một lần
+            // nữa mới gõ được là thừa một thao tác cho việc dùng nhiều lần trong ngày.
+            const panel = this.$refs.searchPanel
+            if (panel && typeof panel.focus === 'function') panel.focus()
+        },
+        onSearchSelect(result) {
+            this.searchOpen = false
+            this.$emit('search-select', result)
+        },
         setCollapsed(value) {
             this.collapsed = value
             localStorage.setItem(getCollapseKey(), value ? '1' : '0')

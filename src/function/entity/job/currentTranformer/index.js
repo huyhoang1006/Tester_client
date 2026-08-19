@@ -9,6 +9,7 @@ import CurrentTransformerJobEntity from '@/views/Flatten/Job/CurrentTransformer/
 import { insertWorkTaskTransaction, getWorkTaskByWork, deleteWorkTaskByIdTransaction } from '@/function/cim/workTask/index.js'
 import { insertCurrentTransformerTestingEquipmentTestTypeTransaction, getCurrentTransformerTestingEquipmentTestingEqId, deleteCurrentTransformerTestingEquipmentTestTypeByIdTransaction } from '../../currentTranformerTestingEquipmentTestType/index.js'
 import { insertTestDataSetTransaction, getTestDataSetByWorkTaskId, deleteTestDataSetByIdTransaction } from '@/function/cim/testDataSet'
+import { replaceCtExcitationPointsTransaction, getCtExcitationPointsByDatasetIds, replaceCtExcitationKneePointsTransaction, getCtExcitationKneePointsByDatasetIds } from '@/function/cim/ctExcitationPoint'
 import { insertAnalogValuesTransaction, getAnalogValueByTestDataSetMrids, deleteAnalogValueByIdTransaction } from '@/function/cim/analogValue/index.js'
 import { insertStringMeasurementValuesTransaction, getStringMeasurementValueByTestDataSetMrids, deleteStringMeasurementValueByIdTransaction } from '@/function/cim/stringMeasurementValue/index.js'
 import { insertDiscreteValuesTransaction, getDiscreteValueByTestDataSetMrids, deleteDiscreteValueByIdTransaction } from '@/function/cim/discreteValue/index.js'
@@ -19,6 +20,7 @@ import { insertTestStandardTransaction, deleteTestStandardByIdTransaction, getTe
 import { insertAssessmentTransaction, deleteAssessmentByIdTransaction, getAssessmentInGroupIds } from '@/function/cim/assessment/index.js'
 import { insertAssessmentGroupTransaction, deleteAssessmentGroupByIdTransaction, getAssessmentGroupByParentId, getAssessmentGroupByRuleId } from '@/function/cim/assessmentGroup/index.js'
 import { insertAssessmentRuleTransaction, deleteAssessmentRuleByIdTransaction, getAssessmentRuleByStandardId } from '@/function/cim/assessmentRule/index.js'
+import { rollbackQuietly } from '@/function/datacontext/rollback'
 
 
 export const insertCurrentTransformerJobEntity = async (old_entity, entity) => {
@@ -78,8 +80,8 @@ export const insertCurrentTransformerJobEntity = async (old_entity, entity) => {
             }
 
             //testing equipment
-            const newIds = entity.testingEquipment.map(v => v.mrid).filter(id => id); // bỏ null/empty
-            const oldIds = old_entity.testingEquipment.map(v => v.mrid).filter(id => id);
+            const newIds = entity.testingEquipment.map(v => v && v.mrid).filter(id => id); // bỏ null/empty
+            const oldIds = old_entity.testingEquipment.map(v => v && v.mrid).filter(id => id);
 
             const toAdd = entity.testingEquipment.filter(v => v.mrid && !oldIds.includes(v.mrid));
             const toDelete = old_entity.testingEquipment.filter(v => v.mrid && !newIds.includes(v.mrid));
@@ -96,8 +98,8 @@ export const insertCurrentTransformerJobEntity = async (old_entity, entity) => {
             }
 
             //currentTransformerTestingEquipmentTestType
-            const newIdsSet = entity.currentTransformerTestingEquipmentTestType.map(v => v.mrid).filter(id => id); // bỏ null/empty
-            const oldIdsSet = old_entity.currentTransformerTestingEquipmentTestType.map(v => v.mrid).filter(id => id);
+            const newIdsSet = entity.currentTransformerTestingEquipmentTestType.map(v => v && v.mrid).filter(id => id); // bỏ null/empty
+            const oldIdsSet = old_entity.currentTransformerTestingEquipmentTestType.map(v => v && v.mrid).filter(id => id);
 
             const toAddSet = entity.currentTransformerTestingEquipmentTestType.filter(v => v.mrid && !oldIdsSet.includes(v.mrid));
             const toDeleteSet = old_entity.currentTransformerTestingEquipmentTestType.filter(v => v.mrid && !newIdsSet.includes(v.mrid));
@@ -105,8 +107,8 @@ export const insertCurrentTransformerJobEntity = async (old_entity, entity) => {
 
 
             //customized standard
-            const newCustomizedIds = entity.standardCustomized.map(v => v.mrid).filter(id => id); // bỏ null/empty
-            const oldCustomizedIds = old_entity.standardCustomized.map(v => v.mrid).filter(id => id);
+            const newCustomizedIds = entity.standardCustomized.map(v => v && v.mrid).filter(id => id); // bỏ null/empty
+            const oldCustomizedIds = old_entity.standardCustomized.map(v => v && v.mrid).filter(id => id);
 
             const toAddCustomized = entity.standardCustomized.filter(v => v.mrid && !oldCustomizedIds.includes(v.mrid));
             const toDeleteCustomized = old_entity.standardCustomized.filter(v => v.mrid && !newCustomizedIds.includes(v.mrid));
@@ -119,8 +121,8 @@ export const insertCurrentTransformerJobEntity = async (old_entity, entity) => {
             }
 
             //insert work tasks
-            const newIdsWorkTask = entity.workTasks.map(v => v.mrid).filter(id => id); // bỏ null/empty
-            const oldIdsWorkTask = old_entity.workTasks.map(v => v.mrid).filter(id => id);
+            const newIdsWorkTask = entity.workTasks.map(v => v && v.mrid).filter(id => id); // bỏ null/empty
+            const oldIdsWorkTask = old_entity.workTasks.map(v => v && v.mrid).filter(id => id);
 
             const toAddWorkTask = entity.workTasks.filter(v => v.mrid && !oldIdsWorkTask.includes(v.mrid));
             const toDeleteWorkTask = old_entity.workTasks.filter(v => v.mrid && !newIdsWorkTask.includes(v.mrid));
@@ -173,8 +175,8 @@ export const insertCurrentTransformerJobEntity = async (old_entity, entity) => {
             }
 
             //test standard
-            const newTestStandardIds = entity.testStandard.map(v => v.mrid).filter(id => id); // bỏ null/empty
-            const oldTestStandardIds = old_entity.testStandard.map(v => v.mrid).filter(id => id);
+            const newTestStandardIds = entity.testStandard.map(v => v && v.mrid).filter(id => id); // bỏ null/empty
+            const oldTestStandardIds = old_entity.testStandard.map(v => v && v.mrid).filter(id => id);
 
             const toAddTestStandard = entity.testStandard.filter(v => v.mrid && !oldTestStandardIds.includes(v.mrid));
             const toDeleteTestStandard = old_entity.testStandard.filter(v => v.mrid && !newTestStandardIds.includes(v.mrid));
@@ -187,8 +189,8 @@ export const insertCurrentTransformerJobEntity = async (old_entity, entity) => {
             }
 
             //assessment rule
-            const newAssessmentRuleIds = entity.assessment_rule.map(v => v.mrid).filter(id => id); // bỏ null/empty
-            const oldAssessmentRuleIds = old_entity.assessment_rule.map(v => v.mrid).filter(id => id);
+            const newAssessmentRuleIds = entity.assessment_rule.map(v => v && v.mrid).filter(id => id); // bỏ null/empty
+            const oldAssessmentRuleIds = old_entity.assessment_rule.map(v => v && v.mrid).filter(id => id);
 
             const toAddAssessmentRule = entity.assessment_rule.filter(v => v.mrid && !oldAssessmentRuleIds.includes(v.mrid));
             const toDeleteAssessmentRule = old_entity.assessment_rule.filter(v => v.mrid && !newAssessmentRuleIds.includes(v.mrid));
@@ -203,8 +205,8 @@ export const insertCurrentTransformerJobEntity = async (old_entity, entity) => {
             }
 
             //assessment group
-            const newAssessmentGroupIds = entity.assessment_group.map(v => v.mrid).filter(id => id); // bỏ null/empty
-            const oldAssessmentGroupIds = old_entity.assessment_group.map(v => v.mrid).filter(id => id);
+            const newAssessmentGroupIds = entity.assessment_group.map(v => v && v.mrid).filter(id => id); // bỏ null/empty
+            const oldAssessmentGroupIds = old_entity.assessment_group.map(v => v && v.mrid).filter(id => id);
 
             const toAddAssessmentGroup = entity.assessment_group.filter(v => v.mrid && !oldAssessmentGroupIds.includes(v.mrid));
             const toDeleteAssessmentGroup = old_entity.assessment_group.filter(v => v.mrid && !newAssessmentGroupIds.includes(v.mrid));
@@ -217,8 +219,8 @@ export const insertCurrentTransformerJobEntity = async (old_entity, entity) => {
             }
 
             //assessment
-            const newAssessmentIds = entity.assessment.map(v => v.mrid).filter(id => id); // bỏ null/empty
-            const oldAssessmentIds = old_entity.assessment.map(v => v.mrid).filter(id => id);
+            const newAssessmentIds = entity.assessment.map(v => v && v.mrid).filter(id => id); // bỏ null/empty
+            const oldAssessmentIds = old_entity.assessment.map(v => v && v.mrid).filter(id => id);
             const toAddAssessment = entity.assessment.filter(v => v.mrid && !oldAssessmentIds.includes(v.mrid));
             const toDeleteAssessment = old_entity.assessment.filter(v => v.mrid && !newAssessmentIds.includes(v.mrid));
             const toUpdateAssessment = entity.assessment.filter(v => v.mrid && oldAssessmentIds.includes(v.mrid));
@@ -230,8 +232,8 @@ export const insertCurrentTransformerJobEntity = async (old_entity, entity) => {
             }
 
             //testdataset
-            const newIdsTestDataSet = entity.testDataSet.map(v => v.mrid).filter(id => id); // bỏ null/empty
-            const oldIdsTestDataSet = old_entity.testDataSet.map(v => v.mrid).filter(id => id);
+            const newIdsTestDataSet = entity.testDataSet.map(v => v && v.mrid).filter(id => id); // bỏ null/empty
+            const oldIdsTestDataSet = old_entity.testDataSet.map(v => v && v.mrid).filter(id => id);
 
             const toAddTestDataSet = entity.testDataSet.filter(v => v.mrid && !oldIdsTestDataSet.includes(v.mrid));
             const toUpdateTestDataSet = entity.testDataSet.filter(v => v.mrid && oldIdsTestDataSet.includes(v.mrid));
@@ -245,9 +247,39 @@ export const insertCurrentTransformerJobEntity = async (old_entity, entity) => {
                 await insertTestDataSetTransaction(testData, db);
             }
 
+            // ─── Đường cong từ hoá (CT Excitation) ────────────────────────────
+            //
+            // Ghi NGAY TRONG transaction này, ngay sau khi dòng test đã tồn tại — khoá
+            // ngoại của `ct_excitation_point` trỏ vào `procedure_dataset`, nên ghi trước
+            // là vi phạm khoá ngoại.
+            //
+            // Không mở đường ghi riêng qua IPC cho renderer: hai đường ghi độc lập thì
+            // bảng lưu xong mà đường cong hỏng, và không có gì buộc chúng đi cùng nhau.
+            //
+            // `entity.ctExcitationPoints` là { [rowMrid]: [{mrid, current, voltage}] },
+            // do mapper dựng. Không có khoá nào thì không đụng tới đường cong đang lưu —
+            // lưu job bình thường (không import) sẽ không xoá mất dữ liệu đã có.
+            if (entity.ctExcitationPoints && typeof entity.ctExcitationPoints === 'object') {
+                for (const rowMrid of Object.keys(entity.ctExcitationPoints)) {
+                    await replaceCtExcitationPointsTransaction(
+                        rowMrid, entity.ctExcitationPoints[rowMrid], db
+                    );
+                }
+            }
+
+            // Điểm knee của cả ba tiêu chuẩn — cùng luật với đường cong: cùng transaction,
+            // sau khi dòng test đã có, và không có khoá thì không đụng tới dữ liệu cũ.
+            if (entity.ctExcitationKneePoints && typeof entity.ctExcitationKneePoints === 'object') {
+                for (const rowMrid of Object.keys(entity.ctExcitationKneePoints)) {
+                    await replaceCtExcitationKneePointsTransaction(
+                        rowMrid, entity.ctExcitationKneePoints[rowMrid], db
+                    );
+                }
+            }
+
             //analog value
-            const newIdsAnalogValue = entity.analogValues.map(v => v.mrid).filter(id => id); // bỏ null/empty
-            const oldIdsAnalogValue = old_entity.analogValues.map(v => v.mrid).filter(id => id);
+            const newIdsAnalogValue = entity.analogValues.map(v => v && v.mrid).filter(id => id); // bỏ null/empty
+            const oldIdsAnalogValue = old_entity.analogValues.map(v => v && v.mrid).filter(id => id);
 
             const toAddAnalogValue = entity.analogValues.filter(v => v.mrid && !oldIdsAnalogValue.includes(v.mrid));
             const toUpdateAnalogValue = entity.analogValues.filter(v => v.mrid && oldIdsAnalogValue.includes(v.mrid) && hasMeasurementValueChanged(v, old_entity.analogValues, ['value', 'analog']));
@@ -255,8 +287,8 @@ export const insertCurrentTransformerJobEntity = async (old_entity, entity) => {
             await insertAnalogValuesTransaction([...toAddAnalogValue, ...toUpdateAnalogValue], db);
 
             //string measurement value
-            const newIdsStringMeasurementValue = entity.stringMeasurementValues.map(v => v.mrid).filter(id => id); // bỏ null/empty
-            const oldIdsStringMeasurementValue = old_entity.stringMeasurementValues.map(v => v.mrid).filter(id => id);
+            const newIdsStringMeasurementValue = entity.stringMeasurementValues.map(v => v && v.mrid).filter(id => id); // bỏ null/empty
+            const oldIdsStringMeasurementValue = old_entity.stringMeasurementValues.map(v => v && v.mrid).filter(id => id);
 
             const toAddStringMeasurementValue = entity.stringMeasurementValues.filter(v => v.mrid && !oldIdsStringMeasurementValue.includes(v.mrid));
             const toUpdateStringMeasurementValue = entity.stringMeasurementValues.filter(v => v.mrid && oldIdsStringMeasurementValue.includes(v.mrid) && hasMeasurementValueChanged(v, old_entity.stringMeasurementValues, ['value', 'string_measurement']));
@@ -264,8 +296,8 @@ export const insertCurrentTransformerJobEntity = async (old_entity, entity) => {
             await insertStringMeasurementValuesTransaction([...toAddStringMeasurementValue, ...toUpdateStringMeasurementValue], db);
 
             //discrete value
-            const newIdsDiscreteValue = entity.discreteValues.map(v => v.mrid).filter(id => id);
-            const oldIdsDiscreteValue = old_entity.discreteValues.map(v => v.mrid).filter(id => id);
+            const newIdsDiscreteValue = entity.discreteValues.map(v => v && v.mrid).filter(id => id);
+            const oldIdsDiscreteValue = old_entity.discreteValues.map(v => v && v.mrid).filter(id => id);
 
             const toAddDiscreteValue = entity.discreteValues.filter(v => v.mrid && !oldIdsDiscreteValue.includes(v.mrid));
             const toUpdateDiscreteValue = entity.discreteValues.filter(v => v.mrid && oldIdsDiscreteValue.includes(v.mrid) && hasMeasurementValueChanged(v, old_entity.discreteValues, ['value', 'discrete']));
@@ -347,7 +379,7 @@ export const insertCurrentTransformerJobEntity = async (old_entity, entity) => {
 
         }
     } catch (error) {
-        await runAsync('ROLLBACK');
+        await rollbackQuietly(runAsync, error);
         console.error('Error retrieving Current Transformer entity:', error);
         return { success: false, error, message: 'Error retrieving Current Transformer entity' };
     }
@@ -447,6 +479,32 @@ export const getCurrentTransformerJobEntity = async (id) => {
                 const discreteValue = await getDiscreteValueByTestDataSetMrids(mrids);
                 if (discreteValue.success) {
                     entity.discreteValues = discreteValue.data;
+                }
+
+                // ─── Đường cong từ hoá ────────────────────────────────────────
+                //
+                // Đọc kèm job, KHÔNG để renderer tự lấy sau. Lý do: đường ghi ở trên là
+                // "thay toàn bộ" — nếu lúc lưu lại mà entity không mang theo đường cong
+                // thì nó bị xoá sạch. Đọc lên cùng job giữ cho vòng đọc–ghi khép kín.
+                //
+                // (Đồ thị trên màn hình vẫn gọi IPC riêng, vì nó chỉ cần đọc và không
+                // muốn nạp cả job chỉ để vẽ.)
+                try {
+                    const curvePoints = await getCtExcitationPointsByDatasetIds(mrids)
+                    entity.ctExcitationPoints = (curvePoints && curvePoints.success) ? curvePoints.data : {}
+                } catch (curveError) {
+                    // Không chặn cả job vì đường cong: bảng chính vẫn đọc được và hiển thị
+                    // được. Nhưng phải log, vì lưu lại sau đó sẽ xoá mất đường cong.
+                    console.error('[CT job] doc duong cong that bai — luu lai se mat duong cong:', curveError)
+                    entity.ctExcitationPoints = {}
+                }
+
+                try {
+                    const kneePoints = await getCtExcitationKneePointsByDatasetIds(mrids)
+                    entity.ctExcitationKneePoints = (kneePoints && kneePoints.success) ? kneePoints.data : {}
+                } catch (kneeError) {
+                    console.error('[CT job] doc diem knee that bai — luu lai se mat diem knee:', kneeError)
+                    entity.ctExcitationKneePoints = {}
                 }
 
                 return {
@@ -606,7 +664,7 @@ export const deleteCurrentTransformerJobEntity = async (entity) => {
         return { success: true, message: 'Current Transformer Job entity deleted successfully' };
 
     } catch (error) {
-        await runAsync('ROLLBACK');
+        await rollbackQuietly(runAsync, error);
         console.error('Delete Current Transformer Job Error:', error);
         return { success: false, error, message: 'Error deleting Current Transformer Job entity' };
     }

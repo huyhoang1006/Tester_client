@@ -14,6 +14,7 @@ import { insertRotatingMachineInfoTransaction, getRotatingMachineInfoById, delet
 import { insertApparentPowerTransaction, getApparentPowerByIds, deleteApparentPowerByIdTransaction } from '@/function/cim/apparentPower';
 import RotatingMachineEntity from '@/views/Flatten/RotatingMachine';
 import { writeAssetSaveAuditLog, writeAssetDeleteAuditLog } from '../assetAudit/index'
+import { rollbackQuietly } from '@/function/datacontext/rollback'
 
 
 
@@ -116,7 +117,7 @@ export const insertRotatingMachineEntity = async (entity) => {
         restoreFiles(null, null, entity.asset.mrid);
         deleteBackupFiles(null, entity.asset.mrid);
         console.error('Error retrieving Rotating Machine entity:', error);
-        await runAsync('ROLLBACK');
+        await rollbackQuietly(runAsync, error);
         return { success: false, error, message: 'Error retrieving Rotating Machine entity' };
     }
 }
@@ -302,7 +303,7 @@ export const deleteRotatingMachineEntity = async (entity) => {
         await writeAssetDeleteAuditLog('Rotating machine', entity)
         return { success: true, message: 'Rotating Machine entity deleted successfully' };
     } catch (error) {
-        await runAsync('ROLLBACK');
+        await rollbackQuietly(runAsync, error);
         console.error('Error deleting Rotating Machine entity:', error);
         return { success: false, error, message: 'Error deleting Rotating Machine entity' };
     }

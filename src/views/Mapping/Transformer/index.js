@@ -1222,10 +1222,15 @@ export const transformerEntityToDto = (entity) => {
             if (voltage.mrid == t.voltage) {
                 point.voltage.mrid = voltage.mrid
                 point.voltage.value = voltage.value
-                if (voltage.multiplier === '' || voltage.multiplier === null) {
-                    point.voltage.unit = voltage.unit
-                } else {
+                // Bản trước chặn '' và null nhưng LỌT undefined — cột không có trong hàng
+                // trả về thì thành `undefined`, và phép cộng chuỗi biến nó thành
+                // 'undefined|V'. Máy chủ từ chối đúng kiểu 'null|Hz' đã gặp ở bài khác.
+                //
+                // Kiểm bằng chính giá trị thay vì liệt kê từng trạng thái rỗng.
+                if (voltage.multiplier) {
                     point.voltage.unit = voltage.multiplier + '|' + voltage.unit
+                } else {
+                    point.voltage.unit = voltage.unit
                 }
                 break
             }

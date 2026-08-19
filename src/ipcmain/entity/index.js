@@ -27,6 +27,7 @@ import * as ipcTestingEquipment from './testingEquipment/index.js'
 import * as ipcSyncState from './syncState/index.js'
 import * as ipcAuditLog from './auditLog/index.js'
 import * as ipcCompareTest from './compareTest/index.js'
+import * as ipcTreeSearch from './treeSearch/index.js'
 import * as ipcUserIdentifiedObject from './userIdentifiedObject/index.js'
 
 
@@ -61,4 +62,5 @@ export const active = () => {
     ipcAuditLog.active()
     ipcCompareTest.active()
     ipcUserIdentifiedObject.active()
+    ipcTreeSearch.active()
 }

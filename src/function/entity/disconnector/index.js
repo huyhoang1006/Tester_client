@@ -19,6 +19,7 @@ import { insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrI
 import { insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction } from '@/function/cim/lifecycleDate';
 import { insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction } from '@/function/cim/productAssetModel';
 import { writeAssetSaveAuditLog, writeAssetDeleteAuditLog } from '../assetAudit/index'
+import { rollbackQuietly } from '@/function/datacontext/rollback'
 
 
 export const insertDisconnectorEntity = async (entity) => {
@@ -132,7 +133,7 @@ export const insertDisconnectorEntity = async (entity) => {
         restoreFiles(null, null, entity.asset.mrid);
         deleteBackupFiles(null, entity.asset.mrid);
         console.error('Error retrieving disconnector entity:', error);
-        await runAsync('ROLLBACK');
+        await rollbackQuietly(runAsync, error);
         return { success: false, error, message: 'Error retrieving disconnector entity' };
     }
 }
@@ -380,7 +381,7 @@ export const deleteDisconnectorEntity = async (data) => {
             await writeAssetDeleteAuditLog('Disconnector', data)
             return { success: true, message: 'Disconnector entity deleted successfully' };
         } catch (error) {
-            await runAsync('ROLLBACK');
+            await rollbackQuietly(runAsync, error);
             console.error('Error deleting Disconnector entity:', error);
             return { success: false, error, message: 'Error deleting Disconnector entity' };
         }

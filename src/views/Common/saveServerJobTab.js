@@ -36,6 +36,7 @@ import * as currentTransformerJobServerMapper from '@/views/Mapping/ServerToDTO/
 import * as circuitBreakerJobServerMapper from '@/views/Mapping/ServerToDTO/CircuitBreakerJob/index.js'
 import * as disconnectorJobServerMapper from '@/views/Mapping/ServerToDTO/DisconnectorJob/index.js'
 import * as surgeArresterJobServerMapper from '@/views/Mapping/ServerToDTO/SurgeArresterJob/index.js'
+import { normaliseUnitsDeep } from '@/utils/unitNormalise'
 
 /**
  * `dtoKey` là tên biến giữ DTO trong mixin của từng JobView. Sáu mixin đặt sáu tên
@@ -96,7 +97,12 @@ export async function saveServerJobTab(component, tab) {
         return { success: false, message: 'Name is required' }
     }
 
-    const payload = entry.toServer(JSON.parse(JSON.stringify(dto)))
+    // Chuẩn hoá ô đơn vị trước khi đóng gói — cùng lý do với luồng upload cây.
+    // Bản sao sâu đã có sẵn ở đây, nên sửa tại chỗ trên bản sao là an toàn.
+    const dtoForServer = JSON.parse(JSON.stringify(dto))
+    normaliseUnitsDeep(dtoForServer, 'save job tab')
+
+    const payload = entry.toServer(dtoForServer)
     if (!payload) {
         return { success: false, message: 'Cannot build the payload for this job.' }
     }

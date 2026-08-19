@@ -1,6 +1,7 @@
 import db from '../../datacontext/index.js'
 import { insertBayTransaction, getBayById, deleteBayByIdTransaction} from '@/function/cim/bay';
 import { normaliseAuditValue, tryWriteAuditLog } from '../auditLog/index'
+import { rollbackQuietly } from '@/function/datacontext/rollback'
 
 const getBayLogFields = (entity) => ({
     'Name': entity && entity.name,
@@ -74,7 +75,7 @@ export const insertBayEntity = async (entity) => {
         }
     } catch (error) {
         console.error('Error retrieving voltage entity:', error);
-        await runAsync('ROLLBACK');
+        await rollbackQuietly(runAsync, error);
         return { success: false, error, message: 'Error retrieving voltage entity'};
     }
 }
@@ -101,7 +102,7 @@ export const deleteBayEntityById = async (data) => {
         await writeBayDeleteLog(data)
         return { success: true, data: data, message: 'Bay deleted successfully' };
     } catch (error) {
-        await runAsync('ROLLBACK');
+        await rollbackQuietly(runAsync, error);
         console.error('Error deleting bay by id:', error);
         return { success: false, error, message: 'Error deleting bay by id' };
     }

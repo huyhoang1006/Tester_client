@@ -32,6 +32,7 @@ import { getAssetInfoById, insertAssetInfoTransaction, deleteAssetInfoByIdTransa
 import path from "path";
 import * as attachmentContext from "@/function/attachmentcontext/index";
 import { writeAssetSaveAuditLog, writeAssetDeleteAuditLog } from "../assetAudit/index";
+import { rollbackQuietly } from '@/function/datacontext/rollback'
 
 
 export const insertCurrentTransformerEntity = async (old_entity, entity) => {
@@ -225,7 +226,7 @@ export const insertCurrentTransformerEntity = async (old_entity, entity) => {
         restoreFiles(null, null, entity.oldCurrentTransformerInfo.mrid);
         deleteBackupFiles(null, entity.oldCurrentTransformerInfo.mrid);
         console.error('Error retrieving current transformer entity:', error);
-        await runAsync('ROLLBACK');
+        await rollbackQuietly(runAsync, error);
         return { success: false, error, message: 'Error retrieving current transformer entity' };
     }
 }
@@ -487,7 +488,7 @@ export const deleteCurrentTransformerEntity = async (data) => {
                 return { success: true, message: 'Current Transformer entity deleted successfully' };
 
             } catch (error) {
-                await runAsync('ROLLBACK');
+                await rollbackQuietly(runAsync, error);
                 console.error('Error deleting Current Transformer entity:', error);
                 return { success: false, error, message: 'Error deleting Current Transformer entity' };
             }

@@ -13,6 +13,7 @@ import { insertAssetPsrTransaction, getAssetPsrByAssetIdAndPsrId, deleteAssetPsr
 import VoltageTransformerEntity from '@/views/Flatten/VoltageTransformer'
 import { getAssetInfoById } from '@/function/cim/assetInfo'
 import { writeAssetSaveAuditLog, writeAssetDeleteAuditLog } from '../assetAudit/index'
+import { rollbackQuietly } from '@/function/datacontext/rollback'
 
 
 /**
@@ -150,7 +151,7 @@ export const insertVoltageTransformerEntity = async (old_entity, entity) => {
         restoreFiles(null, null, entity.asset.mrid);
         deleteBackupFiles(null, entity.asset.mrid);
         console.error('Error retrieving voltage transformer entity:', error);
-        await runAsync('ROLLBACK');
+        await rollbackQuietly(runAsync, error);
         return { success: false, error, message: 'Error retrieving voltage transformer entity' };
     }
 }
@@ -366,7 +367,7 @@ export const deleteVoltageTransformerEntity = async (data) => {
             return { success: true, message: 'Voltage Transformer entity deleted successfully' };
 
         } catch (error) {
-            await runAsync('ROLLBACK');
+            await rollbackQuietly(runAsync, error);
             console.error('Error deleting Voltage Transformer entity:', error);
             return { success: false, error, message: 'Error deleting Voltage Transformer entity' };
         }

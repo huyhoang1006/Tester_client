@@ -113,7 +113,13 @@ export const jobDtoToEntity = (dto) => {
             entity.workTasks.push(workTask);
 
             //attachment
-            entity.attachmentTest.push(item.testCondition.attachment);
+            // Chỉ đẩy khi THẬT SỰ có. Bài test không kèm tệp là chuyện bình thường, nhưng
+            // đẩy `undefined` vào mảng thì tầng lưu duyệt mảng và đọc `.id` của nó là nổ
+            // TypeError — mà nổ TRƯỚC khi mở giao dịch, nên thông báo cuối cùng đến tay
+            // người dùng lại là lỗi của lệnh ROLLBACK, chẳng liên quan gì tới tệp đính kèm.
+            if (item.testCondition && item.testCondition.attachment) {
+                entity.attachmentTest.push(item.testCondition.attachment);
+            }
 
 
             // Hỗ trợ cả cấu trúc cũ (array) và mới (object với nhiều table)

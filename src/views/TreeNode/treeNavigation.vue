@@ -10,6 +10,7 @@
                 @duplicate="duplicateSelectedNodes" @upload="handleUploadNode" @download="handleDownloadPathTree"
                 @delete="handleDeleteNode" @fmeca="handleClickFmeca" @move="handleMoveNode" @openDropdown="openDropdown"
                 @explorer-tab="handleExplorerTab"
+                @search-select="handleSearchSelect"
                 @show-equipment="handleShowEquipment" />
 
             <div v-show="activeWorkspaceTab === 'tree'" class="tree-workspace">
@@ -264,6 +265,19 @@
             :visible="importFailureDialogVisible"
             :failures="importFailures"
             @close="importFailureDialogVisible = false" />
+
+        <PtmImportDialog
+            :visible="ptmDialogVisible"
+            :preview="ptmPreview"
+            :dup="ptmDup"
+            :job-dup="ptmJobDup || []"
+            :job-dup-error="ptmJobDupError"
+            :on-asset-node="!!(ptmTargetNode && ptmTargetNode.mode === 'asset')"
+            :file-name="ptmFileName"
+            :target-label="ptmTargetNode ? (ptmTargetNode.apparatus_id || ptmTargetNode.aliasName || ptmTargetNode.name || '') : ''"
+            :importing="ptmImporting"
+            @close="handlePtmCancel"
+            @confirm="handlePtmConfirm" />
         
         <el-dialog
             :title="opResultTitle + ' — result'"
@@ -409,12 +423,14 @@ import {
     ZeroDiagramDialog,
     ImportConflictDialog,
     ImportGraftDialog,
-    ImportFailureDialog
+    ImportFailureDialog,
+    PtmImportDialog
 } from './dialogs'
 
 
 import mixinTreeNavigation from '@/views/TreeNode/Common/mixinTreeNavigation/mixin'
 import pathNavigate from '@/views/TreeNode/Common/pathNavigate'
+import importPtm from '@/views/TreeNode/Common/Import/importPtm'
 import TopBarServer from './Server/TopBarServer/index.vue'
 import uploadNodeMixin from './Client/mixin/Upload/index.js';
 import downloadNode from './Server/mixin/Download/downloadNode.js';
@@ -500,7 +516,8 @@ export default {
         ZeroDiagramDialog,
         ImportConflictDialog,
         ImportGraftDialog,
-        ImportFailureDialog
+        ImportFailureDialog,
+        PtmImportDialog
     },
     data() {
         return {
@@ -815,7 +832,7 @@ export default {
                 : 'app-dialog'
         }
     },
-    mixins: [mixin, mixinTreeNavigation, uploadNodeMixin, downloadNode, mainMixin, contextMenuSync, pathNavigate],
+    mixins: [mixin, mixinTreeNavigation, uploadNodeMixin, downloadNode, mainMixin, contextMenuSync, pathNavigate, importPtm],
     async beforeMount() {
         try {
             const data = await window.electronAPI.getAllConfigurationEvents()
@@ -937,6 +954,19 @@ export default {
             this.signFmeca = false
             this.openImportDialog = false
             this.openExportDialog = false
+        },
+        /**
+         * Bấm một kết quả tìm kiếm.
+         *
+         * Về tab cây trước rồi mới đi: kết quả có thể được bấm khi đang đứng ở tab FMECA
+         * hoặc thiết bị thử nghiệm, lúc đó cây không hiển thị và mở tới nơi cũng không ai
+         * thấy gì.
+         */
+        async handleSearchSelect(result) {
+            if (!result || !result.mrid) return
+            this.handleExplorerTab()
+            await this.$nextTick()
+            await this.goToNodeByMrid(result)
         },
         getWorkspaceStatePayload() {
             return {

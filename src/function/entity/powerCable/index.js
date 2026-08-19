@@ -18,6 +18,7 @@ import { insertTerminalCableInfoTransaction, getTerminalCableInfoByCableInfoId }
 import { insertSecondsTransaction, getSecondByIds, deleteSecondsByIdTransaction } from '@/function/cim/seconds';
 import PowerCableEntity from '@/views/Flatten/PowerCable/index'
 import { writeAssetSaveAuditLog, writeAssetDeleteAuditLog } from '../assetAudit/index'
+import { rollbackQuietly } from '@/function/datacontext/rollback'
 
 export const insertPowerCableEntity = async (old_entity, entity) => {
     try {
@@ -147,7 +148,7 @@ export const insertPowerCableEntity = async (old_entity, entity) => {
         restoreFiles(null, null, entity.asset.mrid);
         deleteBackupFiles(null, entity.asset.mrid);
         console.error('Error retrieving Power Cable entity:', error);
-        await runAsync('ROLLBACK');
+        await rollbackQuietly(runAsync, error);
         return { success: false, error, message: 'Error retrieving Power Cable entity' };
     }
 }
@@ -365,7 +366,7 @@ export const deletePowerCableEntity = async (entity) => {
         await writeAssetDeleteAuditLog('Power cable', entity)
         return { success: true, message: 'Power cable entity deleted successfully' };
     } catch (error) {
-        await runAsync('ROLLBACK');
+        await rollbackQuietly(runAsync, error);
         console.error('Delete Power Cable Error:', error);
         return { success: false, error, message: 'Error deleting Power Cable entity' };
     }

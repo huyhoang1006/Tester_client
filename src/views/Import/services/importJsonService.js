@@ -34,6 +34,7 @@
  *   - mrid không có trong decisions = không trùng → tạo mới bình thường.
  * ----------------------------------------------------------------------------
  */
+import { normaliseUnitsDeep } from '@/utils/unitNormalise'
 
 // Hằng số hành động xung đột — đồng bộ với CONFLICT_ACTION trong mridConflictScan.js
 const CONFLICT_ACTION = {
@@ -702,6 +703,28 @@ export const importBranchFromJSON = async (fileContent, targetNode, deps, decisi
     if (roots.length === 0) {
         messageHandler && messageHandler.warning('JSON file is empty')
         return
+    }
+
+    // ─── CHUẨN HOÁ ĐƠN VỊ NGAY TẠI CỬA ─────────────────────────────────────
+    //
+    // File export đang lưu hành có đơn vị hỏng: đo trên chính file 11.8 MB của người dùng
+    // ra 302 ô — 51 ô `null|Hz`, 47 ô `null|s`, 204 ô `null|`.
+    //
+    // Cơ chế: cột `multiplier` trong CSDL chứa CHUỖI 'null' (không phải giá trị null).
+    // Mọi mapper đều có guard kiểu `multiplier ? multiplier + '|' + unit : unit`, mà chuỗi
+    // 'null' là truthy nên guard vẫn cho qua và nối ra `null|Hz`.
+    //
+    // Không chặn ở đây thì mỗi lần import lại nạp chuỗi đó vào CSDL, rồi lần upload sau
+    // máy chủ từ chối — đúng vòng lặp đã gặp: cả cây hiện tại đến từ import JSON, và cả
+    // cây không đẩy lên được.
+    //
+    // Làm TRƯỚC khi ghi node đầu tiên, để không có node nào lọt qua với dữ liệu hỏng.
+    const unitFixes = normaliseUnitsDeep(roots, 'import JSON')
+    if (unitFixes.length > 0) {
+        messageHandler && messageHandler.warning(
+            `Fixed ${unitFixes.length} invalid unit value(s) in the file (for example "null|Hz" → "Hz"). ` +
+            `They came from an older export; the imported data uses the corrected values.`
+        )
     }
 
     // ── GHÉP ĐÚNG CẤP (Cách A) ──────────────────────────────────────────────

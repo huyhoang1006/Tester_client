@@ -44,6 +44,7 @@ import { insertMotorCharacteristicsBreakerInfoTransaction, getMotorCharacteristi
 import { insertUnderVoltageReleaseBreakerInfoTransaction, getUnderVoltageReleaseBreakerInfoByAssessmentLimitId, deleteUnderVoltageReleaseBreakerInfoTransaction } from '@/function/cim/underVoltageReleaseBreakerInfo'
 import { insertOvercurrentReleaseBreakerInfoTransaction, getOvercurrentReleaseBreakerInfoByAssessmentLimitId, deleteOvercurrentReleaseBreakerInfoTransaction } from '@/function/cim/overcurrentReleaseBreakerInfo'
 import { writeAssetSaveAuditLog, writeAssetDeleteAuditLog } from '../assetAudit/index'
+import { rollbackQuietly } from '@/function/datacontext/rollback'
 
 
 export const insertBreakerEntity = async (old_entity, entity) => {
@@ -217,7 +218,7 @@ export const insertBreakerEntity = async (old_entity, entity) => {
         console.error('Error in insertBreakerEntity:', error);
         restoreFiles(null, null, entity.asset.mrid);
         deleteBackupFiles(null, entity.asset.mrid);
-        await runAsync('ROLLBACK');
+        await rollbackQuietly(runAsync, error);
         console.error(error);
         return { success: false, error, message: `Error saving breaker entity: ${error.message || 'Unknown error'}` };
     }
@@ -273,7 +274,7 @@ export const updateMotorCharacteristicsLimits = async (assetId, assessmentLimits
         await runAsync('COMMIT')
         return { success: true, message: 'Motor characteristics limits updated' }
     } catch (error) {
-        await runAsync('ROLLBACK')
+        await rollbackQuietly(runAsync, error);
         console.error('updateMotorCharacteristicsLimits error:', error)
         return { success: false, message: error.message }
     }
@@ -304,7 +305,7 @@ export const updateContactResistanceLimits = async (assetId, assessmentLimits) =
         await runAsync('COMMIT')
         return { success: true, message: 'Contact resistance limits updated' }
     } catch (error) {
-        await runAsync('ROLLBACK')
+        await rollbackQuietly(runAsync, error);
         console.error('updateContactResistanceLimits error:', error)
         return { success: false, message: error.message }
     }
@@ -348,7 +349,7 @@ export const updateCoilCharacteristicsLimits = async (assetId, assessmentLimits,
         await runAsync('COMMIT')
         return { success: true, message: 'Coil characteristics limits updated' }
     } catch (error) {
-        await runAsync('ROLLBACK')
+        await rollbackQuietly(runAsync, error);
         console.error('updateCoilCharacteristicsLimits error:', error)
         return { success: false, message: error.message }
     }
@@ -384,7 +385,7 @@ export const updatePickupVoltageLimits = async (assetId, assessmentLimits) => {
         await runAsync('COMMIT')
         return { success: true, message: 'Pickup voltage limits updated' }
     } catch (error) {
-        await runAsync('ROLLBACK')
+        await rollbackQuietly(runAsync, error);
         console.error('updatePickupVoltageLimits error:', error)
         return { success: false, message: error.message }
     }
@@ -415,7 +416,7 @@ export const updateUnderVoltageReleaseLimits = async (assetId, assessmentLimits)
         await runAsync('COMMIT')
         return { success: true, message: 'Under-voltage release limits updated' }
     } catch (error) {
-        await runAsync('ROLLBACK')
+        await rollbackQuietly(runAsync, error);
         console.error('updateUnderVoltageReleaseLimits error:', error)
         return { success: false, message: error.message }
     }
@@ -446,7 +447,7 @@ export const updateOvercurrentReleaseLimits = async (assetId, assessmentLimits) 
         await runAsync('COMMIT')
         return { success: true, message: 'Overcurrent release limits updated' }
     } catch (error) {
-        await runAsync('ROLLBACK')
+        await rollbackQuietly(runAsync, error);
         console.error('updateOvercurrentReleaseLimits error:', error)
         return { success: false, message: error.message }
     }
@@ -483,7 +484,7 @@ export const updateOperatingTimeLimits = async (assetId, assessmentLimits) => {
         await runAsync('COMMIT')
         return { success: true, message: 'Operating time limits updated' }
     } catch (error) {
-        await runAsync('ROLLBACK')
+        await rollbackQuietly(runAsync, error);
         console.error('updateOperatingTimeLimits error:', error)
         return { success: false, message: error.message }
     }
@@ -550,7 +551,7 @@ export const updateAuxContactsLimits = async (assetId, assessmentLimits) => {
         await runAsync('COMMIT')
         return { success: true, message: 'Auxiliary contacts limits updated' }
     } catch (error) {
-        await runAsync('ROLLBACK')
+        await rollbackQuietly(runAsync, error);
         console.error('updateAuxContactsLimits error:', error)
         return { success: false, message: error.message }
     }
@@ -590,7 +591,7 @@ export const updateMiscellaneousLimits = async (assetId, assessmentLimits) => {
         await runAsync('COMMIT')
         return { success: true, message: 'Miscellaneous limits updated' }
     } catch (error) {
-        await runAsync('ROLLBACK')
+        await rollbackQuietly(runAsync, error);
         console.error('updateMiscellaneousLimits error:', error)
         return { success: false, message: error.message }
     }
@@ -1379,7 +1380,7 @@ export const deleteBreakerEntity = async (entity) => {
         return { success: true, message: 'Breaker entity deleted successfully' };
 
     } catch (error) {
-        await runAsync('ROLLBACK');
+        await rollbackQuietly(runAsync, error);
         console.error('Error deleting Breaker entity:', error);
         return { success: false, error, message: 'Error deleting Breaker entity' };
     }

@@ -150,6 +150,74 @@ export default {
         },
 
         /**
+         * ĐI TỚI NODE THEO mrid — dùng cho kết quả tìm kiếm.
+         *
+         * Khác `goToPath` ở chỗ đi theo mrid chứ không theo tên. Kết quả tìm kiếm chỉ có
+         * mrid, và mrid là định danh thật: hai ngăn trùng tên vẫn phân biệt được, còn đi
+         * theo tên thì gặp trùng là phải bỏ cuộc.
+         *
+         * Chuỗi cha hỏi thẳng CSDL (`getNodePath`) thay vì dò trên cây — dò thì phải bung
+         * từng nhánh một, với cây vài nghìn node là bung gần hết cây để tìm một cái.
+         */
+        async goToNodeByMrid(result) {
+            const api = window.electronAPI
+            if (!api || !api.getNodePath) {
+                this.$message.error('Cannot locate the node in this build')
+                return false
+            }
+
+            const rs = await api.getNodePath(result.mrid, result.mode)
+            if (!rs || !rs.success || !Array.isArray(rs.data) || rs.data.length === 0) {
+                this.$message.error(`Could not locate "${result.title}": ${(rs && rs.message) || 'path not found'}`)
+                return false
+            }
+            const chain = rs.data
+
+            const roots = this.organisationClientList
+            if (!Array.isArray(roots) || roots.length === 0) {
+                this.$message.error('Cannot locate the node (tree is empty)')
+                return false
+            }
+
+            let level = roots
+            let current = null
+
+            for (let i = 0; i < chain.length; i++) {
+                const step = chain[i]
+                const found = (level || []).find(n => n && n.mrid === step.mrid)
+                if (!found) {
+                    // Nói rõ đứt ở cấp nào. Thường gặp nhất: node thuộc về người dùng khác
+                    // nên không có mặt trên cây — mà tìm kiếm đã lọc theo quyền sở hữu, nên
+                    // nếu rơi vào đây thì là dữ liệu lệch, đáng để biết.
+                    const where = i === 0 ? 'the root' : (chain[i - 1].name || 'the level above')
+                    this.$message.error(`Could not open "${step.name || step.mrid}" under ${where}`)
+                    return false
+                }
+
+                current = found
+                if (i < chain.length - 1) {
+                    try {
+                        if (typeof this.fetchChildren === 'function') await this.fetchChildren(current)
+                    } catch (error) {
+                        console.error('[search] nap con that bai:', error)
+                        this.$message.error(`Could not open "${step.name || step.mrid}"`)
+                        return false
+                    }
+                    this.$set(current, 'expanded', true)
+                    level = Array.isArray(current.children) ? current.children : []
+                }
+            }
+
+            await this.$nextTick()
+            await this.revealPathTarget('client', current)
+
+            if (rs.truncatedPath) {
+                this.$message.warning(`Went to ${nodeLabel(current)} — the parent chain looks broken, check the tree`)
+            }
+            return true
+        },
+
+        /**
          * Chọn node đích và cập nhật thanh path.
          *
          * Dùng lại đúng đường mà một cú click chuột đi qua, để trạng thái sau khi nhảy
