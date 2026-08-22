@@ -12,7 +12,7 @@
                     </div>
                     <div class="ti-body">
                         <table class="ti-conditions">
-                            <tr v-if="conditions.top_oil_temp">
+                            <tr v-if="showOilAndWindingTemperatures && conditions.top_oil_temp">
                                 <td class="condition-head">Top oil temperature</td>
                                 <td>
                                     <el-input size="mini" type="text" number="positive"
@@ -21,7 +21,7 @@
                                     </el-input>
                                 </td>
                             </tr>
-                            <tr v-if="conditions.bottom_oil_temp">
+                            <tr v-if="showOilAndWindingTemperatures && conditions.bottom_oil_temp">
                                 <td class="condition-head">Bottom oil temperature</td>
                                 <td>
                                     <el-input size="mini" type="text" number="positive"
@@ -30,7 +30,7 @@
                                     </el-input>
                                 </td>
                             </tr>
-                            <tr v-if="conditions.winding_temp">
+                            <tr v-if="showOilAndWindingTemperatures && conditions.winding_temp">
                                 <td class="condition-head">Winding temperature</td>
                                 <td>
                                     <el-input size="mini" type="text" number="positive"
@@ -121,6 +121,8 @@
                     :current-table="compareCurrentTable"
                     :current-conditions="conditions"
                     :columns="compareColumns"
+                    :asset-data="assetData"
+                    :excluded-condition-keys="excludedConditionKeys"
                     @close="$emit('update:showCompare', false)" />
             </div>
         </div>
@@ -163,7 +165,8 @@ export default {
         compareAssetMrid: { type: String, default: '' },
         compareExcludeWorkMrid: { type: String, default: '' },
         // Loại thiết bị, để panel tra cột mốc trong config/compare-keys
-        compareAssetKind: { type: String, default: '' }
+        compareAssetKind: { type: String, default: '' },
+        showOilAndWindingTemperatures: { type: Boolean, default: false }
     },
     data() {
         return {
@@ -188,6 +191,10 @@ export default {
         testConditions: function () {
             return this.data
         },
+        excludedConditionKeys() {
+            if (this.showOilAndWindingTemperatures) return []
+            return ['top_oil_temp', 'bottom_oil_temp', 'winding_temp']
+        }
 
     },
     watch: {

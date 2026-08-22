@@ -4,6 +4,7 @@ import * as transformerJobMapping from '@/views/Mapping/TransformerJob/index'
 import TransformerJobDto from '@/views/Dto/Job/Transformer/index'
 import mixins from '../components/SelectTest/mixin'
 import { validateTestingEquipmentRows } from '@/views/JobView/Common/testingEquipmentValidation'
+import { validateInsulationResistanceTerminals } from '../components/InsulationResistance/terminalUtils'
 
 export default {
     mixins: [mixins],
@@ -19,6 +20,11 @@ export default {
             if (!validation.valid) {
                 this.$message.warning(validation.message)
                 return { success: false, validation: true, message: validation.message }
+            }
+            const terminalValidation = validateInsulationResistanceTerminals(this.transformerJobDto.testList)
+            if (!terminalValidation.valid) {
+                this.$message.warning(terminalValidation.message)
+                return { success: false, validation: true, message: terminalValidation.message }
             }
             try {
                 if (!this.transformerJobDto.properties.name || this.transformerJobDto.properties.name === '') {
@@ -78,7 +84,11 @@ export default {
         },
 
         async loadParameter(testTypeListData, assetData, productAssetModelData, locationData) {
-            this.testTypeListData = testTypeListData
+            const excludedTestTypes = ['DimensionWeight', 'TestingInstruments']
+            this.testTypeListData = (testTypeListData || []).filter(item => {
+                const testTypeCode = item && (item.alias_name || item.code)
+                return !excludedTestTypes.includes(testTypeCode)
+            })
             this.assetData = assetData
             this.productAssetModelData = productAssetModelData
             this.locationData = locationData

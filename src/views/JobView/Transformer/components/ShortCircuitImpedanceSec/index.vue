@@ -34,6 +34,7 @@
                     <th>Xk (Ω)</th>
                     <th>Zk (Ω)</th>
                     <th>uk cal (%)</th>
+                    <th>uk ref (%)</th>
                     <th>uk dev (%)</th>
                     <th class="assessment-col">Assessment</th>
                     <th class="condition-indicator-col">Condition indicator</th>
@@ -43,37 +44,30 @@
                 <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td><el-input size="mini" type="text" number="positive" v-model="item.tap.value"></el-input></td>
                     <td style="width: 10%">
-                        <div class="col-phase">
-                            <div class="phase">
-                                <el-select size="mini" v-model="item.phase.value" placeholder="Phase"><el-option label="A" value="A"></el-option><el-option label="B" value="B"></el-option><el-option label="C" value="C"></el-option></el-select>
-                            </div>
-                            <div class="rectangle"
-                                :class="{ red: item.phase.value == 'A', yellow: item.phase.value == 'B', blue: item.phase.value == 'C' }">
-                            </div>
-                        </div>
+                        <el-input size="mini" value="Three phase" readonly></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.rk.value"><template
+                        <el-input size="mini" type="text" number="positive" v-model="item.rk.value" @input="computeFields"><template
                                 slot="append">Ω</template></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.xk.value"><template
+                        <el-input size="mini" type="text" number="positive" v-model="item.xk.value" @input="computeFields"><template
                                 slot="append">Ω</template></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.zk.value"><template
+                        <el-input size="mini" type="text" v-model="item.zk.value" readonly><template
                                 slot="append">Ω</template></el-input>
                     </td>
-                    <template v-if="index % 3 == 0">
-                        <td rowspan="3">
-                            <el-input size="mini" type="text" number="positive" v-model="item.uk_cal.value"></el-input>
-                        </td>
-                    </template>
-                    <template v-if="index % 3 == 0">
-                        <td rowspan="3">
-                            <el-input size="mini" type="text" number="positive" v-model="item.uk_dev.value"></el-input>
-                        </td>
-                    </template>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.uk_cal.value" readonly></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" number="positive" v-model="item.uk_ref.value"
+                            @input="computeFields"></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.uk_dev.value" readonly></el-input>
+                    </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
                             <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>
@@ -109,22 +103,26 @@
                         </div>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.rk.value"><template
+                        <el-input size="mini" type="text" number="positive" v-model="item.rk.value" @input="computeFields"><template
                                 slot="append">Ω</template></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.xk.value"><template
+                        <el-input size="mini" type="text" number="positive" v-model="item.xk.value" @input="computeFields"><template
                                 slot="append">Ω</template></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.zk.value"><template
+                        <el-input size="mini" type="text" v-model="item.zk.value" readonly><template
                                 slot="append">Ω</template></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.uk_cal.value"></el-input>
+                        <el-input size="mini" type="text" v-model="item.uk_cal.value" readonly></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.uk_dev.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.uk_ref.value"
+                            @input="computeFields"></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" v-model="item.uk_dev.value" readonly></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -420,7 +418,24 @@ export default {
             }
         }
     },
+    created() {
+        this.ensureReferenceFields()
+    },
+    mounted() {
+        this.normalizeThreePhaseRows()
+        this.computeFields()
+    },
     methods: {
+        ensureReferenceFields() {
+            var table = (this.testData && this.testData.table) || {}
+            var emptyReference = this.rowData && this.rowData.uk_ref
+            if (!emptyReference) return
+            ;['table1', 'table2'].forEach(function(tableName) {
+                ;(table[tableName] || []).forEach(function(row) {
+                    if (!row.uk_ref) this.$set(row, 'uk_ref', JSON.parse(JSON.stringify(emptyReference)))
+                }.bind(this))
+            }.bind(this))
+        },
         add() {
             if (!this.testData.table) this.$set(this.testData, 'table', {})
             if (!this.testData.table.table1) this.$set(this.testData.table, 'table1', [])
@@ -446,55 +461,81 @@ export default {
             this.$message.success('Calculating successfully')
         },
         computeFields() {
-            var rows = this.testData.table.table1
-            if (!rows || rows.length === 0) return
-            var props = this.assetData && this.assetData.properties ? this.assetData.properties : {}
-            var basePower   = parseFloat(props.rated_power   || props.base_power)   // MVA
-            var baseVoltage = parseFloat(props.rated_voltage  || props.base_voltage) // kV
-            var ukNominal   = parseFloat(props.short_circuit_impedance || props.uk_percent)
-            var hasBase = !isNaN(basePower) && !isNaN(baseVoltage) && baseVoltage !== 0
-
-            for (var i = 0; i < rows.length; i++) {
-                var row = rows[i]
-                // zk = sqrt(rk^2 + xk^2)
+            var table = (this.testData && this.testData.table) || {}
+            this.computeRows(table.table1 || [])
+            this.computeRows(table.table2 || [])
+        },
+        computeRows(rows) {
+            var ratedPower = this.getRatedPower()
+            var ratedVoltage = this.getRatedVoltage()
+            var hasRatedValues = !isNaN(ratedPower) && !isNaN(ratedVoltage) && ratedVoltage !== 0
+            rows.forEach(function(row) {
                 var rk = parseFloat(row.rk && row.rk.value)
                 var xk = parseFloat(row.xk && row.xk.value)
-                if (!isNaN(rk) && !isNaN(xk)) {
-                    var zk = Math.sqrt(rk * rk + xk * xk)
-                    if (!row.zk.value) row.zk.value = String(Math.round(zk * 1000000) / 1000000)
+                var zk = !isNaN(rk) && !isNaN(xk) ? Math.sqrt(rk * rk + xk * xk) : NaN
+                row.zk.value = this.formatCalculatedValue(zk, 6)
+
+                var ukCal = hasRatedValues && !isNaN(zk)
+                    ? zk * ratedPower / Math.pow(ratedVoltage, 2) * 100
+                    : NaN
+                row.uk_cal.value = this.formatCalculatedValue(ukCal, 4)
+
+                var ukRef = parseFloat(row.uk_ref && row.uk_ref.value)
+                if (isNaN(ukRef)) {
+                    ukRef = this.getReferenceUk(row.tap && row.tap.value)
+                    if (!isNaN(ukRef) && row.uk_ref) row.uk_ref.value = this.formatCalculatedValue(ukRef, 4)
                 }
-            }
-            // uk_cal per group of 3 (three-phase)
-            for (var g = 0; g < rows.length; g += 3) {
-                var groupFirstRow = rows[g]
-                if (!hasBase) continue
-                var zkVals = []
-                for (var j = g; j < Math.min(g + 3, rows.length); j++) {
-                    var zkV = parseFloat(rows[j].zk && rows[j].zk.value)
-                    if (!isNaN(zkV)) zkVals.push(zkV)
-                }
-                if (zkVals.length === 3) {
-                    // Three-phase formula
-                    var zkAvg = (zkVals[0] + zkVals[1] + zkVals[2]) / 3
-                    var ukCal = zkAvg * (basePower * 1e6) / Math.pow(baseVoltage * 1000, 2) * 100
-                    groupFirstRow.uk_cal.value = String(Math.round(ukCal * 10000) / 10000)
-                    if (!isNaN(ukNominal) && ukNominal !== 0) {
-                        groupFirstRow.uk_dev.value = String(Math.round(100 * (ukCal - ukNominal) / ukNominal * 10000) / 10000)
-                    }
-                } else if (zkVals.length === 1) {
-                    // Per-phase fallback
-                    var ukCalPerPhase = zkVals[0] * (basePower * 1e6) / Math.pow(baseVoltage * 1000, 2) * 100
-                    groupFirstRow.uk_cal.value = String(Math.round(ukCalPerPhase * 10000) / 10000)
-                    if (!isNaN(ukNominal) && ukNominal !== 0) {
-                        groupFirstRow.uk_dev.value = String(Math.round(100 * (ukCalPerPhase - ukNominal) / ukNominal * 10000) / 10000)
-                    }
-                }
-            }
+                var ukDev = !isNaN(ukCal) && !isNaN(ukRef) && ukRef !== 0
+                    ? Math.abs((ukCal - ukRef) / ukRef) * 100
+                    : NaN
+                row.uk_dev.value = this.formatCalculatedValue(ukDev, 4)
+            }.bind(this))
+        },
+        normalizeThreePhaseRows() {
+            var table = this.testData && this.testData.table
+            if (!table || !Array.isArray(table.table1)) return
+            if (table.table1[0] && table.table1[0].phase) table.table1[0].phase.value = 'Three phase'
+            if (table.table1.length > 1) this.$set(table, 'table1', table.table1.slice(0, 1))
+            if (Array.isArray(table.table2) && table.table2.length > 3)
+                this.$set(table, 'table2', table.table2.slice(0, 3))
+        },
+        getRatedPower() {
+            var powerRatings = (this.assetData && this.assetData.ratings && this.assetData.ratings.power_ratings) || []
+            return this.measurementToBase(powerRatings[0] && powerRatings[0].rated_power, 'VA')
+        },
+        getRatedVoltage() {
+            var voltageRatings = (this.assetData && this.assetData.ratings && this.assetData.ratings.voltage_ratings) || []
+            var rating = voltageRatings.find(function(item) { return item.winding === this.$constant.SEC }.bind(this))
+            return this.measurementToBase(rating && rating.voltage_ll, 'V')
+        },
+        getReferenceUk(tap) {
+            var impedances = (this.assetData && this.assetData.impedances && this.assetData.impedances.sec_tert) || []
+            var reference = impedances.find(function(item) {
+                return String(item.oltc_position || item.detc_position || '') === String(tap || '')
+            })
+            if (!reference && impedances.length === 1) reference = impedances[0]
+            return parseFloat(reference && reference.short_circuit_impedances_uk && reference.short_circuit_impedances_uk.value)
+        },
+        measurementToBase(measurement, baseUnit) {
+            if (!measurement) return NaN
+            var value = parseFloat(measurement.value)
+            if (isNaN(value)) return NaN
+            var unit = String(measurement.unit || baseUnit)
+            var multiplier = unit.indexOf('M|') === 0 || unit === 'MVA' ? 1000000
+                : unit.indexOf('k|') === 0 || unit === 'kVA' || unit === 'kV' ? 1000
+                    : unit.indexOf('m|') === 0 ? 0.001
+                        : 1
+            return value * multiplier
+        },
+        formatCalculatedValue(value, decimals) {
+            if (isNaN(value) || !isFinite(value)) return ''
+            var factor = Math.pow(10, decimals)
+            return String(Math.round(value * factor) / factor)
         },
         async calcAssessment() {
             var assessmentStandard = this.filteredAssessmentData.find(function(x) { return x.code === this.option }.bind(this))
             if (!assessmentStandard) { this.$message.error('Please select an assessment standard'); return }
-            var rows = this.testData.table.table1
+            var rows = this.currentOption === 'threePhase' ? this.testData.table.table1 : this.testData.table.table2
             for (var i = 0; i < rows.length; i++) {
                 var row = rows[i]
                 var measurementMap = {}
@@ -503,11 +544,6 @@ export default {
                     if (!item || typeof item !== 'object') return
                     if (item.measurement_id) measurementMap[item.measurement_id] = item.value
                 })
-                // uk_dev rowspan=3 → lấy từ row đầu nhóm
-                var groupFirstRow = rows[Math.floor(i / 3) * 3]
-                if (groupFirstRow && groupFirstRow.uk_dev && groupFirstRow.uk_dev.measurement_id) {
-                    measurementMap[groupFirstRow.uk_dev.measurement_id] = groupFirstRow.uk_dev.value
-                }
                 if (row.uk_dev && row.uk_dev.measurement_id !== undefined) {
                     var _abs_uk_dev = parseFloat(measurementMap[row.uk_dev.measurement_id])
                     if (!isNaN(_abs_uk_dev)) measurementMap[row.uk_dev.measurement_id] = Math.abs(_abs_uk_dev)
@@ -519,14 +555,7 @@ export default {
             return common.evaluateAssessmentGroup(group, measurementMap)
         },
         clear() {
-            if (this.testData.table && this.testData.table.table1) {
-                this.testData.table.table1.forEach(function(row) {
-                    Object.keys(row).forEach(function(key) {
-                        if (key === 'mrid') return
-                        if (row[key] && typeof row[key] === 'object' && 'value' in row[key]) row[key].value = ''
-                    })
-                })
-            }
+            common.clearEditableTestValues(this.testData && this.testData.table)
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) return 'Good'

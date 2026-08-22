@@ -44,7 +44,7 @@
                             Ageing
                         </el-button>
                         <el-button @click="MoitureShow()" style="width: 100%; margin-left: 0px;">
-                            Moiture of insulation
+                            Moisture of insulation
                         </el-button>
                         <el-button @click="BushingShow()" style="width: 100%; margin-left: 0px;">
                             Bushing

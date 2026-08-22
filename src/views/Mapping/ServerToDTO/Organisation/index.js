@@ -34,8 +34,9 @@ export const mapServerToDto = (serverData) => {
     const town         = addr?.townDetail      || null;
 
     const hasStreet    = !!(street?.addressGeneral);
-    const hasTown      = !!(town?.city || town?.districtOrTown || town?.wardOrCommune || town?.country);
-    const hasAddr      = hasStreet || hasTown;
+    const hasTown      = !!(town?.city || town?.districtOrTown || town?.wardOrCommune
+        || town?.stateOrProvince || town?.country);
+    const hasAddr      = hasStreet || hasTown || !!addr?.postalCode;
 
     dto.street            = street?.addressGeneral  || '';
     dto.ward_or_commune   = town?.wardOrCommune     || '';
@@ -51,9 +52,12 @@ export const mapServerToDto = (serverData) => {
 
     // 5. Attachment
     if (serverData.attachment) {
-        dto.attachmentId    = serverData.attachment.id   || '';
+        dto.attachmentId    = serverData.attachment.mRID || serverData.attachment.mrid
+            || serverData.attachment.id || '';
+        dto.attachment.id   = dto.attachmentId;
         dto.attachment.name = serverData.attachment.name || '';
         dto.attachment.path = serverData.attachment.path || '';
+        dto.attachment.type = serverData.attachment.type || '';
     } else {
         dto.attachmentId = '';
         dto.attachment   = { id: '', name: '', path: '', type: '' };
@@ -63,14 +67,108 @@ export const mapServerToDto = (serverData) => {
     dto.positionPoints = { x: [], y: [], z: [] };
     if (Array.isArray(serverData.positionPoints)) {
         serverData.positionPoints.forEach(p => {
-            if (p.xposition !== null || p.yposition !== null || p.zposition !== null) {
+            const xPosition = p.xPosition ?? p.xposition;
+            const yPosition = p.yPosition ?? p.yposition;
+            const zPosition = p.zPosition ?? p.zposition;
+            if (xPosition != null || yPosition != null || zPosition != null) {
                 const pointId = p.mrid || p.mRID || uuid.newUuid();
-                dto.positionPoints.x.push({ id: pointId, coor: p.xposition });
-                dto.positionPoints.y.push({ id: pointId, coor: p.yposition });
-                dto.positionPoints.z.push({ id: pointId, coor: p.zposition });
+                dto.positionPoints.x.push({ id: pointId, coor: xPosition });
+                dto.positionPoints.y.push({ id: pointId, coor: yPosition });
+                dto.positionPoints.z.push({ id: pointId, coor: zPosition });
             }
         });
     }
 
     return dto;
+};
+
+const emptyToNull = (value) => {
+    return value === '' || value === undefined ? null : value;
+};
+
+const coordinateValue = (points, axis, index) => {
+    const values = points && Array.isArray(points[axis]) ? points[axis] : [];
+    const item = values[index];
+    if (item && typeof item === 'object') return emptyToNull(item.coor);
+    return emptyToNull(item);
+};
+
+const mapPositionPoints = (points) => {
+    const x = points && Array.isArray(points.x) ? points.x : [];
+    const y = points && Array.isArray(points.y) ? points.y : [];
+    const z = points && Array.isArray(points.z) ? points.z : [];
+    const length = Math.max(x.length, y.length, z.length);
+
+    return Array.from({ length }, (_, index) => {
+        const xPosition = coordinateValue(points, 'x', index);
+        const yPosition = coordinateValue(points, 'y', index);
+        const zPosition = coordinateValue(points, 'z', index);
+        if (xPosition === null && yPosition === null && zPosition === null) return null;
+
+        return {
+            mRID: null,
+            ownerId: null,
+            groupNumber: 1,
+            sequenceNumber: index + 1,
+            xPosition,
+            yPosition,
+            zPosition
+        };
+    }).filter(Boolean);
+};
+
+export const mapDtoToServer = (dto, parentId, serverId = null) => {
+    const source = dto || {};
+    const attachment = source.attachment || {};
+    const hasAttachment = !!(attachment.id || attachment.name || attachment.path);
+
+    return {
+        mRID: emptyToNull(serverId),
+        name: emptyToNull(source.name),
+        aliasName: emptyToNull(source.aliasName),
+        description: emptyToNull(source.comment),
+        organisation: {
+            mRID: emptyToNull(serverId),
+            name: emptyToNull(source.name),
+            aliasName: emptyToNull(source.aliasName),
+            description: emptyToNull(source.comment),
+            parentOrganisation: emptyToNull(parentId),
+            taxCode: emptyToNull(source.tax_code),
+            electronicAddress: source.email || source.fax ? {
+                mRID: null,
+                email: emptyToNull(source.email),
+                fax: emptyToNull(source.fax)
+            } : null,
+            phone: source.phoneNumber ? {
+                mRID: null,
+                localNumber: source.phoneNumber
+            } : null,
+            streetAddress: source.street || source.address || source.ward_or_commune || source.district_or_town
+                || source.city || source.state_or_province || source.country || source.postal_code ? {
+                    mRID: null,
+                    postalCode: emptyToNull(source.postal_code),
+                    streetDetail: source.street || source.address ? {
+                        mRID: null,
+                        addressGeneral: source.street || source.address
+                    } : null,
+                    townDetail: source.ward_or_commune || source.district_or_town || source.city
+                        || source.state_or_province || source.country ? {
+                            mRID: null,
+                            wardOrCommune: emptyToNull(source.ward_or_commune),
+                            districtOrTown: emptyToNull(source.district_or_town),
+                            city: emptyToNull(source.city),
+                            stateOrProvince: emptyToNull(source.state_or_province),
+                            country: emptyToNull(source.country)
+                        } : null
+                } : null
+        },
+        attachment: hasAttachment ? {
+            mRID: emptyToNull(attachment.id),
+            name: emptyToNull(attachment.name),
+            path: emptyToNull(attachment.path),
+            type: emptyToNull(attachment.type),
+            idForeign: emptyToNull(attachment.id_foreign)
+        } : null,
+        positionPoints: mapPositionPoints(source.positionPoints)
+    };
 };

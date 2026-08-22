@@ -52,10 +52,11 @@
             </thead>
             <tbody>
                 <tr v-for="(item, index) in testData.table.table1" :key="index">
-                    <td>
+                    <td :rowspan="phaseGroupSize()" v-if="isPhaseGroupStart(index)">
                         <div class="phase-cell">
-                            <el-select v-if="index % (assetData.unit_count) == 1" class="phase-input" size="mini" v-model="item.phase.value" placeholder="Phase"><el-option label="A" value="A"></el-option><el-option label="B" value="B"></el-option><el-option label="C" value="C"></el-option></el-select>
-                            <div :class="{ colorTableRed: index % 3 == 0, colorTableYellow: index % 3 == 1, colorTableBlue: index % 3 == 2 }"
+                            <el-select class="phase-input" size="mini" v-model="item.phase.value" placeholder="Phase"
+                                @change="updatePhaseGroup(index, $event)"><el-option label="A" value="A"></el-option><el-option label="B" value="B"></el-option><el-option label="C" value="C"></el-option></el-select>
+                            <div :class="phaseColorClass(item.phase.value)"
                                 class="phase-color"></div>
                         </div>
                     </td>
@@ -88,12 +89,12 @@
                             <el-option value="Bad">Bad</el-option>
                         </el-select>
                     </td>
-                    <td :rowspan="assetData.unit_count" v-if="index % (assetData.unit_count) == 0">
+                    <td :rowspan="phaseGroupSize()" v-if="isPhaseGroupStart(index)">
                         <el-button size="mini" type="primary" class="row-btn" title="Insert row below" @click="addTest(index)">
                             <i class="fa-solid fa-plus"></i>
                         </el-button>
                     </td>
-                    <td :rowspan="assetData.unit_count" v-if="index % (assetData.unit_count) == 0">
+                    <td :rowspan="phaseGroupSize()" v-if="isPhaseGroupStart(index)">
                         <el-button size="mini" type="danger" class="row-btn" title="Delete row" @click="deleteTest(index)">
                             <i class="fas fa-trash"></i>
                         </el-button>
@@ -202,6 +203,29 @@ export default {
         }
     },
     methods: {
+        phaseGroupSize() {
+            const count = Number(this.assetData && this.assetData.unit_count)
+            return Number.isFinite(count) && count > 0 ? Math.floor(count) : 1
+        },
+        isPhaseGroupStart(index) {
+            return index % this.phaseGroupSize() === 0
+        },
+        updatePhaseGroup(index, phase) {
+            const rows = this.testData && this.testData.table && this.testData.table.table1
+            if (!Array.isArray(rows)) return
+            const size = this.phaseGroupSize()
+            const start = index - (index % size)
+            rows.slice(start, start + size).forEach(row => {
+                if (row && row.phase) this.$set(row.phase, 'value', phase)
+            })
+        },
+        phaseColorClass(phase) {
+            return {
+                colorTableRed: phase === 'A',
+                colorTableYellow: phase === 'B',
+                colorTableBlue: phase === 'C'
+            }
+        },
         add() {
             if (!this.testData.table) this.$set(this.testData, 'table', {})
             if (!this.testData.table.table1) this.$set(this.testData.table, 'table1', [])
@@ -263,15 +287,7 @@ export default {
             return common.evaluateAssessmentGroup(group, measurementMap)
         },
         clear() {
-            if (this.testData.table && this.testData.table.table1) {
-                this.testData.table.table1.forEach(row => {
-                    Object.keys(row).forEach(key => {
-                        if (key === 'mrid') return
-                        if (row[key] && typeof row[key] === 'object' && 'value' in row[key])
-                            row[key].value = ''
-                    })
-                })
-            }
+            common.clearEditableTestValues(this.testData && this.testData.table)
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) return 'Good'

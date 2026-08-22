@@ -13,14 +13,14 @@
         "mrid": "cd7c7410-3118-46bb-9773-c7461ae0382b",
         "name": "UPR",
         "code": "upr",
-        "unit": "A",
+        "unit": "kV",
         "type": "analog"
     },
     {
         "mrid": "0faee410-4fa4-4d1b-abfc-7aa4a555ff4e",
         "name": "USR",
         "code": "usr",
-        "unit": "A",
+        "unit": "V",
         "type": "analog"
     },
     {
@@ -32,7 +32,7 @@
     {
       "mrid": "1d510b78-7413-4777-a344-4b65d4e3e920",
       "code": "ratio_dev",
-      "name": "Ratio dev",
+      "name": "Ratio dev (%)",
       "type": "analog",
       "unit": "%",
       "measurement_type": "test, assessment"

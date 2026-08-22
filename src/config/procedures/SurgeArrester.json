@@ -1,6 +1,12 @@
 {  "name":"Surge arrester",
   "procedure": [
     {
+      "mrid": "cd37afa1-0357-4fe3-b52e-cd960c39a1cf",
+      "code": "GeneralInspection",
+      "name": "General inspection",
+      "kind": "test"
+    },
+    {
       "mrid": "847b9f63-a309-4a8b-a253-9f9a161c3179",
       "code": "InsulationResistance",
       "name": "Insulation resistance",
@@ -16,12 +22,6 @@
       "mrid": "15c95a31-5cbc-4204-8ebf-4676ef40ed33",
       "code": "PowerFrequency",
       "name": "Power frequency voltage at reference current",
-      "kind": "test"
-    },
-    {
-      "mrid": "cd37afa1-0357-4fe3-b52e-cd960c39a1cf",
-      "code": "GeneralInspection",
-      "name": "General inspection",
       "kind": "test"
     }
   ]

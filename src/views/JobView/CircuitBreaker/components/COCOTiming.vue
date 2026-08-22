@@ -28,13 +28,14 @@
                         <th>Interrupter</th>
                         <th>Opening time (ms)</th>
                         <th>Opening sync. between phase (ms)</th>
+                        <th>Opening sync. between interrupters (ms)</th>
                         <th class="assessment-col">Assessment</th>
                         <th class="condition-indicator-col">Condition indicator</th>
                     </thead>
                     <tbody>
                         <tr v-for="(item, index) in tableData" :key="index">
                             <td>
-                                <div style="display: flex; width: 100%;">
+                                <div class="phase-select-cell">
                                     <el-select size="mini" v-model="item.phase.value" placeholder="Phase"><el-option label="A" value="A"></el-option><el-option label="B" value="B"></el-option><el-option label="C" value="C"></el-option></el-select>
                                     <div
                                         :class="{ colorTableRed: item.phase.value == 'A', colorTableYellow: item.phase.value == 'B', colorTableBlue: item.phase.value == 'C' }">
@@ -49,11 +50,15 @@
                             </td>
                             <td>
                                 <el-input size="mini" type="text" number="positive"
-                                    v-model="item.opening_time.value"></el-input>
+                                    v-model="item.opening_time.value" @input="calculateTimingSynchronism"></el-input>
                             </td>
                             <td>
                                 <el-input size="mini" type="text" number="positive"
-                                    v-model="item.opening_sync_between_phase.value"></el-input>
+                                    v-model="item.opening_sync_between_phase.value" readonly></el-input>
+                            </td>
+                            <td>
+                                <el-input size="mini" type="text"
+                                    :value="item.opening_sync_between_interrupter ? item.opening_sync_between_interrupter.value : ''" readonly></el-input>
                             </td>
                             <td>
                                 <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -397,6 +402,7 @@
 </template>
 
 <script>
+import * as common from '../../Common/index.js'
 import timingMixin from './timingMixin'
 import circuitBreakerTestMap from '@/config/test-definitions/CircuitBreaker'
 
@@ -537,6 +543,7 @@ export default {
             if (this.testData && (!this.testData.table || Object.keys(this.testData.table).length === 0) && this.assetData && this.assetData.operating) {
                 this.initializeTable()
             }
+            this.calculateTimingSynchronism()
         })
     },
     watch: {
@@ -1048,6 +1055,7 @@ export default {
         },
 
         calculator() {
+            this.calculateTimingSynchronism()
             var entries = this.getTableEntries()
             var cb = this.getCircuitBreakerConfig()
             var iPerPhase = cb.interruptersPerPhase
@@ -1069,15 +1077,7 @@ export default {
         },
 
         clear() {
-            this.getTableEntries().forEach(function (entry) {
-                entry.rows.forEach(function (ele) {
-                    Object.keys(ele).forEach(function (key) {
-                        if (ele[key] && typeof ele[key] === 'object' && ele[key].value !== undefined) {
-                            ele[key].value = ''
-                        }
-                    })
-                })
-            }.bind(this))
+            common.clearEditableTestValues(this.testData && this.testData.table)
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) {

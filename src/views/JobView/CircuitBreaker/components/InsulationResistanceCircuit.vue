@@ -179,14 +179,7 @@ export default {
             this.$message.warning('Assessment limits for insulation resistance not yet configured in asset')
         },
         clear() {
-            this.testData.table.table1.forEach(row => {
-                Object.keys(row).forEach(key => {
-                    if (key === "mrid") return;
-                    if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
-                        row[key].value = ""
-                    }
-                })
-            })
+            common.clearEditableTestValues(this.testData && this.testData.table)
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) {

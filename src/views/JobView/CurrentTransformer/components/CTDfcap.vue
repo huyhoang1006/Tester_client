@@ -69,16 +69,18 @@
                         <el-input size="mini" type="text" v-model="item.df_ref.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.c_ref.value"></el-input>
+                        <el-input size="mini" type="text" v-model="item.c_ref.value"
+                            @input="calcRowDeltaC(item)"></el-input>
                     </td>
                     <td>
                         <el-input size="mini" type="text" v-model="item.df_meas.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.c_meas.value"></el-input>
+                        <el-input size="mini" type="text" v-model="item.c_meas.value"
+                            @input="calcRowDeltaC(item)"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.delta_c_percent.value"></el-input>
+                        <el-input size="mini" type="text" v-model="item.delta_c_percent.value" readonly></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -205,6 +207,7 @@ export default {
     mounted() {
         this.$nextTick(() => {
             this.initializeTable()
+            this.calcDeltaC()
         })
     },
     watch: {
@@ -398,11 +401,18 @@ export default {
             this.$message.success('Calculating successfully')
         },
         async calcDeltaC() {
-            this.testData.table.table1.forEach(item => {
-                if (!isNaN(parseFloat(item.c_ref.value)) && !isNaN(parseFloat(item.c_meas.value)) && item.c_ref.value != 0) {
-                    item.delta_c_percent.value = (100 * (parseFloat(item.c_meas.value) - parseFloat(item.c_ref.value)) / parseFloat(item.c_ref.value)).toFixed(4)
-                }
-            })
+            this.testData.table.table1.forEach(this.calcRowDeltaC)
+        },
+        calcRowDeltaC(item) {
+            const measured = parseFloat(item.c_meas.value)
+            const reference = parseFloat(item.c_ref.value)
+
+            if (!Number.isFinite(measured) || !Number.isFinite(reference) || reference === 0) {
+                item.delta_c_percent.value = ''
+                return
+            }
+
+            item.delta_c_percent.value = Math.abs(100 * (measured - reference) / reference).toFixed(4)
         },
 
         async calcAssessment() {
@@ -467,18 +477,7 @@ export default {
         },
         
         clear() {
-            this.testData.table.table1.forEach((element) => {
-                element.measurement.value = "",
-                    element.test_mode.value = '',
-                    element.test_voltage.value = '',
-                    element.df_ref.value = '',
-                    element.c_ref.value = '',
-                    element.df_meas.value = '',
-                    element.c_meas.value = '',
-                    element.delta_c_percent.value = '',
-                    element.assessment.value = '',
-                    element.condition_indicator.value = ''
-            })
+            common.clearEditableTestValues(this.testData && this.testData.table)
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) {

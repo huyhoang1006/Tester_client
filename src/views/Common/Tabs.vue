@@ -905,6 +905,7 @@ export default {
                     const response = await demoAPI.getSubstationById(tab.mrid);
                     if (response) {
                         const dto = SubstationServerMapper.mapServerToDto(response.data || response);
+                        await this.attachServerAssetMedia(dto, 'Substation', tab.mrid || tab.id);
                         this.executeOrQueueLoadData(id, (comp) => {
                             comp.loadData({ dto: dto, locationList: [], personList:[] });
                         });
@@ -928,6 +929,7 @@ export default {
                     if (response) {
                         const serverData = response.data || response;
                         const dto = OrganisationServerMapper.mapServerToDto(serverData);
+                        await this.attachServerAssetMedia(dto, 'Organisation', tab.mrid || tab.id);
 
                         // Đảm bảo positionPoints luôn tồn tại
                         if (!dto.positionPoints) {

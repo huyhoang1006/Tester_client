@@ -50,6 +50,7 @@
                 @fmeca-node="handleFmecaFromContext"
                 @show-equipment="handleShowEquipment"
                 @import-excel="handleImportExcelFromContext" @import-word="handleImportWordFromContext"
+                @import-ptm="handleImportPtmFromContext"
                 @export-json-only-node="handleExportJsonOnlyNodeFromContext"
                 @export-json-full-tree="handleExportJsonFullTreeFromContext"
                 @show-data="showDataClient" @refresh-node="handleRefreshNode" />
@@ -1334,6 +1335,10 @@ export default {
                     result = await this.saveBayToServer(component, tab)
                 } else if (tab.mode === 'voltageLevel') {
                     result = await this.saveVoltageLevelToServer(component, tab)
+                } else if (tab.mode === 'substation') {
+                    result = await this.saveSubstationToServer(component, tab)
+                } else if (tab.mode === 'organisation') {
+                    result = await this.saveOrganisationToServer(component, tab)
                 } else if (tab.mode === 'job') {
                     const jobResult = await saveServerJobTab(component, tab)
 

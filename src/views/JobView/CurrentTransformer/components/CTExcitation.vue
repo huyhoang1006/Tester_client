@@ -21,7 +21,7 @@
                 <el-button size="mini" :type="compareOpen ? 'primary' : ''" @click="$emit('toggle-compare')">
                     <i class="fa-solid fa-scale-balanced"></i> Compare with previous results
                 </el-button>
-                <el-button size="mini" @click="showCurve = true">
+                <el-button size="mini" :loading="curveCheckLoading" @click="openExcitationCurve">
                     <i class="fa-solid fa-chart-line"></i> Excitation curve
                 </el-button>
             </div>
@@ -32,6 +32,7 @@
             <thead>
                 <tr>
                     <th>Name</th>
+                    <th>Ipn/Isn</th>
                     <th>I knee (A)</th>
                     <th>V knee (V)</th>
                     <th class="assessment-col">Assessment</th>
@@ -46,12 +47,23 @@
                         <el-input size="mini" type="text" v-model="item.name.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.i_knee.value"
-                            @blur="validateIKnee(item, index)">
+                        <el-input class="ratio-input" size="mini" type="text"
+                            :value="transformationRatio(item)" readonly></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" number="positive"
+                            :value="displayKneeValue(item.i_knee.value, item, index, 'i')"
+                            @input="setKneeValue(item, 'i_knee', $event)"
+                            @focus="setKneeEditing(item, index, 'i', true)"
+                            @blur="handleIKneeBlur(item, index)">
                         </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.v_knee.value"></el-input>
+                        <el-input size="mini" type="text" number="positive"
+                            :value="displayKneeValue(item.v_knee.value, item, index, 'v')"
+                            @input="setKneeValue(item, 'v_knee', $event)"
+                            @focus="setKneeEditing(item, index, 'v', true)"
+                            @blur="setKneeEditing(item, index, 'v', false)"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -98,7 +110,8 @@
         -->
         <el-dialog title="Excitation curve" :visible.sync="showCurve"
                    width="min(1180px, 95vw)" top="6vh" append-to-body destroy-on-close>
-            <CtExcitationCurve v-if="showCurve" ref="curve" :rows="testData.table.table1" />
+            <CtExcitationCurve v-if="showCurve" ref="curve" :rows="testData.table.table1"
+                :asset="assetData" />
         </el-dialog>
 
         <!-- Assessment settings -->
@@ -144,6 +157,7 @@ import * as common from '../../Common/index'
 import GroupNode from '../../Common/GroupNode.vue'
 import CtExcitationCurve from './CtExcitationCurve.vue'
 import { changeTestStandard } from '../../Common'
+import { getCtTapCurrents, getCtTapRatio } from '@/utils/ctTapRatio'
 
 export default {
     name: "CTExcitation",
@@ -158,7 +172,9 @@ export default {
             option: null,
             // Mac dinh DONG: duong cong la thu xem them, va chua mo thi khong ton
             // mot vong truy van nao.
-            showCurve: false
+            showCurve: false,
+            curveCheckLoading: false,
+            kneeEditing: {}
         }
     },
     mounted() {
@@ -240,6 +256,56 @@ export default {
         }
     },
     methods: {
+        async openExcitationCurve() {
+            if (this.curveCheckLoading) return
+            const rows = this.testData && this.testData.table && this.testData.table.table1
+                ? this.testData.table.table1
+                : []
+            const ids = rows.map(row => row && row.mrid).filter(Boolean)
+            const api = window.electronAPI
+
+            if (ids.length === 0 || !api || typeof api.getCtExcitationPointsByDatasetIds !== 'function') {
+                this.$message.warning('Excitation curve only available for results imported from PTM (OMICRON)')
+                return
+            }
+
+            this.curveCheckLoading = true
+            try {
+                const result = await api.getCtExcitationPointsByDatasetIds(ids)
+                const grouped = result && result.success && result.data ? result.data : {}
+                const hasCurvePoints = Object.keys(grouped).some(key => Array.isArray(grouped[key]) && grouped[key].length > 0)
+                if (!hasCurvePoints) {
+                    this.$message.warning('Excitation curve only available for results imported from PTM (OMICRON)')
+                    return
+                }
+                this.showCurve = true
+            } catch (error) {
+                console.error('[CTExcitation] Failed to check curve data:', error)
+                this.$message.error('Could not load excitation curve data')
+            } finally {
+                this.curveCheckLoading = false
+            }
+        },
+        kneeEditKey(item, index, axis) {
+            return `${item && item.mrid ? item.mrid : index}:${axis}`
+        },
+        setKneeEditing(item, index, axis, editing) {
+            this.$set(this.kneeEditing, this.kneeEditKey(item, index, axis), editing)
+        },
+        setKneeValue(item, field, value) {
+            if (!item || !item[field]) return
+            this.$set(item[field], 'value', value)
+        },
+        displayKneeValue(value, item, index, axis) {
+            if (value === '' || value === null || value === undefined) return ''
+            if (this.kneeEditing[this.kneeEditKey(item, index, axis)]) return String(value)
+            const number = Number(value)
+            return Number.isFinite(number) ? number.toFixed(4) : String(value)
+        },
+        handleIKneeBlur(item, index) {
+            this.validateIKnee(item, index)
+            this.setKneeEditing(item, index, 'i', false)
+        },
         initializeTable() {
             if (!this.testData.table) {
                 this.$set(this.testData, 'table', {})
@@ -258,39 +324,7 @@ export default {
             if (!this.testData.table.table1) {
                 this.initializeTable()
             }
-            this.testData.table.table1.push({
-                mrid: "",
-                name: {
-                    mrid: "",
-                    value: "",
-                    unit: "",
-                    type: "string"
-                },
-                i_knee: {
-                    mrid: "",
-                    value: "",
-                    unit: "A",
-                    type: "analog"
-                },
-                v_knee: {
-                    mrid: "",
-                    value: "",
-                    unit: "V",
-                    type: "analog"
-                },
-                assessment: {
-                    mrid: "",
-                    value: "",
-                    unit: "",
-                    type: "discrete"
-                },
-                condition_indicator: {
-                    mrid: "",
-                    value: "",
-                    unit: "",
-                    type: "discrete"
-                }
-            })
+            this.testData.table.table1.push(JSON.parse(JSON.stringify(this.rowData)))
         },
         removeAll() {
             this.$confirm('This will delete the file. Continue?', 'Warning', {
@@ -305,39 +339,7 @@ export default {
             this.testData.table.table1.splice(index, 1)
         },
         addTest(index) {
-            const data = {
-                mrid: "",
-                name: {
-                    mrid: "",
-                    value: "",
-                    unit: "",
-                    type: "string"
-                },
-                i_knee: {
-                    mrid: "",
-                    value: "",
-                    unit: "A",
-                    type: "analog"
-                },
-                v_knee: {
-                    mrid: "",
-                    value: "",
-                    unit: "V",
-                    type: "analog"
-                },
-                assessment: {
-                    mrid: "",
-                    value: "",
-                    unit: "",
-                    type: "discrete"
-                },
-                condition_indicator: {
-                    mrid: "",
-                    value: "",
-                    unit: "",
-                    type: "discrete"
-                }
-            }
+            const data = JSON.parse(JSON.stringify(this.rowData))
             this.testData.table.table1.splice(index + 1, 0, data)
         },
         async calculator() {
@@ -407,17 +409,7 @@ export default {
         },
 
         clear() {
-            if (!this.testData.table.table1) {
-                this.initializeTable()
-                return
-            }
-            this.testData.table.table1.forEach((element) => {
-                element.name.value = "",
-                    element.i_knee.value = '',
-                    element.v_knee.value = '',
-                    element.assessment.value = '',
-                    element.condition_indicator.value = ''
-            })
+            common.clearEditableTestValues(this.testData && this.testData.table)
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) {
@@ -440,7 +432,8 @@ export default {
             const iKneeValue = parseFloat(item.i_knee.value)
 
             // Check if value is empty
-            if (!item.i_knee.value || item.i_knee.value.trim() === '') {
+            if (item.i_knee.value === null || item.i_knee.value === undefined
+                || String(item.i_knee.value).trim() === '') {
                 return
             }
 
@@ -459,7 +452,7 @@ export default {
             }
 
             // Get Isn value for this row from assetData
-            const isnValue = this.getIsnForRow(item.name.value)
+            const isnValue = getCtTapCurrents(this.assetData, item.name.value).isn
 
             if (isnValue && !isNaN(parseFloat(isnValue))) {
                 const isn = parseFloat(isnValue)
@@ -472,43 +465,8 @@ export default {
                 }
             }
         },
-        getIsnForRow(rowName) {
-            // Try to get Isn from Entity (CtTapInfo)
-            if (this.assetData && this.assetData.CtTapInfo && this.assetData.currentFlow) {
-                const tap = this.assetData.CtTapInfo.find(t => t.tap_name === rowName)
-                if (tap && tap.isn) {
-                    const isnObj = this.assetData.currentFlow.find(cf => cf.mrid === tap.isn)
-                    return isnObj ? isnObj.value : null
-                }
-            }
-
-            // Try to get Isn from DTO (ctConfiguration.dataCT)
-            if (this.assetData && this.assetData.ctConfiguration && this.assetData.ctConfiguration.dataCT) {
-                for (const core of this.assetData.ctConfiguration.dataCT) {
-                    // Check Full tap
-                    if (core.fullTap && core.fullTap.table && core.fullTap.table.name === rowName) {
-                        return core.fullTap.table.isn.value
-                    }
-
-                    // Check Main taps
-                    if (core.mainTap && core.mainTap.data) {
-                        const mainTap = core.mainTap.data.find(t => t.table && t.table.name === rowName)
-                        if (mainTap) {
-                            return mainTap.table.isn.value
-                        }
-                    }
-
-                    // Check Inter taps
-                    if (core.interTap && core.interTap.data) {
-                        const interTap = core.interTap.data.find(t => t.table && t.table.name === rowName)
-                        if (interTap) {
-                            return interTap.table.isn.value
-                        }
-                    }
-                }
-            }
-
-            return null
+        transformationRatio(item) {
+            return getCtTapRatio(this.assetData, item && item.name && item.name.value)
         }
     }
 }
@@ -673,6 +631,13 @@ export default {
 ::v-deep(.test-table .el-input__inner) {
     width: 100%;
     font-size: 12px !important;
+}
+
+::v-deep(.ratio-input .el-input__inner) {
+    min-width: 110px;
+    background: #f5f7fa;
+    color: #606266;
+    cursor: default;
 }
 
 /* Màu condition indicator */

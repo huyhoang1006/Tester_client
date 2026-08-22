@@ -4,6 +4,8 @@ import * as powerCableJobMapping from "@/views/Mapping/PowerCableJob/index"
 import PowerCableJobDto from "@/views/Dto/Job/PowerCable/index";
 import mixins from '../components/SelectTest/mixin'
 import { validateTestingEquipmentRows } from '@/views/JobView/Common/testingEquipmentValidation'
+import { validateTerminalRows } from '@/views/JobView/Common/terminalSelect'
+import { buildPhaseTerminals } from '@/views/JobView/Common/terminalOptions'
 
 export default {
     mixins: [mixins],
@@ -19,6 +21,16 @@ export default {
             if (!validation.valid) {
                 this.$message.warning(validation.message)
                 return { success: false, validation: true, message: validation.message }
+            }
+
+            // Bắt buộc chọn đủ CẢ HAI vế của mỗi dòng cách điện. Chặn ở đây chứ không ở
+            // tầng ghi: người dùng còn đang nhìn bảng, chỉ đúng dòng nào thiếu là sửa ngay.
+            const terminalValidation = validateTerminalRows(
+                this.powerCableJobDto.testList, 'InsulationResistance', () => buildPhaseTerminals()
+            )
+            if (!terminalValidation.valid) {
+                this.$message.warning(terminalValidation.message)
+                return { success: false, validation: true, message: terminalValidation.message }
             }
             try {
                 if (!this.powerCableJobDto.properties.name || this.powerCableJobDto.properties.name === '') {

@@ -29,6 +29,7 @@ export default {
                     break
             }
 
+            common.markInitialTestValues(data && data.table)
             return data
         },
         async initInsulationResistance(testTypeCode, assetData) {

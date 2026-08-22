@@ -112,6 +112,56 @@
     gap: 4px;
 }
 
+/* Phase controls share one cell with a fixed colour marker. The legacy global
+   styles give .phase a fixed width and margins, so reset them here to keep the
+   select and marker inside the table cell at every dialog width. */
+.test-table .col-phase,
+.test-table .phase-select-cell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 5px;
+    align-items: stretch;
+    gap: 4px;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.test-table .col-phase .phase {
+    display: block;
+    width: auto;
+    min-width: 0;
+    margin: 0;
+    line-height: normal;
+}
+
+.test-table .col-phase .rectangle,
+.test-table .phase-select-cell > .colorTableRed,
+.test-table .phase-select-cell > .colorTableYellow,
+.test-table .phase-select-cell > .colorTableBlue {
+    display: block;
+    width: 5px;
+    min-width: 5px;
+    height: auto;
+    min-height: 28px;
+    margin: 0;
+    border-radius: 1px;
+}
+
+::v-deep(.test-table .col-phase .phase > .el-input),
+::v-deep(.test-table .col-phase .phase > .el-select),
+::v-deep(.test-table .phase-select-cell > .el-select) {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+}
+
+::v-deep(.test-table .col-phase .phase > .el-select > .el-input),
+::v-deep(.test-table .phase-select-cell > .el-select > .el-input) {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+}
+
 .test-table .action-col {
     width: 44px;
 }

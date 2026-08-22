@@ -54,7 +54,7 @@
                     <tbody>
                         <tr v-for="(item, index) in tableData" :key="index">
                             <td>
-                                <div style="display: flex; width: 100%;">
+                                <div class="phase-select-cell">
                                     <el-select size="mini" v-model="item.phase.value" placeholder="Phase"><el-option label="A" value="A"></el-option><el-option label="B" value="B"></el-option><el-option label="C" value="C"></el-option></el-select>
                                     <div
                                         :class="{ colorTableRed: item.phase.value == 'A', colorTableYellow: item.phase.value == 'B', colorTableBlue: item.phase.value == 'C' }">
@@ -63,13 +63,13 @@
                             </td>
                             <td>
                                 <el-input size="mini" type="text" number="positive"
-                                    v-model="item.closing_time.value"></el-input>
+                                    v-model="item.closing_time.value" @input="calculateTimingSynchronism"></el-input>
                             </td>
                             <td v-if="index % (getInterruptersPerPhase() * getNumberOfPhases()) === 0"
                                 :rowspan="getInterruptersPerPhase() * getNumberOfPhases()">
                                 <el-input :rows="getInterruptersPerPhase() * getNumberOfPhases()" type="textarea"
                                     size="mini" number="positive"
-                                    v-model="item.closing_sync_between_phase.value"></el-input>
+                                    v-model="item.closing_sync_between_phase.value" readonly></el-input>
                             </td>
                             <td>
                                 <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -117,7 +117,7 @@
                     <tbody>
                         <tr v-for="(item, index) in tableData" :key="index">
                             <td v-if="index % getInterruptersPerPhase() === 0" :rowspan="getInterruptersPerPhase()">
-                                <div style="display: flex; width: 100%;">
+                                <div class="phase-select-cell">
                                     <el-select size="mini" v-model="item.phase.value" placeholder="Phase"><el-option label="A" value="A"></el-option><el-option label="B" value="B"></el-option><el-option label="C" value="C"></el-option></el-select>
                                     <div
                                         :class="{ colorTableRed: item.phase.value == 'A', colorTableYellow: item.phase.value == 'B', colorTableBlue: item.phase.value == 'C' }">
@@ -130,16 +130,16 @@
                             </td>
                             <td>
                                 <el-input type="text" number="positive" size="mini"
-                                    v-model="item.closing_time.value"></el-input>
+                                    v-model="item.closing_time.value" @input="calculateTimingSynchronism"></el-input>
                             </td>
                             <td v-if="index % getInterruptersPerPhase() === 0" :rowspan="getInterruptersPerPhase()">
                                 <el-input :rows="getInterruptersPerPhase()" type="textarea" number="positive"
-                                    v-model="item.closing_sync_between_interrupter.value"></el-input>
+                                    v-model="item.closing_sync_between_interrupter.value" readonly></el-input>
                             </td>
                             <td v-if="index % (getInterruptersPerPhase() * getNumberOfPhases()) === 0"
                                 :rowspan="getInterruptersPerPhase() * getNumberOfPhases()">
                                 <el-input :rows="getInterruptersPerPhase() * getNumberOfPhases()" type="textarea"
-                                    number="positive" v-model="item.closing_sync_between_phase.value"></el-input>
+                                    number="positive" v-model="item.closing_sync_between_phase.value" readonly></el-input>
                             </td>
                             <td>
                                 <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -483,6 +483,7 @@
 </template>
 
 <script>
+import * as common from '../../Common/index.js'
 import timingMixin from './timingMixin'
 export default {
     mixins: [timingMixin],
@@ -563,6 +564,7 @@ export default {
             if (this.testData && (!this.testData.table || Object.keys(this.testData.table).length === 0) && this.assetData && this.assetData.operating) {
                 this.initializeTable()
             }
+            this.calculateTimingSynchronism()
         })
     },
     props: {
@@ -1249,6 +1251,7 @@ export default {
         },
 
         calculator() {
+            this.calculateTimingSynchronism()
             var entries = this.getTableEntries()
             var cb = this.getCircuitBreakerConfig()
             var iPerPhase = cb.interruptersPerPhase
@@ -1275,15 +1278,7 @@ export default {
             this.notifyAssessmentCalculated()
         },
         clear() {
-            this.getTableEntries().forEach(function (entry) {
-                entry.rows.forEach(function (ele) {
-                    Object.keys(ele).forEach(function (key) {
-                        if (ele[key] && typeof ele[key] === 'object' && ele[key].value !== undefined) {
-                            ele[key].value = ''
-                        }
-                    })
-                })
-            }.bind(this))
+            common.clearEditableTestValues(this.testData && this.testData.table)
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) {

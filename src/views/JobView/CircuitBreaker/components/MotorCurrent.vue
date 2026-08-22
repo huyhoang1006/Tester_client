@@ -247,14 +247,7 @@ export default {
             this.notifyAssessmentCalculated()
         },
         clear() {
-            this.testData.table.forEach((element) => {
-                if (element.inrush_current) element.inrush_current.value = ''
-                if (element.charging) element.charging.value = ''
-                if (element.charging_current) element.charging_current.value = ''
-                if (element.mini_voltage) element.mini_voltage.value = ''
-                if (element.assessment) element.assessment.value = ''
-                if (element.condition_indicator) element.condition_indicator.value = ''
-            })
+            common.clearEditableTestValues(this.testData && this.testData.table)
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) {

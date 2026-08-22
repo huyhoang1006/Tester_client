@@ -3,6 +3,7 @@ import transformerTestMap from '@/config/test-definitions/Transformer'
 import transformerConditionMap from '@/config/testing-condition/Transformer/index.js'
 import * as common from '../../../../Common/index.js'
 import transformerAssessmentMap from '@/config/testing-assessment/Transformer'
+import { writeTerminalSides } from '../../InsulationResistance/terminalUtils'
 
 export default {
     methods: {
@@ -96,6 +97,7 @@ export default {
                     data = await this.initGasChromatography(testTypeCode)
                     break
             }
+            common.markInitialTestValues(data && data.table)
             return data
         },
         async initGeneralInspection(testTypeCode) {
@@ -160,34 +162,32 @@ export default {
 
             if (asset.properties.type === 'Two-winding') {
                 measurementConfigs = [
-                    {pos: '(HV + LV) - GND', type: 'HV-E'},
-                    {pos: 'HV - (LV + GND)', type: 'HV-E'},
-                    {pos: 'LV - (HV + GND)', type: 'LV-E'}
+                    { terminal1: ['Prim', 'Sec'], terminal2: ['GND'] },
+                    { terminal1: ['Prim'], terminal2: ['Sec', 'GND'] },
+                    { terminal1: ['Sec'], terminal2: ['Prim', 'GND'] }
                 ]
             } else if (asset.properties.type === 'Three-winding') {
                 measurementConfigs = [
-                    {pos: 'HV - (LV + TV + GND)', type: 'HV-E'},
-                    {pos: 'LV - (HV + LV + GND)', type: 'LV-E'},
-                    {pos: '(HV + LV + TV) - GND', type: 'HV-E'},
-                    {pos: 'TV - (HV + LV + GND)', type: 'LV-E'}
+                    { terminal1: ['Prim'], terminal2: ['Sec', 'Tert', 'GND'] },
+                    { terminal1: ['Sec'], terminal2: ['Prim', 'Tert', 'GND'] },
+                    { terminal1: ['Prim', 'Sec', 'Tert'], terminal2: ['GND'] },
+                    { terminal1: ['Tert'], terminal2: ['Prim', 'Sec', 'GND'] }
                 ]
             } else if (asset.properties.type === 'Auto w/ tert') {
                 measurementConfigs = [
-                    {pos: '(HV + LV) - (TV + GND)', type: 'HV-E'},
-                    {pos: '(HV + LV + TV) - GND', type: 'HV-E'},
-                    {pos: 'TV - (HV + LV + GND)', type: 'LV-E'}
+                    { terminal1: ['Prim', 'Sec'], terminal2: ['Tert', 'GND'] },
+                    { terminal1: ['Prim', 'Sec', 'Tert'], terminal2: ['GND'] },
+                    { terminal1: ['Tert'], terminal2: ['Prim', 'Sec', 'GND'] }
                 ]
             } else if (asset.properties.type === 'Auto w/o tert') {
-                measurementConfigs = [{pos: '(HV + LV) - GND', type: 'HV-E'}]
+                measurementConfigs = [{ terminal1: ['Prim', 'Sec'], terminal2: ['GND'] }]
             } else {
-                measurementConfigs = [{pos: '', type: ''}]
+                measurementConfigs = [{ terminal1: [], terminal2: [] }]
             }
 
             measurementConfigs.forEach((config) => {
                 const row = JSON.parse(JSON.stringify(rowDataExample))
-
-                row.measurement.value = config.pos
-                row.type.value = config.type
+                writeTerminalSides(row, config.terminal1, config.terminal2)
 
                 table1.push(row)
             })
@@ -871,23 +871,17 @@ export default {
             let phases = ['A', 'B', 'C']
             let primSec = assetData.impedances.prim_sec || []
 
-            if (primSec.length > 0) {
-                primSec.forEach((e) => {
-                    phases.forEach((phase) => {
-                        const row1 = JSON.parse(JSON.stringify(rowDataExample))
-                        const row2 = JSON.parse(JSON.stringify(rowDataExample))
-
-                        if (row1.tap) row1.tap.value = e.oltc_position
-                        if (row1.phase) row1.phase.value = phase
-
-                        if (row2.tap) row2.tap.value = e.oltc_position
-                        if (row2.phase) row2.phase.value = phase
-
-                        table1.push(row1)
-                        table2.push(row2)
-                    })
-                })
-            }
+            const reference = primSec[0] || {}
+            const row1 = JSON.parse(JSON.stringify(rowDataExample))
+            if (row1.tap) row1.tap.value = reference.oltc_position || reference.detc_position || ''
+            if (row1.phase) row1.phase.value = 'Three phase'
+            table1.push(row1)
+            phases.forEach((phase) => {
+                const row2 = JSON.parse(JSON.stringify(rowDataExample))
+                if (row2.tap) row2.tap.value = reference.oltc_position || reference.detc_position || ''
+                if (row2.phase) row2.phase.value = phase
+                table2.push(row2)
+            })
 
             const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
@@ -908,23 +902,17 @@ export default {
             let phases = ['A', 'B', 'C']
             let secTert = assetData.impedances.sec_tert || []
 
-            if (secTert.length > 0) {
-                secTert.forEach((e) => {
-                    phases.forEach((phase) => {
-                        const row1 = JSON.parse(JSON.stringify(rowDataExample))
-                        const row2 = JSON.parse(JSON.stringify(rowDataExample))
-
-                        if (row1.tap) row1.tap.value = e.oltc_position
-                        if (row1.phase) row1.phase.value = phase
-
-                        if (row2.tap) row2.tap.value = e.oltc_position
-                        if (row2.phase) row2.phase.value = phase
-
-                        table1.push(row1)
-                        table2.push(row2)
-                    })
-                })
-            }
+            const reference = secTert[0] || {}
+            const row1 = JSON.parse(JSON.stringify(rowDataExample))
+            if (row1.tap) row1.tap.value = reference.oltc_position || reference.detc_position || ''
+            if (row1.phase) row1.phase.value = 'Three phase'
+            table1.push(row1)
+            phases.forEach((phase) => {
+                const row2 = JSON.parse(JSON.stringify(rowDataExample))
+                if (row2.tap) row2.tap.value = reference.oltc_position || reference.detc_position || ''
+                if (row2.phase) row2.phase.value = phase
+                table2.push(row2)
+            })
 
             const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {
@@ -945,23 +933,17 @@ export default {
             let phases = ['A', 'B', 'C']
             let primTert = assetData.impedances.prim_tert || []
 
-            if (primTert.length > 0) {
-                primTert.forEach((e) => {
-                    phases.forEach((phase) => {
-                        const row1 = JSON.parse(JSON.stringify(rowDataExample))
-                        const row2 = JSON.parse(JSON.stringify(rowDataExample))
-
-                        if (row1.tap) row1.tap.value = e.oltc_position
-                        if (row1.phase) row1.phase.value = phase
-
-                        if (row2.tap) row2.tap.value = e.oltc_position
-                        if (row2.phase) row2.phase.value = phase
-
-                        table1.push(row1)
-                        table2.push(row2)
-                    })
-                })
-            }
+            const reference = primTert[0] || {}
+            const row1 = JSON.parse(JSON.stringify(rowDataExample))
+            if (row1.tap) row1.tap.value = reference.oltc_position || reference.detc_position || ''
+            if (row1.phase) row1.phase.value = 'Three phase'
+            table1.push(row1)
+            phases.forEach((phase) => {
+                const row2 = JSON.parse(JSON.stringify(rowDataExample))
+                if (row2.tap) row2.tap.value = reference.oltc_position || reference.detc_position || ''
+                if (row2.phase) row2.phase.value = phase
+                table2.push(row2)
+            })
 
             const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
             return {

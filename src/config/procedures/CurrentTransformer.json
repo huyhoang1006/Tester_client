@@ -1,6 +1,12 @@
 {  "name" : "Current transformer",
   "procedure" : [
     {
+      "mrid": "cd64fb09-950b-4258-84ee-149cf7938142",
+      "code": "GeneralInspection",
+      "name": "General inspection",
+      "kind": "test"
+    },
+    {
       "mrid": "aac04d70-ca0e-466b-ab4f-969a0afb7fef",
       "code": "InsulationResistance",
       "name": "Insulation resistance",
@@ -28,12 +34,6 @@
       "mrid": "291bbd7d-0233-4e64-8539-f82a4d172a30",
       "code": "CTDfcap",
       "name": "CT DF & CAP",
-      "kind": "test"
-    },
-    {
-      "mrid": "cd64fb09-950b-4258-84ee-149cf7938142",
-      "code": "GeneralInspection",
-      "name": "General inspection",
       "kind": "test"
     }
   ]

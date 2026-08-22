@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { ptmToCtJobDto } from '@/utils/ptm/ptmToCtJobDto'
-import { jobDtoToEntity } from '@/views/Mapping/CurrentTransformerJob'
+import { jobDtoToEntity, JobEntityToDto } from '@/views/Mapping/CurrentTransformerJob'
 import { applyPtmToCtAssetDto, buildCtConfigurationFromPtm } from '@/utils/ptm/ptmToCtAssetDto'
 import CurrentTransformerDto from '@/views/Dto/CurrentTransformer'
 import CTConfigurationDto from '@/views/Dto/CurrentTransformer/CTConfiguration'
@@ -172,14 +172,45 @@ export default {
                 if (rs && rs.success && Array.isArray(rs.data) && wanted) {
                     const matches = rs.data.filter(j => str(j && j.name).trim().toLowerCase() === wanted)
                     if (matches.length > 0) {
-                        this.ptmJobDup = matches.map(j => ({
-                            mrid: j.mrid,
-                            name: j.name,
-                            // Ngày đo để người dùng phân biệt: cùng tên nhưng khác ngày là
-                            // hai lần thử khác nhau, và chỉ họ biết cái nào cần giữ.
-                            executionDate: j.execution_date || '',
-                            testedBy: j.tested_by || '',
-                        }))
+                        const duplicateJobs = []
+
+                        // Cần đọc tới cấp test ngay ở bước preview. Chỉ biết "trùng job"
+                        // thì không đủ để người dùng quyết định test nào giữ, test nào thay.
+                        for (const j of matches) {
+                            const summary = {
+                                mrid: j.mrid,
+                                name: j.name,
+                                executionDate: j.execution_date || '',
+                                testedBy: j.tested_by || '',
+                                tests: [],
+                                loadError: '',
+                            }
+                            try {
+                                const detail = await api.getCurrentTransformerJobByMrid(j.mrid)
+                                if (!detail || !detail.success || !detail.data) {
+                                    throw new Error((detail && detail.message) || 'job data not found')
+                                }
+                                const dto = JobEntityToDto(detail.data)
+                                const occurrences = {}
+                                summary.tests = (dto.testList || []).map(test => {
+                                    const code = test.testTypeCode
+                                    occurrences[code] = (occurrences[code] || 0) + 1
+                                    return {
+                                        mrid: test.mrid,
+                                        name: test.name || test.testTypeName || code,
+                                        testTypeCode: code,
+                                        testTypeName: test.testTypeName || code,
+                                        occurrence: occurrences[code],
+                                    }
+                                })
+                            } catch (error) {
+                                summary.loadError = error.message || 'could not read job tests'
+                                console.error('[ptm] doc chi tiet job trung that bai:', j.mrid, error)
+                            }
+                            duplicateJobs.push(summary)
+                        }
+
+                        this.ptmJobDup = duplicateJobs
                     }
                 } else if (rs && !rs.success) {
                     // Không đối chiếu được thì NÓI RA. Im lặng ở đây nghĩa là người dùng
@@ -208,13 +239,25 @@ export default {
                 creatingAsset,
                 assetMrid,
                 coreConfig,
-                tests: jobDto.testList.map(t => {
-                    const rows = ((t.data.table.table1) || [])
+                tests: jobDto.testList.map((t, importIndex) => {
+                    const tables = (t.data && t.data.table) || {}
+                    const rows = Object.keys(tables).reduce((all, key) => {
+                        return all.concat(Array.isArray(tables[key]) ? tables[key] : [])
+                    }, [])
                     const rowIds = rows.map(r => r.mrid)
                     const curves = rowIds.filter(id => curvePoints[id]).length
                     const points = rowIds.reduce((sum, id) => sum + ((curvePoints[id] || []).length), 0)
                     const knees = rowIds.reduce((sum, id) => sum + ((kneePoints[id] || []).length), 0)
-                    return { name: t.testTypeName || t.testTypeCode, rows: rows.length, curves, points, knees }
+                    return {
+                        importIndex,
+                        importedMrid: t.mrid,
+                        testTypeCode: t.testTypeCode,
+                        name: t.testTypeName || t.testTypeCode,
+                        rows: rows.length,
+                        curves,
+                        points,
+                        knees,
+                    }
                 }),
             }
         },
@@ -250,14 +293,14 @@ export default {
         /**
          * Ghi thật.
          *
-         * @param {object} actions { assetAction, jobAction } — mỗi cái 'overwrite' | 'skip'
+         * @param {object} actions quyết định ở cấp asset, job và từng test khi merge.
          *
          *   assetAction  chỉ có nghĩa khi thiết bị trùng và người dùng ĐANG KHÔNG đứng ở
          *                chính thiết bị đó. Đứng ở thiết bị nào là đã chọn nó, không hỏi.
          *   jobAction    chỉ có nghĩa khi có job trùng tên dưới thiết bị đích.
          */
         async handlePtmConfirm(actions) {
-            const { assetAction, jobAction } = actions || {}
+            const { assetAction, jobAction, targetJobMrid, testDecisions } = actions || {}
             const preview = this.ptmPreview
             const target = this.ptmTargetNode
             if (!preview || !target) return
@@ -279,7 +322,32 @@ export default {
             })
 
             try {
-                const dto = preview.jobDto
+                let dto = this.clonePtmValue(preview.jobDto)
+                let oldEntity = null
+                let mergedTestCount = dto.testList.length
+                let mergeSummary = null
+
+                // Merge chỉ thay đổi testList. Mọi thông tin Overview, attachment, testing
+                // equipment và các test không được chọn của job cũ đều được giữ nguyên.
+                if (jobDup.length > 0 && jobAction === 'merge') {
+                    const targetMrid = targetJobMrid || jobDup[0].mrid
+                    const old = await window.electronAPI.getCurrentTransformerJobByMrid(targetMrid)
+                    if (!old || !old.success || !old.data) {
+                        throw new Error(`Could not read the existing job to merge: ${(old && old.message) || 'not found'}`)
+                    }
+
+                    oldEntity = old.data
+                    mergeSummary = this.mergePtmTestsIntoJob(
+                        JobEntityToDto(old.data),
+                        preview.jobDto,
+                        testDecisions || []
+                    )
+                    dto = mergeSummary.dto
+                    mergedTestCount = mergeSummary.importedCount
+                    if (mergedTestCount === 0) {
+                        throw new Error('No PTM test was selected to add or overwrite')
+                    }
+                }
 
                 // ─── Thiết bị TRƯỚC, job SAU ────────────────────────────────
                 //
@@ -327,28 +395,49 @@ export default {
                 let overwritingJob = null
                 if (jobDup.length > 0 && jobAction === 'overwrite') {
                     reporter.progress('Reading the existing job...')
-                    const old = await window.electronAPI.getCurrentTransformerJobByMrid(jobDup[0].mrid)
+                    const overwriteMrid = targetJobMrid || jobDup[0].mrid
+                    const old = await window.electronAPI.getCurrentTransformerJobByMrid(overwriteMrid)
                     if (!old || !old.success || !old.data) {
                         throw new Error(
                             `Could not read the existing job to overwrite it: ${(old && old.message) || 'not found'}`
                         )
                     }
                     overwritingJob = old.data
-                    dto.properties.mrid = jobDup[0].mrid
+                    dto.properties.mrid = overwriteMrid
+                    oldEntity = overwritingJob
                 }
 
                 const entity = jobDtoToEntity(dto)
 
                 // Đường cong đi CÙNG entity, vào cùng một transaction với bảng test. Hai
                 // đường ghi riêng thì bảng lưu xong mà đường cong hỏng, không ai chặn.
-                entity.ctExcitationPoints = preview.curvePoints
-                entity.ctExcitationKneePoints = preview.kneePoints || {}
+                if (jobAction === 'merge' && mergeSummary) {
+                    entity.ctExcitationPoints = this.mergePtmPointMaps(
+                        oldEntity.ctExcitationPoints || {},
+                        preview.curvePoints || {},
+                        mergeSummary.finalRowIds,
+                        mergeSummary.importedRowIds
+                    )
+                    entity.ctExcitationKneePoints = this.mergePtmPointMaps(
+                        oldEntity.ctExcitationKneePoints || {},
+                        preview.kneePoints || {},
+                        mergeSummary.finalRowIds,
+                        mergeSummary.importedRowIds
+                    )
+                } else {
+                    entity.ctExcitationPoints = preview.curvePoints
+                    entity.ctExcitationKneePoints = preview.kneePoints || {}
+                }
 
-                reporter.progress(overwritingJob ? 'Overwriting the existing job...' : 'Writing job and tests...')
+                reporter.progress(
+                    jobAction === 'merge'
+                        ? 'Merging selected PTM tests into the existing job...'
+                        : (overwritingJob ? 'Overwriting the existing job...' : 'Writing job and tests...')
+                )
 
                 // Job mới thì `old_entity` rỗng — không có gì để so mà xoá.
-                const oldEntity = overwritingJob || this.buildEmptyOldEntity(entity)
-                const rs = await window.electronAPI.insertCurrentTransformerJob(oldEntity, entity)
+                const entityBeforeSave = oldEntity || overwritingJob || this.buildEmptyOldEntity(entity)
+                const rs = await window.electronAPI.insertCurrentTransformerJob(entityBeforeSave, entity)
 
                 if (!rs || !rs.success) {
                     throw new Error((rs && rs.message) || 'Insert job failed')
@@ -379,9 +468,15 @@ export default {
                     }
                 }
 
-                const curveCount = Object.keys(preview.curvePoints).length
-                const pointCount = Object.values(preview.curvePoints).reduce((s, a) => s + a.length, 0)
-                const kneeCount = Object.values(preview.kneePoints || {}).reduce((s, a) => s + a.length, 0)
+                const importedCurvePoints = mergeSummary
+                    ? this.filterPtmPointMap(preview.curvePoints || {}, mergeSummary.importedRowIds)
+                    : (preview.curvePoints || {})
+                const importedKneePoints = mergeSummary
+                    ? this.filterPtmPointMap(preview.kneePoints || {}, mergeSummary.importedRowIds)
+                    : (preview.kneePoints || {})
+                const curveCount = Object.keys(importedCurvePoints).length
+                const pointCount = Object.values(importedCurvePoints).reduce((s, a) => s + a.length, 0)
+                const kneeCount = Object.values(importedKneePoints).reduce((s, a) => s + a.length, 0)
                 let assetNote = ''
                 if (assetUpdate && assetUpdate.created) {
                     const cores = ((preview.coreConfig && preview.coreConfig.config) || {}).cores || '?'
@@ -389,9 +484,11 @@ export default {
                 } else if (assetUpdate && assetUpdate.appliedCount > 0) {
                     assetNote = `, ${assetUpdate.appliedCount} asset field(s) updated`
                 }
-                const verb = overwritingJob ? 'Overwrote the existing job with' : 'Imported'
+                const verb = jobAction === 'merge'
+                    ? 'Merged into the existing job:'
+                    : (overwritingJob ? 'Overwrote the existing job with' : 'Imported')
                 this.$message.success(
-                    `${verb} ${dto.testList.length} test(s), ${curveCount} curve(s), ${pointCount} points, ${kneeCount} knee point(s)${assetNote}`
+                    `${verb} ${mergedTestCount} PTM test(s), ${curveCount} curve(s), ${pointCount} points, ${kneeCount} knee point(s)${assetNote}`
                 )
 
                 // Trường bị bỏ khi ghi đè (lệch đơn vị) là thứ người dùng CẦN biết — họ vừa
@@ -561,6 +658,98 @@ export default {
                 if (Array.isArray(value)) out[key] = []
                 else if (value && typeof value === 'object') out[key] = { ...value }
                 else out[key] = value
+            }
+            return out
+        },
+
+        clonePtmValue(value) {
+            return JSON.parse(JSON.stringify(value))
+        },
+
+        collectPtmTestRowIds(test) {
+            const tables = (test && test.data && test.data.table) || {}
+            return Object.keys(tables).reduce((ids, key) => {
+                const rows = Array.isArray(tables[key]) ? tables[key] : []
+                return ids.concat(rows.map(row => row && row.mrid).filter(Boolean))
+            }, [])
+        },
+
+        /**
+         * Lấy job cũ làm nền và xử lý từng test PTM độc lập.
+         * - loại chưa tồn tại: tự động thêm;
+         * - keep: giữ test cũ, bỏ bản PTM;
+         * - overwrite: thay đúng test được chọn nhưng giữ work-task MRID cũ;
+         * - duplicate: nối thêm một work task cùng loại với MRID mới từ bộ chuyển PTM.
+         */
+        mergePtmTestsIntoJob(existingDto, importedDto, decisions) {
+            const dto = this.clonePtmValue(existingDto)
+            const importedTests = this.clonePtmValue(importedDto.testList || [])
+            const decisionMap = {}
+            for (const decision of decisions || []) {
+                decisionMap[decision.importIndex] = decision
+            }
+
+            const finalTests = Array.isArray(dto.testList) ? dto.testList : []
+            const originalExistingTests = finalTests.slice()
+            const importedRowIds = []
+            let importedCount = 0
+
+            importedTests.forEach((importedTest, importIndex) => {
+                const matches = originalExistingTests.filter(test => test.testTypeCode === importedTest.testTypeCode)
+                if (matches.length === 0) {
+                    finalTests.push(importedTest)
+                    importedRowIds.push(...this.collectPtmTestRowIds(importedTest))
+                    importedCount += 1
+                    return
+                }
+
+                const decision = decisionMap[importIndex] || { action: 'keep' }
+                if (decision.action === 'duplicate') {
+                    finalTests.push(importedTest)
+                    importedRowIds.push(...this.collectPtmTestRowIds(importedTest))
+                    importedCount += 1
+                    return
+                }
+
+                if (decision.action !== 'overwrite') return
+
+                const target = matches.find(test => test.mrid === decision.targetMrid) || matches[0]
+                const targetIndex = finalTests.findIndex(test => test.mrid === target.mrid)
+                // Work-task MRID là định danh của hạng mục test. Giữ nó để đây là update,
+                // còn dataset/value từ PTM có MRID mới và sẽ thay dữ liệu cũ trong transaction.
+                importedTest.mrid = target.mrid
+                finalTests.splice(targetIndex, 1, importedTest)
+                importedRowIds.push(...this.collectPtmTestRowIds(importedTest))
+                importedCount += 1
+            })
+
+            dto.testList = finalTests
+            dto.properties.mrid = existingDto.properties.mrid
+            return {
+                dto,
+                importedCount,
+                importedRowIds: new Set(importedRowIds),
+                finalRowIds: new Set(finalTests.reduce((ids, test) => {
+                    return ids.concat(this.collectPtmTestRowIds(test))
+                }, [])),
+            }
+        },
+
+        mergePtmPointMaps(existingMap, importedMap, finalRowIds, importedRowIds) {
+            const out = {}
+            for (const rowMrid of Object.keys(existingMap || {})) {
+                if (finalRowIds.has(rowMrid)) out[rowMrid] = existingMap[rowMrid]
+            }
+            for (const rowMrid of Object.keys(importedMap || {})) {
+                if (importedRowIds.has(rowMrid)) out[rowMrid] = importedMap[rowMrid]
+            }
+            return out
+        },
+
+        filterPtmPointMap(pointMap, allowedRowIds) {
+            const out = {}
+            for (const rowMrid of Object.keys(pointMap || {})) {
+                if (allowedRowIds.has(rowMrid)) out[rowMrid] = pointMap[rowMrid]
             }
             return out
         },

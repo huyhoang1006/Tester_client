@@ -32,7 +32,7 @@
                     <th>Ipr (A)</th>
                     <th>Isr (A)</th>
                     <th>Ratio meas</th>
-                    <th>Ratio dev</th>
+                    <th>Ratio dev (%)</th>
                     <th>Polarity</th>
                     <th class="assessment-col">Assessment</th>
                     <th class="condition-indicator-col">Condition indicator</th>
@@ -43,19 +43,21 @@
             <tbody>
                 <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td>
-                        <el-input size="mini" type="text" v-model="item.name.value"></el-input>
+                        <el-input size="mini" type="text" v-model="item.name.value"
+                            @input="syncNominalCurrents(item)"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.ipr.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.ipr.value" readonly></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.isr.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.isr.value" readonly></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.ratio_meas.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.ratio_meas.value"
+                            @input="calcRatioDev(item)"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.ratio_dev.value"></el-input>
+                        <el-input size="mini" type="text" v-model="item.ratio_dev.value" readonly></el-input>
                     </td>
                     <td>
                         <el-select size="mini" v-model="item.polarity.value">
@@ -137,6 +139,7 @@ import CurrentTransformerTestMap from '@/config/test-definitions/CurrentTransfor
 import * as common from '../../Common/index'
 import GroupNode from '../../Common/GroupNode.vue'
 import { changeTestStandard } from '../../Common'
+import { getCtTapCurrents } from '@/utils/ctTapRatio'
 
 export default {
     name: "CTRatio",
@@ -154,6 +157,8 @@ export default {
         // Initialize table if needed
         this.$nextTick(() => {
             this.initializeTable()
+            this.syncAllNominalCurrents()
+            this.calcRdev()
         })
     },
     props: {
@@ -225,6 +230,15 @@ export default {
                         this.option = standardChosen.code
                     }
                 }
+            }
+        },
+        'assetData': {
+            deep: true,
+            handler: function () {
+                this.$nextTick(() => {
+                    this.syncAllNominalCurrents()
+                    this.calcRdev()
+                })
             }
         }
     },
@@ -317,30 +331,38 @@ export default {
         },
 
         clear() {
-            if (!this.testData.table.table1) {
-                this.initializeTable()
-                return
-            }
-            this.testData.table.table1.forEach(row => {
-                Object.keys(row).forEach(key => {
-                    if (key === "mrid") return;
-                    if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
-                        row[key].value = ""
-                    }
-                })
-            })
+            common.clearEditableTestValues(this.testData && this.testData.table)
         },
         async calcRdev() {
             if (!this.testData.table.table1) {
                 return
             }
-            this.testData.table.table1.forEach((element) => {
-                if (!isNaN(parseFloat(element.ratio_meas.value)) && element.ratio_meas.value != 0) {
-                    if (!isNaN(parseFloat(element.ipr.value)) && !isNaN(parseFloat(element.isr.value)) && element.isr.value != 0) {
-                        element.ratio_dev.value = (100 * (parseFloat(element.ratio_meas.value) - (parseFloat(element.ipr.value) / parseFloat(element.isr.value))) / (parseFloat(element.ipr.value) / parseFloat(element.isr.value))).toFixed(4)
-                    }
-                }
-            })
+            this.testData.table.table1.forEach(this.calcRatioDev)
+        },
+        syncNominalCurrents(item) {
+            if (!item) return
+            const currents = getCtTapCurrents(this.assetData, item.name && item.name.value)
+            if (item.ipr) item.ipr.value = currents.ipn
+            if (item.isr) item.isr.value = currents.isn
+            this.calcRatioDev(item)
+        },
+        syncAllNominalCurrents() {
+            const rows = this.testData && this.testData.table && this.testData.table.table1
+            if (!Array.isArray(rows)) return
+            rows.forEach(this.syncNominalCurrents)
+        },
+        calcRatioDev(item) {
+            const ratioMeas = parseFloat(item.ratio_meas.value)
+            const ipr = parseFloat(item.ipr.value)
+            const isr = parseFloat(item.isr.value)
+            const ratioRef = ipr / isr
+
+            if (!Number.isFinite(ratioMeas) || !Number.isFinite(ratioRef) || isr === 0 || ratioRef === 0) {
+                item.ratio_dev.value = ''
+                return
+            }
+
+            item.ratio_dev.value = (100 * (ratioMeas - ratioRef) / ratioRef).toFixed(4)
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) {

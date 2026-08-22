@@ -1,5 +1,9 @@
 import Vue from "vue"
 import { startLoading } from '@/utils/loading'
+import * as substationAPI from '@/api/demo/Substation'
+import * as SubstationMapper from '@/views/Mapping/Substation'
+import { mapSubstationEntityToServer } from '@/utils/MapperClient/mapSubstationToServer'
+import { downloadAssetMediaToAttachmentData, uploadAssetMediaFromAttachmentData } from '@/utils/assetMedia'
 
 export default {
     methods: {
@@ -111,6 +115,71 @@ export default {
             const subs = dialogRef ? dialogRef.getSubstationRef() : null
             if (subs) {
                 this.resetFormAfterSave(subs)
+            }
+        },
+
+        async saveSubstationToServer(substation, serverTab = null) {
+            const properties = substation && substation.properties ? substation.properties : {}
+            const name = String(properties.name || '').trim()
+            if (!name) {
+                throw new Error('Name is required')
+            }
+
+            const parent = this.parentOrganization || {}
+            const parentId = parent.id || parent.mrid || serverTab?.parentId || properties.organisationId
+            if (!parentId) {
+                throw new Error('Cannot resolve parent organisation on server')
+            }
+
+            const serverId = serverTab?.id || serverTab?.mrid || properties.subsId || null
+            const currentAttachments = Array.isArray(substation.attachmentData)
+                ? substation.attachmentData
+                : []
+            let previousAttachments = []
+            try {
+                previousAttachments = properties.attachment?.path
+                    ? JSON.parse(properties.attachment.path)
+                    : []
+            } catch (error) {
+                previousAttachments = []
+            }
+
+            const dto = JSON.parse(JSON.stringify(properties))
+            dto.name = name
+            dto.subsId = serverId
+            dto.organisationId = parentId
+            dto.attachment = dto.attachment || {}
+            dto.attachment.path = JSON.stringify(currentAttachments)
+
+            const entity = SubstationMapper.mapDtoToEntity(dto)
+            const payload = mapSubstationEntityToServer(entity, parent)
+            const response = await substationAPI.createSubstation(payload, parentId)
+            const savedServerId = this.extractUploadedServerId(response) || serverId
+            if (!savedServerId) {
+                throw new Error('Server did not return the substation ID')
+            }
+
+            await uploadAssetMediaFromAttachmentData(
+                'Substation',
+                savedServerId,
+                currentAttachments,
+                previousAttachments
+            )
+            const refreshedAttachments = await downloadAssetMediaToAttachmentData('Substation', savedServerId)
+            substation.attachmentData = refreshedAttachments
+            if (!properties.attachment) properties.attachment = {}
+            properties.attachment.path = JSON.stringify(refreshedAttachments)
+
+            return {
+                success: true,
+                data: {
+                    substation: {
+                        mrid: String(savedServerId),
+                        name,
+                        parentId
+                    },
+                    raw: response
+                }
             }
         },
     }

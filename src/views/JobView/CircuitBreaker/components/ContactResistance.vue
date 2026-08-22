@@ -44,7 +44,7 @@
                 <tbody>
                     <tr v-for="(item, index) in testData.table.table1" :key="index">
                         <td>
-                            <div style="display: flex; width: 100%;">
+                            <div class="phase-select-cell">
                                 <el-select size="mini" v-model="item.phase.value" placeholder="Phase"><el-option label="A" value="A"></el-option><el-option label="B" value="B"></el-option><el-option label="C" value="C"></el-option></el-select>
                                 <div
                                     :class="{ colorTableRed: item.phase.value == 'A', colorTableYellow: item.phase.value == 'B', colorTableBlue: item.phase.value == 'C' }">
@@ -97,7 +97,7 @@
                     <tr v-for="(item, index) in testData.table.table1" :key="index">
                         <td v-if="index % interruptersPerPhase === 0"
                             :rowspan="interruptersPerPhase">
-                            <div style="display: flex; width: 100%;">
+                            <div class="phase-select-cell">
                                 <el-select size="mini" v-model="item.phase.value" placeholder="Phase"><el-option label="A" value="A"></el-option><el-option label="B" value="B"></el-option><el-option label="C" value="C"></el-option></el-select>
                                 <div
                                     :class="{ colorTableRed: item.phase.value == 'A', colorTableYellow: item.phase.value == 'B', colorTableBlue: item.phase.value == 'C' }">
@@ -526,15 +526,7 @@ export default {
             this.notifyAssessmentCalculated()
         },
         clear() {
-            Object.keys(this.testData.table).forEach((tableKey) => {
-                this.testData.table[tableKey].forEach((ele) => {
-                    Object.keys(ele).forEach((key) => {
-                        if (ele[key] && typeof ele[key] === 'object' && ele[key].value !== undefined) {
-                            ele[key].value = ''
-                        }
-                    })
-                })
-            })
+            common.clearEditableTestValues(this.testData && this.testData.table)
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) {

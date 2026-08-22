@@ -21,6 +21,7 @@ export default {
                     data = await this.initPowerFrequency(assetData, testTypeCode)
                     break
             }
+            common.markInitialTestValues(data && data.table)
             return data
         },
         async initInsulationResistance(testTypeCode) {

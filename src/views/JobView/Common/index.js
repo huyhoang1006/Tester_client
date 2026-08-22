@@ -1,5 +1,58 @@
 /* eslint-disable */
 import uuid from "@/utils/uuid";
+
+const CLEAR_PROTECTED = '__clearProtected'
+
+const STRUCTURAL_FIELD_CODES = new Set([
+  'name', 'item', 'items', 'measurement', 'measurement_name',
+  'phase', 'terminal', 'terminal_1', 'terminal_2', 'terminal1', 'terminal2',
+  'tap', 'tap_name', 'tap_no', 'core', 'core_no', 'core_index', 'winding',
+  'trip_coil', 'trip_coil_no', 'close_coil', 'close_coil_no',
+  'interrupter', 'interrupter_no', 'unit_no', 'test_mode', 'mode',
+  'ipr', 'isr', 'upr', 'usr', 'nominal_ratio', 'ratio_ref'
+])
+
+const READ_ONLY_FIELD_CODES = new Set([
+  'dev_r_ref', 'dev_phase', 'r_dev', 'ratio_meas', 'ratio_dev', 'i_dev',
+  'df_change', 'delta_c_percent', 'zk', 'uk_cal', 'uk_dev',
+  'opening_sync_between_phase', 'opening_sync_between_interrupter',
+  'closing_sync_between_phase', 'closing_sync_between_interrupter'
+])
+
+const isValueCell = value => value && typeof value === 'object' && Object.prototype.hasOwnProperty.call(value, 'value')
+
+const visitTestCells = (table, visitor) => {
+  Object.keys(table || {}).forEach(tableKey => {
+    const rows = table[tableKey]
+    if (!Array.isArray(rows)) return
+    rows.forEach(row => {
+      Object.keys(row || {}).forEach(code => {
+        if (isValueCell(row[code])) visitor(row[code], code, row)
+      })
+    })
+  })
+}
+
+export const markInitialTestValues = table => {
+  visitTestCells(table, cell => {
+    if (cell.value === null || cell.value === undefined || String(cell.value).trim() === '') return
+    Object.defineProperty(cell, CLEAR_PROTECTED, {
+      configurable: true,
+      enumerable: false,
+      value: true,
+      writable: true
+    })
+  })
+  return table
+}
+
+export const clearEditableTestValues = table => {
+  visitTestCells(table, (cell, code) => {
+    if (cell[CLEAR_PROTECTED] || STRUCTURAL_FIELD_CODES.has(code) || READ_ONLY_FIELD_CODES.has(code)) return
+    cell.value = ''
+  })
+}
+
 export const buildEmptyTestRow = (columns) => {
   const row = {
     mrid: '', // mrid của cả row test

@@ -88,14 +88,15 @@
             <!-- ─── Job trùng tên dưới đúng thiết bị đích ─────────────────── -->
             <el-alert v-if="jobDup && jobDup.length > 0" type="warning" :closable="false" show-icon
                       title="A job with this name already exists on this asset" class="ptm-alert">
-                <ul class="ptm-list">
-                    <li v-for="j in jobDup" :key="j.mrid">
-                        {{ j.name }}
-                        <em v-if="j.executionDate">— tested {{ j.executionDate }}</em>
+                <el-radio-group v-model="targetJobMrid" class="ptm-job-targets">
+                    <el-radio v-for="j in jobDup" :key="j.mrid" :label="j.mrid">
+                        <span>{{ j.name }}</span>
+                        <em v-if="j.executionDate">— tested {{ shortDate(j.executionDate) }}</em>
                         <em v-if="j.testedBy"> by {{ j.testedBy }}</em>
-                    </li>
-                </ul>
+                    </el-radio>
+                </el-radio-group>
                 <el-radio-group v-model="jobAction" class="ptm-radio">
+                    <el-radio label="merge">Merge tests into this job — keep its overview and other tests</el-radio>
                     <el-radio label="overwrite">Overwrite it — replace the test data, keep the same job</el-radio>
                     <el-radio label="skip">Skip — do not import this job</el-radio>
                 </el-radio-group>
@@ -104,9 +105,21 @@
                   thay cả job hay chỉ bổ sung, mà hai cái đó hậu quả khác nhau hẳn.
                 -->
                 <div class="ptm-hint">
-                    Overwriting keeps the same job entry, so it stays linked to the server. Test data
-                    inside it is replaced by the file — measurements not in the file are removed.
+                    <template v-if="jobAction === 'merge'">
+                        New test types are added automatically. For an existing type, choose whether
+                        to keep it, overwrite one occurrence, or create another test of the same type.
+                    </template>
+                    <template v-else-if="jobAction === 'overwrite'">
+                        Overwriting keeps the same job entry, so it stays linked to the server. Test data
+                        inside it is replaced by the file — measurements not in the file are removed.
+                    </template>
+                    <template v-else>No changes will be made.</template>
                 </div>
+            </el-alert>
+
+            <el-alert v-if="selectedJob && selectedJob.loadError" type="error" :closable="false" show-icon
+                      title="Could not read the selected job" class="ptm-alert">
+                <div>{{ selectedJob.loadError }}</div>
             </el-alert>
 
             <el-alert v-if="jobDupError" type="warning" :closable="false" show-icon
@@ -118,15 +131,40 @@
             <div class="ptm-section">
                 <div class="ptm-head">
                     Tests
-                    <span class="ptm-sub">{{ preview.tests.length }} will be imported,
-                        {{ preview.skipped.length }} skipped</span>
+                    <span class="ptm-sub">{{ preview.tests.length }} in file,
+                        {{ preview.skipped.length }} unsupported</span>
                 </div>
 
-                <el-table v-if="preview.tests.length" :data="preview.tests" size="mini" border max-height="180">
+                <el-table v-if="preview.tests.length" :data="mergeRows" size="mini" border max-height="260">
                     <el-table-column prop="name" label="Test" min-width="150" />
                     <el-table-column prop="rows" label="Rows" width="70" align="right" />
                     <el-table-column prop="curves" label="Curves" width="80" align="right" />
                     <el-table-column prop="points" label="Curve points" width="110" align="right" />
+                    <el-table-column v-if="showMergeDecisions" label="Import action" min-width="210">
+                        <template slot-scope="scope">
+                            <el-tag v-if="scope.row.matches.length === 0" type="success" size="mini">
+                                Add new test
+                            </el-tag>
+                            <el-select v-else v-model="testDecisions[scope.row.importIndex].action"
+                                       size="mini" class="ptm-action-select">
+                                <el-option label="Keep existing" value="keep" />
+                                <el-option label="Overwrite existing" value="overwrite" />
+                                <el-option label="Create another test" value="duplicate" />
+                            </el-select>
+                        </template>
+                    </el-table-column>
+                    <el-table-column v-if="showMergeDecisions" label="Existing test" min-width="180">
+                        <template slot-scope="scope">
+                            <span v-if="scope.row.matches.length === 0" class="ptm-muted">Not present</span>
+                            <el-select v-else-if="testDecisions[scope.row.importIndex].action === 'overwrite'"
+                                       v-model="testDecisions[scope.row.importIndex].targetMrid"
+                                       size="mini" class="ptm-action-select">
+                                <el-option v-for="match in scope.row.matches" :key="match.mrid"
+                                           :label="existingTestLabel(match)" :value="match.mrid" />
+                            </el-select>
+                            <span v-else class="ptm-muted">{{ scope.row.matches.length }} matching test(s)</span>
+                        </template>
+                    </el-table-column>
                 </el-table>
 
                 <!--
@@ -145,7 +183,7 @@
         <span slot="footer">
             <el-button @click="$emit('close')">Cancel</el-button>
             <el-button type="primary" :disabled="!canImport" :loading="importing"
-                       @click="$emit('confirm', { assetAction, jobAction })">
+                       @click="confirmImport">
                 {{ importLabel }}
             </el-button>
         </span>
@@ -186,12 +224,11 @@ export default {
             // Thiết bị: mặc định 'overwrite' — nếu đã hỏi tới thì ý định gần như chắc chắn
             // là cập nhật thông số từ file vừa đo.
             assetAction: 'overwrite',
-            // Job: mặc định 'skip'. KHÁC thiết bị, và cố ý.
-            //
-            // Ghi đè job là thay dữ liệu đo và xoá bài test không còn trong file. Ai bấm
-            // Import theo phản xạ mà không đọc thì mất số liệu cũ. Mặc định phải là lựa chọn
-            // KHÔNG mất gì; muốn ghi đè thì phải tự tay chọn.
-            jobAction: 'skip',
+            // Merge là mặc định an toàn: test mới được thêm, test trùng mặc định giữ bản cũ.
+            // Ghi đè toàn job vẫn còn nhưng người dùng phải chủ động chọn.
+            jobAction: 'merge',
+            targetJobMrid: '',
+            testDecisions: {},
         }
     },
     computed: {
@@ -234,7 +271,12 @@ export default {
         canImport() {
             if (!this.preview) return false
             if (this.dup && this.dup.elsewhere && this.dup.elsewhere.length > 0) return false
-            return this.preview.tests.length > 0
+            if (this.preview.tests.length === 0) return false
+            if (this.jobDup.length > 0 && this.jobAction === 'merge') {
+                if (!this.selectedJob || this.selectedJob.loadError) return false
+                return this.mergeChangeCount > 0
+            }
+            return true
         },
 
         /**
@@ -252,9 +294,36 @@ export default {
         /** Nút phải nói đúng việc nó sắp làm — 'Import' khi sắp ghi đè là nói thiếu. */
         importLabel() {
             if (this.jobDup.length > 0) {
+                if (this.jobAction === 'merge') return `Merge ${this.mergeChangeCount} test(s)`
                 return this.jobAction === 'overwrite' ? 'Overwrite job' : 'Skip'
             }
             return 'Import'
+        },
+
+        selectedJob() {
+            return this.jobDup.find(job => job.mrid === this.targetJobMrid) || null
+        },
+
+        showMergeDecisions() {
+            return this.jobDup.length > 0 && this.jobAction === 'merge' && !!this.selectedJob
+        },
+
+        mergeRows() {
+            const tests = (this.preview && this.preview.tests) || []
+            const existingTests = (this.selectedJob && this.selectedJob.tests) || []
+            return tests.map(test => ({
+                ...test,
+                matches: existingTests.filter(existing => existing.testTypeCode === test.testTypeCode),
+            }))
+        },
+
+        mergeChangeCount() {
+            if (!this.showMergeDecisions) return 0
+            return this.mergeRows.reduce((count, row) => {
+                if (row.matches.length === 0) return count + 1
+                const decision = this.testDecisions[row.importIndex]
+                return decision && decision.action !== 'keep' ? count + 1 : count
+            }, 0)
         },
     },
     watch: {
@@ -263,13 +332,45 @@ export default {
             // Đặt lại mỗi lần mở: lần import trước chọn 'overwrite' thì lần này không được
             // mang theo lựa chọn đó, vì file và node đã khác.
             this.assetAction = 'overwrite'
-            this.jobAction = 'skip'
+            this.jobAction = 'merge'
+            this.targetJobMrid = (this.jobDup[0] && this.jobDup[0].mrid) || ''
+            this.resetTestDecisions()
+        },
+        targetJobMrid() {
+            this.resetTestDecisions()
         },
     },
     methods: {
         shortDate(value) {
             const m = String(value || '').match(/^(\d{4}-\d{2}-\d{2})/)
             return m ? m[1] : (value || '—')
+        },
+        resetTestDecisions() {
+            const next = {}
+            for (const row of this.mergeRows) {
+                next[row.importIndex] = {
+                    action: 'keep',
+                    targetMrid: (row.matches[0] && row.matches[0].mrid) || '',
+                }
+            }
+            this.testDecisions = next
+        },
+        existingTestLabel(test) {
+            const name = test.name || test.testTypeName || test.testTypeCode
+            return `${name} (#${test.occurrence})`
+        },
+        confirmImport() {
+            const testDecisions = Object.keys(this.testDecisions).map(key => ({
+                importIndex: Number(key),
+                action: this.testDecisions[key].action,
+                targetMrid: this.testDecisions[key].targetMrid,
+            }))
+            this.$emit('confirm', {
+                assetAction: this.assetAction,
+                jobAction: this.jobAction,
+                targetJobMrid: this.targetJobMrid,
+                testDecisions,
+            })
         },
     },
 }
@@ -297,10 +398,15 @@ export default {
 .ptm-alert { margin-bottom: 14px; }
 .ptm-list { margin: 6px 0 0; padding-left: 18px; font-size: 12px; }
 .ptm-list em { color: #909399; font-style: normal; }
+.ptm-job-targets { display: block; margin-top: 6px; }
+.ptm-job-targets >>> .el-radio { display: block; margin: 5px 0 0; }
+.ptm-job-targets em { color: #909399; font-style: normal; }
 .ptm-hint { margin-top: 6px; font-size: 12px; color: #909399; }
 
 .ptm-radio { display: block; margin-top: 8px; }
 .ptm-radio >>> .el-radio { display: block; margin: 4px 0 0; }
+.ptm-action-select { width: 100%; }
+.ptm-muted { color: #909399; font-size: 12px; }
 
 .ptm-skip { margin-top: 8px; }
 .ptm-skip-row {

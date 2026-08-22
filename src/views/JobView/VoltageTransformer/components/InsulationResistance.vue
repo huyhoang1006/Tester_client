@@ -20,6 +20,15 @@
                 <el-button size="mini" :type="compareOpen ? 'primary' : ''" @click="$emit('toggle-compare')">
                     <i class="fa-solid fa-scale-balanced"></i> Compare with previous results
                 </el-button>
+                <!--
+                  Đổi tên cuộn dây gom vào MỘT chỗ, không rải theo từng dòng.
+                  Bản trước tôi để ô nhập ngay dưới dropdown: nó hiện lại ở mỗi dòng và mỗi
+                  cuộn dây được chọn, nên cùng một cái tên có tới mấy ô sửa — vừa rối vừa
+                  không rõ sửa ô nào thì ăn.
+                -->
+                <el-button size="mini" @click="openWindingDialog = true">
+                    <i class="fa-solid fa-pen"></i> Rename windings
+                </el-button>
             </div>
 
             <!-- Tương tác với bảng -->
@@ -29,6 +38,8 @@
         <table class="table-strip-input-data test-table">
             <colgroup>
                 <col style="width: 46px" />
+                <col style="width: 190px" />
+                <col style="width: 34px" />
                 <col style="width: 190px" />
                 <col style="width: 140px" />
                 <col style="width: 140px" />
@@ -40,7 +51,9 @@
             <thead>
                 <tr>
                     <th>No.</th>
-                    <th>Measurement</th>
+                    <th class="terminal-col">Terminal 1</th>
+                    <th class="terminal-link-col"><i class="fa-solid fa-arrows-left-right"></i></th>
+                    <th class="terminal-col">Terminal 2</th>
                     <th>Test voltage (V)</th>
                     <th>R<sub>60s</sub> (MΩ)</th>
                     <th class="assessment-col">Assessment</th>
@@ -57,7 +70,21 @@
                         {{ index + 1 }}
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.measurement.value"></el-input>
+                        <el-select class="terminal-select" style="width: 100%;" size="mini" multiple
+                            :value="terminalValues(item, 'terminal1')" placeholder="Select terminal"
+                            @change="updateTerminalSide(item, 'terminal1', $event)">
+                            <el-option v-for="t in availableTerminalOptions(item, 'terminal1')"
+                                :key="'l-' + t" :label="t" :value="t"></el-option>
+                        </el-select>
+                    </td>
+                    <td class="terminal-link-cell"><i class="fa-solid fa-arrows-left-right"></i></td>
+                    <td>
+                        <el-select class="terminal-select" style="width: 100%;" size="mini" multiple
+                            :value="terminalValues(item, 'terminal2')" placeholder="Select terminal"
+                            @change="updateTerminalSide(item, 'terminal2', $event)">
+                            <el-option v-for="t in availableTerminalOptions(item, 'terminal2')"
+                                :key="'r-' + t" :label="t" :value="t"></el-option>
+                        </el-select>
                     </td>
                     <td>
                         <el-input size="mini" type="text" number="positive"
@@ -137,6 +164,25 @@
         <el-dialog :modal=false title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog"
             width="min(860px, 92vw)">
         </el-dialog>
+
+        <!-- Đổi tên cuộn dây -->
+        <el-dialog title="Rename windings" :visible.sync="openWindingDialog" width="min(460px, 92vw)" append-to-body>
+            <div v-if="windingNames.length === 0" class="winding-empty">
+                This voltage transformer has no windings configured yet.
+            </div>
+            <el-form v-else size="mini" label-position="left" label-width="90px">
+                <el-form-item v-for="(name, i) in windingNames" :key="'w-' + i" :label="'Winding ' + (i + 1)">
+                    <el-input :value="name" @change="renameWinding(name, $event)"></el-input>
+                </el-form-item>
+            </el-form>
+            <div class="winding-note">
+                Renaming here also renames it in the asset profile and in every row of this test.
+                Both are saved when you save the job.
+            </div>
+            <span slot="footer">
+                <el-button size="mini" type="primary" @click="openWindingDialog = false">Done</el-button>
+            </span>
+        </el-dialog>
     </div>
 </template>
 
@@ -146,6 +192,8 @@ import voltageTransformerTestMap from '@/config/test-definitions/VoltageTransfor
 import * as common from '@/views/JobView/Common/index'
 import GroupNode from '../../Common/GroupNode.vue'
 import { changeTestStandard } from '../../Common'
+import { readSides, writeSides } from '../../Common/terminalSelect'
+import { buildVoltageTransformerTerminals, renameVtWinding } from '../../Common/terminalOptions'
 
 export default {
     name: "InsulationResistance",
@@ -156,6 +204,7 @@ export default {
         return {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
+            openWindingDialog: false,
             option: null
         }
     },
@@ -181,6 +230,19 @@ export default {
     computed: {
         testData() {
             return this.data
+        },
+        terminalOptions() {
+            return buildVoltageTransformerTerminals(this.assetData)
+        },
+        /**
+         * Chỉ TÊN CUỘN DÂY, bỏ Prim/Sec/GND.
+         *
+         * Prim/Sec/GND là tên cố định của đầu cực, không phải thứ người dùng đặt — cho sửa
+         * là mở đường làm hỏng cả bảng ánh xạ tên cũ.
+         */
+        windingNames() {
+            const fixed = ['Prim', 'Sec', 'GND']
+            return this.terminalOptions.filter(t => !fixed.includes(t))
         },
         assetData() {
             return this.asset
@@ -238,6 +300,57 @@ export default {
         }
     },
     methods: {
+        terminalValues(row, side) {
+            return readSides(row, this.terminalOptions)[side]
+        },
+        /** Đầu cực đã chọn ở vế kia thì không cho chọn lại ở vế này. */
+        availableTerminalOptions(row, side) {
+            const sides = readSides(row, this.terminalOptions)
+            const other = side === 'terminal1' ? sides.terminal2 : sides.terminal1
+            // Kèm giá trị lạ đang có sẵn của DÒNG NÀY (dữ liệu cũ), nếu không el-select
+            // không hiển thị được và người dùng tưởng đã mất.
+            const extra = sides[side].filter(t => !this.terminalOptions.includes(t))
+            return [...this.terminalOptions, ...extra].filter(t => !other.includes(t))
+        },
+        /**
+         * Đổi tên cuộn dây: ghi vào hồ sơ thiết bị VÀ sửa mọi dòng test đang dùng tên cũ.
+         *
+         * Thiếu bước sửa các dòng test thì tên trong bảng thành tên cũ không còn tồn tại,
+         * dropdown không khớp được nữa và nhìn như dữ liệu bị mất.
+         */
+        renameWinding(oldName, newName) {
+            const wanted = String(newName == null ? '' : newName).trim()
+            if (!wanted || wanted === oldName) return
+
+            // Trùng tên đầu cực khác thì từ chối — hai đầu cực cùng tên là không phân biệt
+            // được nữa, cả trên bảng lẫn trong chuỗi đã lưu.
+            const clash = this.terminalOptions.some(
+                t => t !== oldName && t.toUpperCase() === wanted.toUpperCase())
+            if (clash) {
+                this.$message.warning(`"${wanted}" is already used by another terminal.`)
+                return
+            }
+
+            if (!renameVtWinding(this.assetData, oldName, wanted)) {
+                this.$message.warning(`Could not rename "${oldName}" — it is not in the asset profile.`)
+                return
+            }
+
+            // Đổi tên trong mọi dòng của bảng này.
+            const rows = (this.testData && this.testData.table && this.testData.table.table1) || []
+            const swap = (list) => list.map(t => (t === oldName ? wanted : t))
+            for (const row of rows) {
+                const sides = readSides(row, [...this.terminalOptions, oldName])
+                writeSides(row, swap(sides.terminal1), swap(sides.terminal2),
+                           [...this.terminalOptions, wanted])
+            }
+            this.$message.success(`Renamed "${oldName}" to "${wanted}". It will be saved with the job.`)
+        },
+        updateTerminalSide(row, side, values) {
+            const sides = readSides(row, this.terminalOptions)
+            sides[side] = values
+            writeSides(row, sides.terminal1, sides.terminal2, this.terminalOptions)
+        },
         initializeTable() {
             if (!this.testData.table) {
                 this.$set(this.testData, 'table', {})
@@ -318,18 +431,7 @@ export default {
             return common.evaluateAssessmentGroup(group, measurementMap)
         },
         clear() {
-            if (!this.testData.table.table1) {
-                this.initializeTable()
-                return
-            }
-            this.testData.table.table1.forEach(row => {
-                Object.keys(row).forEach(key => {
-                    if (key === "mrid") return;
-                    if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
-                        row[key].value = ""
-                    }
-                })
-            })
+            common.clearEditableTestValues(this.testData && this.testData.table)
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) {
@@ -541,4 +643,16 @@ export default {
 .default-label { font-style: italic; color: #909399; font-size: 13px; }
 .pass { color: #67C23A; font-weight: bold; }
 .fail { color: #F56C6C; font-weight: bold; }
+
+/* ─── Chọn đầu cực bằng hai dropdown ───────────────────────────────────── */
+.terminal-col { min-width: 170px; }
+.terminal-link-col { width: 34px; text-align: center; }
+.terminal-link-cell { text-align: center; color: #c0c4cc; }
+.terminal-select { width: 100%; }
+/* Thẻ đã chọn dễ dài hơn ô — cho xuống dòng thay vì tràn ra ngoài bảng. */
+.terminal-select >>> .el-select__tags { flex-wrap: wrap; max-width: 100%; }
+.phase-dot { margin-right: 6px; font-size: 8px; vertical-align: middle; }
+/* Hộp thoại đổi tên cuộn dây. */
+.winding-note { margin-top: 8px; font-size: 12px; color: #909399; line-height: 1.5; }
+.winding-empty { padding: 16px 4px; font-size: 12px; color: #909399; text-align: center; }
 </style>

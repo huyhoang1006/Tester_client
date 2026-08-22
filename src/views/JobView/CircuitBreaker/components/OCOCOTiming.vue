@@ -33,10 +33,10 @@
             <tbody>
                 <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td>
-                        <div style="display: flex;width: 100%;">
+                        <div class="phase-select-cell">
                             <el-select size="mini" v-model="item.phase.value" placeholder="Phase"><el-option label="A" value="A"></el-option><el-option label="B" value="B"></el-option><el-option label="C" value="C"></el-option></el-select>
                             <div
-                                :class="{ colorTableRed: index % 3 == 0, colorTableYellow: index % 3 == 1, colorTableBlue: index % 3 == 2 }">
+                                :class="{ colorTableRed: item.phase.value == 'A', colorTableYellow: item.phase.value == 'B', colorTableBlue: item.phase.value == 'C' }">
                             </div>
                         </div>
                     </td>
@@ -48,11 +48,11 @@
                     </td>
                     <td>
                         <el-input size="mini" type="text" number="positive"
-                            v-model="item.opening_time.value"></el-input>
+                            v-model="item.opening_time.value" @input="calculateTimingSynchronism"></el-input>
                     </td>
                     <td>
                         <el-input size="mini" type="text" number="positive"
-                            v-model="item.opening_sync_between_phase.value"></el-input>
+                            v-model="item.opening_sync_between_phase.value" readonly></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -497,6 +497,9 @@ export default {
         const dataTemp = JSON.parse(JSON.stringify(this.asset_ || {}))
         this.back_asset = dataTemp
     },
+    mounted() {
+        this.$nextTick(this.calculateTimingSynchronism)
+    },
     watch: {
         // assessLimitsData: {
         //     deep: true,
@@ -911,6 +914,7 @@ export default {
             this.testData.table.table1.splice(index + 1, 0, data)
         },
         calculator() {
+            this.calculateTimingSynchronism()
             var rows = this.testData && this.testData.table && this.testData.table.table1
                 ? this.testData.table.table1 : []
             rows.forEach(function (e) {
@@ -921,15 +925,7 @@ export default {
             this.notifyAssessmentCalculated()
         },
         clear() {
-            var rows = this.testData && this.testData.table && this.testData.table.table1 ? this.testData.table.table1 : []
-            rows.forEach(function (row) {
-                Object.keys(row).forEach(function (key) {
-                    if (key === 'mrid') return
-                    if (row[key] && typeof row[key] === 'object' && 'value' in row[key]) {
-                        row[key].value = ''
-                    }
-                })
-            })
+            common.clearEditableTestValues(this.testData && this.testData.table)
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) {

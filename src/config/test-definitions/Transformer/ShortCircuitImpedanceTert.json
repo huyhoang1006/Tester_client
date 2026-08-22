@@ -44,6 +44,13 @@
             "unit": "%"
         },
         {
+            "mrid": "5e5d12c8-8798-4f57-ae3e-3eb70738572f",
+            "code": "uk_ref",
+            "name": "Uk ref",
+            "type": "analog",
+            "unit": "%"
+        },
+        {
             "mrid": "68ebea17-7af1-4438-87bf-cf7bda61e691",
             "code": "uk_dev",
             "name": "Uk dev",

@@ -45,16 +45,18 @@
                         <el-input size="mini" type="text" v-model="item.name.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.r_meas.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.r_meas.value"
+                            @input="calcRowRdev(item)"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.r_ref.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.r_ref.value"
+                            @input="calcRowRdev(item)"></el-input>
                     </td>
                     <td>
                         <el-input size="mini" type="text" v-model="item.r_corr.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.r_dev.value"></el-input>
+                        <el-input size="mini" type="text" v-model="item.r_dev.value" readonly></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -148,6 +150,7 @@ export default {
         // Initialize table if needed
         this.$nextTick(() => {
             this.initializeTable()
+            this.calcRdev()
         })
     },
     props: {
@@ -382,12 +385,18 @@ export default {
             if (!this.testData.table.table1) {
                 return
             }
-            this.testData.table.table1.forEach((item) => {
-                // Use r_corr (corrected resistance) instead of r_meas for deviation calculation
-                if (!isNaN(parseFloat(item.r_corr.value)) && !isNaN(parseFloat(item.r_ref.value)) && item.r_ref.value != 0) {
-                    item.r_dev.value = (100 * (parseFloat(item.r_corr.value) - parseFloat(item.r_ref.value)) / parseFloat(item.r_ref.value)).toFixed(4)
-                }
-            })
+            this.testData.table.table1.forEach(this.calcRowRdev)
+        },
+        calcRowRdev(item) {
+            const measured = parseFloat(item.r_meas.value)
+            const reference = parseFloat(item.r_ref.value)
+
+            if (!Number.isFinite(measured) || !Number.isFinite(reference) || reference === 0) {
+                item.r_dev.value = ''
+                return
+            }
+
+            item.r_dev.value = (100 * (measured - reference) / reference).toFixed(4)
         },
 
         async calcAssessment() {
@@ -440,19 +449,7 @@ export default {
         },
 
         clear() {
-            if (!this.testData.table.table1) {
-                this.initializeTable()
-                return
-            }
-            this.testData.table.table1.forEach((element) => {
-                element.name.value = "",
-                    element.r_meas.value = '',
-                    element.r_ref.value = '',
-                    element.r_corr.value = '',
-                    element.r_dev.value = '',
-                    element.assessment.value = '',
-                    element.condition_indicator.value = ''
-            })
+            common.clearEditableTestValues(this.testData && this.testData.table)
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) {

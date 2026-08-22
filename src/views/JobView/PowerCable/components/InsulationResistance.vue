@@ -28,6 +28,8 @@
             <colgroup>
                 <col style="width: 46px" />
                 <col style="width: 190px" />
+                <col style="width: 34px" />
+                <col style="width: 190px" />
                 <col style="width: 110px" />
                 <col style="width: 110px" />
                 <col style="width: 150px" />
@@ -38,7 +40,9 @@
             <thead>
                 <tr>
                     <th>No.</th>
-                    <th>Measurement</th>
+                    <th class="terminal-col">Terminal 1</th>
+                    <th class="terminal-link-col"><i class="fa-solid fa-arrows-left-right"></i></th>
+                    <th class="terminal-col">Terminal 2</th>
                     <th>Test voltage (kV)</th>
                     <th>R meas (Ω)</th>
                     <th class="assessment-col">Assessment</th>
@@ -53,7 +57,31 @@
                         {{ index + 1 }}
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.measurement.value"></el-input>
+                        <el-select class="terminal-select" style="width: 100%;" size="mini" multiple
+                            :value="terminalValues(item, 'terminal1')" placeholder="Select terminal"
+                            @change="updateTerminalSide(item, 'terminal1', $event)">
+                            <el-option v-for="t in availableTerminalOptions(item, 'terminal1')" :key="'l-' + t"
+                                :label="t" :value="t">
+                                <span :style="terminalStyle(t)">
+                                    <i v-if="terminalColor(t)" class="fa-solid fa-circle phase-dot"
+                                       :style="{ color: terminalColor(t) }"></i>{{ t }}
+                                </span>
+                            </el-option>
+                        </el-select>
+                    </td>
+                    <td class="terminal-link-cell"><i class="fa-solid fa-arrows-left-right"></i></td>
+                    <td>
+                        <el-select class="terminal-select" style="width: 100%;" size="mini" multiple
+                            :value="terminalValues(item, 'terminal2')" placeholder="Select terminal"
+                            @change="updateTerminalSide(item, 'terminal2', $event)">
+                            <el-option v-for="t in availableTerminalOptions(item, 'terminal2')" :key="'r-' + t"
+                                :label="t" :value="t">
+                                <span :style="terminalStyle(t)">
+                                    <i v-if="terminalColor(t)" class="fa-solid fa-circle phase-dot"
+                                       :style="{ color: terminalColor(t) }"></i>{{ t }}
+                                </span>
+                            </el-option>
+                        </el-select>
                     </td>
                     <td>
                         <el-input size="mini" type="text" number="positive" v-model="item.test_voltage.value"></el-input>
@@ -136,6 +164,8 @@ import powerCableTestMap from '@/config/test-definitions/PowerCable'
 import * as common from '../../Common/index.js'
 import GroupNode from '../../Common/GroupNode.vue'
 import { changeTestStandard } from '../../Common'
+import { readSides, writeSides } from '../../Common/terminalSelect'
+import { buildPhaseTerminals, PHASE_COLORS } from '../../Common/terminalOptions'
 
 export default {
     name: "InsulationResistance",
@@ -156,6 +186,9 @@ export default {
     },
     computed: {
         testData() { return this.data },
+        terminalOptions() {
+            return buildPhaseTerminals()
+        },
         assetData() { return this.asset },
         rowData()      { return common.buildEmptyTestRow(powerCableTestMap['InsulationResistance'].columns) },
         assessmentData()        { return this.testAssessment ? this.testAssessment.assessment : [] },
@@ -192,6 +225,31 @@ export default {
         }
     },
     methods: {
+        /** Màu theo quy ước pha: A đỏ, B vàng, C xanh. GND và Base để trơn. */
+        terminalColor(t) {
+            return PHASE_COLORS[t] || null
+        },
+        terminalStyle(t) {
+            const color = this.terminalColor(t)
+            return color ? { color, fontWeight: 600 } : {}
+        },
+        terminalValues(row, side) {
+            return readSides(row, this.terminalOptions)[side]
+        },
+        /** Đầu cực đã chọn ở vế kia thì không cho chọn lại ở vế này. */
+        availableTerminalOptions(row, side) {
+            const sides = readSides(row, this.terminalOptions)
+            const other = side === 'terminal1' ? sides.terminal2 : sides.terminal1
+            // Kèm giá trị lạ đang có sẵn của DÒNG NÀY (dữ liệu cũ), nếu không el-select
+            // không hiển thị được và người dùng tưởng đã mất.
+            const extra = sides[side].filter(t => !this.terminalOptions.includes(t))
+            return [...this.terminalOptions, ...extra].filter(t => !other.includes(t))
+        },
+        updateTerminalSide(row, side, values) {
+            const sides = readSides(row, this.terminalOptions)
+            sides[side] = values
+            writeSides(row, sides.terminal1, sides.terminal2, this.terminalOptions)
+        },
         add() {
             if (!this.testData.table) this.$set(this.testData, 'table', {})
             if (!this.testData.table.table1) this.$set(this.testData.table, 'table1', [])
@@ -249,14 +307,7 @@ export default {
             return common.evaluateAssessmentGroup(group, measurementMap)
         },
         clear() {
-            if (this.testData.table && this.testData.table.table1) {
-                this.testData.table.table1.forEach(row => {
-                    Object.keys(row).forEach(key => {
-                        if (key === 'mrid') return
-                        if (row[key] && typeof row[key] === 'object' && 'value' in row[key]) row[key].value = ''
-                    })
-                })
-            }
+            common.clearEditableTestValues(this.testData && this.testData.table)
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) return 'Good'
@@ -466,4 +517,13 @@ export default {
 .pass { color: #67C23A; font-weight: bold; }
 .fail { color: #F56C6C; font-weight: bold; }
 .warn { color: #E6A23C; font-weight: bold; }
+
+/* ─── Chọn đầu cực bằng hai dropdown ───────────────────────────────────── */
+.terminal-col { min-width: 170px; }
+.terminal-link-col { width: 34px; text-align: center; }
+.terminal-link-cell { text-align: center; color: #c0c4cc; }
+.terminal-select { width: 100%; }
+/* Thẻ đã chọn dễ dài hơn ô — cho xuống dòng thay vì tràn ra ngoài bảng. */
+.terminal-select >>> .el-select__tags { flex-wrap: wrap; max-width: 100%; }
+.phase-dot { margin-right: 6px; font-size: 8px; vertical-align: middle; }
 </style>

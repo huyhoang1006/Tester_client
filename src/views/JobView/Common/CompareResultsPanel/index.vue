@@ -24,6 +24,15 @@
                 </el-select>
             </div>
 
+            <div v-if="supportsReferenceValueApply" class="cmp-apply-row">
+                <el-button size="mini" type="primary"
+                    :disabled="!canApplyReferenceValues"
+                    @click="applyReferenceValues">
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    Apply reference values
+                </el-button>
+            </div>
+
             <!-- Thông tin bản tham chiếu — theo đúng khối Test date / Source ở ảnh khách -->
             <div v-if="selectedOption" class="cmp-meta">
                 <div class="cmp-meta-row">
@@ -142,6 +151,10 @@ import {
     buildSnapshotFromForm, attachAliasFromColumns, compareSnapshots, deltaPercentLevel
 } from '@/utils/compareTestResults'
 import { resolveCompareKey, resolveCompareDisplay } from '@/config/compare-keys'
+import { resolveReferenceValueMapping } from '@/config/reference-value-mappings'
+import {
+    prepareReferenceValueApplication, applyReferenceValuePlan
+} from '@/utils/applyReferenceValues'
 
 export default {
     name: 'CompareResultsPanel',
@@ -154,10 +167,19 @@ export default {
         excludeWorkMrid: { type: String, default: '' },
         currentTable: { type: Object, default: () => ({}) },
         currentConditions: { type: Object, default: () => ({}) },
-        columns: { type: Array, default: () => [] }
+        excludedConditionKeys: { type: Array, default: () => [] },
+        columns: { type: Array, default: () => [] },
+        assetData: { type: Object, default: () => ({}) }
     },
     data() {
-        return { options: [], selectedWorkTaskMrid: '', result: null, loading: false, referenceRowCount: 0 }
+        return {
+            options: [],
+            selectedWorkTaskMrid: '',
+            result: null,
+            loading: false,
+            referenceRowCount: 0,
+            referenceSnapshot: null
+        }
     },
     mounted() { this.loadOptions() },
     watch: {
@@ -173,7 +195,19 @@ export default {
             return resolveCompareKey(this.assetKind, this.testCode, this.columns)
         },
         compareDisplay() {
-            return resolveCompareDisplay(this.assetKind, this.testCode)
+            return {
+                ...resolveCompareDisplay(this.assetKind, this.testCode),
+                context: { assetData: this.assetData }
+            }
+        },
+        referenceValueMapping() {
+            return resolveReferenceValueMapping(this.assetKind, this.testCode)
+        },
+        supportsReferenceValueApply() {
+            return !!this.referenceValueMapping
+        },
+        canApplyReferenceValues() {
+            return !!this.selectedWorkTaskMrid && !!this.referenceSnapshot && !this.loading
         },
         hasReferenceData() { return this.referenceRowCount > 0 },
         /**
@@ -247,6 +281,7 @@ export default {
             this.selectedWorkTaskMrid = ''
             this.options = []
             this.referenceRowCount = 0
+            this.referenceSnapshot = null
             if (!window.electronAPI || !window.electronAPI.getComparableTests) return
             if (!this.assetMrid || !this.testCode) return
             try {
@@ -280,17 +315,74 @@ export default {
                 const reference = attachAliasFromColumns(
                     (rs && rs.success && rs.data) ? rs.data : { conditions: {}, tables: [] },
                     this.columns, keys, this.compareDisplay)
+                this.removeExcludedConditions(reference)
+                this.referenceSnapshot = reference
                 this.referenceRowCount = (reference.tables || [])
                     .reduce((sum, t) => sum + (t.rows ? t.rows.length : 0), 0)
-                const current = buildSnapshotFromForm(
-                    this.currentTable, this.columns, this.currentConditions, keys, this.compareDisplay)
-                this.result = compareSnapshots(current, reference)
+                this.compareCurrentWith(reference)
             } catch (error) {
                 console.error('Load reference snapshot failed:', error)
                 this.result = null
                 this.referenceRowCount = 0
+                this.referenceSnapshot = null
             } finally {
                 this.loading = false
+            }
+        },
+        compareCurrentWith(reference) {
+            const current = buildSnapshotFromForm(
+                this.currentTable, this.columns, this.currentConditions,
+                this.compareKey.keys, this.compareDisplay)
+            this.removeExcludedConditions(current)
+            this.result = compareSnapshots(current, reference)
+        },
+        async applyReferenceValues() {
+            if (!this.canApplyReferenceValues || !this.referenceValueMapping) return
+
+            const plan = prepareReferenceValueApplication({
+                currentTable: this.currentTable,
+                referenceSnapshot: this.referenceSnapshot,
+                mapping: this.referenceValueMapping
+            })
+
+            if (!plan.matchedCount) {
+                this.$message.warning('No matching measurements were found.')
+                return
+            }
+
+            if (plan.hasExistingValues) {
+                try {
+                    await this.$confirm(
+                        'Applying reference values will replace existing reference values for matched measurements.',
+                        'Replace existing reference values?',
+                        {
+                            confirmButtonText: 'Replace',
+                            cancelButtonText: 'Cancel',
+                            type: 'warning'
+                        }
+                    )
+                } catch (error) {
+                    return
+                }
+            }
+
+            applyReferenceValuePlan({
+                plan,
+                mapping: this.referenceValueMapping,
+                columns: this.columns,
+                reactiveSet: (target, key, value) => this.$set(target, key, value)
+            })
+            this.compareCurrentWith(this.referenceSnapshot)
+
+            const message = plan.unmatchedCount
+                ? `${plan.matchedCount} reference values applied. ${plan.unmatchedCount} measurements were not matched.`
+                : `Reference values applied to ${plan.matchedCount} matched measurements.`
+            this.$message.success(message)
+        },
+        removeExcludedConditions(snapshot) {
+            if (!snapshot || !snapshot.conditions) return
+            for (const key of this.excludedConditionKeys) {
+                delete snapshot.conditions[key]
             }
         }
     }
@@ -370,6 +462,12 @@ export default {
 .cmp-pick { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; }
 .cmp-pick-label { font-size: 12px; color: #606266; white-space: nowrap; }
 .cmp-pick-select { flex: 1; min-width: 0; }
+.cmp-apply-row {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: flex-end;
+}
+.cmp-apply-row i { margin-right: 5px; }
 
 .cmp-meta {
     flex: 0 0 auto;

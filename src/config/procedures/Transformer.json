@@ -1,16 +1,16 @@
-{  
-  "name" : "Transformer",
-  "procedure" : [
-    {
-      "mrid": "b228dac3-e200-49d2-a75a-03f59f7f83c4",
-      "code": "InsulationResistance",
-      "name": "Insulation resistance of winding",
-      "kind": "test"
-    },
+{
+  "name": "Transformer",
+  "procedure": [
     {
       "mrid": "a28ecf87-7906-41c2-899b-ca8550571ae7",
       "code": "GeneralInspection",
       "name": "General inspection",
+      "kind": "test"
+    },
+    {
+      "mrid": "b228dac3-e200-49d2-a75a-03f59f7f83c4",
+      "code": "InsulationResistance",
+      "name": "Insulation resistance of winding",
       "kind": "test"
     },
     {
@@ -35,60 +35,6 @@
       "mrid": "512b8d7c-9d11-419c-ae1c-ac7c4b2d08e6",
       "code": "DCWindingTert",
       "name": "DC Winding resistance Tert",
-      "kind": "test"
-    },
-    {
-      "mrid": "2df1cd08-5347-4776-8319-a1987918932c",
-      "code": "MeasurementOfNoLoad",
-      "name": "No-load Test",
-      "kind": "test"
-    },
-    {
-      "mrid": "1a3f6c14-265b-486c-89ec-dcb8426ce06e",
-      "code": "MeasurementOfShortCircuit",
-      "name": "Short-circuit Test",
-      "kind": "test"
-    },
-    {
-      "mrid": "e4863274-ac59-405a-9aeb-fc09490fe17e",
-      "code": "EnergyEfficiency",
-      "name": "Energy Efficiency",
-      "kind": "test"
-    },
-    {
-      "mrid": "4cd34382-16cd-493a-ad1c-ed2985d1e977",
-      "code": "InducedAcVoltageTests",
-      "name": "Induced AC Voltage Test",
-      "kind": "test"
-    },
-    {
-      "mrid": "d04ecee3-831a-47dc-8ec5-8eb3bc594cef",
-      "code": "MeasurementOfOil",
-      "name": "Oil breakdown voltage",
-      "kind": "test"
-    },
-    {
-      "mrid": "84b45a72-5aeb-49fb-9000-5e8e6c7ab03c",
-      "code": "DimensionWeight",
-      "name": "Dimension Weight",
-      "kind": "test"
-    },
-    {
-      "mrid": "0e78e50b-ce66-4329-9201-d795a827f962",
-      "code": "TestingInstruments",
-      "name": "Testing Instruments",
-      "kind": "test"
-    },
-    {
-      "mrid": "ba2d3ec4-dbe6-4cf7-8542-b40299e1450f",
-      "code": "ExcitingCurrent",
-      "name": "Exciting current",
-      "kind": "test"
-    },
-    {
-      "mrid": "4523fb4a-6733-4b08-9675-278a4c8ac7cf",
-      "code": "SeparateSourceAc",
-      "name": "Separate Source AC Voltage Test",
       "kind": "test"
     },
     {
@@ -134,15 +80,15 @@
       "kind": "test"
     },
     {
-      "mrid": "7c80ee02-9315-449b-8808-4aca4bd7b59e",
-      "code": "Dga",
-      "name": "DGA",
+      "mrid": "ba2d3ec4-dbe6-4cf7-8542-b40299e1450f",
+      "code": "ExcitingCurrent",
+      "name": "Exciting current",
       "kind": "test"
     },
     {
-      "mrid": "7b05583f-530e-4547-8668-93961dca99d6",
-      "code": "InsulationResistanceYokeCore",
-      "name": "Insulation resistance of yoke and core",
+      "mrid": "1a3f6c14-265b-486c-89ec-dcb8426ce06e",
+      "code": "MeasurementOfShortCircuit",
+      "name": "Short-circuit Test",
       "kind": "test"
     },
     {
@@ -164,9 +110,51 @@
       "kind": "test"
     },
     {
+      "mrid": "2df1cd08-5347-4776-8319-a1987918932c",
+      "code": "MeasurementOfNoLoad",
+      "name": "No-load Test",
+      "kind": "test"
+    },
+    {
+      "mrid": "7c80ee02-9315-449b-8808-4aca4bd7b59e",
+      "code": "Dga",
+      "name": "DGA",
+      "kind": "test"
+    },
+    {
       "mrid": "50dfbdf2-80d2-4840-bc39-e1d63c5825d2",
       "code": "GasChromatography",
       "name": "Gas Chromatography",
+      "kind": "test"
+    },
+    {
+      "mrid": "d04ecee3-831a-47dc-8ec5-8eb3bc594cef",
+      "code": "MeasurementOfOil",
+      "name": "Oil breakdown voltage",
+      "kind": "test"
+    },
+    {
+      "mrid": "7b05583f-530e-4547-8668-93961dca99d6",
+      "code": "InsulationResistanceYokeCore",
+      "name": "Insulation resistance of yoke and core",
+      "kind": "test"
+    },
+    {
+      "mrid": "4cd34382-16cd-493a-ad1c-ed2985d1e977",
+      "code": "InducedAcVoltageTests",
+      "name": "Induced AC Voltage Test",
+      "kind": "test"
+    },
+    {
+      "mrid": "4523fb4a-6733-4b08-9675-278a4c8ac7cf",
+      "code": "SeparateSourceAc",
+      "name": "Separate Source AC Voltage Test",
+      "kind": "test"
+    },
+    {
+      "mrid": "e4863274-ac59-405a-9aeb-fc09490fe17e",
+      "code": "EnergyEfficiency",
+      "name": "Energy Efficiency",
       "kind": "test"
     }
   ]

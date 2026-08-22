@@ -1,5 +1,8 @@
 import Vue from "vue"
 import { startLoading } from '@/utils/loading'
+import * as organisationAPI from '@/api/demo/Organisation'
+import { mapDtoToServer } from '@/views/Mapping/ServerToDTO/Organisation'
+import { downloadAssetMediaToAttachmentData, uploadAssetMediaFromAttachmentData } from '@/utils/assetMedia'
 
 export default {
     methods: {
@@ -38,7 +41,9 @@ export default {
                 const org = dialogRef ? dialogRef.getOrganisationRef() : null
                 if (org) {
                     orgRef = org;
-                    const savePromise = org.saveOrganisation();
+                    const savePromise = this.clientSlide
+                        ? org.saveOrganisation()
+                        : this.saveOrganisationToServer(org);
 
                     let result;
                     if (timeoutValue > 0) {
@@ -53,11 +58,21 @@ export default {
                     const { success, data } = result;
 
                     if (success) {
-                        await this.markSavedExistingResultDirtyIfChanged(result)
+                        if (this.clientSlide) {
+                            await this.markSavedExistingResultDirtyIfChanged(result)
+                        }
                         saveSuccess = true;
 
-                        let newRows = []
-                        if (this.organisationClientList && this.organisationClientList.length > 0) {
+                        if (!this.clientSlide) {
+                            await this.refreshServerParentAfterCreate({
+                                id: data.organisation.mrid,
+                                mrid: data.organisation.mrid,
+                                name: data.organisation.name,
+                                parentId: data.organisation.parentId,
+                                mode: 'organisation'
+                            })
+                        } else if (this.organisationClientList && this.organisationClientList.length > 0) {
+                            let newRows = []
                             const newRow = {
                                 mrid: data.organisation.mrid,
                                 name: data.organisation.name || 'Unnamed Organisation',
@@ -82,7 +97,7 @@ export default {
             } catch (error) {
                 this.$message = originalMessage;
                 await close();
-                this.$message.error(error.message === 'Timeout' ? 'Save timed out' : 'Some error occur');
+                this.$message.error(error.message === 'Timeout' ? 'Save timed out' : (error.message || 'Some error occur'));
                 console.error(error);
                 this.isSaving = false;
                 return;
@@ -98,7 +113,9 @@ export default {
             }
 
             if (saveSuccess) {
-                this.$message.success('Organisation saved successfully')
+                this.$message.success(this.clientSlide
+                    ? 'Organisation saved successfully'
+                    : 'Organisation created successfully')
                 this.signOrg = false
                 if (orgRef) {
                     this.resetFormAfterSave(orgRef);
@@ -107,6 +124,63 @@ export default {
             setTimeout(() => {
                 this.isSaving = false;
             }, 300);
+        },
+        async saveOrganisationToServer(org, serverTab = null) {
+            const properties = org && org.properties ? org.properties : {}
+            const name = String(properties.name || '').trim()
+            if (!name) {
+                throw new Error('Name is required')
+            }
+
+            const parent = this.parentOrganization || {}
+            const parentId = parent.id || parent.mrid || serverTab?.parentId || properties.parentId
+            if (!parentId) {
+                throw new Error('Cannot resolve parent organisation on server')
+            }
+
+            const serverId = serverTab?.id || serverTab?.mrid || properties.organisationId || null
+
+            const dto = JSON.parse(JSON.stringify(properties))
+            dto.name = name
+            const payload = mapDtoToServer(dto, parentId, serverId)
+            const response = await organisationAPI.createOrganisation(payload, parentId)
+            const savedServerId = this.extractUploadedServerId(response) || serverId
+            if (!savedServerId) {
+                throw new Error('Server did not return the new organisation ID')
+            }
+
+            const currentAttachments = Array.isArray(org.attachmentData) ? org.attachmentData : []
+            let previousAttachments = []
+            try {
+                previousAttachments = properties.attachment?.path
+                    ? JSON.parse(properties.attachment.path)
+                    : []
+            } catch (error) {
+                previousAttachments = []
+            }
+            await uploadAssetMediaFromAttachmentData(
+                'Organisation',
+                savedServerId,
+                currentAttachments,
+                previousAttachments
+            )
+            const refreshedAttachments = await downloadAssetMediaToAttachmentData('Organisation', savedServerId)
+            org.attachmentData = refreshedAttachments
+            if (properties.attachment) {
+                properties.attachment.path = JSON.stringify(refreshedAttachments)
+            }
+
+            return {
+                success: true,
+                data: {
+                    organisation: {
+                        mrid: String(savedServerId),
+                        name,
+                        parentId
+                    },
+                    raw: response
+                }
+            }
         },
         async handleOrgCancel() {
             this.signOrg = false

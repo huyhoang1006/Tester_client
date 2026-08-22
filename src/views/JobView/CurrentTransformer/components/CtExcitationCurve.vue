@@ -1,13 +1,12 @@
 <template>
     <div class="curve-panel">
         <div class="curve-head">
-            <span class="curve-note">{{ summary }}</span>
             <el-button size="mini" plain icon="el-icon-refresh" :loading="loading" @click="reload">
                 Refresh
             </el-button>
             <el-button size="mini" plain icon="el-icon-picture-outline" :disabled="series.length === 0"
                        @click="saveImage">
-                Save image
+                Save images
             </el-button>
         </div>
 
@@ -24,62 +23,72 @@
         </div>
 
         <template v-else>
-            <div ref="chart" class="curve-chart"></div>
+            <div class="core-reviews">
+                <section v-for="group in seriesGroups" :key="group.key" class="core-review-block">
+                    <div class="core-review-head">
+                        <strong>{{ group.label }}</strong>
+                        <div class="core-chart-actions">
+                            <span>{{ group.series.length }} tap combination(s)</span>
+                            <el-button type="text" size="mini" icon="el-icon-download"
+                                title="Save this core as image" @click="saveCoreImage(group)"></el-button>
+                        </div>
+                    </div>
+                    <div :ref="'chart-' + group.key" class="curve-chart"></div>
 
-            <!--
-              Bảng điểm knee theo từng tiêu chuẩn. OMICRON tính ba cách (IEC, ANSI45,
-              ANSI30) và ba con số lệch nhau thật — bảng test chỉ giữ được cái đang chọn,
-              nên hai cái còn lại chỉ nhìn thấy ở đây.
-            -->
-            <div v-if="kneeRows.length > 0" class="knee-wrap">
-                <div class="knee-title">Knee points by standard</div>
-                <table class="points-table">
-                    <thead>
-                        <tr>
-                            <th class="left">Row</th>
-                            <th class="left">Standard</th>
-                            <th>I knee [A]</th>
-                            <th>V knee [V]</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(k, i) in kneeRows" :key="'k' + i" :class="{ 'knee-selected': k.isSelected }">
-                            <td class="left">{{ k.rowName }}</td>
-                            <td class="left">
-                                {{ k.method }}
-                                <span v-if="k.isSelected" class="knee-tag">in table</span>
-                            </td>
-                            <td>{{ k.currentText }}</td>
-                            <td>{{ k.voltageText }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                    <!-- Knee và điểm đo nằm ngay dưới biểu đồ của đúng core đó. -->
+                    <div v-if="group.kneeRows.length > 0" class="knee-wrap">
+                        <div class="data-section-title">Knee points by standard</div>
+                        <table class="points-table">
+                            <thead>
+                                <tr>
+                                    <th class="left">Row</th>
+                                    <th class="left">Standard</th>
+                                    <th>I knee [A]</th>
+                                    <th>V knee [V]</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(k, i) in group.kneeRows" :key="'k' + group.key + i"
+                                    :class="{ 'knee-selected': k.isSelected }">
+                                    <td class="left">{{ k.rowName }}</td>
+                                    <td class="left">
+                                        {{ k.method }}
+                                        <span v-if="k.isSelected" class="knee-tag">in table</span>
+                                    </td>
+                                    <td>{{ k.currentText }}</td>
+                                    <td>{{ k.voltageText }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
 
-            <div class="points-wrap">
-                <table class="points-table">
-                    <thead>
-                        <tr>
-                            <th rowspan="2">#</th>
-                            <th v-for="(s, i) in series" :key="'h' + i" colspan="2">{{ s.name }}</th>
-                        </tr>
-                        <tr>
-                            <template v-for="(s, i) in series">
-                                <th :key="'hi' + i">I [A]</th>
-                                <th :key="'hv' + i">V [V]</th>
-                            </template>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="r in maxPoints" :key="'r' + r">
-                            <td class="idx">{{ r }}</td>
-                            <template v-for="(s, i) in series">
-                                <td :key="'i' + i + '_' + r">{{ cellAt(s, r - 1, 0) }}</td>
-                                <td :key="'v' + i + '_' + r">{{ cellAt(s, r - 1, 1) }}</td>
-                            </template>
-                        </tr>
-                    </tbody>
-                </table>
+                    <div class="data-section-title">Measured points</div>
+                    <div class="points-wrap">
+                        <table class="points-table">
+                            <thead>
+                                <tr>
+                                    <th rowspan="2">#</th>
+                                    <th v-for="(s, i) in group.series" :key="'h' + group.key + i" colspan="2">{{ s.name }}</th>
+                                </tr>
+                                <tr>
+                                    <template v-for="(s, i) in group.series">
+                                        <th :key="'hi' + group.key + i">I [A]</th>
+                                        <th :key="'hv' + group.key + i">V [V]</th>
+                                    </template>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="r in maxPointsOf(group.series)" :key="'r' + group.key + r">
+                                    <td class="idx">{{ r }}</td>
+                                    <template v-for="(s, i) in group.series">
+                                        <td :key="'i' + group.key + i + '_' + r">{{ cellAt(s, r - 1, 0) }}</td>
+                                        <td :key="'v' + group.key + i + '_' + r">{{ cellAt(s, r - 1, 1) }}</td>
+                                    </template>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
             </div>
         </template>
     </div>
@@ -125,6 +134,8 @@ export default {
     props: {
         /** Các dòng của bảng test — cần `mrid` để tra, `name` để đặt nhãn. */
         rows: { type: Array, default: () => [] },
+        /** Cấu hình CT dùng để xác định chính xác một tap thuộc core nào. */
+        asset: { type: Object, default: () => ({}) },
     },
     data() {
         return {
@@ -133,8 +144,11 @@ export default {
             pointsByRow: {},
             /** { [datasetId]: [{ method, current, voltage, is_selected }] } */
             kneeByRow: {},
-            chart: null,
         }
+    },
+    created() {
+        // ECharts instances are large cyclic objects; keep them outside Vue 2 reactivity.
+        this._charts = Object.create(null)
     },
     computed: {
         rowIds() {
@@ -147,35 +161,24 @@ export default {
             for (const row of this.rows) {
                 const id = row && row.mrid
                 if (!id) continue
-                const pts = (this.pointsByRow[id] || [])
-                    .map(p => [Number(p.current), Number(p.voltage)])
+                const measuredPoints = (this.pointsByRow[id] || [])
+                    .map(p => ({
+                        point: [Number(p.current), Number(p.voltage)],
+                        text: [String(p.current ?? ''), String(p.voltage ?? '')],
+                    }))
                     // Trục log không nhận 0 và số âm — bỏ điểm không hợp lệ, nếu không
                     // ECharts lặng lẽ bỏ qua chúng và đường cong đứt quãng không rõ lý do.
-                    .filter(p => Number.isFinite(p[0]) && Number.isFinite(p[1]) && p[0] > 0 && p[1] > 0)
-                if (pts.length < 2) continue
+                    .filter(p => Number.isFinite(p.point[0]) && Number.isFinite(p.point[1])
+                        && p.point[0] > 0 && p.point[1] > 0)
+                if (measuredPoints.length < 2) continue
 
                 out.push({
                     name: (row.name && row.name.value) || 'Row',
-                    points: pts,
+                    row,
+                    points: measuredPoints.map(p => p.point),
+                    pointTexts: measuredPoints.map(p => p.text),
                     knees: this.kneesOf(row),
                 })
-            }
-            return out
-        },
-
-        /** Bảng knee phẳng, mỗi dòng một (dòng test × tiêu chuẩn). */
-        kneeRows() {
-            const out = []
-            for (const s of this.series) {
-                for (const k of s.knees) {
-                    out.push({
-                        rowName: s.name,
-                        method: k.method,
-                        isSelected: k.isSelected,
-                        currentText: this.fmtNumber(k.point[0]),
-                        voltageText: this.fmtNumber(k.point[1]),
-                    })
-                }
             }
             return out
         },
@@ -184,14 +187,39 @@ export default {
             return this.series.reduce((m, s) => Math.max(m, s.points.length), 0)
         },
 
-        summary() {
-            if (this.series.length === 0) return ''
-            const knees = this.series.reduce((n, s) => n + s.knees.length, 0)
-            const methods = new Set()
-            this.series.forEach(s => s.knees.forEach(k => methods.add(k.method)))
-            const methodNote = methods.size > 1 ? ` (${[...methods].join(', ')})` : ''
-            return `${this.series.length} curve(s) · ${this.maxPoints} points max · ${knees} knee point(s)${methodNote}`
+        seriesGroups() {
+            const groups = new Map()
+            for (const item of this.series) {
+                const coreNumber = this.coreNumberOf(item.row)
+                const key = coreNumber === null ? 'unassigned' : `core-${coreNumber}`
+                if (!groups.has(key)) {
+                    groups.set(key, {
+                        key,
+                        coreNumber,
+                        label: coreNumber === null ? 'Other measurements' : `Core ${coreNumber}`,
+                        series: [],
+                        kneeRows: [],
+                    })
+                }
+                const group = groups.get(key)
+                group.series.push(item)
+                item.knees.forEach(k => {
+                    group.kneeRows.push({
+                        rowName: item.name,
+                        method: k.method,
+                        isSelected: k.isSelected,
+                        currentText: k.currentText,
+                        voltageText: k.voltageText,
+                    })
+                })
+            }
+            return Array.from(groups.values()).sort((a, b) => {
+                if (a.coreNumber === null) return 1
+                if (b.coreNumber === null) return -1
+                return a.coreNumber - b.coreNumber
+            })
         },
+
     },
     watch: {
         rowIds: {
@@ -210,9 +238,8 @@ export default {
     },
     beforeDestroy() {
         window.removeEventListener('resize', this.onResize)
-        // Không dispose thì instance ECharts giữ canvas và listener sau khi dialog đóng;
-        // mở đi mở lại vài lần là rò bộ nhớ.
-        if (this.chart) { this.chart.dispose(); this.chart = null }
+        // Không dispose thì các instance ECharts giữ canvas và listener sau khi dialog đóng.
+        this.disposeCharts()
     },
     methods: {
         async reload() {
@@ -269,6 +296,8 @@ export default {
                     method: String(k.method || 'knee'),
                     isSelected: !!k.is_selected,
                     point: [x, y],
+                    currentText: String(k.current ?? ''),
+                    voltageText: String(k.voltage ?? ''),
                 })
             }
             if (out.length > 0) return out
@@ -276,121 +305,212 @@ export default {
             const kneeX = Number(row.i_knee && row.i_knee.value)
             const kneeY = Number(row.v_knee && row.v_knee.value)
             if (Number.isFinite(kneeX) && Number.isFinite(kneeY) && kneeX > 0 && kneeY > 0) {
-                return [{ method: 'knee', isSelected: true, point: [kneeX, kneeY] }]
+                return [{
+                    method: 'knee',
+                    isSelected: true,
+                    point: [kneeX, kneeY],
+                    currentText: String(row.i_knee.value),
+                    voltageText: String(row.v_knee.value),
+                }]
             }
             return []
         },
 
-        fmtNumber(v) {
-            const n = Number(v)
-            if (!Number.isFinite(n)) return ''
-            return Math.abs(n) < 0.001 ? n.toExponential(4) : String(Number(n.toPrecision(6)))
+        coreNumberOf(row) {
+            const rowName = String(row && row.name && row.name.value ? row.name.value : '').trim()
+            const entityTaps = Array.isArray(this.asset && this.asset.CtTapInfo) ? this.asset.CtTapInfo : []
+            const entityCores = Array.isArray(this.asset && this.asset.CtCoreInfo) ? this.asset.CtCoreInfo : []
+            const entityTap = entityTaps.find(tap => String(tap.tap_name || '').trim() === rowName)
+            if (entityTap) {
+                const core = entityCores.find(item => item.mrid === entityTap.ct_core_info_id)
+                const coreIndex = Number(core && core.core_index)
+                if (Number.isFinite(coreIndex)) return coreIndex
+            }
+
+            const dtoCores = this.asset && this.asset.ctConfiguration
+                && Array.isArray(this.asset.ctConfiguration.dataCT)
+                ? this.asset.ctConfiguration.dataCT
+                : []
+            for (let index = 0; index < dtoCores.length; index++) {
+                if (this.coreTapNames(dtoCores[index]).includes(rowName)) {
+                    const configuredIndex = Number(dtoCores[index].core_index)
+                    return Number.isFinite(configuredIndex) ? configuredIndex : index + 1
+                }
+            }
+
+            const tapMatch = rowName.match(/^\s*(\d+)S\d+/i)
+            if (tapMatch) return Number(tapMatch[1])
+            const coreMatch = rowName.match(/^\s*Core\s+(\d+)/i)
+            return coreMatch ? Number(coreMatch[1]) : null
+        },
+
+        coreTapNames(core) {
+            const names = []
+            const addTableName = table => {
+                const value = table && table.name
+                if (value) names.push(String(value).trim())
+            }
+            addTableName(core && core.fullTap && core.fullTap.table)
+            const main = core && core.mainTap && Array.isArray(core.mainTap.data) ? core.mainTap.data : []
+            const inter = core && core.interTap && Array.isArray(core.interTap.data) ? core.interTap.data : []
+            main.forEach(item => addTableName(item && item.table))
+            inter.forEach(item => addTableName(item && item.table))
+            return names
+        },
+
+        maxPointsOf(items) {
+            return (items || []).reduce((max, item) => Math.max(max, item.points.length), 0)
         },
 
         renderChart() {
-            const el = this.$refs.chart
-            if (!el || this.series.length === 0) return
-            if (!this.chart) this.chart = echarts.init(el)
+            if (this.series.length === 0) {
+                this.disposeCharts()
+                return
+            }
 
-            const palette = ['#409eff', '#67c23a', '#e6a23c', '#f56c6c', '#909399', '#9c27b0',
-                             '#00bcd4', '#795548', '#3f51b5', '#8bc34a', '#ff5722', '#607d8b']
+            const palette = ['#ef3b5d', '#2855e7', '#16a36a', '#f08c00', '#7b3fc6', '#008ca8',
+                             '#d9480f', '#52606d', '#0b7285', '#5c940d', '#c2255c', '#7048e8']
             const fmt = (v) => (Math.abs(v) < 0.001 ? Number(v).toExponential(3) : String(Number(Number(v).toPrecision(6))))
+            const activeKeys = new Set()
 
-            const chartSeries = []
-            this.series.forEach((s, i) => {
-                const color = palette[i % palette.length]
-                chartSeries.push({
-                    name: s.name,
-                    type: 'line',
-                    data: s.points,
-                    showSymbol: false,
-                    symbolSize: 5,
-                    lineStyle: { width: 1.8, color },
-                    itemStyle: { color },
-                    emphasis: { focus: 'series' },
-                })
-                // Mỗi tiêu chuẩn một điểm. Tiêu chuẩn đang nằm trên bảng vẽ tròn ĐẶC, các
-                // tiêu chuẩn khác vẽ thoi RỖNG — phân biệt bằng hình, không bằng màu, vì
-                // màu đã dùng để phân biệt các đường với nhau.
-                for (const k of s.knees) {
+            this.seriesGroups.forEach(group => {
+                const ref = this.$refs[`chart-${group.key}`]
+                const el = Array.isArray(ref) ? ref[0] : ref
+                if (!el) return
+
+                activeKeys.add(group.key)
+                const chart = this._charts[group.key] || echarts.init(el)
+                if (!this._charts[group.key]) this._charts[group.key] = chart
+
+                const chartSeries = []
+                group.series.forEach((s, i) => {
+                    const color = palette[i % palette.length]
                     chartSeries.push({
-                        // Cùng tên với đường: bấm chú giải là ẩn/hiện CẢ đường lẫn điểm knee.
                         name: s.name,
-                        type: 'scatter',
-                        data: [k.point],
-                        symbolSize: k.isSelected ? 12 : 9,
-                        symbol: k.isSelected ? 'circle' : 'diamond',
-                        itemStyle: k.isSelected
-                            ? { color, borderColor: '#fff', borderWidth: 1.5 }
-                            : { color: 'transparent', borderColor: color, borderWidth: 1.5 },
-                        tooltip: {
-                            formatter: (p) => `${s.name} — knee (${k.method})`
-                                + `${k.isSelected ? ' · shown in table' : ''}`
-                                + `<br/>I: ${fmt(p.value[0])} A<br/>V: ${fmt(p.value[1])} V`,
-                        },
-                        z: k.isSelected ? 6 : 5,
+                        type: 'line',
+                        data: s.points,
+                        showSymbol: true,
+                        symbol: 'circle',
+                        symbolSize: 5,
+                        connectNulls: true,
+                        smooth: false,
+                        lineStyle: { width: 1.7, type: 'solid', color, opacity: 1 },
+                        // Marker trong suốt để không che đoạn line chạy qua từng điểm đo.
+                        itemStyle: { color: 'transparent', borderColor: color, borderWidth: 1.3 },
+                        emphasis: { focus: 'series' },
                     })
-                }
+                    // Mỗi tiêu chuẩn một điểm. Điểm đang chọn là hình tròn đặc, các điểm
+                    // tham chiếu là hình thoi rỗng và chỉ xuất hiện trên biểu đồ của core đó.
+                    for (const k of s.knees) {
+                        chartSeries.push({
+                            name: s.name,
+                            type: 'scatter',
+                            data: [k.point],
+                            symbolSize: k.isSelected ? 18 : 9,
+                            symbol: k.isSelected
+                                ? 'path://M-1,-8 L1,-8 L1,-1 L8,-1 L8,1 L1,1 L1,8 L-1,8 L-1,1 L-8,1 L-8,-1 L-1,-1 Z'
+                                : 'diamond',
+                            itemStyle: k.isSelected
+                                ? { color, borderColor: color, borderWidth: 1 }
+                                : { color: 'transparent', borderColor: color, borderWidth: 1.5 },
+                            tooltip: {
+                                formatter: (p) => `${s.name} — knee (${k.method})`
+                                    + `${k.isSelected ? ' · shown in table' : ''}`
+                                    + `<br/>I: ${fmt(p.value[0])} A<br/>V: ${fmt(p.value[1])} V`,
+                            },
+                            z: k.isSelected ? 6 : 5,
+                        })
+                    }
+                })
+
+                chart.setOption({
+                    animation: false,
+                    title: {
+                        text: `${group.label} - Excitation curve`,
+                        left: 'center',
+                        top: 5,
+                        textStyle: { color: '#303133', fontSize: 13, fontWeight: 500 },
+                    },
+                    grid: { left: 68, right: 24, top: 48, bottom: 72 },
+                    legend: {
+                        type: 'scroll',
+                        left: 12,
+                        right: 12,
+                        bottom: 5,
+                        icon: 'circle',
+                        data: group.series.map(s => s.name),
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                        axisPointer: { type: 'cross' },
+                        formatter: (p) => Array.isArray(p.value)
+                            ? `${p.seriesName}<br/>I: ${fmt(p.value[0])} A<br/>V: ${fmt(p.value[1])} V`
+                            : '',
+                    },
+                    toolbox: {
+                        right: 12, top: 5,
+                        feature: {
+                            dataZoom: { yAxisIndex: 'none', title: { zoom: 'Zoom', back: 'Reset zoom' } },
+                            restore: { title: 'Restore' },
+                        },
+                    },
+                    xAxis: {
+                        type: 'log', logBase: 10, name: 'A',
+                        nameLocation: 'middle', nameGap: 30,
+                        axisLabel: { formatter: (v) => (v < 0.001 ? Number(v).toExponential(0) : String(v)) },
+                        splitLine: { show: true, lineStyle: { color: '#eef1f5' } },
+                        minorTick: { show: true },
+                        minorSplitLine: { show: true, lineStyle: { color: '#f3f5f8' } },
+                    },
+                    yAxis: {
+                        type: 'log', logBase: 10, name: 'V',
+                        nameLocation: 'middle', nameGap: 42,
+                        splitLine: { show: true, lineStyle: { color: '#eef1f5' } },
+                        minorTick: { show: true },
+                        minorSplitLine: { show: true, lineStyle: { color: '#f3f5f8' } },
+                    },
+                    series: chartSeries,
+                }, true)
+                chart.resize()
             })
 
-            this.chart.setOption({
-                animation: false,
-                grid: { left: 68, right: 24, top: 46, bottom: 56 },
-                legend: { type: 'scroll', top: 4, data: this.series.map(s => s.name) },
-                tooltip: {
-                    trigger: 'item',
-                    axisPointer: { type: 'cross' },
-                    formatter: (p) => Array.isArray(p.value)
-                        ? `${p.seriesName}<br/>I: ${fmt(p.value[0])} A<br/>V: ${fmt(p.value[1])} V`
-                        : '',
-                },
-                toolbox: {
-                    right: 12, top: 4,
-                    feature: {
-                        // Phóng vùng knee — cả quyết định nằm ở khúc gãy, mà khúc đó chiếm
-                        // chưa tới 1/5 chiều ngang.
-                        dataZoom: { yAxisIndex: 'none', title: { zoom: 'Zoom', back: 'Reset zoom' } },
-                        restore: { title: 'Restore' },
-                    },
-                },
-                xAxis: {
-                    type: 'log', logBase: 10, name: 'Excitation current [A]',
-                    nameLocation: 'middle', nameGap: 30,
-                    axisLabel: { formatter: (v) => (v < 0.001 ? Number(v).toExponential(0) : String(v)) },
-                    splitLine: { show: true, lineStyle: { color: '#eef1f5' } },
-                },
-                yAxis: {
-                    type: 'log', logBase: 10, name: 'Excitation voltage [V]',
-                    nameLocation: 'middle', nameGap: 48,
-                    splitLine: { show: true, lineStyle: { color: '#eef1f5' } },
-                },
-                series: chartSeries,
-            }, true)
-
-            this.chart.resize()
+            Object.keys(this._charts).forEach(key => {
+                if (activeKeys.has(key)) return
+                this._charts[key].dispose()
+                delete this._charts[key]
+            })
         },
 
         onResize() {
-            if (this.chart) this.chart.resize()
+            Object.values(this._charts).forEach(chart => chart.resize())
         },
 
         saveImage() {
-            if (!this.chart) return
-            const url = this.chart.getDataURL({ type: 'png', pixelRatio: 2, backgroundColor: '#fff' })
+            this.seriesGroups.forEach(group => this.saveCoreImage(group))
+        },
+
+        saveCoreImage(group) {
+            const chart = group && this._charts[group.key]
+            if (!chart) return
+            const url = chart.getDataURL({ type: 'png', pixelRatio: 2, backgroundColor: '#fff' })
             const a = document.createElement('a')
             a.href = url
-            a.download = 'excitation-curve.png'
+            a.download = `excitation-curve-${group.key}.png`
             document.body.appendChild(a)
             a.click()
             document.body.removeChild(a)
         },
 
+        disposeCharts() {
+            Object.values(this._charts || {}).forEach(chart => chart.dispose())
+            this._charts = Object.create(null)
+        },
+
         cellAt(s, index, axis) {
-            const p = s.points[index]
+            const p = s.pointTexts[index]
             if (!p) return ''
-            const value = p[axis]
-            // Giữ đủ chữ số có nghĩa: dòng nhỏ cỡ 4.6e-05, hiển thị 2 chữ số là mất hết.
-            return value < 0.001 ? value.toExponential(4) : String(Number(value.toPrecision(6)))
+            // Giữ nguyên chuỗi PTM, không làm tròn tại màn hình review dữ liệu curve.
+            return p[axis]
         },
     },
 }
@@ -402,10 +522,10 @@ export default {
 .curve-head {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: 8px;
     margin-bottom: 8px;
 }
-.curve-note { font-size: 12px; color: #909399; margin-right: auto; }
 
 .curve-empty {
     padding: 26px 4px;
@@ -414,12 +534,28 @@ export default {
     text-align: center;
 }
 
+.core-reviews { display: grid; gap: 18px; }
+.core-review-block { border: 1px solid #dfe4ec; border-radius: 4px; overflow: hidden; background: #fff; }
+.core-review-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 36px;
+    padding: 0 10px;
+    border-bottom: 1px solid #dfe4ec;
+    background: #f5f7fa;
+    color: #303133;
+    font-size: 12px;
+}
+.core-review-head span { color: #909399; font-size: 11px; }
+.core-chart-actions { display: flex; align-items: center; gap: 6px; }
+.core-chart-actions .el-button { padding: 4px; font-size: 14px; }
 .curve-chart {
     width: 100%;
     height: 380px;
 }
 
-.points-wrap { max-height: 260px; overflow: auto; margin-top: 10px; }
+.points-wrap { max-height: 260px; overflow: auto; }
 
 .points-table { border-collapse: collapse; font-size: 11px; width: 100%; }
 .points-table th,
@@ -438,8 +574,20 @@ export default {
 .points-table .idx { color: #a0a4aa; text-align: center; }
 .points-table .left { text-align: left; }
 
-.knee-wrap { margin-top: 12px; max-height: 180px; overflow: auto; }
-.knee-title { font-size: 12px; color: #606266; margin-bottom: 4px; }
+.knee-wrap { max-height: 220px; overflow: auto; border-top: 1px solid #dfe4ec; }
+.data-section-title {
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    border-top: 1px solid #dfe4ec;
+    border-bottom: 1px solid #dfe4ec;
+    background: #fafbfc;
+    color: #606266;
+    font-size: 12px;
+    font-weight: 600;
+}
+.knee-wrap .data-section-title { border-top: 0; }
 .knee-selected { background: #f0f7ff; font-weight: 600; }
 .knee-tag {
     font-size: 10px;

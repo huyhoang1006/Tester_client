@@ -28,10 +28,10 @@
             <thead>
                 <tr>
                     <th>Name</th>
-                    <th>Upr (A)</th>
-                    <th>Usr (A)</th>
+                    <th>Upr (kV)</th>
+                    <th>Usr (V)</th>
                     <th>Ratio meas</th>
-                    <th>Ratio dev</th>
+                    <th>Ratio dev (%)</th>
                     <th>Polarity</th>
                     <th class="assessment-col">Assessment</th>
                     <th class="condition-indicator-col">Condition indicator</th>
@@ -45,23 +45,17 @@
                         <el-input size="mini" type="text" v-model="item.name.value"></el-input>
                     </td>
                     <td>
-                        <!-- Hiện nhãn "1 / √3" cho dễ đọc, nhưng ô vẫn lưu SỐ đã
-                             quy đổi để ratio_dev và bảng Compare tính được -->
-                        <el-select size="mini" style="width: 100%"
-                            :value="uprSelected(item)"
-                            @change="value => setUpr(item, value)">
-                            <el-option v-for="option in uprOptions" :key="option.value"
-                                :label="option.label" :value="option.value"></el-option>
-                        </el-select>
+                        <el-input size="mini" type="text" :value="uprDisplay(index)" readonly></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.usr.value"></el-input>
+                        <el-input size="mini" type="text" :value="usrDisplay(index)" readonly></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.ratio_meas.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.ratio_meas.value"
+                            @input="calcRatioDev(item, index)"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.ratio_dev.value"></el-input>
+                        <el-input size="mini" type="text" v-model="item.ratio_dev.value" readonly></el-input>
                     </td>
                     <td>
                         <el-select size="mini" v-model="item.polarity.value">
@@ -143,7 +137,7 @@ import voltageTransformerTestMap from '@/config/test-definitions/VoltageTransfor
 import * as common from '@/views/JobView/Common/index'
 import GroupNode from '../../Common/GroupNode.vue'
 import { changeTestStandard } from '../../Common'
-import { UPR_OPTIONS, matchUprOption } from '@/config/upr-options'
+import { effectiveVoltage, formatRatedVoltage, readVTRatioProfile } from './vtRatioProfile'
 
 export default {
     name: "VTRatio",
@@ -155,13 +149,14 @@ export default {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
             option: null,
-            uprOptions: UPR_OPTIONS,
         }
     },
     mounted() {
         // Initialize table if needed
         this.$nextTick(() => {
             this.initializeTable()
+            this.syncProfileValues()
+            this.calcRdev()
         })
     },
     props: {
@@ -234,6 +229,15 @@ export default {
                     }
                 }
             }
+        },
+        'assetData': {
+            deep: true,
+            handler: function () {
+                this.$nextTick(() => {
+                    this.syncProfileValues()
+                    this.calcRdev()
+                })
+            }
         }
     },
     methods: {
@@ -258,6 +262,7 @@ export default {
             this.testData.table.table1.push(
                 JSON.parse(JSON.stringify(this.rowData))
             )
+            this.syncProfileValues()
         },
         removeAll() {
             this.$confirm('This will delete the file. Continue?', 'Warning', {
@@ -276,24 +281,6 @@ export default {
             this.testData.table.table1.splice(index + 1, 0, data)
         },
 
-        autoCalculate(index) {
-            // Auto calculate when ratio_meas, upr, or usr changes
-            this.$nextTick(() => {
-                if (this.testData.table.table1 && this.testData.table.table1[index]) {
-                    const item = this.testData.table.table1[index]
-
-                    // Calculate ratio_dev
-                    if (!isNaN(parseFloat(item.ratio_meas.value)) && item.ratio_meas.value != 0) {
-                        if (!isNaN(item.upr.value) && !isNaN(item.usr.value) && item.usr.value != 0) {
-                            item.ratio_dev.value = (100 * (parseFloat(item.ratio_meas.value) - (parseFloat(item.upr.value) / parseFloat(item.usr.value))) / (parseFloat(item.upr.value) / parseFloat(item.usr.value))).toFixed(4)
-                        } else if (!isNaN(parseFloat(item.upr.value)) && !isNaN(parseFloat(item.usr.value)) && item.usr.value != 0) {
-                            item.ratio_dev.value = (100 * (parseFloat(item.ratio_meas.value) - (parseFloat(item.upr.value) / parseFloat(item.usr.value))) / (parseFloat(item.upr.value) / parseFloat(item.usr.value))).toFixed(4)
-                        }
-                    }
-                }
-            })
-        },
-
         async calculator() {
             await this.calcRdev()
             await this.calcAssessment()
@@ -305,15 +292,8 @@ export default {
                 this.initializeTable()
                 return
             }
-            this.testData.table.table1.forEach(element => {
-                if (!isNaN(parseFloat(element.ratio_meas.value)) && element.ratio_meas.value != 0) {
-                    if (!isNaN(element.upr.value) && !isNaN(element.usr.value) && element.usr.value != 0) {
-                        element.ratio_dev.value = (100 * (parseFloat(element.ratio_meas.value) - (parseFloat(element.upr.value) / parseFloat(element.usr.value))) / (parseFloat(element.upr.value) / parseFloat(element.usr.value))).toFixed(4)
-                    } else if (!isNaN(parseFloat(element.upr.value)) && !isNaN(parseFloat(element.usr.value)) && element.usr.value != 0) {
-                        element.ratio_dev.value = (100 * (parseFloat(element.ratio_meas.value) - (parseFloat(element.upr.value) / parseFloat(element.usr.value))) / (parseFloat(element.upr.value) / parseFloat(element.usr.value))).toFixed(4)
-                    }
-                }
-            })
+            this.syncProfileValues()
+            this.testData.table.table1.forEach(this.calcRatioDev)
         },
 
         async calcAssessment() {
@@ -359,28 +339,49 @@ export default {
             return common.evaluateAssessmentGroup(group, measurementMap, { absolute: true })
         },
 
-        /** Giá trị đang lưu trong ô → option để dropdown highlight đúng nhãn */
-        uprSelected(item) {
-            return matchUprOption(item && item.upr ? item.upr.value : '')
+        ratioProfile() {
+            return readVTRatioProfile(this.assetData)
         },
-        /** Chọn dropdown → ghi SỐ đã quy đổi vào ô, không ghi mã */
-        setUpr(item, value) {
-            if (!item || !item.upr) return
-            this.$set(item.upr, 'value', value === null || value === undefined ? '' : value)
+        secondaryProfile(index) {
+            return this.ratioProfile().secondary[index] || null
         },
-        clear() {
-            if (!this.testData.table.table1) {
-                this.initializeTable()
+        uprDisplay() {
+            return formatRatedVoltage(this.ratioProfile().primary)
+        },
+        usrDisplay(index) {
+            return formatRatedVoltage(this.secondaryProfile(index))
+        },
+        syncProfileValues() {
+            if (!this.testData.table || !this.testData.table.table1) return
+            const profile = this.ratioProfile()
+            this.testData.table.table1.forEach((item, index) => {
+                const secondary = profile.secondary[index]
+                if (item.upr) {
+                    item.upr.value = profile.primary.value
+                    item.upr.unit = 'kV'
+                }
+                if (item.usr) {
+                    item.usr.value = secondary ? secondary.value : ''
+                    item.usr.unit = 'V'
+                }
+            })
+        },
+        calcRatioDev(item, index) {
+            const measured = parseFloat(item.ratio_meas.value)
+            const profile = this.ratioProfile()
+            const primary = effectiveVoltage(profile.primary)
+            const secondary = effectiveVoltage(profile.secondary[index])
+            const reference = primary / secondary
+
+            if (!Number.isFinite(measured) || !Number.isFinite(reference) || reference === 0) {
+                item.ratio_dev.value = ''
                 return
             }
-            this.testData.table.table1.forEach(row => {
-                Object.keys(row).forEach(key => {
-                    if (key === "mrid") return;
-                    if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
-                        row[key].value = ""
-                    }
-                })
-            })
+
+            item.ratio_dev.value = (100 * (measured - reference) / reference).toFixed(4)
+        },
+        clear() {
+            common.clearEditableTestValues(this.testData && this.testData.table)
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) {

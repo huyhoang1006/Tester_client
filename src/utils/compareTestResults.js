@@ -46,7 +46,7 @@ const toNumber = (value) => {
 
 const buildDisplayRowLabel = (cells, keyCodes, options = {}) => {
     if (typeof options.rowLabel === 'function') {
-        const label = options.rowLabel(cells, keyCodes)
+        const label = options.rowLabel(cells, keyCodes, options.context || {})
         if (!isBlank(label)) return label
     }
     return buildRowLabel(cells, keyCodes)

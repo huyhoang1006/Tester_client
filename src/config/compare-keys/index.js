@@ -1,3 +1,5 @@
+import { getCtTapRatio } from '@/utils/ctTapRatio'
+
 /**
  * CỘT MỐC (khoá ghép dòng) khi so sánh kết quả test với lần đo trước.
  *
@@ -267,7 +269,18 @@ const buildCircuitBreakerRowTitle = (cells) => {
     return parts.join(' - ')
 }
 
+const buildCtExcitationRowTitle = (cells, keyCodes, context = {}) => {
+    const name = getCellValue(cells, 'name')
+    const ratio = getCtTapRatio(context.assetData, name)
+    return [name, ratio].filter(Boolean).join(' · ')
+}
+
 const COMPARE_DISPLAY = {
+    CurrentTransformer: {
+        CTExcitation: {
+            rowLabel: buildCtExcitationRowTitle
+        }
+    },
     CircuitBreaker: {
         OTiming: { rowLabel: buildCircuitBreakerRowTitle },
         CTiming: { rowLabel: buildCircuitBreakerRowTitle },

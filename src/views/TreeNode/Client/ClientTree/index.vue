@@ -49,6 +49,7 @@
         @duplicate-node="$emit('duplicate-node', $event)" @move-node="$emit('move-node', $event)"
         @import-json="$emit('import-json', $event)" @import-json-cim="$emit('import-json-cim', $event)"
         @import-excel="$emit('import-excel', $event)" @import-word="$emit('import-word', $event)"
+        @import-ptm="$emit('import-ptm', $event)"
         @show-data="$emit('show-data', $event)" @refresh-node="$emit('refresh-node', $event)">
       </contextMenu>
     </div>

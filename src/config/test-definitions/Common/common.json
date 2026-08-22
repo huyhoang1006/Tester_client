@@ -178,7 +178,7 @@
     {
       "mrid": "dcddcd9a-ff10-40b0-8baa-70962f587cbe",
       "code": "df_change",
-      "name": "DF change",
+      "name": "Δ DF meas",
       "type": "analog",
       "unit": ""
     },

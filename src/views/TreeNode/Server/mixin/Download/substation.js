@@ -6,6 +6,7 @@ import { fetchWithRetry } from './core-utils.js'
 import { detectConflicts, applyResolved, SUBSTATION_FIELD_DEFS } from '@/utils/conflictUtils.js'
 import { replaceUserSuffix } from '@/utils/serverId'
 import { scopeDtoIds, scopePositionPointIds } from './id-scope'
+import { downloadAssetMediaToAttachmentData } from '@/utils/assetMedia'
 
 const scopeSubstationDtoForUser = (dto, userId) => {
     scopeDtoIds(dto, {
@@ -52,6 +53,10 @@ export async function downloadSubstationChain(data, ctx) {
 
     // 1. Map server → serverDto
     const serverDto = SubstationServerMapper.mapServerToDto(serverData)
+    const attachmentData = await downloadAssetMediaToAttachmentData('Substation', substation.mrid)
+    if (attachmentData.length) {
+        serverDto.attachment.path = JSON.stringify(attachmentData)
+    }
     scopeSubstationDtoForUser(serverDto, userId)
 
     // 2. Lấy client data cũ nếu đã tồn tại

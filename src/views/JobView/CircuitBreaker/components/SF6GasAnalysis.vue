@@ -257,18 +257,7 @@ export default {
             this.$message.success('Calculating successfully')
         },
         clear() {
-            Object.values(this.testData.table).forEach(subTable => {
-                if (Array.isArray(subTable)) {
-                    subTable.forEach(row => {
-                        Object.keys(row).forEach(key => {
-                            if (key === "mrid") return;
-                            if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
-                                row[key].value = "";
-                            }
-                        });
-                    });
-                }
-            });
+            common.clearEditableTestValues(this.testData && this.testData.table)
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) {

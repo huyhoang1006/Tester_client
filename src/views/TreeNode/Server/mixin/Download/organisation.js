@@ -6,6 +6,7 @@ import { fetchWithRetry } from './core-utils.js'
 import { detectConflicts, applyResolved, ORG_FIELD_DEFS } from '@/utils/conflictUtils.js'
 import constant from '@/utils/constant'
 import { scopeDtoIds, scopePositionPointIds } from './id-scope'
+import { downloadAssetMediaToAttachmentData } from '@/utils/assetMedia'
 
 const scopeOrganisationDtoForUser = (dto, userId) => {
     scopeDtoIds(dto, {
@@ -151,6 +152,10 @@ export async function downloadOrganisationChain(org, ctx) {
     } 
     // 2. Map server → serverDto
     const serverDto = OrganisationServerMapper.mapServerToDto(serverData)
+    const attachmentData = await downloadAssetMediaToAttachmentData('Organisation', org.mrid)
+    if (attachmentData.length) {
+        serverDto.attachment.path = JSON.stringify(attachmentData)
+    }
     scopeOrganisationDtoForUser(serverDto, userId)
  
     // 3. Lấy client data cũ nếu đã tồn tại

@@ -38,6 +38,90 @@ export default {
             return Object.keys(table).map(function(key) { return { key: key, rows: table[key] } })
         },
 
+        calculateTimingSynchronism() {
+            this.getTableEntries().forEach(function(entry) {
+                this.calculateSynchronismForField(
+                    entry.rows,
+                    'opening_time',
+                    'opening_sync_between_phase',
+                    'opening_sync_between_interrupter'
+                )
+                this.calculateSynchronismForField(
+                    entry.rows,
+                    'closing_time',
+                    'closing_sync_between_phase',
+                    'closing_sync_between_interrupter'
+                )
+            }.bind(this))
+        },
+
+        calculateSynchronismForField(rows, sourceKey, phaseSyncKey, interrupterSyncKey) {
+            if (!Array.isArray(rows) || rows.length === 0) return
+            rows.forEach(function(row) {
+                this.ensureTimingField(row, phaseSyncKey)
+                this.ensureTimingField(row, interrupterSyncKey)
+            }.bind(this))
+            var validRows = rows.filter(function(row) {
+                return row && row[sourceKey] && !isNaN(parseFloat(row[sourceKey].value))
+            })
+
+            rows.forEach(function(row) {
+                if (row[phaseSyncKey]) row[phaseSyncKey].value = ''
+                if (row[interrupterSyncKey]) row[interrupterSyncKey].value = ''
+            })
+            if (validRows.length === 0) return
+
+            var byPhase = {}
+            var byInterrupter = {}
+            validRows.forEach(function(row, index) {
+                var phase = String(row.phase && row.phase.value || '')
+                var interrupter = String(row.interrupter && row.interrupter.value || index + 1)
+                if (!byPhase[phase]) byPhase[phase] = []
+                if (!byInterrupter[interrupter]) byInterrupter[interrupter] = []
+                byPhase[phase].push(row)
+                byInterrupter[interrupter].push(row)
+            })
+
+            Object.keys(byPhase).forEach(function(phase) {
+                var phaseRows = byPhase[phase]
+                var values = phaseRows.map(function(row) { return parseFloat(row[sourceKey].value) })
+                if (phaseRows[0][interrupterSyncKey] && values.length > 1)
+                    phaseRows[0][interrupterSyncKey].value = this.formatTimingRange(values)
+            }.bind(this))
+
+            var phaseRanges = Object.keys(byInterrupter).map(function(interrupter) {
+                var interrupterRows = byInterrupter[interrupter]
+                var phases = {}
+                interrupterRows.forEach(function(row) {
+                    phases[String(row.phase && row.phase.value || '')] = true
+                })
+                if (Object.keys(phases).length < 2) return NaN
+                return this.numberRange(interrupterRows.map(function(row) {
+                    return parseFloat(row[sourceKey].value)
+                }))
+            }.bind(this)).filter(function(value) { return !isNaN(value) })
+
+            if (rows[0][phaseSyncKey] && phaseRanges.length > 0)
+                rows[0][phaseSyncKey].value = this.formatTimingValue(Math.max.apply(null, phaseRanges))
+        },
+
+        ensureTimingField(row, key) {
+            if (!row || row[key] || !this.rowData || !this.rowData[key]) return
+            this.$set(row, key, JSON.parse(JSON.stringify(this.rowData[key])))
+        },
+
+        numberRange(values) {
+            return Math.max.apply(null, values) - Math.min.apply(null, values)
+        },
+
+        formatTimingRange(values) {
+            return this.formatTimingValue(this.numberRange(values))
+        },
+
+        formatTimingValue(value) {
+            return String(Math.round(value * 10000) / 10000)
+        },
+
         // ─── Assessment helpers ───────────────────────────────────────────────────
         // Absolute: min <= value <= max
         assessAbs(value, tmin, tmax) {

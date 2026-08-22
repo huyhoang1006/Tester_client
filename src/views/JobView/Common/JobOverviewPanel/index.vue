@@ -34,7 +34,7 @@
                             <el-date-picker
                                 v-model="propertiesData.creation_date"
                                 class="w-100"
-                                format="MM/dd/yyyy"
+                                format="dd/MM/yyyy"
                                 value-format="MM/dd/yyyy"
                                 type="date"
                                 placeholder="Pick a day">
@@ -44,7 +44,7 @@
                             <el-date-picker
                                 v-model="propertiesData.execution_date"
                                 class="w-100"
-                                format="MM/dd/yyyy"
+                                format="dd/MM/yyyy"
                                 value-format="MM/dd/yyyy"
                                 type="date"
                                 placeholder="Pick a day">
@@ -60,7 +60,7 @@
                             <el-date-picker
                                 v-model="propertiesData.approval_date"
                                 class="w-100"
-                                format="MM/dd/yyyy"
+                                format="dd/MM/yyyy"
                                 value-format="MM/dd/yyyy"
                                 type="date"
                                 placeholder="Pick a day">

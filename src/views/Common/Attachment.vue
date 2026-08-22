@@ -35,7 +35,7 @@
                     @click="onTdClick(index)"
                     @dblclick="onTdDblClick">
                     <i :class="fileIcon(item.path).cls" class="att-icon" :style="{ color: fileIcon(item.path).color }"></i>
-                    <span class="att-name" :title="fileName(item.path)">{{ fileName(item.path) }}</span>
+                    <span class="att-name" :title="displayName(item)">{{ displayName(item) }}</span>
                 </div>
             </div>
         </div>
@@ -44,6 +44,7 @@
 
 <script>
 import { mapState } from 'vuex'
+import { materializeServerMediaItem } from '@/utils/assetMedia'
 
 export default {
     name: 'attachments',
@@ -163,8 +164,12 @@ export default {
         },
         async openFile() {
             if(this.rowCurrent !== '') {
+                if (this.isPendingServerMedia(this.rowData[this.rowCurrent])) {
+                    this.$message.warning('Download the attachment before opening it')
+                    return
+                }
                 let fileName = this.rowData[this.rowCurrent].path
-                let extention_arr = this.rowData[this.rowCurrent].path.split(".")
+                let extention_arr = (this.rowData[this.rowCurrent].name || this.rowData[this.rowCurrent].path).split(".")
                 let extention = extention_arr[extention_arr.length -1].toLowerCase()
                 if(await this.isIMage(fileName) === true) {
                     await this.launchFile()
@@ -239,6 +244,29 @@ export default {
         fileName(path) {
             return String(path || '').split(/[/\\]/).pop()
         },
+        displayName(item) {
+            return item && item.name ? item.name : this.fileName(item && item.path)
+        },
+        isPendingServerMedia(item) {
+            return Boolean(item && item.serverMediaId && item.remote)
+        },
+        async ensureLocalServerMedia(index) {
+            const item = this.rowData[index]
+            if (!this.isPendingServerMedia(item)) {
+                return true
+            }
+            try {
+                const localItem = await materializeServerMediaItem(item)
+                localItem.remote = false
+                this.$set(this.rowData, index, localItem)
+                this.emitAttachment()
+                return true
+            } catch (error) {
+                console.warn('[asset-media] Cannot materialize attachment:', error)
+                this.$message.error('Cannot download attachment from server')
+                return false
+            }
+        },
         async isIMage(fileName){
             var fileExt = await this.getFileExtension(fileName);
             var imagesExtension = ["png", "jpg", "jpeg"];
@@ -267,6 +295,7 @@ export default {
                     })
                 return
             }
+            if (!await this.ensureLocalServerMedia(this.rowCurrent)) return
             const rs = await window.electronAPI.downloadFile(this.rowData[this.rowCurrent].path)
             if(rs.success) {
                 this.$message({

@@ -43,7 +43,8 @@
                                     :compare-columns="compareColumnsOf(item.testTypeCode)"
                                     compare-asset-kind="Transformer"
                                     :compare-asset-mrid="transformerJobDto.properties.asset_id"
-                                    :compare-exclude-work-mrid="transformerJobDto.properties.mrid">
+                                    :compare-exclude-work-mrid="transformerJobDto.properties.mrid"
+                                    :show-oil-and-winding-temperatures="item.testTypeCode === 'WindingDfCap'">
                                 </test-information>
                                 <component
                                     :is="item.testTypeCode" 

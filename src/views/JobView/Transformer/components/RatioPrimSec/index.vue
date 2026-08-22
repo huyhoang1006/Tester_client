@@ -25,7 +25,7 @@
                     <th>V sec (kV)</th>
                     <th>Nominal ratio</th>
                     <th>Ratio meas</th>
-                    <th>Ratio dev</th>
+                    <th>Ratio dev (%)</th>
                     <th class="assessment-col">Assessment</th>
                     <th class="condition-indicator-col">Condition indicator</th>
                 </tr>
@@ -44,19 +44,19 @@
                         </div>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.voltage_prim.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.voltage_prim.value" @input="computeFields"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.voltage_sec.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.voltage_sec.value" @input="computeFields"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.nominal_ratio.value"></el-input>
+                        <el-input size="mini" type="text" v-model="item.nominal_ratio.value" readonly></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.ratio_meas.value"></el-input>
+                        <el-input size="mini" type="text" v-model="item.ratio_meas.value" readonly></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.ratio_dev.value"><template
+                        <el-input size="mini" type="text" v-model="item.ratio_dev.value" readonly><template
                                 slot="append">%</template></el-input>
                     </td>
                     <td>
@@ -229,6 +229,9 @@ export default {
             }
         }
     },
+    mounted() {
+        this.$nextTick(this.computeFields)
+    },
     methods: {
         add() {
             if (!this.testData.table) this.$set(this.testData, 'table', {})
@@ -255,17 +258,60 @@ export default {
             this.$message.success('Calculating successfully')
         },
         computeFields() {
-            var rows = this.testData.table.table1
+            var rows = this.testData && this.testData.table && this.testData.table.table1
             if (!rows || rows.length === 0) return
             for (var i = 0; i < rows.length; i++) {
                 var row = rows[i]
-                var ratioMeas    = parseFloat(row.ratio_meas    && row.ratio_meas.value)
-                var nominalRatio = parseFloat(row.nominal_ratio && row.nominal_ratio.value)
+                if (!row.ratio_meas || !row.nominal_ratio || !row.ratio_dev) continue
+                var primVoltage = parseFloat(row.voltage_prim && row.voltage_prim.value)
+                var secVoltage = parseFloat(row.voltage_sec && row.voltage_sec.value)
+                var ratioMeas = !isNaN(primVoltage) && !isNaN(secVoltage) && secVoltage !== 0
+                    ? primVoltage / secVoltage
+                    : NaN
+                row.ratio_meas.value = this.formatCalculatedValue(ratioMeas)
+
+                var nominalRatio = this.getNominalRatio(row.tap && row.tap.value)
+                row.nominal_ratio.value = this.formatCalculatedValue(nominalRatio)
                 if (!isNaN(ratioMeas) && !isNaN(nominalRatio) && nominalRatio !== 0) {
-                    var dev = 100 * (ratioMeas - nominalRatio) / nominalRatio
-                    row.ratio_dev.value = String(Math.round(dev * 10000) / 10000)
-                }
+                    var dev = Math.abs(100 * (ratioMeas - nominalRatio) / nominalRatio)
+                    row.ratio_dev.value = this.formatCalculatedValue(dev)
+                } else row.ratio_dev.value = ''
             }
+        },
+        getNominalRatio(tap) {
+            var tapChangers = (this.assetData && this.assetData.tap_changers) || {}
+            var voltageTable = tapChangers.voltage_table || []
+            var tapRow = voltageTable.find(function(item) {
+                return String(item.tap) === String(tap)
+            })
+            var tapVoltage = this.measurementToBase(tapRow && tapRow.voltage, 'V')
+            if (isNaN(tapVoltage) || tapVoltage === 0) return NaN
+
+            var ratings = (this.assetData && this.assetData.ratings && this.assetData.ratings.voltage_ratings) || []
+            var primRating = ratings.find(function(item) { return item.winding === this.$constant.PRIM }.bind(this))
+            var secRating = ratings.find(function(item) { return item.winding === this.$constant.SEC }.bind(this))
+            var primVoltage = this.measurementToBase(primRating && primRating.voltage_ll, 'V')
+            var secVoltage = this.measurementToBase(secRating && secRating.voltage_ll, 'V')
+
+            if (tapChangers.winding === this.$constant.PRIM)
+                return !isNaN(secVoltage) && secVoltage !== 0 ? tapVoltage / secVoltage : NaN
+            if (tapChangers.winding === this.$constant.SEC)
+                return !isNaN(primVoltage) ? primVoltage / tapVoltage : NaN
+            return NaN
+        },
+        measurementToBase(measurement, baseUnit) {
+            if (!measurement) return NaN
+            var value = parseFloat(measurement.value)
+            if (isNaN(value)) return NaN
+            var unit = String(measurement.unit || baseUnit)
+            var multiplier = unit.indexOf('M|') === 0 ? 1000000
+                : unit.indexOf('k|') === 0 || unit === 'kV' ? 1000
+                    : unit.indexOf('m|') === 0 ? 0.001
+                        : 1
+            return value * multiplier
+        },
+        formatCalculatedValue(value) {
+            return isNaN(value) || !isFinite(value) ? '' : String(Math.round(value * 10000) / 10000)
         },
         async calcAssessment() {
             var assessmentStandard = this.filteredAssessmentData.find(function(x) { return x.code === this.option }.bind(this))
@@ -290,14 +336,7 @@ export default {
             return common.evaluateAssessmentGroup(group, measurementMap)
         },
         clear() {
-            if (this.testData.table && this.testData.table.table1) {
-                this.testData.table.table1.forEach(function(row) {
-                    Object.keys(row).forEach(function(key) {
-                        if (key === 'mrid') return
-                        if (row[key] && typeof row[key] === 'object' && 'value' in row[key]) row[key].value = ''
-                    })
-                })
-            }
+            common.clearEditableTestValues(this.testData && this.testData.table)
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) return 'Good'

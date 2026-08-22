@@ -45,7 +45,7 @@
         {
             "mrid": "1d510b78-7413-4777-a344-4b65d4e3e920",
             "code": "ratio_dev",
-            "name": "Ratio dev",
+            "name": "Ratio dev (%)",
             "type": "analog",
             "unit": "%",
             "measurement_type": "test, assessment"

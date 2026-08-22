@@ -2,6 +2,8 @@
 import * as AssetMediaAPI from '@/api/demo/AssetMedia.js'
 
 export const ASSET_MEDIA_TYPES = {
+    Organisation: 'organisation',
+    Substation: 'substation',
     Transformer: 'transformer',
     Bushing: 'bushing',
     'Surge arrester': 'surge-arrester',
@@ -27,7 +29,7 @@ export const uploadAssetMediaFromAttachmentData = async (assetTypeLabel, assetId
     let attachmentCount = 0
 
     for (const item of attachmentData) {
-        if (!item || !item.path || isRemotePath(item.path)) continue
+        if (!item || !item.path || item.remote || isRemotePath(item.path)) continue
         const file = await localPathToFile(item.path)
         if (!file) continue
 
@@ -93,24 +95,73 @@ export const downloadAssetMediaToAttachmentData = async (assetTypeLabel, assetId
             continue
         }
 
-        try {
-            const blob = await AssetMediaAPI.downloadAssetMedia(assetType, assetId, mediaId)
-            const base64 = await blobToBase64(blob)
-            const canWriteLocal = window.electronAPI && typeof window.electronAPI.writeAttachmentFileData === 'function'
-            const saved = canWriteLocal
-                ? await window.electronAPI.writeAttachmentFileData(base64, buildLocalMediaName(assetType, assetId, mediaId, name))
-                : null
-            if (saved && saved.success && saved.path) {
-                output.push({ path: saved.path, name, role, serverMediaId: mediaId })
-            } else {
-                output.push({ path: URL.createObjectURL(blob), name, role, serverMediaId: mediaId })
-            }
-        } catch (error) {
-            console.warn('[asset-media] Download media failed:', error)
-        }
+        output.push({
+            path: item.downloadUrl || AssetMediaAPI.getAssetMediaDownloadUrl(assetType, assetId, mediaId),
+            name,
+            role,
+            serverMediaId: mediaId,
+            serverAssetType: assetType,
+            serverAssetId: assetId,
+            remote: true,
+        })
     }
 
     return output
+}
+
+export const materializeServerMediaItem = async (item, refreshStaleMetadata = true) => {
+    if (!item || !item.serverAssetType || !item.serverAssetId || !item.serverMediaId) return item
+
+    let response
+    try {
+        response = await AssetMediaAPI.downloadAssetMedia(
+            item.serverAssetType,
+            item.serverAssetId,
+            item.serverMediaId
+        )
+    } catch (error) {
+        if (!refreshStaleMetadata) throw error
+
+        const { assetType, media } = await getAssetMediaWithFallback(item.serverAssetType, item.serverAssetId)
+        const latestItem = normalizeAssetMediaResponse(media).find(candidate => {
+            const candidateName = candidate.fileName || candidate.filename || candidate.name || candidate.originalFileName
+            return candidateName === item.name && resolveMediaRole(candidate) === item.role
+        })
+        const latestMediaId = latestItem && (latestItem.mediaId || latestItem.id || latestItem.mrid || latestItem.mRID)
+        if (!latestMediaId || String(latestMediaId) === String(item.serverMediaId)) throw error
+
+        return materializeServerMediaItem({
+            ...item,
+            path: latestItem.downloadUrl || AssetMediaAPI.getAssetMediaDownloadUrl(assetType, item.serverAssetId, latestMediaId),
+            serverAssetType: assetType,
+            serverMediaId: latestMediaId,
+        }, false)
+    }
+    const blob = unwrapResponseData(response)
+    if (!(blob instanceof Blob)) {
+        throw new TypeError(`Media ${item.serverMediaId} did not return binary content`)
+    }
+
+    const base64 = await blobToBase64(blob)
+    const canWriteLocal = window.electronAPI
+        && typeof window.electronAPI.writeAttachmentFileData === 'function'
+    const saved = canWriteLocal
+        ? await window.electronAPI.writeAttachmentFileData(
+            base64,
+            buildLocalMediaName(
+                item.serverAssetType,
+                item.serverAssetId,
+                item.serverMediaId,
+                item.name
+            )
+        )
+        : null
+
+    return {
+        ...item,
+        path: saved && saved.success && saved.path ? saved.path : URL.createObjectURL(blob),
+        downloadFailed: false,
+    }
 }
 
 const resolveAssetMediaType = (assetTypeLabel) => {
@@ -133,7 +184,7 @@ const getAssetMediaWithFallback = async (assetTypeLabel, assetId) => {
 }
 
 const normalizeAssetMediaResponse = (media) => {
-    const data = media && media.data ? media.data : media
+    const data = unwrapResponseData(media)
     if (!data) return []
     if (Array.isArray(data)) return data
 
@@ -148,6 +199,21 @@ const normalizeAssetMediaResponse = (media) => {
         result.push(...attachments)
     }
     return result
+}
+
+const unwrapResponseData = (response) => {
+    let value = response
+    let depth = 0
+
+    while (value && !(value instanceof Blob) && typeof value === 'object'
+        && Object.prototype.hasOwnProperty.call(value, 'data') && depth < 5) {
+        const next = value.data
+        if (next === value || next === undefined) break
+        value = next
+        depth += 1
+    }
+
+    return value
 }
 
 const resolveMediaRole = (item) => {
@@ -220,7 +286,7 @@ const buildLocalMediaName = (assetType, assetId, mediaId, name) => {
     return `server-media/${assetType}/${assetId}/${mediaId}-${fileName(name)}`
 }
 
-const isRemotePath = (value) => /^(https?:|blob:|data:)/i.test(String(value || ''))
+const isRemotePath = (value) => /^(https?:|blob:|data:|\/api\/)/i.test(String(value || ''))
 const toFileUrl = (value) => `file:///${String(value || '').replace(/\\/g, '/')}`
 const toKebabAssetType = (value) => String(value || '')
     .replace(/([a-z0-9])([A-Z])/g, '$1-$2')

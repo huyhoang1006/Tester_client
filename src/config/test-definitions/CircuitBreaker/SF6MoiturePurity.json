@@ -1,12 +1,12 @@
 {
   "testId": "336dc0c4-81d9-419b-8cbe-5767c51d518f",
   "testCode": "SF6MoiturePurity",
-  "testName": "SF6 gas moiture and purity",
+  "testName": "SF6 gas moisture and purity",
   "columns": [
     {
       "mrid": "1541c032-8419-450e-9407-7429188550d1",
       "code": "moiture",
-      "name": "Moiture",
+      "name": "Moisture",
       "type": "analog",
       "unit": "ppm"
     },

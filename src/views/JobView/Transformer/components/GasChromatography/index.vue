@@ -23,7 +23,7 @@
                     </el-form-item>
                     <el-form-item label="Sampling date">
                         <el-date-picker v-model="option.samplingDate" size="mini" style="width: 100%"
-                            format="MM/dd/yyyy" value-format="MM/dd/yyyy" type="date" placeholder="Pick a day">
+                            format="dd/MM/yyyy" value-format="MM/dd/yyyy" type="date" placeholder="Pick a day">
                         </el-date-picker>
                     </el-form-item>
                     <el-form-item label="Product name">
@@ -205,14 +205,7 @@ export default {
             return common.evaluateAssessmentGroup(group, measurementMap)
         },
         clear() {
-            if (this.testData.table && this.testData.table.table1) {
-                this.testData.table.table1.forEach(function(row) {
-                    Object.keys(row).forEach(function(key) {
-                        if (key === 'mrid') return
-                        if (row[key] && typeof row[key] === 'object' && 'value' in row[key]) row[key].value = ''
-                    })
-                })
-            }
+            common.clearEditableTestValues(this.testData && this.testData.table)
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) return 'Good'

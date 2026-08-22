@@ -3,7 +3,7 @@ import voltageTransformerTestMap from '@/config/test-definitions/VoltageTransfor
 import voltageTransformerConditionMap from '@/config/testing-condition/VoltageTransformer'
 import voltageTransformerAssessmentMap from '@/config/testing-assessment/VoltageTransformer'
 import * as common from '../../../../Common/index.js'
-import { uprValueFromCode } from '@/config/upr-options'
+import { readVTRatioProfile } from '../../vtRatioProfile'
 
 /**
  * assetData tới đây ở HAI DẠNG KHÁC NHAU tuỳ đường vào — đây là nguồn của bug
@@ -36,13 +36,6 @@ const readWindings = (assetData) => {
     return parseInt(raw, 10) || 2
 }
 
-/** Mã hệ số Upr: '1' | '3' | '3sqrt' */
-const readUprCode = (assetData) => {
-    const ratings = parseMaybeJson(assetData?.ratings)
-    const info = parseMaybeJson(assetData?.OldPotentialTransformerInfo)
-    return ratings?.upr || info?.upr_formula || ''
-}
-
 export default {
     data() {
         return {}
@@ -67,6 +60,7 @@ export default {
                     data = await this.initGeneralInspection(testTypeCode)
                     break
             }
+            common.markInitialTestValues(data && data.table)
             return data
         },
         async initInsulationResistance(testTypeCode, assetData) {
@@ -104,11 +98,7 @@ export default {
             // Đọc được cả DTO (mở tab) lẫn entity thô (dialog Add Job)
             const winding = readWindings(assetData)
 
-            // 'upr' bên Ratings LÀ mã hệ số ('1'|'3'|'3sqrt'), không phải điện áp.
-            // Điện áp nằm ở ratings.rated_voltage, cố ý không dùng ở đây.
-            // Quy đổi sang số ngay: dropdown ở bảng test hiện nhãn "1 / √3" nhưng
-            // ô luôn lưu số — xem config/upr-options để biết vì sao.
-            const upr = uprValueFromCode(readUprCode(assetData))
+            const profile = readVTRatioProfile(assetData)
 
             for (let i = 1; i <= winding; i++) {
                 const row = JSON.parse(JSON.stringify(rowDataExample))
@@ -116,9 +106,15 @@ export default {
                 if (row.name) row.name.value = '(' + i + 'a' + i + 'n' + ')' + ' - GND'
                 else if (row.measurement) row.measurement.value = '(' + i + 'a' + i + 'n' + ')' + ' - GND'
 
-                if (row.upr) row.upr.value = upr
-
-                // USR để trống cho kỹ thuật viên tự nhập.
+                if (row.upr) {
+                    row.upr.value = profile.primary.value
+                    row.upr.unit = 'kV'
+                }
+                if (row.usr) {
+                    const secondary = profile.secondary[i - 1]
+                    row.usr.value = secondary ? secondary.value : ''
+                    row.usr.unit = 'V'
+                }
 
                 table.push(row)
             }

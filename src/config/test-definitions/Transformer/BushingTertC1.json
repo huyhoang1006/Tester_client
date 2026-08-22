@@ -54,9 +54,9 @@
         {
             "mrid": "dcddcd9a-ff10-40b0-8baa-70962f587cbe",
             "code": "df_change",
-            "name": "DF change",
+            "name": "Δ DF meas",
             "type": "analog",
-            "unit": ""
+            "unit": "%"
         },
         {
             "mrid": "ba9140a3-5f0b-45d1-a25c-e114e043ba16",

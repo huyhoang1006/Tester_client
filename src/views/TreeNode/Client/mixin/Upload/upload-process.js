@@ -110,7 +110,12 @@ export default {
                 const serverPayload = mapSubstationEntityToServer(entityRes.data, parentNode)
                 const response = await demoAPI.createSubstation(serverPayload, node.parentId)
 
-                await this.syncUploadedNodeServerId(node, response)
+                const serverId = await this.syncUploadedNodeServerId(node, response)
+                await this.uploadAssetMedia(
+                    'Substation',
+                    entityRes.data,
+                    serverId || this.extractUploadedServerId(response) || node.mrid
+                )
                 this.$message.success(`Upload Substation "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {

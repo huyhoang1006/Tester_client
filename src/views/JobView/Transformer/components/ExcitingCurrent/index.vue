@@ -45,7 +45,7 @@
                         </div>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.i_out.value"><template
+                        <el-input size="mini" type="text" number="positive" v-model="item.i_out.value" @input="computeFields"><template
                                 slot="append">mA</template>
                         </el-input>
                     </td>
@@ -54,10 +54,10 @@
                                 slot="append">W</template> </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.i_ref.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.i_ref.value" @input="computeFields"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.i_dev.value"></el-input>
+                        <el-input size="mini" type="text" v-model="item.i_dev.value" readonly></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -197,6 +197,9 @@ export default {
             }
         }
     },
+    mounted() {
+        this.$nextTick(this.computeFields)
+    },
     methods: {
         add() {
             if (!this.testData.table) this.$set(this.testData, 'table', {})
@@ -230,8 +233,8 @@ export default {
                 var iOut = parseFloat(row.i_out && row.i_out.value)
                 var iRef = parseFloat(row.i_ref && row.i_ref.value)
                 if (!isNaN(iOut) && !isNaN(iRef) && iRef !== 0) {
-                    row.i_dev.value = String(Math.round(100 * (iOut - iRef) / iRef * 10000) / 10000)
-                }
+                    row.i_dev.value = String(Math.round(Math.abs(100 * (iOut - iRef) / iRef) * 10000) / 10000)
+                } else row.i_dev.value = ''
             }
         },
         async calcAssessment() {
@@ -253,14 +256,7 @@ export default {
             return common.evaluateAssessmentGroup(group, measurementMap)
         },
         clear() {
-            if (this.testData.table && this.testData.table.table1) {
-                this.testData.table.table1.forEach(function(row) {
-                    Object.keys(row).forEach(function(key) {
-                        if (key === 'mrid') return
-                        if (row[key] && typeof row[key] === 'object' && 'value' in row[key]) row[key].value = ''
-                    })
-                })
-            }
+            common.clearEditableTestValues(this.testData && this.testData.table)
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) return 'Good'

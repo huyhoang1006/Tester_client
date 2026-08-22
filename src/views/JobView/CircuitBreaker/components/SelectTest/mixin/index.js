@@ -86,6 +86,7 @@ export default {
                     data = await this.initGeneralInspection(testTypeCode)
                     break
             }
+            common.markInitialTestValues(data && data.table)
             return data
         },
         async initMotorCurrent(testTypeCode) {

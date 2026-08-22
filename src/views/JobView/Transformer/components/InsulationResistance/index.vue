@@ -19,8 +19,9 @@
             <thead>
                 <tr>
                     <th class="no-col">No</th>
-                    <th style="width: 160px;" @click="displayType">Measurement</th>
-                    <th @click="displayType">Type</th>
+                    <th class="terminal-col">Terminal 1</th>
+                    <th class="terminal-link-col"><i class="fa-solid fa-arrows-left-right"></i></th>
+                    <th class="terminal-col">Terminal 2</th>
                     <th>R<sub>15s</sub> (MΩ)</th>
                     <th>R<sub>60s</sub> (MΩ)</th>
                     <th style="width: 90px;">R<sub>10min</sub> (MΩ)</th>
@@ -38,18 +39,25 @@
                         {{ index + 1 }}
                     </td>
                     <td>
-                        <div class="cell-flex">
-                        <el-input size="mini" v-model="item.measurement.value"></el-input>
-                        <div
-                            :class="{ colorTableRed: index % 3 == 0, colorTableYellow: index % 3 == 1, colorTableBlue: index % 3 == 2 }">
+                        <div class="terminal-select-wrap">
+                            <el-select class="terminal-select" style="width: 100%; min-width: 100%; max-width: 100%;"
+                                size="mini" multiple :value="terminalValues(item, 'terminal1')"
+                                placeholder="Select terminal" @change="updateTerminalSide(item, 'terminal1', $event)">
+                                <el-option v-for="terminal in availableTerminalOptions(item, 'terminal1')"
+                                    :key="'left-' + terminal" :label="terminal" :value="terminal"></el-option>
+                            </el-select>
                         </div>
-                    </div>
                     </td>
+                    <td class="terminal-link-cell"><i class="fa-solid fa-arrows-left-right"></i></td>
                     <td>
-                        <el-select size="mini" v-model="item.type.value">
-                            <el-option label="HV-E" value="HV-E"></el-option>
-                            <el-option label="LV-E" value="LV-E"></el-option>
-                        </el-select>
+                        <div class="terminal-select-wrap">
+                            <el-select class="terminal-select" style="width: 100%; min-width: 100%; max-width: 100%;"
+                                size="mini" multiple :value="terminalValues(item, 'terminal2')"
+                                placeholder="Select terminal" @change="updateTerminalSide(item, 'terminal2', $event)">
+                                <el-option v-for="terminal in availableTerminalOptions(item, 'terminal2')"
+                                    :key="'right-' + terminal" :label="terminal" :value="terminal"></el-option>
+                            </el-select>
+                        </div>
                     </td>
                     <td>
                         <el-input size="mini" type="text" number="positive" v-model="item.r15s.value"> </el-input>
@@ -205,6 +213,11 @@ import * as common from '../../../Common/index.js'
 import GroupNode from '../../../Common/GroupNode.vue'
 import { changeTestStandard } from '../../../Common'
 import transformerAssessmentMap from '@/config/testing-assessment/Transformer/index.js'
+import {
+    TRANSFORMER_TERMINALS,
+    readTerminalSides,
+    writeTerminalSides,
+} from './terminalUtils'
 
 export default {
     name: "InsulationResistance",
@@ -263,6 +276,19 @@ export default {
         }
     },
     methods: {
+        terminalValues(row, side) {
+            return readTerminalSides(row)[side]
+        },
+        availableTerminalOptions(row, side) {
+            const sides = readTerminalSides(row)
+            const otherSide = side === 'terminal1' ? sides.terminal2 : sides.terminal1
+            return TRANSFORMER_TERMINALS.filter(terminal => !otherSide.includes(terminal))
+        },
+        updateTerminalSide(row, side, values) {
+            const current = readTerminalSides(row)
+            current[side] = values
+            writeTerminalSides(row, current.terminal1, current.terminal2)
+        },
         add() {
             if (!this.testData.table) this.$set(this.testData, 'table', {})
             if (!this.testData.table.table1) this.$set(this.testData.table, 'table1', [])
@@ -309,14 +335,7 @@ export default {
             return common.evaluateAssessmentGroup(group, measurementMap)
         },
         clear() {
-            if (this.testData.table && this.testData.table.table1) {
-                this.testData.table.table1.forEach(function(row) {
-                    Object.keys(row).forEach(function(key) {
-                        if (key === 'mrid') return
-                        if (row[key] && typeof row[key] === 'object' && 'value' in row[key]) row[key].value = ''
-                    })
-                })
-            }
+            common.clearEditableTestValues(this.testData && this.testData.table)
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) return 'Good'
@@ -360,6 +379,44 @@ div.el-divider.el-divider--horizontal {
 
 .Bad input {
     background: #FF0000;
+}
+
+.terminal-col { width: 264px; min-width: 264px; }
+.terminal-link-col { width: 42px; min-width: 42px; }
+.terminal-link-cell { text-align: center; color: #606266; }
+.terminal-select-wrap {
+    width: 250px;
+    min-width: 250px;
+    max-width: 250px;
+}
+::v-deep(.terminal-select .el-input) {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+}
+::v-deep(.terminal-select .el-select__tags) {
+    width: calc(100% - 32px);
+    flex-wrap: nowrap;
+    max-width: calc(100% - 32px) !important;
+    overflow: hidden;
+}
+::v-deep(.terminal-select .el-select__tags > span) {
+    display: flex;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+}
+::v-deep(.terminal-select .el-tag) {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 72px;
+}
+::v-deep(.terminal-select .el-tag .el-select__tags-text) {
+    display: inline-block;
+    max-width: 42px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
 }
 
 .assessment-container { width: 75%; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 16px; overflow: hidden; }

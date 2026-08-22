@@ -4,6 +4,8 @@ import * as currentTransformerJobMapping from "@/views/Mapping/CurrentTransforme
 import CurrentTransformerJobDto from "@/views/Dto/Job/CurrentTransformer/index";
 import mixins from '../components/SelectTest/mixin'
 import { validateTestingEquipmentRows } from '@/views/JobView/Common/testingEquipmentValidation'
+import { validateTerminalRows } from '@/views/JobView/Common/terminalSelect'
+import { buildCurrentTransformerTerminals } from '@/views/JobView/Common/terminalOptions'
 
 export default {
     mixins: [mixins],
@@ -19,6 +21,16 @@ export default {
             if (!validation.valid) {
                 this.$message.warning(validation.message)
                 return { success: false, validation: true, message: validation.message }
+            }
+
+            // Bắt buộc chọn đủ CẢ HAI vế của mỗi dòng cách điện. Chặn ở đây chứ không ở
+            // tầng ghi: người dùng còn đang nhìn bảng, chỉ đúng dòng nào thiếu là sửa ngay.
+            const terminalValidation = validateTerminalRows(
+                this.currentTransformerJobDto.testList, 'InsulationResistance', () => buildCurrentTransformerTerminals(this.assetData)
+            )
+            if (!terminalValidation.valid) {
+                this.$message.warning(terminalValidation.message)
+                return { success: false, validation: true, message: terminalValidation.message }
             }
             try { 
                 if (!this.currentTransformerJobDto.properties.name || this.currentTransformerJobDto.properties.name === '') {              

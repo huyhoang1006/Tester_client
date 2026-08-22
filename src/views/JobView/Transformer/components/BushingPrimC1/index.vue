@@ -26,7 +26,7 @@
                     <th>C ref (pF)</th>
                     <th>DF meas (%)</th>
                     <th>C meas (pF)</th>
-                    <th>DF change</th>
+                    <th>Δ DF meas (%)</th>
                     <th>ΔC cal (%)</th>
                     <th class="assessment-col">Assessment</th>
                     <th class="condition-indicator-col fix_width">DF Condition indicator</th>
@@ -61,22 +61,22 @@
                         <el-input size="mini" type="text" number="positive" v-model="item.test_voltage.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.df_ref.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.df_ref.value" @input="computeFields"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.c_ref.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.c_ref.value" @input="computeFields"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.df_meas.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.df_meas.value" @input="computeFields"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.c_meas.value"></el-input>
+                        <el-input size="mini" type="text" number="positive" v-model="item.c_meas.value" @input="computeFields"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.df_change.value"></el-input>
+                        <el-input size="mini" type="text" v-model="item.df_change.value" readonly></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.delta_c_percent.value"></el-input>
+                        <el-input size="mini" type="text" v-model="item.delta_c_percent.value" readonly></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -169,7 +169,7 @@
                             <div class="flex-container">
                                 <div>DF meas ≤ <el-input size="mini" class="w-100px" v-model="conditionIndicatorDf.good.df_meas[0].value"></el-input> or</div>
                                 <div>
-                                    DF change ≤ <el-input size="mini" class="w-100px" v-model="conditionIndicatorDf.good.df_change[0].value"></el-input> time
+                                    Δ DF meas ≤ <el-input size="mini" class="w-100px" v-model="conditionIndicatorDf.good.df_change[0].value"></el-input> time
                                     previous, new values
                                 </div>
                             </div>
@@ -185,7 +185,7 @@
                                     <el-input size="mini" class="w-100px" v-model="conditionIndicatorDf.fair.df_meas[1].value"></el-input> or
                                 </div>
                                 <div>
-                                    <el-input size="mini" class="w-100px" v-model="conditionIndicatorDf.fair.df_change[0].value"></el-input> &lt; DF change ≤
+                                    <el-input size="mini" class="w-100px" v-model="conditionIndicatorDf.fair.df_change[0].value"></el-input> &lt; Δ DF meas ≤
                                     <el-input size="mini" class="w-100px" v-model="conditionIndicatorDf.fair.df_change[1].value"></el-input> time previous, new values
                                 </div>
                             </div>
@@ -201,7 +201,7 @@
                                     <el-input size="mini" class="w-100px" v-model="conditionIndicatorDf.poor.df_meas[1].value"></el-input> or
                                 </div>
                                 <div>
-                                    <el-input size="mini" class="w-100px" v-model="conditionIndicatorDf.poor.df_change[0].value"></el-input> &lt; DF change ≤
+                                    <el-input size="mini" class="w-100px" v-model="conditionIndicatorDf.poor.df_change[0].value"></el-input> &lt; Δ DF meas ≤
                                     <el-input size="mini" class="w-100px" v-model="conditionIndicatorDf.poor.df_change[1].value"></el-input> time previous, new values
                                 </div>
                             </div>
@@ -214,7 +214,7 @@
                             <div class="flex-container">
                                 <div>DF meas > <el-input size="mini" class="w-100px" v-model="conditionIndicatorDf.bad.df_meas[1].value"></el-input> or</div>
                                 <div>
-                                    DF change > <el-input size="mini" class="w-100px" v-model="conditionIndicatorDf.bad.df_change[1].value"></el-input> time previous,
+                                    Δ DF meas > <el-input size="mini" class="w-100px" v-model="conditionIndicatorDf.bad.df_change[1].value"></el-input> time previous,
                                     new values
                                 </div>
                             </div>
@@ -331,6 +331,9 @@ export default {
             }
         }
     },
+    mounted() {
+        this.$nextTick(this.computeFields)
+    },
     methods: {
         add() {
             if (!this.testData.table) this.$set(this.testData, 'table', {})
@@ -364,8 +367,13 @@ export default {
                 var cMeas = parseFloat(row.c_meas && row.c_meas.value)
                 var cRef  = parseFloat(row.c_ref  && row.c_ref.value)
                 if (!isNaN(cMeas) && !isNaN(cRef) && cRef !== 0) {
-                    row.delta_c_percent.value = String(Math.round(100 * (cMeas - cRef) / cRef * 10000) / 10000)
-                }
+                    row.delta_c_percent.value = String(Math.round(Math.abs(100 * (cMeas - cRef) / cRef) * 10000) / 10000)
+                } else row.delta_c_percent.value = ''
+                var dfMeas = parseFloat(row.df_meas && row.df_meas.value)
+                var dfRef = parseFloat(row.df_ref && row.df_ref.value)
+                row.df_change.value = !isNaN(dfMeas) && !isNaN(dfRef)
+                    ? String(Math.round(Math.abs(dfMeas - dfRef) * 10000) / 10000)
+                    : ''
             }
         },
         async calcAssessment() {
@@ -391,14 +399,7 @@ export default {
             return common.evaluateAssessmentGroup(group, measurementMap)
         },
         clear() {
-            if (this.testData.table && this.testData.table.table1) {
-                this.testData.table.table1.forEach(function(row) {
-                    Object.keys(row).forEach(function(key) {
-                        if (key === 'mrid') return
-                        if (row[key] && typeof row[key] === 'object' && 'value' in row[key]) row[key].value = ''
-                    })
-                })
-            }
+            common.clearEditableTestValues(this.testData && this.testData.table)
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) return 'Good'

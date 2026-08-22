@@ -69,8 +69,21 @@
 
             <!-- Surge Arrester -->
             <div v-else-if="this.switch == 'Surge Arrester'">
-                <surge-arrester :data="this.transformerDto.surge_arrester" :properties="this.transformerDto.properties" @update="updateDataSurgeArrester"
-                    style="font-size: 12px !important;"></surge-arrester>
+                <el-alert
+                    v-if="!hasConfiguredPhase"
+                    class="surge-phase-warning"
+                    title="Number of phases is required before configuring surge arresters."
+                    type="warning"
+                    :closable="false"
+                    show-icon>
+                </el-alert>
+                <surge-arrester
+                    v-else
+                    :data="this.transformerDto.surge_arrester"
+                    :properties="this.transformerDto.properties"
+                    @update="updateDataSurgeArrester"
+                    style="font-size: 12px !important;">
+                </surge-arrester>
             </div>
 
         </div>
@@ -137,6 +150,12 @@ export default {
         },
         nameplateFileUrl() {
             return this.nameplateAttachment && this.nameplateAttachment.path ? this.nameplateAttachment.path : '-1'
+        },
+        hasConfiguredPhase() {
+            const phases = this.transformerDto && this.transformerDto.winding_configuration
+                ? this.transformerDto.winding_configuration.phases
+                : ''
+            return phases === '1' || phases === '3'
         }
     },
     watch: {
@@ -156,7 +175,7 @@ export default {
             this.bushings_config = bushings_config_arr
         },
         async switchData(data) {
-            if (data === 'Surge Arrester' && typeof this.changeDataBushing === 'function') {
+            if (data === 'Surge Arrester' && this.hasConfiguredPhase && typeof this.changeDataBushing === 'function') {
                 this.changeDataBushing()
             }
             this.switch = data
@@ -212,6 +231,10 @@ export default {
     display: flex;
     flex: 1;
     flex-direction: column;
+}
+
+.surge-phase-warning {
+    margin-top: 6px;
 }
 
 #asset {

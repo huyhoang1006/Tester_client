@@ -37,7 +37,11 @@
                     <td style="width: 100px">
                         <div class="col-phase">
                             <div class="phase">
-                                <el-input size="mini" type="text" v-model="item.name.value"></el-input>
+                                <el-select size="mini" v-model="item.name.value" placeholder="Phase">
+                                    <el-option label="A" value="A"></el-option>
+                                    <el-option label="B" value="B"></el-option>
+                                    <el-option label="C" value="C"></el-option>
+                                </el-select>
                             </div>
                             <div class="rectangle"
                                 :class="{ red: item.name.value == 'A', yellow: item.name.value == 'B', blue: item.name.value == 'C' }">
@@ -45,11 +49,11 @@
                         </div>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.r_meas.value"><template
+                        <el-input size="mini" type="text" number="positive" v-model="item.r_meas.value" @input="computeFields"><template
                                 slot="append">Ω</template></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.r_ref.value"><template
+                        <el-input size="mini" type="text" number="positive" v-model="item.r_ref.value" @input="computeFields"><template
                                 slot="append">Ω</template></el-input>
                     </td>
                     <td>
@@ -57,11 +61,11 @@
                                 slot="append">Ω</template></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.dev_r_ref.value"></el-input>
+                        <el-input size="mini" type="text" v-model="item.dev_r_ref.value" readonly></el-input>
                     </td>
                     <template v-if="index % 3 == 0 && assetData.tap_changers.winding === $constant.TERT">
                         <td rowspan="3">
-                            <el-input size="mini" type="text" number="positive" v-model="item.dev_phase.value"></el-input>
+                            <el-input size="mini" type="text" v-model="item.dev_phase.value" readonly></el-input>
                         </td>
 
                         <!-- <td rowspan="3">
@@ -70,7 +74,7 @@
                     </template>
                     <template v-else-if="index % 3 == 0 && assetData.tap_changers.winding !== $constant.TERT">
                         <td rowspan="3">
-                            <el-input size="mini" type="text" number="positive" v-model="item.dev_phase.value"></el-input>
+                            <el-input size="mini" type="text" v-model="item.dev_phase.value" readonly></el-input>
                         </td>
 
                         <!-- <td rowspan="3">
@@ -255,6 +259,9 @@ export default {
             }
         }
     },
+    mounted() {
+        this.$nextTick(this.computeFields)
+    },
     methods: {
         add() {
             if (!this.testData.table) this.$set(this.testData, 'table', {})
@@ -297,23 +304,21 @@ export default {
                     var rCorr = rMeas * (K + tRef) / (K + tMeas)
                     row.r_corr.value = String(Math.round(rCorr * 1000000) / 1000000)
                 }
-                // dev_r_ref = 100*(r_corr - r_ref) / r_ref
-                var rCorr2 = parseFloat(row.r_corr && row.r_corr.value)
                 var rRef   = parseFloat(row.r_ref  && row.r_ref.value)
-                if (!isNaN(rCorr2) && !isNaN(rRef) && rRef !== 0) {
-                    row.dev_r_ref.value = String(Math.round(100 * (rCorr2 - rRef) / rRef * 10000) / 10000)
-                }
+                if (!isNaN(rMeas) && !isNaN(rRef) && rRef !== 0)
+                    row.dev_r_ref.value = String(Math.round(Math.abs(100 * (rMeas - rRef) / rRef) * 10000) / 10000)
+                else row.dev_r_ref.value = ''
             }
-            // dev_phase per group of 3: 100*(max_r_corr - min_r_corr) / min_r_corr
+            // Deviation within phases is calculated from the measured phase values.
             for (var g = 0; g < rows.length; g += 3) {
                 var group = rows.slice(g, g + 3)
-                var rCorrVals = group.map(function(r) { return parseFloat(r.r_corr && r.r_corr.value) }).filter(function(v) { return !isNaN(v) })
-                if (rCorrVals.length > 0) {
-                    var maxV = Math.max.apply(null, rCorrVals)
-                    var minV = Math.min.apply(null, rCorrVals)
-                    var devPhase = minV !== 0 ? 100 * (maxV - minV) / minV : 0
+                var measuredValues = group.map(function(r) { return parseFloat(r.r_meas && r.r_meas.value) }).filter(function(v) { return !isNaN(v) })
+                if (measuredValues.length === group.length && measuredValues.length > 0) {
+                    var maxV = Math.max.apply(null, measuredValues)
+                    var minV = Math.min.apply(null, measuredValues)
+                    var devPhase = minV !== 0 ? Math.abs(100 * (maxV - minV) / minV) : 0
                     rows[g].dev_phase.value = String(Math.round(devPhase * 10000) / 10000)
-                }
+                } else rows[g].dev_phase.value = ''
             }
         },
         async calcAssessment() {
@@ -348,14 +353,7 @@ export default {
             return common.evaluateAssessmentGroup(group, measurementMap)
         },
         clear() {
-            if (this.testData.table && this.testData.table.table1) {
-                this.testData.table.table1.forEach(function(row) {
-                    Object.keys(row).forEach(function(key) {
-                        if (key === 'mrid') return
-                        if (row[key] && typeof row[key] === 'object' && 'value' in row[key]) row[key].value = ''
-                    })
-                })
-            }
+            common.clearEditableTestValues(this.testData && this.testData.table)
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) return 'Good'

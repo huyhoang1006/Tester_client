@@ -12,7 +12,7 @@
                 </li>
             </ul>
             <ul v-else>
-                <li v-if="isClient && this.selectedNode && this.selectedNode.mode == 'organisation'" @click="addOrganisation">
+                <li v-if="canTreeCrud && this.selectedNode && this.selectedNode.mode == 'organisation'" @click="addOrganisation">
                     <i class="fa-solid fa-plus"></i> Add organisation
                 </li>
                 <li v-if="canTreeCrud && this.selectedNode && this.selectedNode.mode == 'organisation'" @click="addSubsInTree">
@@ -98,6 +98,7 @@
                         <li @click="importJSON"><i class="fa-solid fa-file-code"></i> Import from JSON</li>
                         <li @click="importExcel"><i class="fa-solid fa-file-excel"></i> Import from Excel</li>
                         <li @click="importWord"><i class="fa-solid fa-file-word"></i> Import from Word</li>
+                        <li @click="importPtm"><i class="fa-solid fa-wave-square"></i> Import from PTM (OMICRON)</li>
                     </ul>
                 </li>
             </ul>
@@ -398,6 +399,10 @@ export default {
         },
         importWord() {
             this.$emit("import-word", this.selectedNode)
+            this.closeContextMenu()
+        },
+        importPtm() {
+            this.$emit("import-ptm", this.selectedNode)
             this.closeContextMenu()
         },
         importPDF() {

@@ -14,13 +14,13 @@
             </div>
         </div>
 
-        <div style="font-weight: bold; margin-top: 5%;"> Moiture (ppm)</div>
+        <div style="font-weight: bold; margin-top: 5%;"> Moisture (ppm)</div>
         <br />
         <div class="table-scroll"><table class="table-strip-input-data test-table" style="width: 80%; font-size: 12px;">
             <thead>
                 <tr>
                     <th>No</th>
-                    <th>Moiture (ppm)</th>
+                    <th>Moisture (ppm)</th>
                     <th class="assessment-col">Assessment</th>
                     <th class="condition-indicator-col">Condition indicator</th>
                     <th @click="add('table1')" class="action-col th-btn" title="Add row"><i class="fa-solid fa-plus pointer"></i></th>
@@ -202,18 +202,7 @@ export default {
             this.$message.success('Calculating successfully')
         },
         clear() {
-            Object.values(this.testData.table).forEach(subTable => {
-                if (Array.isArray(subTable)) {
-                    subTable.forEach(row => {
-                        Object.keys(row).forEach(key => {
-                            if (key === "mrid") return;
-                            if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
-                                row[key].value = "";
-                            }
-                        });
-                    });
-                }
-            });
+            common.clearEditableTestValues(this.testData && this.testData.table)
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) {

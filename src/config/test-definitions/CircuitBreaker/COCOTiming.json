@@ -38,6 +38,13 @@
       "unit": "m|s"
     },
     {
+      "mrid": "6976f705-74ee-4988-9886-a7750ec28925",
+      "code": "opening_sync_between_interrupter",
+      "name": "Opening sync. between interrupter (ms)",
+      "type": "analog",
+      "unit": "m|s"
+    },
+    {
       "mrid": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001",
       "code": "assessment",
       "name": "Assessment",

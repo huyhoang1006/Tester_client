@@ -29,7 +29,9 @@
             <thead>
                 <tr>
                     <th>No.</th>
-                    <th>Measurement</th>
+                    <th class="terminal-col">Terminal 1</th>
+                    <th class="terminal-link-col"><i class="fa-solid fa-arrows-left-right"></i></th>
+                    <th class="terminal-col">Terminal 2</th>
                     <th>Test voltage (V)</th>
                     <th>R<sub>60s</sub> (MΩ)</th>
                     <th class="assessment-col">Assessment</th>
@@ -44,7 +46,21 @@
                         {{ index + 1 }}
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.measurement.value"></el-input>
+                        <el-select class="terminal-select" style="width: 100%;" size="mini" multiple
+                            :value="terminalValues(item, 'terminal1')" placeholder="Select terminal"
+                            @change="updateTerminalSide(item, 'terminal1', $event)">
+                            <el-option v-for="t in availableTerminalOptions(item, 'terminal1')"
+                                :key="'l-' + t" :label="t" :value="t"></el-option>
+                        </el-select>
+                    </td>
+                    <td class="terminal-link-cell"><i class="fa-solid fa-arrows-left-right"></i></td>
+                    <td>
+                        <el-select class="terminal-select" style="width: 100%;" size="mini" multiple
+                            :value="terminalValues(item, 'terminal2')" placeholder="Select terminal"
+                            @change="updateTerminalSide(item, 'terminal2', $event)">
+                            <el-option v-for="t in availableTerminalOptions(item, 'terminal2')"
+                                :key="'r-' + t" :label="t" :value="t"></el-option>
+                        </el-select>
                     </td>
                     <td>
                         <el-input size="mini" type="text" number="positive"
@@ -127,6 +143,8 @@ import currentTransformerTestMap from '@/config/test-definitions/CurrentTransfor
 import * as common from '../../Common/index'
 import GroupNode from '../../Common/GroupNode.vue'
 import { changeTestStandard } from '../../Common'
+import { readSides, writeSides } from '../../Common/terminalSelect'
+import { buildCurrentTransformerTerminals } from '../../Common/terminalOptions'
 
 export default {
     name: "InsulationResistance",
@@ -162,6 +180,11 @@ export default {
     computed: {
         testData() {
             return this.data
+        },
+        // Danh sách đầu cực dựng lại mỗi khi hồ sơ thiết bị đổi — thêm/bớt lõi là
+        // dropdown đổi theo ngay, không cần mở lại tab.
+        terminalOptions() {
+            return buildCurrentTransformerTerminals(this.assetData)
         },
         assetData() {
             return this.asset
@@ -219,6 +242,24 @@ export default {
         }
     },
     methods: {
+        terminalValues(row, side) {
+            return readSides(row, this.terminalOptions)[side]
+        },
+        /** Đầu cực đã chọn ở vế kia thì không cho chọn lại ở vế này. */
+        availableTerminalOptions(row, side) {
+            const sides = readSides(row, this.terminalOptions)
+            const other = side === 'terminal1' ? sides.terminal2 : sides.terminal1
+            const mine = sides[side]
+            // Kèm cả giá trị lạ đang có sẵn của DÒNG NÀY (dữ liệu cũ lưu tên tap thật),
+            // nếu không thì el-select không hiển thị được và người dùng tưởng đã mất.
+            const extra = mine.filter(t => !this.terminalOptions.includes(t))
+            return [...this.terminalOptions, ...extra].filter(t => !other.includes(t))
+        },
+        updateTerminalSide(row, side, values) {
+            const sides = readSides(row, this.terminalOptions)
+            sides[side] = values
+            writeSides(row, sides.terminal1, sides.terminal2, this.terminalOptions)
+        },
         initializeTable() {
             if (!this.testData.table) {
                 this.$set(this.testData, 'table', {})
@@ -306,18 +347,7 @@ export default {
         },
 
         clear() {
-            if (!this.testData.table.table1) {
-                this.initializeTable()
-                return
-            }
-            this.testData.table.table1.forEach(row => {
-                Object.keys(row).forEach(key => {
-                    if (key === "mrid") return;
-                    if (row[key] && typeof row[key] === "object" && "value" in row[key]) {
-                        row[key].value = ""
-                    }
-                })
-            })
+            common.clearEditableTestValues(this.testData && this.testData.table)
         },
         nameColor(data) {
             if (data === this.$constant.GOOD) {
@@ -529,4 +559,13 @@ export default {
 .default-label { font-style: italic; color: #909399; font-size: 13px; }
 .pass { color: #67C23A; font-weight: bold; }
 .fail { color: #F56C6C; font-weight: bold; }
+
+/* ─── Chọn đầu cực bằng hai dropdown ───────────────────────────────────── */
+.terminal-col { min-width: 170px; }
+.terminal-link-col { width: 34px; text-align: center; }
+.terminal-link-cell { text-align: center; color: #c0c4cc; }
+.terminal-select { width: 100%; }
+/* Thẻ đã chọn dễ dài hơn ô — cho xuống dòng thay vì tràn ra ngoài bảng. */
+.terminal-select >>> .el-select__tags { flex-wrap: wrap; max-width: 100%; }
+.phase-dot { margin-right: 6px; font-size: 8px; vertical-align: middle; }
 </style>

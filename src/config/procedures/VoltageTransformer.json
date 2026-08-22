@@ -2,6 +2,12 @@
   "name": "Voltage transformer",
   "procedure": [
   {
+    "mrid": "f6a13d2f-0e1f-4e8e-ba9a-e3f43eb222ae",
+    "code": "GeneralInspection",
+    "name": "General inspection",
+    "kind": "test"
+  },
+  {
     "mrid": "950afb42-7080-4172-a689-c3023d61a583",
     "code": "InsulationResistance",
     "name": "Insulation resistance",
@@ -23,12 +29,6 @@
     "mrid": "d436dbbd-f7ad-4f47-abce-fa7dfa126a9b",
     "code": "VTDfcap",
     "name": "VT DF & CAP",
-    "kind": "test"
-  },
-  {
-    "mrid": "f6a13d2f-0e1f-4e8e-ba9a-e3f43eb222ae",
-    "code": "GeneralInspection",
-    "name": "General inspection",
     "kind": "test"
   }
 ]
