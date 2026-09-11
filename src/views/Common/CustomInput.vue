@@ -1,5 +1,5 @@
 <template>
-    <ElInputOrigin ref="elInput" v-bind="$attrs" :value="value" :type="type" v-on="boundListeners">
+    <ElInputOrigin ref="elInput" v-bind="$attrs" :value="displayValue" :type="type" v-on="boundListeners">
         <!-- Kế thừa đích danh 4 slot mặc định của Element UI Input -->
         <template v-if="$slots.prepend" slot="prepend">
             <slot name="prepend"></slot>
@@ -35,6 +35,9 @@ export default {
     },
 
     computed: {
+        displayValue() {
+            return this.roundToFourDecimals(this.value)
+        },
         boundListeners() {
             return {
                 ...this.$listeners,
@@ -44,6 +47,30 @@ export default {
     },
 
     methods: {
+        roundToFourDecimals(value) {
+            const isNumberInput = this.number !== undefined
+                && this.number !== false
+                && this.number !== 'year'
+
+            if (!isNumberInput || value === null || value === undefined || value === '') {
+                return value
+            }
+
+            const stringValue = String(value).replace(/,/g, '.')
+            const decimalMatch = stringValue.match(/^(-?\d+)\.(\d+)$/)
+
+            // Keep incomplete input such as "1." intact and only round when needed.
+            if (!decimalMatch || decimalMatch[2].length <= 4) {
+                return stringValue
+            }
+
+            const numericValue = Number(stringValue)
+            if (!Number.isFinite(numericValue)) {
+                return stringValue
+            }
+
+            return String(Number(numericValue.toFixed(4)))
+        },
         handleInput(val) {
             // Đảm bảo val luôn là chuỗi để dùng Regex
             let strVal = val === null || val === undefined ? '' : String(val)
@@ -98,6 +125,8 @@ export default {
                         newVal = '-'
                     }
                 }
+
+                newVal = this.roundToFourDecimals(newVal)
             }
 
             // 🔥 Force UI: Ép DOM cập nhật lại nếu chuỗi bị Regex thay đổi

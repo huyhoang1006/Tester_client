@@ -4,6 +4,8 @@ import * as circuitBreakerJobMapping from '@/views/Mapping/CircuitBreakerJob/ind
 import CircuitBreakerJobDto from '@/views/Dto/Job/CircuitBreaker/index'
 import mixins from '../components/SelectTest/mixin'
 import { validateTestingEquipmentRows } from '@/views/JobView/Common/testingEquipmentValidation'
+import { validateTerminalRows } from '@/views/JobView/Common/terminalSelect'
+import { buildCircuitBreakerTerminals } from '@/views/JobView/Common/terminalOptions'
 
 export default {
     mixins: [mixins],
@@ -19,6 +21,15 @@ export default {
             if (!validation.valid) {
                 this.$message.warning(validation.message)
                 return { success: false, validation: true, message: validation.message }
+            }
+            const terminalValidation = validateTerminalRows(
+                this.circuitBreakerJobDto.testList,
+                'InsulationResistanceCircuit',
+                () => buildCircuitBreakerTerminals()
+            )
+            if (!terminalValidation.valid) {
+                this.$message.warning(terminalValidation.message)
+                return { success: false, validation: true, message: terminalValidation.message }
             }
             try {
                 if (!this.circuitBreakerJobDto.properties.name || this.circuitBreakerJobDto.properties.name === '') {

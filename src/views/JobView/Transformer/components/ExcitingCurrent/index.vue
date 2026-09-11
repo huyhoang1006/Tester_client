@@ -16,6 +16,7 @@
 
         <!-- Tính toán đánh giá -->
 
+        <ExcitingCurrentCharts :rows="measurementRows" />
 
         <div class="table-scroll">
         <table class="table-strip-input-data test-table">
@@ -141,10 +142,11 @@ import transformerTestMap from '@/config/test-definitions/Transformer'
 import * as common from '../../../Common/index.js'
 import GroupNode from '../../../Common/GroupNode.vue'
 import { changeTestStandard } from '../../../Common'
+import ExcitingCurrentCharts from './ExcitingCurrentCharts.vue'
 
 export default {
     name: "ExcitingCurrent",
-    components: { GroupNode },
+    components: { GroupNode, ExcitingCurrentCharts },
     data() {
         return {
             openAssessmentDialog: false,
@@ -163,6 +165,9 @@ export default {
         testData()     { return this.data },
         assetData()    { return this.asset },
         conditions()   { return (this.testCondition && this.testCondition.condition) ? this.testCondition.condition : {} },
+        measurementRows() {
+            return (this.testData && this.testData.table && this.testData.table.table1) || []
+        },
         rowData()      { return common.buildEmptyTestRow(transformerTestMap['ExcitingCurrent'].columns) },
         assessmentData()        { return this.testAssessment ? this.testAssessment.assessment : [] },
         assessmentList() {

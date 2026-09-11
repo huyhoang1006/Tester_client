@@ -1,5 +1,6 @@
 
 import * as SubstationMapping from '@/views/Mapping/Substation/index'
+import * as PowerPlantMapping from '@/views/Mapping/PowerPlant/index'
 
 
 export default {
@@ -237,6 +238,25 @@ export default {
                         }
                     }
                 }
+                else if (node.mode === 'powerPlant') {
+                    if (node._cachedEntityData) {
+                        detailData = node._cachedEntityData
+                    } else {
+                        try {
+                            const res = await window.electronAPI.getPowerPlantEntityByMrid(
+                                node.mrid,
+                                this.$store.state.user.user_id,
+                                node.parentId
+                            )
+                            if (res.success && res.data) {
+                                detailData = PowerPlantMapping.mapEntityToDto(res.data)
+                                node._cachedEntityData = detailData
+                            }
+                        } catch (error) {
+                            console.error('Error fetching Power Plant detail:', error)
+                        }
+                    }
+                }
                 // Nếu là Organisation, kiểm tra xem đã có đầy đủ thông tin từ fetchChildren chưa
                 else if (node.mode === 'organisation') {
                     // Nếu node đã có flag _hasFullProperties = true, nghĩa là fetchChildren đã lấy đầy đủ thông tin
@@ -271,7 +291,7 @@ export default {
                 let nodeName = node.name || 'Unknown'
 
                 // Nếu là các node cấu trúc (Org, Sub, Bay, Voltage), dùng aliasName nếu có
-                if (['organisation', 'substation', 'voltageLevel', 'bay'].includes(node.mode)) {
+                if (['organisation', 'substation', 'powerPlant', 'voltageLevel', 'bay'].includes(node.mode)) {
                     nodeName = node.aliasName || node.name || 'Unknown';
                 } else {
                     // Fallback cho các trường hợp khác

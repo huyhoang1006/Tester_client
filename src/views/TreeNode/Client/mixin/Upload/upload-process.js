@@ -201,8 +201,8 @@ export default {
                 // (mapEntityToDto trả về psr_id local nên bắt buộc ghi đè)
                 dto.psrId = node.parentId
 
-                const serverPayload = PowerCableServerMapper.mapDtoToServer(this._normaliseUnits(dto), ownerType)
-                const response = await powerCableAPI.createPowerCable(serverPayload)
+                const serverPayload = PowerCableServerMapper.mapDtoToCimServer(this._normaliseUnits(dto))
+                const response = await powerCableAPI.createPowerCable(serverPayload, node.parentId, ownerType)
 
                 await this.syncUploadedAssetAndMedia(node, response, 'Power cable', dto)
                 this.$message.success(`Upload PowerCable "${this.getUploadNodeName(node)}" successfully!`)
@@ -789,7 +789,8 @@ export default {
                 return response
             }
             if (assetType === 'Power cable') {
-                const response = await powerCableAPI.createPowerCable(this.applyServerTabIdToPayload(PowerCableServerMapper.mapDtoToServer(this._normaliseUnits(dto), ownerType), serverTab))
+                const payload = this.applyServerTabIdToPayload(PowerCableServerMapper.mapDtoToCimServer(this._normaliseUnits(dto)), serverTab)
+                const response = await powerCableAPI.createPowerCable(payload, parentId, ownerType)
                 await this.uploadAssetMedia(assetType, dto, this.extractUploadedServerId(response) || serverTab?.id || serverTab?.mrid || dto?.properties?.mrid)
                 return response
             }
@@ -804,7 +805,7 @@ export default {
         /** Resolve numericOwnerId theo ownerType (fallback nếu parentId đã là số) */
         /** Xử lý lỗi upload thống nhất */
         extractUploadedServerId(response) {
-            return response?.id || response?.data?.id || response?.data?.mrid || response?.mrid || null
+            return response?.id || response?.data?.id || response?.data?.mRID || response?.data?.mrid || response?.mRID || response?.mrid || null
         },
 
         async syncUploadedAssetAndMedia(node, response, assetType, dto) {

@@ -123,6 +123,7 @@
                     :columns="compareColumns"
                     :asset-data="assetData"
                     :excluded-condition-keys="excludedConditionKeys"
+                    @reference-change="$emit('compare-reference-change', $event)"
                     @close="$emit('update:showCompare', false)" />
             </div>
         </div>

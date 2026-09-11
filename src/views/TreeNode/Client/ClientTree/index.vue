@@ -9,7 +9,8 @@
 
       <contextMenu ref="contextSubstation" @show-addSubs="$emit('show-addSubs', $event)"></contextMenu>
     </div> -->
-<contextMenu ref="contextSubstation" @show-addSubs="$emit('show-addSubs', $event)"></contextMenu>
+<contextMenu ref="contextSubstation" @show-addSubs="$emit('show-addSubs', $event)"
+  @show-addPowerPlant="$emit('show-addPowerPlant', $event)"></contextMenu>
 
     <div class="child-nav" >
       <ul>
@@ -33,6 +34,7 @@
         @export-json-only-node="$emit('export-json-only-node', $event)"
         @export-json-full-tree="$emit('export-json-full-tree', $event)"
         @show-addSubsInTree="$emit('show-addSubsInTree', $event)"
+        @show-addPowerPlant="$emit('show-addPowerPlant', $event)"
         @show-addOrganisation="$emit('show-addOrganisation', $event)"
         @show-addVoltageLevel="$emit('show-addVoltageLevel', $event)"
         @show-addTransformer="$emit('show-addTransformer', $event)" @show-addJob="$emit('show-addJob', $event)"
@@ -50,6 +52,7 @@
         @import-json="$emit('import-json', $event)" @import-json-cim="$emit('import-json-cim', $event)"
         @import-excel="$emit('import-excel', $event)" @import-word="$emit('import-word', $event)"
         @import-ptm="$emit('import-ptm', $event)"
+        @import-cpxpert="$emit('import-cpxpert', $event)"
         @show-data="$emit('show-data', $event)" @refresh-node="$emit('refresh-node', $event)">
       </contextMenu>
     </div>

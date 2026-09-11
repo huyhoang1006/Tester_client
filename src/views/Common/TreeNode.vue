@@ -34,6 +34,8 @@
                 :assetDetail="iconProps.assetDetail"
                 :transformerType="node.type"
                 :badgeColor="iconProps.badgeColor"></icon>
+            <!-- Power Plant dùng cùng icon theo loại với menu Add -->
+            <i v-else-if="node.mode === 'powerPlant'" :class="[powerPlantIcon, 'type-icon', 'icon-power-plant']"></i>
             <!-- chỉ organisation + job dùng icon phẳng mới -->
             <i v-else-if="node.mode === 'job'" class="fa-solid fa-clipboard-list type-icon icon-job"></i>
             <i v-else class="fa-solid fa-building type-icon icon-org"></i>
@@ -71,6 +73,7 @@
 import Vue from "vue"
 import spinner from '@/views/Common/Spinner.vue'
 import icon from '@/views/Common/Icon.vue'
+import { getPowerPlantIcon } from '@/views/Common/powerPlantIcons'
 import { canDropInto } from '@/views/TreeNode/Common/MoveNode/moveRules'
 import { dragState, startDrag, setDragOver, clearDragOver, endDrag } from '@/views/TreeNode/Common/MoveNode/dragDropState'
 
@@ -107,6 +110,8 @@ export default {
             }
             else if (this.node.mode === 'substation') {
                 return `Substation`;
+            } else if (this.node.mode === 'powerPlant') {
+                return `Power Plant`;
             } else if (this.node.mode === 'voltageLevel') {
                 return `Voltage Level`;
             } else if (this.node.mode === 'bay') {
@@ -129,6 +134,10 @@ export default {
         usesCompanyIcon() {
             const mode = this.node ? this.node.mode : ''
             return ['substation', 'voltageLevel', 'bay', 'asset'].includes(mode)
+        },
+        powerPlantIcon() {
+            if (!this.node) return getPowerPlantIcon('')
+            return getPowerPlantIcon(this.node.plantType || this.node.plant_type)
         },
         // gom cấu hình icon theo mode về 1 chỗ (trước đây là 6 nhánh v-if trong template)
         iconProps() {
@@ -443,6 +452,7 @@ export default {
 }
 .icon-org { color: #3b6d11; }
 .icon-job { color: #b3562e; }
+.icon-power-plant { color: #146ebe; }
 
 /* ===== Cây con: thụt lề + guide line phân cấp ===== */
 .tree-children {

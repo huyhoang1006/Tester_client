@@ -29,12 +29,13 @@ export default {
                         }
                     }
                 } else if (node.mode == 'organisation') {
-                    const [organisationReturn, substationReturn] = await Promise.all([
+                    const [organisationReturn, substationReturn, powerPlantReturn] = await Promise.all([
                         window.electronAPI.getParentOrganizationByParentMrid(node.mrid),
-                        window.electronAPI.getSubstationsInOrganisationForUser(node.mrid, this.$store.state.user.user_id)
+                        window.electronAPI.getSubstationsInOrganisationForUser(node.mrid, this.$store.state.user.user_id),
+                        window.electronAPI.getPowerPlantsInOrganisationForUser(node.mrid, this.$store.state.user.user_id)
                     ])
 
-                    hasChildren = this.hasAnyRows(organisationReturn) || this.hasAnyRows(substationReturn)
+                    hasChildren = this.hasAnyRows(organisationReturn) || this.hasAnyRows(substationReturn) || this.hasAnyRows(powerPlantReturn)
                 } else if (node.mode == 'substation') {
                     const [voltageLevelReturn, bayReturn] = await Promise.all([
                         window.electronAPI.getVoltageLevelBySubstationId(node.mrid),
@@ -59,6 +60,13 @@ export default {
                     if (this.hasAnyAssetRows(assetReturns)) {
                         hasChildren = true
                     }
+                } else if (node.mode == 'powerPlant') {
+                    const [voltageLevelReturn, bayReturn, assetReturns] = await Promise.all([
+                        window.electronAPI.getVoltageLevelByPowerPlantId(node.mrid),
+                        window.electronAPI.getBayByPowerPlantId(node.mrid),
+                        this.fetchAssetByPsr(node.mrid)
+                    ])
+                    hasChildren = this.hasAnyRows(voltageLevelReturn) || this.hasAnyRows(bayReturn) || this.hasAnyAssetRows(assetReturns)
                 }
 
                 return { hasChildren }

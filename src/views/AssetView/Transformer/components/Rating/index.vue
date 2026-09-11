@@ -177,6 +177,9 @@
                                 <col style="width: 165px" />
                                 <col style="width: 165px" />
                                 <col style="width: 165px" />
+                                <col style="width: 165px" />
+                                <col style="width: 165px" />
+                                <col v-if="properties.type === $constant.THREE_WINDING" style="width: 165px" />
                                 <col style="width: 40px" />
                             </colgroup>
                             <thead>
@@ -184,6 +187,9 @@
                                     <th>Rated power</th>
                                     <th>Cooling class</th>
                                     <th>Temp. rise wind.</th>
+                                    <th>Prim</th>
+                                    <th>Sec</th>
+                                    <th v-if="properties.type === $constant.THREE_WINDING">Tert</th>
                                     <th class="action-col">
                                         <el-button size="mini" type="danger" class="w-100"
                                             @click="removeAllPowerRating">
@@ -232,48 +238,10 @@
                                         </el-input>
                                     </td>
                                     <td>
-                                        <el-button size="mini" type="danger" class="w-100"
-                                            @click="deletePowerRating(index)">
-                                            <i class="fas fa-trash"></i>
-                                        </el-button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </el-col>
-            </el-row>
-
-            <!-- current ratings -->
-            <el-row :gutter="20" class="content mgt-10">
-                <el-col :span="24" class="col-content">
-                    <span class="bolder">Current ratings at rated power</span>
-                    <el-divider></el-divider>
-                </el-col>
-                <el-col>
-                    <div class="table-scroll">
-                        <table class="table-strip-input-data fixed-table">
-                            <colgroup>
-                                <col style="width: 165px" />
-                                <col style="width: 165px" />
-                                <col v-if="properties.type === $constant.THREE_WINDING" style="width: 165px" />
-                                <col style="width: 165px" />
-                            </colgroup>
-                            <thead>
-                                <tr>
-                                    <th>Prim</th>
-                                    <th>Sec</th>
-                                    <th v-if="properties.type === $constant.THREE_WINDING">Tert</th>
-                                    <th>Rated power</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="(item, index) in ratingsData.current_ratings" :key="index">
-                                    <td>
-                                        <el-input size="mini" type="text" number="positive"
-                                            v-model="item.prim.data.value">
-                                            <el-select size="mini" class="select-in-input" v-model="item.prim.data.unit"
-                                                slot="append">
+                                        <el-input v-if="ratingsData.current_ratings[index]" size="mini" type="text"
+                                            number="positive" v-model="ratingsData.current_ratings[index].prim.data.value">
+                                            <el-select size="mini" class="select-in-input"
+                                                v-model="ratingsData.current_ratings[index].prim.data.unit" slot="append">
                                                 <el-option :label="unitSymbol.A" :value="unitSymbol.A"></el-option>
                                                 <el-option :label="unitMultiplier.k + unitSymbol.A"
                                                     :value="unitMultiplier.k + '|' + unitSymbol.A"></el-option>
@@ -281,10 +249,10 @@
                                         </el-input>
                                     </td>
                                     <td>
-                                        <el-input size="mini" type="text" number="positive"
-                                            v-model="item.sec.data.value">
-                                            <el-select size="mini" class="select-in-input" v-model="item.sec.data.unit"
-                                                slot="append">
+                                        <el-input v-if="ratingsData.current_ratings[index]" size="mini" type="text"
+                                            number="positive" v-model="ratingsData.current_ratings[index].sec.data.value">
+                                            <el-select size="mini" class="select-in-input"
+                                                v-model="ratingsData.current_ratings[index].sec.data.unit" slot="append">
                                                 <el-option :label="unitSymbol.A" :value="unitSymbol.A"></el-option>
                                                 <el-option :label="unitMultiplier.k + unitSymbol.A"
                                                     :value="unitMultiplier.k + '|' + unitSymbol.A"></el-option>
@@ -292,10 +260,10 @@
                                         </el-input>
                                     </td>
                                     <td v-if="properties.type === $constant.THREE_WINDING">
-                                        <el-input size="mini" type="text" number="positive"
-                                            v-model="item.tert.data.value">
-                                            <el-select size="mini" class="select-in-input" v-model="item.tert.data.unit"
-                                                slot="append">
+                                        <el-input v-if="ratingsData.current_ratings[index]" size="mini" type="text"
+                                            number="positive" v-model="ratingsData.current_ratings[index].tert.data.value">
+                                            <el-select size="mini" class="select-in-input"
+                                                v-model="ratingsData.current_ratings[index].tert.data.unit" slot="append">
                                                 <el-option :label="unitSymbol.A" :value="unitSymbol.A"></el-option>
                                                 <el-option :label="unitMultiplier.k + unitSymbol.A"
                                                     :value="unitMultiplier.k + '|' + unitSymbol.A"></el-option>
@@ -303,18 +271,10 @@
                                         </el-input>
                                     </td>
                                     <td>
-                                        <el-input size="mini" type="text" number="positive"
-                                            :value="ratingsData.power_ratings[index].rated_power.value"
-                                            :disabled="true">
-                                            <el-select size="mini" class="select-in-input"
-                                                v-model="ratingsData.power_ratings[index].rated_power.unit"
-                                                :disabled="true" slot="append">
-                                                <el-option :label="unitMultiplier.M + unitSymbol.VA"
-                                                    :value="unitMultiplier.M + '|' + unitSymbol.VA"></el-option>
-                                                <el-option :label="unitMultiplier.k + unitSymbol.VA"
-                                                    :value="unitMultiplier.k + '|' + unitSymbol.VA"></el-option>
-                                            </el-select>
-                                        </el-input>
+                                        <el-button size="mini" type="danger" class="w-100"
+                                            @click="deletePowerRating(index)">
+                                            <i class="fas fa-trash"></i>
+                                        </el-button>
                                     </td>
                                 </tr>
                             </tbody>

@@ -9,6 +9,7 @@ class BayDto {
         this.bus_bar_configuration = ''
         this.voltage_level = ''
         this.substation = ''
+        this.power_plant = ''
     }
 }
 

@@ -176,10 +176,11 @@ export const searchTree = async (userId, keyword, options = {}) => {
  * ─── MỖI LOẠI NODE MỘT ĐƯỜNG LÊN CHA, VÌ CSDL LÀ NHƯ VẬY ────────────────────
  *
  *   job          -> old_work.asset_id           -> asset
- *   asset        -> asset_psr.psr_id            -> bay / voltage_level / substation
- *   bay          -> bay.voltage_level, .substation
- *   voltageLevel -> voltage_level.substation
+ *   asset        -> asset_psr.psr_id            -> bay / voltage_level / substation / power plant
+ *   bay          -> bay.voltage_level, .substation, .power_plant
+ *   voltageLevel -> voltage_level.substation, .power_plant
  *   substation   -> organisation_psr.organisation_id
+ *   powerPlant   -> organisation_psr.organisation_id
  *   organisation -> organisation.parent_organisation
  *
  * ─── CHỐNG VÒNG LẶP ─────────────────────────────────────────────────────────
@@ -209,17 +210,21 @@ const findParent = async (mrid, mode) => {
         return { mrid: row.psr_id, mode: await modeOfPsr(row.psr_id) }
     }
     if (mode === 'bay') {
-        const row = await getOne('SELECT voltage_level, substation FROM bay WHERE mrid = ?', [mrid])
+        const row = await getOne('SELECT voltage_level, substation, power_plant FROM bay WHERE mrid = ?', [mrid])
         if (!row) return null
         if (row.voltage_level) return { mrid: row.voltage_level, mode: 'voltageLevel' }
         if (row.substation) return { mrid: row.substation, mode: 'substation' }
+        if (row.power_plant) return { mrid: row.power_plant, mode: 'powerPlant' }
         return null
     }
     if (mode === 'voltageLevel') {
-        const row = await getOne('SELECT substation FROM voltage_level WHERE mrid = ?', [mrid])
-        return row && row.substation ? { mrid: row.substation, mode: 'substation' } : null
+        const row = await getOne('SELECT substation, power_plant FROM voltage_level WHERE mrid = ?', [mrid])
+        if (!row) return null
+        if (row.substation) return { mrid: row.substation, mode: 'substation' }
+        if (row.power_plant) return { mrid: row.power_plant, mode: 'powerPlant' }
+        return null
     }
-    if (mode === 'substation') {
+    if (mode === 'substation' || mode === 'powerPlant') {
         const row = await getOne('SELECT organisation_id FROM organisation_psr WHERE psr_id = ?', [mrid])
         return row && row.organisation_id ? { mrid: row.organisation_id, mode: 'organisation' } : null
     }
@@ -230,11 +235,12 @@ const findParent = async (mrid, mode) => {
     return null
 }
 
-/** Một psr_id có thể là bay, voltage level hoặc substation — hỏi cho chắc. */
+/** Một psr_id có thể thuộc một trong các EquipmentContainer — hỏi cho chắc. */
 const modeOfPsr = async (psrId) => {
     if (await getOne('SELECT mrid FROM bay WHERE mrid = ?', [psrId])) return 'bay'
     if (await getOne('SELECT mrid FROM voltage_level WHERE mrid = ?', [psrId])) return 'voltageLevel'
     if (await getOne('SELECT mrid FROM substation WHERE mrid = ?', [psrId])) return 'substation'
+    if (await getOne('SELECT mrid FROM power_plant WHERE mrid = ?', [psrId])) return 'powerPlant'
     return null
 }
 

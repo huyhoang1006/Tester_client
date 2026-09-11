@@ -23,6 +23,13 @@
             "unit": "k|V"
         },
         {
+            "mrid": "d6f5540f-57c8-4e4d-b3d6-9276084d74f4",
+            "code": "frequency",
+            "name": "Frequency",
+            "type": "analog",
+            "unit": "Hz"
+        },
+        {
             "mrid": "c74b6a9a-5e33-4040-be57-a2e7c82e5e19",
             "code": "df_ref",
             "name": "DF ref",

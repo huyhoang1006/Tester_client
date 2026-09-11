@@ -28,6 +28,7 @@ import * as auditLogPreload from './auditLog/index.js'
 import * as compareTestPreload from './compareTest/index.js'
 import * as treeSearchPreload from './treeSearch/index'
 import * as userIdentifiedObjectPreload from './userIdentifiedObject/index.js'
+import * as powerPlantPreload from './powerPlant/index.js'
 
 export {
     attachmentPreload, substationPreload, parentOrganizationPreload,
@@ -36,5 +37,6 @@ export {
     bushingEntityPreload, disconnectorEntityPreload, rotatingMachineEntityPreload, currentTransformerEntityPreload,
     capacitorEntityPreload, breakerEntityPreload, reactorEntityPreload, exportPreload, assetPsrPreload, notificationEntityPreload,
     entitySnapshotPreload, templatePreload, mRIDCheckPreload, testingEquipmentEntityPreload, syncStatePreload,
-    auditLogPreload, compareTestPreload, userIdentifiedObjectPreload, treeSearchPreload
+    auditLogPreload, compareTestPreload, userIdentifiedObjectPreload, treeSearchPreload,
+    powerPlantPreload
 }

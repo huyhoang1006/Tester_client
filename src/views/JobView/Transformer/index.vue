@@ -44,7 +44,8 @@
                                     compare-asset-kind="Transformer"
                                     :compare-asset-mrid="transformerJobDto.properties.asset_id"
                                     :compare-exclude-work-mrid="transformerJobDto.properties.mrid"
-                                    :show-oil-and-winding-temperatures="item.testTypeCode === 'WindingDfCap'">
+                                    :show-oil-and-winding-temperatures="item.testTypeCode === 'WindingDfCap'"
+                                    @compare-reference-change="setCompareReference(item.testTypeCode + index, item.testTypeCode, $event)">
                                 </test-information>
                                 <component
                                     :is="item.testTypeCode" 
@@ -53,6 +54,7 @@
                                     :testCondition="item.testCondition"
                                     :testAssessment="item.testAssessment"
                                     :compare-open="!!compareOpen[item.testTypeCode + index]"
+                                    :comparison-snapshot="compareReference[item.testTypeCode + index] || null"
                                     @toggle-compare="toggleCompare(item.testTypeCode + index)">
                                 </component>
                             </el-tab-pane>
@@ -107,6 +109,13 @@ import TestSummary from './components/TestSummary/index.vue'
 import HealthIndex from './components/HealthIndex/index.vue'
 import exportData from './components/ExportData'
 
+const DF_CAP_CHART_TEST_CODES = new Set([
+    'WindingDfCap',
+    'BushingPrimC1', 'BushingPrimC2',
+    'BushingSecC1', 'BushingSecC2',
+    'BushingTertC1', 'BushingTertC2'
+])
+
 export default {
     name: 'JobViewTransformer',
     components: {
@@ -160,6 +169,7 @@ export default {
             // Phải để ở đây vì nút nằm trong component test còn bảng nằm trong
             // test-information — hai component anh em, không tự nói chuyện được.
             compareOpen: {},
+            compareReference: {},
             objActiveName: {
                 activeName: null
             },
@@ -182,7 +192,12 @@ export default {
             return (definition && definition.columns) || []
         },
         toggleCompare(key) {
+            this.$set(this.compareReference, key, null)
             this.$set(this.compareOpen, key, !this.compareOpen[key])
+        },
+        setCompareReference(key, testTypeCode, snapshot) {
+            if (!DF_CAP_CHART_TEST_CODES.has(testTypeCode)) return
+            this.$set(this.compareReference, key, snapshot)
         },
         updateAttachmentOverView(attachment) {
             this.attachmentData = attachment

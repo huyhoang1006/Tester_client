@@ -1,16 +1,45 @@
 /* eslint-disable */
 import { ptmToCtJobDto } from '@/utils/ptm/ptmToCtJobDto'
-import { jobDtoToEntity, JobEntityToDto } from '@/views/Mapping/CurrentTransformerJob'
-import { applyPtmToCtAssetDto, buildCtConfigurationFromPtm } from '@/utils/ptm/ptmToCtAssetDto'
+import { ptmToCircuitBreakerJobDto } from '@/utils/ptm/ptmToCircuitBreakerJobDto'
+import { ptmToTransformerJobDto } from '@/utils/ptm/ptmToTransformerJobDto'
+import * as CurrentTransformerJobMapper from '@/views/Mapping/CurrentTransformerJob'
+import * as CircuitBreakerJobMapper from '@/views/Mapping/CircuitBreakerJob'
+import * as TransformerJobMapper from '@/views/Mapping/TransformerJob'
+import {
+    applyPtmToCtAssetDto,
+    ensureCurrentTransformerDtoIds,
+    buildCtConfigurationFromPtm,
+} from '@/utils/ptm/ptmToCtAssetDto'
 import CurrentTransformerDto from '@/views/Dto/CurrentTransformer'
 import CTConfigurationDto from '@/views/Dto/CurrentTransformer/CTConfiguration'
 import CoreDto from '@/views/Dto/CurrentTransformer/CTConfiguration/CoreDto'
 import uuid from '@/utils/uuid'
 import * as CurrentTransformerMapper from '@/views/Mapping/CurrentTransformer'
+import CircuitBreakerDto from '@/views/Dto/CircuitBreaker'
+import CircuitBreakerEntity from '@/views/Flatten/CircuitBreaker'
+import * as CircuitBreakerMapper from '@/views/Mapping/Breaker'
+import TransformerDto from '@/views/Dto/Transformer'
+import TransformerEntity from '@/views/Flatten/Transformer'
+import * as TransformerMapper from '@/views/Mapping/Transformer'
+import {
+    applyPtmToCircuitBreakerAssetDto,
+    ensureCircuitBreakerDtoIds,
+} from '@/utils/ptm/ptmToCircuitBreakerAssetDto'
+import {
+    applyPtmToTransformerAssetDto,
+    ensureTransformerDtoIds,
+} from '@/utils/ptm/ptmToTransformerAssetDto'
+import { applyPtmTimingAssessment } from '@/utils/ptm/ptmTimingAssessment'
 import { startLoading } from '@/utils/loading'
 
 /** Node được phép import vào. Xem giải thích ở handleImportPtmFromContext. */
 const PTM_TARGET_MODES = ['asset', 'bay', 'substation']
+
+const PTM_ASSET_KINDS = {
+    CurrentTransformer: 'Current transformer',
+    CircuitBreaker: 'Circuit breaker',
+    Transformer: 'Transformer',
+}
 
 const str = (v) => (v === null || v === undefined) ? '' : String(v)
 
@@ -49,8 +78,52 @@ export default {
         }
     },
     methods: {
+        getPtmJobAdapter(assetType) {
+            if (assetType === 'CircuitBreaker') {
+                return {
+                    build: ptmToCircuitBreakerJobDto,
+                    read: mrid => window.electronAPI.getCircuitBreakerJobByMrid(mrid),
+                    entityToDto: CircuitBreakerJobMapper.JobEntityToDto,
+                    dtoToEntity: CircuitBreakerJobMapper.jobDtoToEntity,
+                    save: (oldEntity, entity) => window.electronAPI.insertCircuitBreakerJob(oldEntity, entity),
+                    hasExcitationCurves: false,
+                    hasMotorCurrentWaveforms: true,
+                    hasTimingTraces: true,
+                }
+            }
+            if (assetType === 'Transformer') {
+                return {
+                    build: ptmToTransformerJobDto,
+                    read: mrid => window.electronAPI.getTransformerJobByMrid(mrid),
+                    entityToDto: TransformerJobMapper.JobEntityToDto,
+                    dtoToEntity: TransformerJobMapper.jobDtoToEntity,
+                    save: (oldEntity, entity) => window.electronAPI.insertTransformerJob(oldEntity, entity),
+                    hasExcitationCurves: false,
+                    hasMotorCurrentWaveforms: false,
+                    hasTimingTraces: false,
+                }
+            }
+            return {
+                build: ptmToCtJobDto,
+                read: mrid => window.electronAPI.getCurrentTransformerJobByMrid(mrid),
+                entityToDto: CurrentTransformerJobMapper.JobEntityToDto,
+                dtoToEntity: CurrentTransformerJobMapper.jobDtoToEntity,
+                save: (oldEntity, entity) => window.electronAPI.insertCurrentTransformerJob(oldEntity, entity),
+                hasExcitationCurves: true,
+                hasMotorCurrentWaveforms: false,
+            }
+        },
+
         /** Vào từ menu chuột phải hoặc thanh công cụ. */
         async handleImportPtmFromContext(node) {
+            return this.handleImportMeasurementFileFromContext(node, 'importPtm', 'PTM')
+        },
+
+        async handleImportCpxpertFromContext(node) {
+            return this.handleImportMeasurementFileFromContext(node, 'importCpxpert', 'CPXpert')
+        },
+
+        async handleImportMeasurementFileFromContext(node, apiMethod, sourceLabel) {
             const target = node || (this.selectedNodes && this.selectedNodes[this.selectedNodes.length - 1])
             if (!target) {
                 this.$message.warning('Select the asset to import into first')
@@ -71,15 +144,15 @@ export default {
             }
 
             const api = window.electronAPI
-            if (!api || !api.importPtm) {
-                this.$message.error('PTM import is not available in this build')
+            if (!api || !api[apiMethod]) {
+                this.$message.error(`${sourceLabel} import is not available in this build`)
                 return
             }
 
-            const result = await api.importPtm()
+            const result = await api[apiMethod]()
             if (!result || !result.success) {
                 if (result && result.message !== 'Import cancelled') {
-                    this.$message.error(result ? result.message : 'Could not read PTM file')
+                    this.$message.error(result ? result.message : `Could not read ${sourceLabel} file`)
                 }
                 return
             }
@@ -88,14 +161,15 @@ export default {
             this.ptmTargetNode = target
             this.ptmFileName = String(result.data.filePath || '').split(/[\\/]/).pop()
 
-            await this.buildPtmPreview()
-            this.ptmDialogVisible = true
+            const ready = await this.buildPtmPreview()
+            if (ready) this.ptmDialogVisible = true
         },
 
         /** Dựng phần xem trước + chạy đối chiếu trùng. Không ghi gì. */
         async buildPtmPreview() {
             const ptm = this.ptmRaw
             const target = this.ptmTargetNode
+            const sourceLabel = ptm.sourceLabel || 'PTM'
 
             // Thiết bị: lấy bản của JOB làm gốc (thông số đúng lúc thử), rồi lấp field
             // rỗng bằng bản kho. Kiểm trên file mẫu: hai bản chỉ khác 3/55 thẻ, và
@@ -103,6 +177,16 @@ export default {
             const jobAsset = (ptm.assets || []).find(a => a.exportId === ptm.job.jobAssetId)
             const stockAsset = (ptm.assets || []).find(a => a.exportId === ptm.job.assetId)
             const asset = this.mergePtmAsset(jobAsset, stockAsset)
+            const assetKind = PTM_ASSET_KINDS[asset.type]
+
+            if (!assetKind) {
+                this.$message.error(`${sourceLabel} asset type "${asset.type || 'unknown'}" is not supported yet`)
+                return false
+            }
+            if (target.mode === 'asset' && str(target.asset).trim().toLowerCase() !== assetKind.toLowerCase()) {
+                this.$message.error(`This ${sourceLabel} file contains a ${assetKind}, but the selected asset is ${target.asset || 'another type'}`)
+                return false
+            }
 
             const api = window.electronAPI
             this.ptmDup = null
@@ -124,6 +208,7 @@ export default {
                         serialNumber: asset.serialNumber,
                         manufacturer: asset.manufacturer,
                         manufacturerType: asset.manufacturerType,
+                        kind: assetKind,
                     },
                     this.$store.state.user.user_id,
                     // "Cùng nhánh" tính theo node CHỨA thiết bị: đứng ở asset thì là cha
@@ -156,7 +241,19 @@ export default {
                 creatingAsset = true
             }
 
-            const { jobDto, curvePoints, kneePoints, skipped } = ptmToCtJobDto(ptm, assetMrid)
+            const jobAdapter = this.getPtmJobAdapter(asset.type)
+            const {
+                jobDto,
+                curvePoints,
+                kneePoints,
+                motorCurrentPoints = {},
+                timingTraces = {},
+                timingAssessmentImports = [],
+                skipped,
+            } = jobAdapter.build(ptm, assetMrid)
+            const operatingMechanism = asset.type === 'CircuitBreaker'
+                ? this.resolvePtmOperatingMechanism(ptm, jobAsset, stockAsset)
+                : null
 
             // ─── BƯỚC 3: TÌM JOB TRÙNG TÊN dưới ĐÚNG thiết bị đích ──────
             //
@@ -186,11 +283,11 @@ export default {
                                 loadError: '',
                             }
                             try {
-                                const detail = await api.getCurrentTransformerJobByMrid(j.mrid)
+                                const detail = await jobAdapter.read(j.mrid)
                                 if (!detail || !detail.success || !detail.data) {
                                     throw new Error((detail && detail.message) || 'job data not found')
                                 }
-                                const dto = JobEntityToDto(detail.data)
+                                const dto = jobAdapter.entityToDto(detail.data)
                                 const occurrences = {}
                                 summary.tests = (dto.testList || []).map(test => {
                                     const code = test.testTypeCode
@@ -224,17 +321,25 @@ export default {
             // đụng vào phần này — người dùng có thể đã sửa tay, và PTM không phải nguồn
             // đầy đủ hơn.
             let coreConfig = null
-            if (creatingAsset) {
-                const ctTest = (ptm.tests || []).find(t => t.type === 'CTExcitationTest')
+            if (creatingAsset && asset.type === 'CurrentTransformer') {
+                const ctTest = ptm.ctConfigurationSource ||
+                    (ptm.tests || []).find(t => t.type === 'CTExcitationTest')
                 coreConfig = buildCtConfigurationFromPtm(ctTest, CTConfigurationDto, CoreDto)
             }
 
             this.ptmPreview = {
+                sourceLabel: ptm.sourceLabel || 'PTM',
+                assetType: asset.type,
+                assetKind,
                 job: ptm.job,
                 asset,
+                operatingMechanism,
                 jobDto,
                 curvePoints,
                 kneePoints,
+                motorCurrentPoints,
+                timingTraces,
+                timingAssessmentImports,
                 skipped,
                 creatingAsset,
                 assetMrid,
@@ -248,6 +353,14 @@ export default {
                     const curves = rowIds.filter(id => curvePoints[id]).length
                     const points = rowIds.reduce((sum, id) => sum + ((curvePoints[id] || []).length), 0)
                     const knees = rowIds.reduce((sum, id) => sum + ((kneePoints[id] || []).length), 0)
+                    const waveforms = rowIds.filter(id => motorCurrentPoints[id]).length
+                    const waveformPoints = rowIds.reduce(
+                        (sum, id) => sum + ((motorCurrentPoints[id] || []).length), 0
+                    )
+                    const traces = Array.isArray(timingTraces[t.mrid]) ? timingTraces[t.mrid].length : 0
+                    const tracePoints = (timingTraces[t.mrid] || []).reduce(
+                        (sum, trace) => sum + ((trace.points || []).length), 0
+                    )
                     return {
                         importIndex,
                         importedMrid: t.mrid,
@@ -257,9 +370,16 @@ export default {
                         curves,
                         points,
                         knees,
+                        waveforms,
+                        waveformPoints,
+                        traces,
+                        tracePoints,
+                        series: curves + waveforms + traces,
+                        dataPoints: points + waveformPoints + tracePoints,
                     }
                 }),
             }
+            return true
         },
 
         /**
@@ -279,6 +399,19 @@ export default {
             }
             out.raw = { ...(fill.raw || {}), ...(base.raw || {}) }
             return out
+        },
+
+        resolvePtmOperatingMechanism(ptm, jobAsset, stockAsset) {
+            const assets = ptm.assets || []
+            const mechanismId = (asset) => {
+                const field = asset && asset.raw && asset.raw.OperatingMechanismId
+                return field ? str(field.value) : ''
+            }
+            const findById = (id) => assets.find(a => a.type === 'OperatingMechanism' && a.exportId === id)
+
+            const jobMechanism = findById(mechanismId(jobAsset))
+            const stockMechanism = findById(mechanismId(stockAsset))
+            return this.mergePtmAsset(jobMechanism, stockMechanism)
         },
 
         handlePtmCancel() {
@@ -304,6 +437,7 @@ export default {
             const preview = this.ptmPreview
             const target = this.ptmTargetNode
             if (!preview || !target) return
+            const jobAdapter = this.getPtmJobAdapter(preview.assetType)
 
             // Bỏ qua job thì KHÔNG ghi gì cả — không có việc "bỏ qua job nhưng vẫn cập nhật
             // thiết bị", vì cả hộp thoại này chỉ tồn tại để đưa một job vào.
@@ -331,21 +465,21 @@ export default {
                 // equipment và các test không được chọn của job cũ đều được giữ nguyên.
                 if (jobDup.length > 0 && jobAction === 'merge') {
                     const targetMrid = targetJobMrid || jobDup[0].mrid
-                    const old = await window.electronAPI.getCurrentTransformerJobByMrid(targetMrid)
+                    const old = await jobAdapter.read(targetMrid)
                     if (!old || !old.success || !old.data) {
                         throw new Error(`Could not read the existing job to merge: ${(old && old.message) || 'not found'}`)
                     }
 
                     oldEntity = old.data
                     mergeSummary = this.mergePtmTestsIntoJob(
-                        JobEntityToDto(old.data),
+                        jobAdapter.entityToDto(old.data),
                         preview.jobDto,
                         testDecisions || []
                     )
                     dto = mergeSummary.dto
                     mergedTestCount = mergeSummary.importedCount
                     if (mergedTestCount === 0) {
-                        throw new Error('No PTM test was selected to add or overwrite')
+                        throw new Error(`No ${preview.sourceLabel || 'PTM'} test was selected to add or overwrite`)
                     }
                 }
 
@@ -367,17 +501,48 @@ export default {
                 const attachedToExisting = !preview.creatingAsset && target.mode !== 'asset'
 
                 let assetUpdate = null
-                if (preview.creatingAsset) {
-                    reporter.progress('Creating asset from PTM file...')
-                    assetUpdate = await this.createCtAssetFromPtm(target, preview)
-                } else if (assetAction === 'overwrite') {
+                // Import on an asset starts at JOB level. The selected asset profile is
+                // never overwritten by data from the PTM file in this mode.
+                if (target.mode !== 'asset' && preview.creatingAsset) {
+                    reporter.progress(`Creating asset from ${preview.sourceLabel || 'PTM'} file...`)
+                    if (preview.assetType === 'CircuitBreaker') {
+                        assetUpdate = await this.createCircuitBreakerAssetFromPtm(target, preview)
+                    } else if (preview.assetType === 'Transformer') {
+                        assetUpdate = await this.createTransformerAssetFromPtm(target, preview)
+                    } else {
+                        assetUpdate = await this.createCtAssetFromPtm(target, preview)
+                    }
+                } else if (target.mode !== 'asset' && assetAction === 'overwrite') {
                     reporter.progress('Updating existing asset...')
                     // Node của thiết bị đích: đứng ở asset thì là chính nó, còn không thì
                     // là thiết bị trùng tìm được trong nhánh.
                     const assetNode = attachedToExisting
                         ? { mrid: preview.assetMrid, parentId: (dupInTarget[0] || {}).psr_id }
                         : target
-                    assetUpdate = await this.applyPtmAssetOverwrite(assetNode, preview.asset)
+                    if (preview.assetType === 'CircuitBreaker') {
+                        assetUpdate = await this.applyPtmCircuitBreakerOverwrite(assetNode, preview)
+                    } else if (preview.assetType === 'Transformer') {
+                        assetUpdate = await this.applyPtmTransformerOverwrite(assetNode, preview.asset)
+                    } else {
+                        assetUpdate = await this.applyPtmAssetOverwrite(assetNode, preview.asset)
+                    }
+                }
+
+                let timingAssessmentUpdate = { appliedCount: 0 }
+                if (preview.assetType === 'CircuitBreaker') {
+                    const selectedAssessmentImports = this.getSelectedPtmTimingAssessments(
+                        preview,
+                        mergeSummary
+                    )
+                    if (selectedAssessmentImports.length > 0) {
+                        reporter.progress('Applying O Timing assessment settings...')
+                        timingAssessmentUpdate = await this.applyPtmTimingAssessments(
+                            target,
+                            preview,
+                            assetUpdate,
+                            selectedAssessmentImports
+                        )
+                    }
                 }
 
                 // ─── GHI ĐÈ JOB TRÙNG TÊN: GIỮ NGUYÊN mrid CŨ ────────────────
@@ -396,7 +561,7 @@ export default {
                 if (jobDup.length > 0 && jobAction === 'overwrite') {
                     reporter.progress('Reading the existing job...')
                     const overwriteMrid = targetJobMrid || jobDup[0].mrid
-                    const old = await window.electronAPI.getCurrentTransformerJobByMrid(overwriteMrid)
+                    const old = await jobAdapter.read(overwriteMrid)
                     if (!old || !old.success || !old.data) {
                         throw new Error(
                             `Could not read the existing job to overwrite it: ${(old && old.message) || 'not found'}`
@@ -407,11 +572,12 @@ export default {
                     oldEntity = overwritingJob
                 }
 
-                const entity = jobDtoToEntity(dto)
+                this.ensurePtmProcedureAssets(dto, preview.assetMrid)
+                const entity = jobAdapter.dtoToEntity(dto)
 
                 // Đường cong đi CÙNG entity, vào cùng một transaction với bảng test. Hai
                 // đường ghi riêng thì bảng lưu xong mà đường cong hỏng, không ai chặn.
-                if (jobAction === 'merge' && mergeSummary) {
+                if (jobAdapter.hasExcitationCurves && jobAction === 'merge' && mergeSummary) {
                     entity.ctExcitationPoints = this.mergePtmPointMaps(
                         oldEntity.ctExcitationPoints || {},
                         preview.curvePoints || {},
@@ -424,20 +590,42 @@ export default {
                         mergeSummary.finalRowIds,
                         mergeSummary.importedRowIds
                     )
-                } else {
+                } else if (jobAdapter.hasExcitationCurves) {
                     entity.ctExcitationPoints = preview.curvePoints
                     entity.ctExcitationKneePoints = preview.kneePoints || {}
                 }
 
+                if (jobAdapter.hasMotorCurrentWaveforms && jobAction === 'merge' && mergeSummary) {
+                    entity.cbMotorCurrentPoints = this.mergePtmPointMaps(
+                        oldEntity.cbMotorCurrentPoints || {},
+                        preview.motorCurrentPoints || {},
+                        mergeSummary.finalRowIds,
+                        mergeSummary.importedRowIds
+                    )
+                } else if (jobAdapter.hasMotorCurrentWaveforms) {
+                    entity.cbMotorCurrentPoints = preview.motorCurrentPoints || {}
+                }
+
+                if (jobAdapter.hasTimingTraces && jobAction === 'merge' && mergeSummary) {
+                    entity.cbTimingTraces = this.mergePtmWorkTaskMaps(
+                        oldEntity.cbTimingTraces || {},
+                        preview.timingTraces || {},
+                        mergeSummary.finalWorkTaskIds,
+                        mergeSummary.importedWorkTaskIdMap
+                    )
+                } else if (jobAdapter.hasTimingTraces) {
+                    entity.cbTimingTraces = preview.timingTraces || {}
+                }
+
                 reporter.progress(
                     jobAction === 'merge'
-                        ? 'Merging selected PTM tests into the existing job...'
+                        ? `Merging selected ${preview.sourceLabel || 'PTM'} tests into the existing job...`
                         : (overwritingJob ? 'Overwriting the existing job...' : 'Writing job and tests...')
                 )
 
                 // Job mới thì `old_entity` rỗng — không có gì để so mà xoá.
                 const entityBeforeSave = oldEntity || overwritingJob || this.buildEmptyOldEntity(entity)
-                const rs = await window.electronAPI.insertCurrentTransformerJob(entityBeforeSave, entity)
+                const rs = await jobAdapter.save(entityBeforeSave, entity)
 
                 if (!rs || !rs.success) {
                     throw new Error((rs && rs.message) || 'Insert job failed')
@@ -477,18 +665,51 @@ export default {
                 const curveCount = Object.keys(importedCurvePoints).length
                 const pointCount = Object.values(importedCurvePoints).reduce((s, a) => s + a.length, 0)
                 const kneeCount = Object.values(importedKneePoints).reduce((s, a) => s + a.length, 0)
+                const importedMotorCurrentPoints = mergeSummary
+                    ? this.filterPtmPointMap(preview.motorCurrentPoints || {}, mergeSummary.importedRowIds)
+                    : (preview.motorCurrentPoints || {})
+                const waveformCount = Object.keys(importedMotorCurrentPoints).length
+                const waveformPointCount = Object.values(importedMotorCurrentPoints)
+                    .reduce((sum, points) => sum + points.length, 0)
+                const importedTimingTraces = mergeSummary
+                    ? this.filterPtmWorkTaskMap(
+                        preview.timingTraces || {}, Object.keys(mergeSummary.importedWorkTaskIdMap)
+                    )
+                    : (preview.timingTraces || {})
+                const timingTraceCount = Object.values(importedTimingTraces)
+                    .reduce((sum, traces) => sum + traces.length, 0)
+                const timingTracePointCount = Object.values(importedTimingTraces)
+                    .reduce((sum, traces) => sum + traces.reduce(
+                        (traceSum, trace) => traceSum + ((trace.points || []).length), 0
+                    ), 0)
                 let assetNote = ''
                 if (assetUpdate && assetUpdate.created) {
-                    const cores = ((preview.coreConfig && preview.coreConfig.config) || {}).cores || '?'
-                    assetNote = `, new asset created (${assetUpdate.appliedCount} nameplate field(s), ${cores} core(s))`
+                    if (preview.assetType === 'CurrentTransformer') {
+                        const cores = ((preview.coreConfig && preview.coreConfig.config) || {}).cores || '?'
+                        assetNote = `, new asset created (${assetUpdate.appliedCount} nameplate field(s), ${cores} core(s))`
+                    } else {
+                        assetNote = `, new asset created (${assetUpdate.appliedCount} asset field(s))`
+                    }
                 } else if (assetUpdate && assetUpdate.appliedCount > 0) {
                     assetNote = `, ${assetUpdate.appliedCount} asset field(s) updated`
                 }
                 const verb = jobAction === 'merge'
                     ? 'Merged into the existing job:'
                     : (overwritingJob ? 'Overwrote the existing job with' : 'Imported')
+                const curveNote = jobAdapter.hasExcitationCurves
+                    ? `, ${curveCount} curve(s), ${pointCount} points, ${kneeCount} knee point(s)`
+                    : ''
+                const waveformNote = jobAdapter.hasMotorCurrentWaveforms && waveformCount > 0
+                    ? `, ${waveformCount} Motor Current waveform(s), ${waveformPointCount} points`
+                    : ''
+                const timingNote = jobAdapter.hasTimingTraces && timingTraceCount > 0
+                    ? `, ${timingTraceCount} timing trace(s), ${timingTracePointCount} points`
+                    : ''
+                const timingAssessmentNote = timingAssessmentUpdate.appliedCount > 0
+                    ? `, ${timingAssessmentUpdate.appliedCount} assessment limit value(s)`
+                    : ''
                 this.$message.success(
-                    `${verb} ${mergedTestCount} PTM test(s), ${curveCount} curve(s), ${pointCount} points, ${kneeCount} knee point(s)${assetNote}`
+                    `${verb} ${mergedTestCount} ${preview.sourceLabel || 'PTM'} test(s)${curveNote}${waveformNote}${timingNote}${timingAssessmentNote}${assetNote}`
                 )
 
                 // Trường bị bỏ khi ghi đè (lệch đơn vị) là thứ người dùng CẦN biết — họ vừa
@@ -528,6 +749,191 @@ export default {
             } finally {
                 this.ptmImporting = false
                 await reporter.close()
+            }
+        },
+
+        async createCircuitBreakerAssetFromPtm(target, preview) {
+            const api = window.electronAPI
+            const dto = new CircuitBreakerDto()
+            dto.properties.mrid = preview.assetMrid
+            dto.psrId = target.mrid
+
+            const mapped = applyPtmToCircuitBreakerAssetDto(
+                dto,
+                preview.asset,
+                preview.operatingMechanism
+            )
+            if (!str(dto.properties.serial_no).trim()) {
+                throw new Error('The PTM file has no serial number — cannot create a new Circuit Breaker without one')
+            }
+            if (!str(dto.properties.apparatus_id).trim()) {
+                dto.properties.apparatus_id = str(dto.properties.serial_no).trim() || 'Circuit breaker from PTM'
+            }
+
+            ensureCircuitBreakerDtoIds(dto)
+            const entity = CircuitBreakerMapper.mapDtoToEntity(dto)
+            const rs = await api.insertBreakerEntity(new CircuitBreakerEntity(), entity)
+            if (!rs || !rs.success) {
+                throw new Error(`Could not create Circuit Breaker: ${(rs && rs.message) || 'unknown error'}`)
+            }
+
+            if (api.ensureUserOwnership) {
+                const own = await api.ensureUserOwnership(this.$store.state.user.user_id, dto.properties.mrid)
+                if (!own || !own.success) {
+                    throw new Error('Circuit Breaker was created but ownership could not be recorded')
+                }
+            }
+
+            return {
+                created: true,
+                dto,
+                appliedCount: mapped.applied.length,
+                unitMismatches: mapped.skipped,
+            }
+        },
+
+        async createTransformerAssetFromPtm(target, preview) {
+            const api = window.electronAPI
+            const dto = new TransformerDto()
+            dto.properties.mrid = preview.assetMrid
+            dto.psrId = target.mrid
+
+            const mapped = applyPtmToTransformerAssetDto(dto, preview.asset)
+            if (!str(dto.properties.serial_no).trim()) {
+                throw new Error(`The ${preview.sourceLabel || 'PTM'} file has no serial number — cannot create a new Transformer without one`)
+            }
+            if (!str(dto.properties.apparatus_id).trim()) {
+                dto.properties.apparatus_id = str(dto.properties.serial_no).trim() || `Transformer from ${preview.sourceLabel || 'PTM'}`
+            }
+
+            ensureTransformerDtoIds(dto)
+            const entity = TransformerMapper.transformerDtoToEntity(dto)
+            const rs = await api.insertTransformerEntity(new TransformerEntity(), entity)
+            if (!rs || !rs.success) {
+                throw new Error(`Could not create Transformer: ${(rs && rs.message) || 'unknown error'}`)
+            }
+
+            if (api.ensureUserOwnership) {
+                const ownership = await api.ensureUserOwnership(
+                    this.$store.state.user.user_id, dto.properties.mrid
+                )
+                if (!ownership || !ownership.success) {
+                    throw new Error('Transformer was created but ownership could not be recorded')
+                }
+            }
+
+            return {
+                created: true,
+                dto,
+                appliedCount: mapped.applied.length,
+                unitMismatches: mapped.skipped,
+            }
+        },
+
+        async applyPtmTransformerOverwrite(target, ptmAsset) {
+            const api = window.electronAPI
+            const existing = await api.getTransformerEntityByMrid(target.mrid, target.parentId)
+            if (!existing || !existing.success || !existing.data) {
+                throw new Error(`Could not read the existing Transformer: ${(existing && existing.message) || 'not found'}`)
+            }
+
+            const oldEntity = existing.data
+            const dto = TransformerMapper.transformerEntityToDto(oldEntity)
+            const mapped = applyPtmToTransformerAssetDto(dto, ptmAsset)
+            ensureTransformerDtoIds(dto)
+            const newEntity = TransformerMapper.transformerDtoToEntity(dto)
+            const rs = await api.insertTransformerEntity(oldEntity, newEntity)
+            if (!rs || !rs.success) {
+                throw new Error(`Could not update Transformer: ${(rs && rs.message) || 'unknown error'}`)
+            }
+
+            return {
+                created: false,
+                dto,
+                appliedCount: mapped.applied.length,
+                unitMismatches: mapped.skipped,
+            }
+        },
+
+        getSelectedPtmTimingAssessments(preview, mergeSummary) {
+            const imports = Array.isArray(preview.timingAssessmentImports)
+                ? preview.timingAssessmentImports
+                : []
+            if (!mergeSummary) return imports
+
+            const importedWorkTasks = mergeSummary.importedWorkTaskIdMap || {}
+            return imports.filter(item => Object.prototype.hasOwnProperty.call(
+                importedWorkTasks,
+                item.workTaskMrid
+            ))
+        },
+
+        async applyPtmTimingAssessments(target, preview, assetUpdate, imports) {
+            const api = window.electronAPI
+            let dto = assetUpdate && assetUpdate.dto ? assetUpdate.dto : null
+
+            if (!dto) {
+                const duplicate = ((this.ptmDup && this.ptmDup.inTarget) || [])[0] || {}
+                const psrId = target.mode === 'asset'
+                    ? target.parentId
+                    : (duplicate.psr_id || duplicate.parentId || target.mrid)
+                const existing = await api.getBreakerEntityByMrid(preview.assetMrid, psrId)
+                if (!existing || !existing.success || !existing.data) {
+                    throw new Error(
+                        `Could not read the Circuit Breaker assessment settings: ${(existing && existing.message) || 'not found'}`
+                    )
+                }
+                dto = CircuitBreakerMapper.mapEntityToDto(existing.data)
+            }
+
+            let appliedCount = 0
+            const appliedPaths = []
+            for (const item of imports) {
+                const merged = applyPtmTimingAssessment(dto.assessmentLimits, item.assessment)
+                appliedCount += merged.appliedCount
+                appliedPaths.push(...merged.appliedPaths)
+            }
+            if (appliedCount === 0) return { appliedCount, appliedPaths }
+
+            ensureCircuitBreakerDtoIds(dto)
+            const result = await api.updateTimingAssessmentLimits({
+                assetId: preview.assetMrid,
+                assessmentLimits: dto.assessmentLimits,
+            })
+            if (!result || !result.success) {
+                throw new Error(
+                    `Could not save O Timing assessment settings: ${(result && result.message) || 'unknown error'}`
+                )
+            }
+            return { appliedCount, appliedPaths }
+        },
+
+        async applyPtmCircuitBreakerOverwrite(target, preview) {
+            const api = window.electronAPI
+            const existing = await api.getBreakerEntityByMrid(target.mrid, target.parentId)
+            if (!existing || !existing.success || !existing.data) {
+                throw new Error(`Could not read the existing Circuit Breaker: ${(existing && existing.message) || 'not found'}`)
+            }
+
+            const oldEntity = existing.data
+            const dto = CircuitBreakerMapper.mapEntityToDto(oldEntity)
+            const mapped = applyPtmToCircuitBreakerAssetDto(
+                dto,
+                preview.asset,
+                preview.operatingMechanism
+            )
+            ensureCircuitBreakerDtoIds(dto)
+            const newEntity = CircuitBreakerMapper.mapDtoToEntity(dto)
+            const rs = await api.insertBreakerEntity(oldEntity, newEntity)
+            if (!rs || !rs.success) {
+                throw new Error(`Could not update Circuit Breaker: ${(rs && rs.message) || 'unknown error'}`)
+            }
+
+            return {
+                created: false,
+                dto,
+                appliedCount: mapped.applied.length,
+                unitMismatches: mapped.skipped,
             }
         },
 
@@ -574,6 +980,7 @@ export default {
                 dto.ctConfiguration = preview.coreConfig.config
             }
 
+            ensureCurrentTransformerDtoIds(dto)
             const entity = CurrentTransformerMapper.mapDtoToEntity(dto)
             const empty = this.buildEmptyOldEntity(entity)
             const rs = await api.insertCurrentTransformerEntity(empty, entity)
@@ -692,12 +1099,15 @@ export default {
             const finalTests = Array.isArray(dto.testList) ? dto.testList : []
             const originalExistingTests = finalTests.slice()
             const importedRowIds = []
+            const importedWorkTaskIdMap = {}
             let importedCount = 0
 
             importedTests.forEach((importedTest, importIndex) => {
+                const sourceWorkTaskMrid = importedTest.mrid
                 const matches = originalExistingTests.filter(test => test.testTypeCode === importedTest.testTypeCode)
                 if (matches.length === 0) {
                     finalTests.push(importedTest)
+                    importedWorkTaskIdMap[sourceWorkTaskMrid] = importedTest.mrid
                     importedRowIds.push(...this.collectPtmTestRowIds(importedTest))
                     importedCount += 1
                     return
@@ -706,6 +1116,7 @@ export default {
                 const decision = decisionMap[importIndex] || { action: 'keep' }
                 if (decision.action === 'duplicate') {
                     finalTests.push(importedTest)
+                    importedWorkTaskIdMap[sourceWorkTaskMrid] = importedTest.mrid
                     importedRowIds.push(...this.collectPtmTestRowIds(importedTest))
                     importedCount += 1
                     return
@@ -718,6 +1129,7 @@ export default {
                 // Work-task MRID là định danh của hạng mục test. Giữ nó để đây là update,
                 // còn dataset/value từ PTM có MRID mới và sẽ thay dữ liệu cũ trong transaction.
                 importedTest.mrid = target.mrid
+                importedWorkTaskIdMap[sourceWorkTaskMrid] = target.mrid
                 finalTests.splice(targetIndex, 1, importedTest)
                 importedRowIds.push(...this.collectPtmTestRowIds(importedTest))
                 importedCount += 1
@@ -729,10 +1141,27 @@ export default {
                 dto,
                 importedCount,
                 importedRowIds: new Set(importedRowIds),
+                importedWorkTaskIdMap,
+                finalWorkTaskIds: new Set(finalTests.map(test => test.mrid).filter(Boolean)),
                 finalRowIds: new Set(finalTests.reduce((ids, test) => {
                     return ids.concat(this.collectPtmTestRowIds(test))
                 }, [])),
             }
+        },
+
+        /** Keep the procedure-to-asset links in step with the final test list. */
+        ensurePtmProcedureAssets(dto, assetMrid) {
+            const links = Array.isArray(dto.procedureAsset) ? dto.procedureAsset : []
+            const linked = new Set(links.map(item => item && item.procedure_id).filter(Boolean))
+            for (const test of dto.testList || []) {
+                if (!test.testTypeId || linked.has(test.testTypeId)) continue
+                links.push({
+                    procedure_id: test.testTypeId,
+                    asset_id: assetMrid,
+                })
+                linked.add(test.testTypeId)
+            }
+            dto.procedureAsset = links
         },
 
         mergePtmPointMaps(existingMap, importedMap, finalRowIds, importedRowIds) {
@@ -751,6 +1180,29 @@ export default {
             for (const rowMrid of Object.keys(pointMap || {})) {
                 if (allowedRowIds.has(rowMrid)) out[rowMrid] = pointMap[rowMrid]
             }
+            return out
+        },
+
+        mergePtmWorkTaskMaps(existingMap, importedMap, finalWorkTaskIds, importedIdMap) {
+            const out = {}
+            Object.keys(existingMap || {}).forEach(workTaskMrid => {
+                if (finalWorkTaskIds.has(workTaskMrid)) out[workTaskMrid] = existingMap[workTaskMrid]
+            })
+            Object.keys(importedIdMap || {}).forEach(sourceMrid => {
+                const targetMrid = importedIdMap[sourceMrid]
+                if (targetMrid && Array.isArray(importedMap[sourceMrid])) {
+                    out[targetMrid] = importedMap[sourceMrid]
+                }
+            })
+            return out
+        },
+
+        filterPtmWorkTaskMap(workTaskMap, allowedIds) {
+            const allowed = new Set(allowedIds || [])
+            const out = {}
+            Object.keys(workTaskMap || {}).forEach(workTaskMrid => {
+                if (allowed.has(workTaskMrid)) out[workTaskMrid] = workTaskMap[workTaskMrid]
+            })
             return out
         },
     },

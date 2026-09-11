@@ -8,6 +8,7 @@ class Bay extends EquipmentContainer {
         this.breaker_configuration = null // e.g., "kilo", "mega" for scaling the value
         this.bus_bar_configuration = null // e.g., "kilo", "mega" for scaling the value
         this.substation = null // e.g., "kilo", "mega" for scaling the value
+        this.power_plant = null
         this.voltage_level = null // e.g., "kilo", "mega" for scaling the value
     }
 }

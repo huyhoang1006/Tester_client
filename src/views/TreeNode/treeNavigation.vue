@@ -32,7 +32,8 @@
                 @double-click-node="doubleClickNode" @fetch-children="fetchChildren"
                 @show-properties="showPropertiesDataClient" @update-selection="updateSelection"
                 @clear-selection="clearSelection" @delete-data="handleDeleteFromContextMenu"
-                @show-addSubsInTree="showAddSubsInTree" @show-addOrganisation="showAddOrganisation"
+                @show-addSubsInTree="showAddSubsInTree" @show-addPowerPlant="showAddPowerPlant"
+                @show-addOrganisation="showAddOrganisation"
                 @show-addVoltageLevel="showAddVoltageLevel" @show-addTransformer="showAddTransformer"
                 @show-addJob="showAddJob" @show-addBushing="showAddBushing"
                 @show-addSurgeArrester="showAddSurgeArrester" @show-addCircuit="showAddCircuitBreaker"
@@ -51,6 +52,7 @@
                 @show-equipment="handleShowEquipment"
                 @import-excel="handleImportExcelFromContext" @import-word="handleImportWordFromContext"
                 @import-ptm="handleImportPtmFromContext"
+                @import-cpxpert="handleImportCpxpertFromContext"
                 @export-json-only-node="handleExportJsonOnlyNodeFromContext"
                 @export-json-full-tree="handleExportJsonFullTreeFromContext"
                 @show-data="showDataClient" @refresh-node="handleRefreshNode" />
@@ -69,7 +71,8 @@
                 @download-full-tree="handleDownloadFullTreeFromContext"
                 @fmeca-node="handleFmecaFromContext"
                 @delete-data="handleDeleteFromContextMenu"
-                @show-addSubsInTree="showAddSubsInTree" @show-addOrganisation="showAddOrganisation"
+                @show-addSubsInTree="showAddSubsInTree" @show-addPowerPlant="showAddPowerPlant"
+                @show-addOrganisation="showAddOrganisation"
                 @show-addVoltageLevel="showAddVoltageLevel" @show-addBay="showAddBay"
                 @show-addTransformer="showAddTransformer" @show-addBushing="showAddBushing"
                 @show-addSurgeArrester="showAddSurgeArrester" @show-addCircuit="showAddCircuitBreaker"
@@ -148,6 +151,13 @@
             :parentOrganization="parentOrganization" :personList="personList" :locationList="locationList"
             :organisationId="organisationId" :isSaving="isSaving" @close="handleSubsCancel" @cancel="handleSubsCancel"
             @confirm="handleSubsConfirm" />
+
+        <SubstationDialog ref="powerPlantDialog" :visible="signPowerPlant"
+            @update:visible="signPowerPlant = $event" :dialogTitle="powerPlantDialogTitle"
+            formVariant="powerPlant" :plantType="selectedPowerPlantType"
+            :parentOrganization="parentOrganization" :personList="personList" :locationList="locationList"
+            :organisationId="organisationId" :isSaving="isSaving" @close="closePowerPlantDialog"
+            @cancel="closePowerPlantDialog" @confirm="handlePowerPlantConfirm" />
 
         <OrganisationDialog ref="organisationDialog" :visible="signOrg" @update:visible="signOrg = $event"
             :parentOrganization="parentOrganization" :isSaving="isSaving" @close="handleOrgCancel" @cancel="handleOrgCancel"
@@ -547,6 +557,8 @@ export default {
             testTypeListData: [],
             organisationClientList: [],
             signSubs: false,
+            signPowerPlant: false,
+            selectedPowerPlantType: '',
             signOrg: false,
             signVoltageLevel: false,
             signBay: false,
@@ -722,6 +734,11 @@ export default {
         }
     },
     computed: {
+        powerPlantDialogTitle() {
+            return this.selectedPowerPlantType
+                ? `Add ${this.selectedPowerPlantType}`
+                : 'Add Power Plant'
+        },
         opResultSummary() {
             const rows = this.opResults || []
             const ok = rows.filter(r => r.status === 'success').length
@@ -916,6 +933,87 @@ export default {
         }
     },
     methods: {
+        async showAddPowerPlant(payload) {
+            const parentNode = payload && payload.parentNode ? payload.parentNode : null
+            if (!parentNode) return
+
+            this.parentOrganization = parentNode
+            this.selectedPowerPlantType = payload.plantType || ''
+            this.organisationId = String(parentNode.mrid || parentNode.id || '')
+            this.locationList = []
+            this.personList = []
+
+            if (this.clientSlide && parentNode.mrid) {
+                try {
+                    const [locationResult, personResult] = await Promise.all([
+                        window.electronAPI.getLocationByOrganisationId(parentNode.mrid),
+                        window.electronAPI.getPersonByOrganisationId(parentNode.mrid)
+                    ])
+                    this.locationList = locationResult && locationResult.success ? locationResult.data : []
+                    this.personList = personResult && personResult.success ? personResult.data : []
+                } catch (error) {
+                    console.error('Failed to prepare Power Plant form:', error)
+                }
+            }
+
+            this.signPowerPlant = true
+            this.$nextTick(() => {
+                const dialog = this.$refs.powerPlantDialog
+                const form = dialog && dialog.getComponentRef ? dialog.getComponentRef() : null
+                if (form && typeof form.resetForm === 'function') form.resetForm()
+                if (form && typeof form.resetPowerPlantCapacity === 'function') form.resetPowerPlantCapacity()
+            })
+        },
+        closePowerPlantDialog() {
+            this.signPowerPlant = false
+            this.selectedPowerPlantType = ''
+        },
+        async handlePowerPlantConfirm() {
+            if (this.isSaving) return
+            if (!this.clientSlide) {
+                this.$message.warning('Power Plant server creation is not supported yet')
+                return
+            }
+
+            const dialog = this.$refs.powerPlantDialog
+            const form = dialog && dialog.getComponentRef ? dialog.getComponentRef() : null
+            if (!form) return
+
+            this.isSaving = true
+            const loading = startLoading(this, { action: 'add', type: 'default' })
+            try {
+                const result = await form.savePowerPlant()
+                if (!result || !result.success) return
+
+                const plant = result.data.powerPlant
+                const newRow = {
+                    mrid: plant.mrid,
+                    name: plant.name || 'Unnamed Power Plant',
+                    aliasName: plant.alias_name || plant.name || '',
+                    parentId: this.parentOrganization.mrid,
+                    parentName: this.parentOrganization.name,
+                    parentArr: [...(this.parentOrganization.parentArr || [])],
+                    mode: 'powerPlant',
+                    plantType: plant.plant_type || this.selectedPowerPlantType,
+                    children: []
+                }
+                const parent = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
+                if (parent) {
+                    const children = Array.isArray(parent.children) ? parent.children : []
+                    this.$set(parent, 'children', [...children, newRow])
+                }
+                await this.markSavedExistingResultDirtyIfChanged(result)
+                this.$message.success('Power Plant saved successfully')
+                this.closePowerPlantDialog()
+                form.resetForm()
+            } catch (error) {
+                console.error('Failed to save Power Plant:', error)
+                this.$message.error(error.message || 'Failed to save Power Plant')
+            } finally {
+                await loading.close()
+                this.isSaving = false
+            }
+        },
         /**
          * Bảng Compare mở/đóng → tự ẩn/hiện panel Object Properties.
          *

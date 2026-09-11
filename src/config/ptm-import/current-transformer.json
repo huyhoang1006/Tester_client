@@ -49,7 +49,52 @@
     },
     "plain": {
       "_doc": "Trường không có đơn vị, gán thẳng.",
-      "ratings.rating_factor": { "from": "Rf" }
+      "ratings.rating_factor": { "from": "Rf" },
+      "ratings.standard": { "from": "Standard" },
+      "properties.type": { "from": "AssetType" },
+      "config.number_of_phase": { "from": "NumberOfPhases" },
+      "config.phase": { "from": "Phase" }
+    }
+  },
+
+  "CTRatio": {
+    "ptmType": "CTRatioVoltageTest",
+    "ptmName": "CT ratio",
+    "reader": "ctRatio",
+    "rowName": {
+      "from": ["firstTapName", "secondTapName"],
+      "join": " - "
+    },
+    "columns": {
+      "ratio_meas": { "from": "ratio", "factor": 1 }
+    },
+    "plainColumns": {
+      "polarity": {
+        "from": "polarity",
+        "map": { "correct": "Correct", "incorrect": "Incorrect" }
+      }
+    },
+    "assessment": {
+      "from": "assessment",
+      "map": { "Pass": "Pass", "Fail": "Fail", "": "" }
+    }
+  },
+
+  "CTWindingRes": {
+    "ptmType": "CTWindingResistanceTest",
+    "ptmName": "CT Winding resistance",
+    "reader": "ctWindingResistance",
+    "rowName": {
+      "from": ["firstTapName", "secondTapName"],
+      "join": " - "
+    },
+    "columns": {
+      "r_meas": { "from": "resistance", "unit": "Ω", "factor": 1 },
+      "r_corr": { "from": "resistanceCorrected", "unit": "Ω", "factor": 1 }
+    },
+    "assessment": {
+      "from": "assessment",
+      "map": { "Pass": "Pass", "Fail": "Fail", "": "" }
     }
   },
 

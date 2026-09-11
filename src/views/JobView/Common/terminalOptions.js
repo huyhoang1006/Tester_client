@@ -156,12 +156,20 @@ export const PHASE_COLORS = {
 
 export const buildPhaseTerminals = () => [...PHASE_TERMINALS]
 
+// Circuit breaker insulation resistance uses phase terminals and earth only.
+// `Base` belongs to surge arrester / power cable measurements, so keep it out
+// of this list even though all three screens share the same selector UI.
+export const CIRCUIT_BREAKER_TERMINALS = ['A', 'B', 'C', 'GND']
+export const buildCircuitBreakerTerminals = () => [...CIRCUIT_BREAKER_TERMINALS]
+
 export default {
     buildCurrentTransformerTerminals,
     buildVoltageTransformerTerminals,
     defaultVtWindingName,
     renameVtWinding,
     buildPhaseTerminals,
+    buildCircuitBreakerTerminals,
     PHASE_TERMINALS,
     PHASE_COLORS,
+    CIRCUIT_BREAKER_TERMINALS,
 }

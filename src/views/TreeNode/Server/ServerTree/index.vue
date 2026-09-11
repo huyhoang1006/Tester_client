@@ -26,6 +26,7 @@
                 @fmeca-node="$emit('fmeca-node', $event)"
                 @delete-data="$emit('delete-data', $event)"
                 @show-addSubsInTree="$emit('show-addSubsInTree', $event)"
+                @show-addPowerPlant="$emit('show-addPowerPlant', $event)"
                 @show-addOrganisation="$emit('show-addOrganisation', $event)"
                 @show-addVoltageLevel="$emit('show-addVoltageLevel', $event)"
                 @show-addBay="$emit('show-addBay', $event)"

@@ -14,6 +14,7 @@ class VoltageLevelDto {
         this.name = ''
         this.comment = ''
         this.substationId = ''
+        this.powerPlantId = ''
         this.baseVoltageId = ''
         this.voltageLevelId = ''
         this.highVoltageLimitId = ''

@@ -8,6 +8,8 @@ export default {
     },
     beforeDestroy() {
         window.removeEventListener('sync-state-changed', this.handleSyncStateChanged)
+        if (this._syncStateRefreshTimer) clearTimeout(this._syncStateRefreshTimer)
+        this._syncStateRefreshTimer = null
     },
     methods: {
         getSyncNodeMrid(node) {
@@ -96,6 +98,7 @@ export default {
             if (!data || typeof data !== 'object') return null
             const directKeys = [
                 'asset', 'organisation', 'substation', 'voltageLevel', 'bay', 'oldWork',
+                'powerPlant',
                 'voltageTransformer', 'currentTransformer', 'circuitBreaker', 'breaker',
                 'transformer', 'bushing', 'surgeArrester', 'disconnector', 'powerCable',
                 'capacitor', 'reactor', 'rotatingMachine'
@@ -113,37 +116,49 @@ export default {
             if (!result || result.changed !== true || !this.clientSlide) return
 
             const mrid = this.extractSavedSyncMrid(result.data)
-            if (!mrid || !window.electronAPI || !window.electronAPI.getSyncStateByMrid) return
-
-            const stateResponse = await window.electronAPI.getSyncStateByMrid(mrid)
-            if (!stateResponse || !stateResponse.success || !stateResponse.data) {
-                const looksLikeServerId = /^\d+$/.test(String(mrid))
-                if (!looksLikeServerId) return
-            }
+            if (!mrid || !window.electronAPI || !window.electronAPI.markNodeDirty) return
 
             const node = this.findNodeByIdOrMrid
                 ? this.findNodeByIdOrMrid(mrid, this.organisationClientList || [])
                 : null
-            const nodeType = this.getSyncNodeType(node) || (stateResponse.data && stateResponse.data.node_type) || ''
+            const nodeType = this.getSyncNodeType(node) || this.extractSavedSyncNodeType(result.data) || 'Object'
 
             await window.electronAPI.markNodeDirty(mrid, nodeType)
             this.updateTreeNodeSyncState(mrid, 'dirty')
+            this.scheduleSyncStateRefresh()
+        },
+
+        extractSavedSyncNodeType(data) {
+            if (!data || typeof data !== 'object') return ''
+            if (data.oldWork || data.job) return 'Job'
+            if (data.organisation) return 'organisation'
+            if (data.substation) return 'substation'
+            if (data.powerPlant) return 'powerPlant'
+            if (data.voltageLevel) return 'voltageLevel'
+            if (data.bay) return 'bay'
+            if (data.asset) return 'Asset'
+            return ''
+        },
+
+        scheduleSyncStateRefresh() {
+            if (this._syncStateRefreshTimer) clearTimeout(this._syncStateRefreshTimer)
+            this._syncStateRefreshTimer = setTimeout(async () => {
+                this._syncStateRefreshTimer = null
+                await this.applySyncStatesToTree(this.organisationClientList || [])
+            }, 0)
         },
 
         async handleSyncStateChanged(event) {
             const detail = event && event.detail ? event.detail : (event || {})
             if (!detail.mrid || !detail.status) return
-            if (detail.existingOnly && window.electronAPI && window.electronAPI.getSyncStateByMrid) {
-                const stateResponse = await window.electronAPI.getSyncStateByMrid(detail.mrid)
-                if (!stateResponse || !stateResponse.success || !stateResponse.data) {
-                    const looksLikeServerId = /^\d+$/.test(String(detail.mrid))
-                    if (!looksLikeServerId || detail.status !== 'dirty' || !window.electronAPI.markNodeDirty) return
-
-                    const node = this.findNodeByIdOrMrid
-                        ? this.findNodeByIdOrMrid(detail.mrid, this.organisationClientList || [])
-                        : null
-                    await window.electronAPI.markNodeDirty(detail.mrid, this.getSyncNodeType(node))
-                }
+            if (detail.status === 'dirty' && window.electronAPI && window.electronAPI.markNodeDirty) {
+                const node = this.findNodeByIdOrMrid
+                    ? this.findNodeByIdOrMrid(detail.mrid, this.organisationClientList || [])
+                    : null
+                await window.electronAPI.markNodeDirty(
+                    detail.mrid,
+                    this.getSyncNodeType(node) || detail.nodeType || 'Object'
+                )
             }
             this.updateTreeNodeSyncState(detail.mrid, detail.status, detail)
         }

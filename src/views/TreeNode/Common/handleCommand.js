@@ -31,6 +31,8 @@ export default {
                 // PTM: đọc file → XEM TRƯỚC trong dialog → mới ghi. Khác JSON vì file .ptm
                 // luôn kèm thiết bị, nên phải đối chiếu trùng và hỏi trước khi đụng CSDL.
                 this.handleImportPtmFromContext()
+            } else if (cmd === 'importCPXpert') {
+                this.handleImportCpxpertFromContext()
             }
         },
 

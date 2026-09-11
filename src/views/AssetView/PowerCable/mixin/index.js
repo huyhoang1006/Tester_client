@@ -3,6 +3,7 @@ import PowerCableDto from "@/views/Dto/PowerCable"
 import * as powerCableMapping from "@/views/Mapping/PowerCable/index"
 import uuid from "@/utils/uuid";
 import { ensureUniqueAssetBeforeSave } from "@/views/AssetView/mixin/assetDuplicateGuard";
+import { getMissingPowerCableAccessoryFields } from './accessoryValidation';
 export default {
     data() {
         return {
@@ -16,6 +17,12 @@ export default {
             try {
                 if (this.powerCable.properties.serial_no !== null && this.powerCable.properties.serial_no !== '') {
                     const data = JSON.parse(JSON.stringify(this.powerCable));
+                    const missingAccessoryFields = getMissingPowerCableAccessoryFields(data);
+                    if (missingAccessoryFields.length > 0) {
+                        this.switch = 'assessories';
+                        this.$message.error(`Please complete required accessories fields: ${missingAccessoryFields.join(', ')}`);
+                        return { success: false, validation: true };
+                    }
                     if (!(await ensureUniqueAssetBeforeSave(this, data))) return { success: false, duplicate: true };
                     const result = await this.checkPowerCableData(data);
                     const resultEntity = powerCableMapping.mapDtoToEntity(result);
@@ -56,7 +63,7 @@ export default {
             console.log('[POWER_CABLE] saveCtrS called')
             const data = await this.saveAsset()
             console.log('[POWER_CABLE] saveAsset result:', data)
-            if (data && data.duplicate) return
+            if (data && (data.duplicate || data.validation)) return
             if (data.success) {
                 if (data.data) {
                     const dto = powerCableMapping.mapEntityToDto(data.data)

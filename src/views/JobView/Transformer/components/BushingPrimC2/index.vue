@@ -15,6 +15,12 @@
             </div>
         </div>
 
+        <WindingDfCapCharts
+            :table="testData.table"
+            :compare-open="compareOpen"
+            :comparison-snapshot="comparisonSnapshot"
+            show-reference-values />
+
         <div class="table-scroll">
         <table class="table-strip-input-data test-table">
             <thead>
@@ -300,10 +306,11 @@ import transformerTestMap from '@/config/test-definitions/Transformer'
 import * as common from '../../../Common/index.js'
 import GroupNode from '../../../Common/GroupNode.vue'
 import { changeTestStandard } from '../../../Common'
+import WindingDfCapCharts from '../WindingDfCap/WindingDfCapCharts.vue'
 
 export default {
     name: "BushingPrimC2",
-    components: { GroupNode },
+    components: { GroupNode, WindingDfCapCharts },
     data() {
         return {
             openAssessmentDialog: false,
@@ -316,7 +323,8 @@ export default {
         asset:          { type: Object, require: true },
         testAssessment: { type: Object, require: true },
         testCondition:  { type: Object, default: function() { return { condition: {} } } },
-        compareOpen:    { type: Boolean, default: false }
+        compareOpen:    { type: Boolean, default: false },
+        comparisonSnapshot: { type: Object, default: null }
     },
     computed: {
         testData()     { return this.data },

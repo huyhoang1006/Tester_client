@@ -14,8 +14,16 @@
                 <el-button size="mini" :type="compareOpen ? 'primary' : ''" @click="$emit('toggle-compare')">
                     <i class="fa-solid fa-scale-balanced"></i> Compare with previous results
                 </el-button>
+                <el-button size="mini" :loading="timingTraceLoading" @click="openTimingTraceData">
+                    <i class="fa-solid fa-chart-line"></i> Timing traces
+                </el-button>
             </div>
         </div>
+
+        <el-dialog class="timing-trace-dialog" title="O Timing traces" :visible.sync="showTimingTraces"
+            width="min(1240px, 96vw)" top="3vh" append-to-body destroy-on-close>
+            <TimingTraceChart v-if="showTimingTraces" :traces="timingTraces" />
+        </el-dialog>
 
         <div
             v-if="testData && testData.table && Object.keys(testData.table).length > 0 && getInterruptersPerPhase() === 1">
@@ -223,6 +231,67 @@
                 </table>
             </transition>
 
+                </div>
+            </div>
+
+            <!-- Contact travel -->
+            <div class="cb-assessment-card">
+                <div class="cb-assessment-card-header"><i class="fa-solid fa-caret-up"></i> Contact travel</div>
+                <div class="cb-assessment-card-body">
+                    <transition>
+                        <table class="table-strip-input-data" v-if="testData.limits === 'Absolute'">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Minimum</th>
+                                    <th>Maximum</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(item, index) in contactTravel" :key="index">
+                                    <td>{{ item }}</td>
+                                    <td>
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="asset_.contactTravel.abs[index].min">
+                                            <template slot="append">mm</template>
+                                        </el-input>
+                                    </td>
+                                    <td>
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="asset_.contactTravel.abs[index].max">
+                                            <template slot="append">mm</template>
+                                        </el-input>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table class="table-strip-input-data" v-if="testData.limits === 'Relative'">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Reference</th>
+                                    <th>Deviation</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(item, index) in contactTravel" :key="index">
+                                    <td>{{ item }}</td>
+                                    <td>
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="asset_.contactTravel.rel[index].ref">
+                                            <template slot="append">mm</template>
+                                        </el-input>
+                                    </td>
+                                    <td>
+                                        <el-input size="mini" type="text" number="positive"
+                                            v-model="asset_.contactTravel.rel[index].dev">
+                                            <template slot="append">mm</template>
+                                        </el-input>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </transition>
                 </div>
             </div>
 
@@ -464,17 +533,26 @@
 <script>
 import * as common from '../../Common/index.js'
 import timingMixin from './timingMixin'
+import TimingTraceChart from './TimingTraceChart.vue'
 export default {
     mixins: [timingMixin],
     name: "OTiming",
+    components: { TimingTraceChart },
     data() {
         return {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
+            showTimingTraces: false,
+            timingTraceLoading: false,
+            timingTraces: [],
             asset_: {
                 openTime: {
                     abs: Array(9).fill(null).map(() => ({ tmin: '', tmax: '', mrid: '' })),
                     rel: Array(9).fill(null).map(() => ({ rref: '', tdevZ: '', tdevN: '', mrid: '' }))
+                },
+                contactTravel: {
+                    abs: Array(8).fill(null).map(() => ({ min: '', max: '', mrid: '' })),
+                    rel: Array(8).fill(null).map(() => ({ ref: '', dev: '', mrid: '' }))
                 },
                 auxContact: {
                     abs: {
@@ -507,6 +585,16 @@ export default {
                 'Reclosing time',
                 'Open-Close time',
                 'Close-Open time'
+            ],
+            contactTravel: [
+                'Total travel, TT',
+                'Over travel (Trip), OT',
+                'Over travel (Close), OT',
+                'Rebound (Trip), RB',
+                'Rebound (Close), RB',
+                'Contact wipe (Trip), CW',
+                'Contact wipe (Close), CW',
+                'Damping distance'
             ],
             Auxiliary_contact: [
                 'Switching time (a-type),t',
@@ -552,7 +640,8 @@ export default {
             type: Object,
             require: true
         },
-        compareOpen:    { type: Boolean, default: false }
+        compareOpen: { type: Boolean, default: false },
+        workTaskId: { type: String, default: '' }
     },
     computed: {
         testData() {
@@ -695,6 +784,30 @@ export default {
         }
     },
     methods: {
+        async openTimingTraceData() {
+            if (this.timingTraceLoading) return
+            if (!this.workTaskId || !window.electronAPI.getCbTimingTracesByWorkTaskId) {
+                this.$message.warning('Timing traces are only available for results imported from PTM (OMICRON)')
+                return
+            }
+            this.timingTraceLoading = true
+            try {
+                const response = await window.electronAPI.getCbTimingTracesByWorkTaskId(this.workTaskId)
+                const traces = response && response.success && Array.isArray(response.data)
+                    ? response.data
+                    : []
+                if (traces.length === 0) {
+                    this.$message.warning('Timing traces are only available for results imported from PTM (OMICRON)')
+                    return
+                }
+                this.timingTraces = traces
+                this.showTimingTraces = true
+            } catch (error) {
+                this.$message.error('Could not load O Timing traces')
+            } finally {
+                this.timingTraceLoading = false
+            }
+        },
         getInterruptersPerPhase() {
             if (this.assetData && this.assetData.circuitBreaker) {
                 const value = this.assetData.circuitBreaker.interruptersPerPhase ||
@@ -807,6 +920,51 @@ export default {
                         ? normalized.openTime.rel[index]
                         : { rref: '', tdevZ: '', tdevN: '', mrid: '' }
                 )
+            }
+
+            // Normalize contactTravel from contact_travel structure
+            if (data.contact_travel) {
+                const contactTravel = data.contact_travel
+                const contactTravelMapping = [
+                    'total_travel',
+                    'over_travel_trip',
+                    'over_travel_close',
+                    'rebound_trip',
+                    'rebound_close',
+                    'contact_wipe_trip',
+                    'contact_wipe_close',
+                    'damping_distance'
+                ]
+                normalized.contactTravel = {
+                    abs: Array(8).fill(null).map(() => ({ min: '', max: '', mrid: '' })),
+                    rel: Array(8).fill(null).map(() => ({ ref: '', dev: '', mrid: '' }))
+                }
+
+                contactTravelMapping.forEach((key, index) => {
+                    const abs = contactTravel.abs && contactTravel.abs[key]
+                    const rel = contactTravel.rel && contactTravel.rel[key]
+                    if (abs) {
+                        normalized.contactTravel.abs[index] = {
+                            min: getValue(abs.d_min) || '',
+                            max: getValue(abs.d_max) || '',
+                            mrid: abs.mrid || ''
+                        }
+                    }
+                    if (rel) {
+                        normalized.contactTravel.rel[index] = {
+                            ref: getValue(rel.d_ref) || '',
+                            dev: getValue(rel.d_dev) || '',
+                            mrid: rel.mrid || ''
+                        }
+                    }
+                })
+            } else if (data.contactTravel) {
+                normalized.contactTravel = JSON.parse(JSON.stringify(data.contactTravel))
+            } else if (!normalized.contactTravel) {
+                normalized.contactTravel = {
+                    abs: Array(8).fill(null).map(() => ({ min: '', max: '', mrid: '' })),
+                    rel: Array(8).fill(null).map(() => ({ ref: '', dev: '', mrid: '' }))
+                }
             }
 
             // Normalize auxContact from auxiliary_contacts structure
@@ -1039,6 +1197,22 @@ export default {
                         ensureStringValue(item, 'rref')
                         ensureStringValue(item, 'tdevZ')
                         ensureStringValue(item, 'tdevN')
+                    }
+                })
+            }
+
+            // Normalize contactTravel values
+            if (normalized.contactTravel) {
+                normalized.contactTravel.abs.forEach(item => {
+                    if (item) {
+                        ensureStringValue(item, 'min')
+                        ensureStringValue(item, 'max')
+                    }
+                })
+                normalized.contactTravel.rel.forEach(item => {
+                    if (item) {
+                        ensureStringValue(item, 'ref')
+                        ensureStringValue(item, 'dev')
                     }
                 })
             }

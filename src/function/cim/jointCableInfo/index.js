@@ -1,4 +1,5 @@
 import db from '../../datacontext/index'
+import * as AssetFunc from '../asset'
 /**
  * Get JointCableInfo by mrid
  */
@@ -19,7 +20,7 @@ export const getJointCableInfoById = async (mrid) => {
 export const getJointCableInfoByCableInfoId = async (cableInfoId) => {
     try {
         return new Promise((resolve, reject) => {
-            db.get("SELECT * FROM joint_cable_info WHERE cable_info_id=?", [cableInfoId], (err, row) => {
+            db.get("SELECT * FROM joint_cable_info WHERE cable_info_id=? ORDER BY rowid DESC LIMIT 1", [cableInfoId], (err, row) => {
                 if (err) return reject({ success: false, err, message: 'Get joint cable info by cable info id failed' })
                 if (!row) return resolve({ success: false, data: null, message: 'Joint cable info not found' })
                 return resolve({ success: true, data: row, message: 'Get joint cable info by cable info id completed' })
@@ -84,7 +85,7 @@ export const insertJointCableInfo = async (joint) => {
 
 
 export const insertJointCableInfoTransaction = async (joint, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
         try {
             // Insert joint cable info
             dbsql.run(

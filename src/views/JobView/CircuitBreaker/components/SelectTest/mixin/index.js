@@ -43,6 +43,10 @@ export default {
                 case 'ContactResistance':
                     data = await this.initContactResistance(testTypeCode, assetData)
                     break
+                case 'ODynamicContactResistance':
+                case 'CDynamicContactResistance':
+                    data = await this.initDynamicContactResistance(testTypeCode, assetData)
+                    break
                 case 'MinimumPickup':
                     data = await this.initMinimumPickup(testTypeCode)
                     break
@@ -610,6 +614,39 @@ export default {
                 table: {
                     table1: table1
                 }
+            }
+        },
+        async initDynamicContactResistance(testTypeCode, assetData) {
+            const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
+            const conditionDefinition = circuitBreakerConditionMap[testTypeCode]
+            const rowDataExampleCondition = common.buildEmptyTestCondition(
+                (conditionDefinition && conditionDefinition.columns) || []
+            )
+            const breaker = (assetData && assetData.circuitBreaker) || {}
+            const phaseCount = parseInt(
+                breaker.numberOfPhases || breaker.numberOfPhase || breaker.number_of_phases || 3,
+                10
+            )
+            const interrupterCount = parseInt(
+                breaker.interruptersPerPhase || breaker.numberOfInterruptPhase ||
+                breaker.number_of_interrupt_phase || 1,
+                10
+            )
+            const phases = ['A', 'B', 'C']
+            const rows = []
+
+            for (let phaseIndex = 0; phaseIndex < Math.max(1, phaseCount); phaseIndex += 1) {
+                for (let interrupterIndex = 0; interrupterIndex < Math.max(1, interrupterCount); interrupterIndex += 1) {
+                    const row = JSON.parse(JSON.stringify(rowDataExample))
+                    if (row.phase) row.phase.value = phases[phaseIndex] || `P${phaseIndex + 1}`
+                    if (row.interrupter) row.interrupter.value = String(interrupterIndex + 1)
+                    rows.push(row)
+                }
+            }
+
+            return {
+                rowDataExampleCondition,
+                table: { table1: rows }
             }
         },
         async initMinimumPickup(testTypeCode) {

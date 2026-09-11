@@ -8,6 +8,7 @@ class VoltageLevel extends EquipmentContainer {
         this.low_voltage_limit = null // Numerical value of the voltage
         this.base_voltage = null // e.g., "kilo", "mega" for scaling the value
         this.substation = null // e.g., "kilo", "mega" for scaling the value
+        this.power_plant = null
     }
 }
 

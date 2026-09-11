@@ -203,6 +203,18 @@ export default {
         referenceValueMapping() {
             return resolveReferenceValueMapping(this.assetKind, this.testCode)
         },
+        excludedCompareFields() {
+            const fields = this.referenceValueMapping ? this.referenceValueMapping.fields : []
+            const excluded = (fields || []).map(field => field.target).filter(Boolean)
+            const dfCapSweepTests = [
+                'WindingDfCap',
+                'BushingPrimC1', 'BushingPrimC2',
+                'BushingSecC1', 'BushingSecC2',
+                'BushingTertC1', 'BushingTertC2'
+            ]
+            if (dfCapSweepTests.includes(this.testCode)) excluded.push('frequency')
+            return excluded
+        },
         supportsReferenceValueApply() {
             return !!this.referenceValueMapping
         },
@@ -282,6 +294,7 @@ export default {
             this.options = []
             this.referenceRowCount = 0
             this.referenceSnapshot = null
+            this.$emit('reference-change', null)
             if (!window.electronAPI || !window.electronAPI.getComparableTests) return
             if (!this.assetMrid || !this.testCode) return
             try {
@@ -317,6 +330,7 @@ export default {
                     this.columns, keys, this.compareDisplay)
                 this.removeExcludedConditions(reference)
                 this.referenceSnapshot = reference
+                this.$emit('reference-change', reference)
                 this.referenceRowCount = (reference.tables || [])
                     .reduce((sum, t) => sum + (t.rows ? t.rows.length : 0), 0)
                 this.compareCurrentWith(reference)
@@ -325,6 +339,7 @@ export default {
                 this.result = null
                 this.referenceRowCount = 0
                 this.referenceSnapshot = null
+                this.$emit('reference-change', null)
             } finally {
                 this.loading = false
             }
@@ -334,7 +349,9 @@ export default {
                 this.currentTable, this.columns, this.currentConditions,
                 this.compareKey.keys, this.compareDisplay)
             this.removeExcludedConditions(current)
-            this.result = compareSnapshots(current, reference)
+            this.result = compareSnapshots(current, reference, {
+                excludedFields: this.excludedCompareFields
+            })
         },
         async applyReferenceValues() {
             if (!this.canApplyReferenceValues || !this.referenceValueMapping) return

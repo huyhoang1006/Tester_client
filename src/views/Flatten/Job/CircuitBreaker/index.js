@@ -19,6 +19,8 @@ class CircuitBreakerJobEntity {
         this.assessment_group = []
         this.assessment_rule = []
         this.standardCustomized = []
+        this.cbMotorCurrentPoints = {}
+        this.cbTimingTraces = {}
     }
 }
 

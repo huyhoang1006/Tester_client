@@ -15,11 +15,25 @@
             </div>
         </div>
 
-        <div class="table-scroll"><table class="table-strip-input-data test-table" style="width: 80% ; font-size: 12px;">
+        <div class="table-scroll"><table class="table-strip-input-data test-table insulation-resistance-table" style="font-size: 12px;">
+            <colgroup>
+                <col class="number-column">
+                <col class="terminal-column">
+                <col class="terminal-link-column">
+                <col class="terminal-column">
+                <col class="value-column">
+                <col class="value-column">
+                <col class="assessment-column">
+                <col class="condition-column">
+                <col class="action-column">
+                <col class="action-column">
+            </colgroup>
             <thead>
                 <tr>
                     <th>No</th>
-                    <th>Measurement</th>
+                    <th class="terminal-col">Terminal 1</th>
+                    <th class="terminal-link-col"><i class="fa-solid fa-arrows-left-right"></i></th>
+                    <th class="terminal-col">Terminal 2</th>
                     <th>Test voltage (V)</th>
                     <th>R60s (M&#8486;)</th>
                     <th class="assessment-col">Assessment</th>
@@ -33,8 +47,32 @@
                     <td>
                         {{ index + 1 }}
                     </td>
-                    <td>
-                        <el-input size="mini" type="text" v-model="item.measurement.value"></el-input>
+                    <td class="terminal-cell">
+                        <el-select class="terminal-select" size="mini" multiple
+                            :value="terminalValues(item, 'terminal1')" placeholder="Select terminal"
+                            @change="updateTerminalSide(item, 'terminal1', $event)">
+                            <el-option v-for="terminal in availableTerminalOptions(item, 'terminal1')"
+                                :key="'left-' + terminal" :label="terminal" :value="terminal">
+                                <span :style="terminalStyle(terminal)">
+                                    <i v-if="terminalColor(terminal)" class="fa-solid fa-circle phase-dot"
+                                        :style="{ color: terminalColor(terminal) }"></i>{{ terminal }}
+                                </span>
+                            </el-option>
+                        </el-select>
+                    </td>
+                    <td class="terminal-link-cell"><i class="fa-solid fa-arrows-left-right"></i></td>
+                    <td class="terminal-cell">
+                        <el-select class="terminal-select" size="mini" multiple
+                            :value="terminalValues(item, 'terminal2')" placeholder="Select terminal"
+                            @change="updateTerminalSide(item, 'terminal2', $event)">
+                            <el-option v-for="terminal in availableTerminalOptions(item, 'terminal2')"
+                                :key="'right-' + terminal" :label="terminal" :value="terminal">
+                                <span :style="terminalStyle(terminal)">
+                                    <i v-if="terminalColor(terminal)" class="fa-solid fa-circle phase-dot"
+                                        :style="{ color: terminalColor(terminal) }"></i>{{ terminal }}
+                                </span>
+                            </el-option>
+                        </el-select>
                     </td>
                     <td>
                         <el-input size="mini" type="text" number="positive"
@@ -95,6 +133,8 @@
 <script>
 import CircuitBreakerTestMap from '@/config/test-definitions/CircuitBreaker'
 import * as common from '../../Common/index'
+import { readSides, writeSides } from '../../Common/terminalSelect'
+import { buildCircuitBreakerTerminals, PHASE_COLORS } from '../../Common/terminalOptions'
 import assessmentMixin from './assessmentMixin'
 export default {
     mixins: [assessmentMixin],
@@ -123,6 +163,9 @@ export default {
         },
         assetData() {
             return this.asset
+        },
+        terminalOptions() {
+            return buildCircuitBreakerTerminals()
         },
         rowData() {
             return common.buildEmptyTestRow(CircuitBreakerTestMap['InsulationResistanceCircuit'].columns)
@@ -153,8 +196,27 @@ export default {
         }
     },
     methods: {
-
-
+        terminalColor(terminal) {
+            return PHASE_COLORS[terminal] || null
+        },
+        terminalStyle(terminal) {
+            const color = this.terminalColor(terminal)
+            return color ? { color, fontWeight: 600 } : {}
+        },
+        terminalValues(row, side) {
+            return readSides(row, this.terminalOptions)[side]
+        },
+        availableTerminalOptions(row, side) {
+            const sides = readSides(row, this.terminalOptions)
+            const otherSide = side === 'terminal1' ? sides.terminal2 : sides.terminal1
+            const existingValues = sides[side].filter(terminal => !this.terminalOptions.includes(terminal))
+            return [...this.terminalOptions, ...existingValues].filter(terminal => !otherSide.includes(terminal))
+        },
+        updateTerminalSide(row, side, values) {
+            const sides = readSides(row, this.terminalOptions)
+            sides[side] = values
+            writeSides(row, sides.terminal1, sides.terminal2, this.terminalOptions)
+        },
         add() {
             this.testData.table.table1.push(JSON.parse(JSON.stringify(this.rowData)))
         },
@@ -230,5 +292,88 @@ td {
 
 .Bad input {
     background: #ff3300;
+}
+
+.insulation-resistance-table {
+    width: 1120px;
+    min-width: 1120px;
+    table-layout: fixed;
+}
+
+.number-column {
+    width: 44px;
+}
+
+.terminal-column,
+.terminal-col {
+    width: 190px;
+}
+
+.terminal-link-column,
+.terminal-link-col {
+    width: 44px;
+    text-align: center;
+}
+
+.value-column {
+    width: 132px;
+}
+
+.assessment-column,
+.assessment-col {
+    width: 140px;
+}
+
+.condition-column,
+.condition-indicator-col {
+    width: 160px;
+}
+
+.action-column {
+    width: 44px;
+}
+
+.terminal-cell {
+    width: 190px;
+    min-width: 190px;
+    max-width: 190px;
+    box-sizing: border-box;
+}
+
+.terminal-link-cell {
+    text-align: center;
+    color: #c0c4cc;
+}
+
+.test-table .terminal-select {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+}
+
+::v-deep(.test-table .terminal-select .el-input) {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+}
+
+::v-deep(.test-table .terminal-select .el-select__tags) {
+    display: flex;
+    width: calc(100% - 32px);
+    max-width: calc(100% - 32px) !important;
+    flex-wrap: nowrap;
+    overflow: hidden;
+}
+
+::v-deep(.test-table .terminal-select .el-select__tags > span) {
+    display: flex;
+    min-width: 0;
+    flex-wrap: nowrap;
+}
+
+.phase-dot {
+    margin-right: 6px;
+    font-size: 8px;
+    vertical-align: middle;
 }
 </style>

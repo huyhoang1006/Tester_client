@@ -68,6 +68,8 @@ export default {
                 if(this.parent) {
                     if(this.parent.mode === 'substation') {
                         data.substation = this.parent.mrid;
+                    } else if(this.parent.mode === 'powerPlant') {
+                        data.power_plant = this.parent.mrid;
                     } else if(this.parent.mode === 'voltageLevel') {
                         data.voltage_level = this.parent.mrid;
                     }

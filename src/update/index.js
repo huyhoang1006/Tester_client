@@ -76,7 +76,11 @@ export const normalizeMridOnce = async () => {
 }
 
 export const updateDatabase = async () => {
-    const LATEST_DB_VERSION = 2;
+    // Version 3 seeds the Dynamic Contact Resistance procedures and their
+    // measurement definitions into databases that were created before those
+    // tests were added. Without this migration, procedure_asset references a
+    // procedure that only exists in the JSON config and SQLite rejects it.
+    const LATEST_DB_VERSION = 3;
     const oldVersion = await databaseInitFunc.getDbVersion(db)
 
     // Tạo những BẢNG còn thiếu, ở mọi lần khởi động.
@@ -91,6 +95,29 @@ export const updateDatabase = async () => {
         await databaseInitFunc.syncSchemaTables(db)
     } catch (schemaError) {
         console.error('[DB] Sync schema failed, tinh nang dung bang moi se loi:', schemaError)
+    }
+
+    // These procedures were added after databases in the field had already
+    // advanced their user_version. Seed only this small, idempotent catalogue
+    // slice on every startup so procedure_asset can always satisfy its FKs.
+    try {
+        await runAsync('BEGIN TRANSACTION', db)
+        await procedureFunc.ensureDynamicContactResistanceProcedures(db)
+        await runAsync('COMMIT', db)
+    } catch (procedureError) {
+        await runAsync('ROLLBACK', db).catch(() => {})
+        console.error('[DB] Dynamic Contact Resistance procedure sync failed:', procedureError)
+    }
+
+    // PTM Transformer imports use measurement definitions that may have been
+    // added after an existing database last ran the full procedure migration.
+    try {
+        await runAsync('BEGIN TRANSACTION', db)
+        await procedureFunc.ensureTransformerPtmImportProcedures(db)
+        await runAsync('COMMIT', db)
+    } catch (procedureError) {
+        await runAsync('ROLLBACK', db).catch(() => {})
+        console.error('[DB] Transformer PTM procedure sync failed:', procedureError)
     }
 
     if(!oldVersion) {

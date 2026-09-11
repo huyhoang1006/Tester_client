@@ -58,6 +58,8 @@ const COMPARE_KEYS = {
 
         // Điện trở tiếp xúc: một pha nhiều buồng cắt
         ContactResistance: ['phase', 'interrupter'],
+        ODynamicContactResistance: ['phase', 'interrupter'],
+        CDynamicContactResistance: ['phase', 'interrupter'],
 
         // Cuộn cắt / cuộn đóng: định danh bằng số hiệu cuộn
         DCWindingTripCoil:              ['trip_coil_no'],
@@ -276,6 +278,21 @@ const buildCtExcitationRowTitle = (cells, keyCodes, context = {}) => {
 }
 
 const COMPARE_DISPLAY = {
+    Transformer: {
+        WindingDfCap: {
+            tableLabels: {
+                table1: '50 Hz',
+                table2: 'Frequency sweep',
+                table3: 'Voltage sweep'
+            }
+        },
+        BushingPrimC1: { tableLabels: { table1: '50 Hz', table2: 'Frequency sweep', table3: 'Voltage sweep' } },
+        BushingPrimC2: { tableLabels: { table1: '50 Hz', table2: 'Frequency sweep', table3: 'Voltage sweep' } },
+        BushingSecC1: { tableLabels: { table1: '50 Hz', table2: 'Frequency sweep', table3: 'Voltage sweep' } },
+        BushingSecC2: { tableLabels: { table1: '50 Hz', table2: 'Frequency sweep', table3: 'Voltage sweep' } },
+        BushingTertC1: { tableLabels: { table1: '50 Hz', table2: 'Frequency sweep', table3: 'Voltage sweep' } },
+        BushingTertC2: { tableLabels: { table1: '50 Hz', table2: 'Frequency sweep', table3: 'Voltage sweep' } }
+    },
     CurrentTransformer: {
         CTExcitation: {
             rowLabel: buildCtExcitationRowTitle
@@ -290,6 +307,8 @@ const COMPARE_DISPLAY = {
         COCOTiming: { rowLabel: buildCircuitBreakerRowTitle },
         OCOCOTiming: { rowLabel: buildCircuitBreakerRowTitle },
         ContactResistance: { rowLabel: buildCircuitBreakerRowTitle },
+        ODynamicContactResistance: { rowLabel: buildCircuitBreakerRowTitle },
+        CDynamicContactResistance: { rowLabel: buildCircuitBreakerRowTitle },
         DCWindingTripCoil: { rowLabel: buildCircuitBreakerRowTitle },
         DCWindingCloseCoil: { rowLabel: buildCircuitBreakerRowTitle },
         InsulationResistanceTripCoil: { rowLabel: buildCircuitBreakerRowTitle },

@@ -13,6 +13,7 @@ export const volDtoToVolEntity = (volDto) => {
     entity.voltageLevel.low_voltage_limit = volDto.lowVoltageLimitId || null;
     entity.voltageLevel.base_voltage = volDto.baseVoltageId || null;
     entity.voltageLevel.substation = volDto.substationId || null;
+    entity.voltageLevel.power_plant = volDto.powerPlantId || null;
     entity.voltageLevel.location = volDto.locationId || null;
 
     // Base Voltage
@@ -56,6 +57,7 @@ export const volEntityToVolDto = (volEntity) => {
     // VoltageLevel
     volDto.voltageLevelId = volEntity.voltageLevel.mrid || ''
     volDto.substationId = volEntity.voltageLevel.substation || ''
+    volDto.powerPlantId = volEntity.voltageLevel.power_plant || ''
     volDto.highVoltageLimitId = volEntity.voltageLevel.high_voltage_limit || ''
     volDto.lowVoltageLimitId = volEntity.voltageLevel.low_voltage_limit || ''
     volDto.baseVoltageId = volEntity.voltageLevel.base_voltage || ''

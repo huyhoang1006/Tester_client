@@ -5,8 +5,37 @@ import * as common from '../../../../Common/index.js'
 import transformerAssessmentMap from '@/config/testing-assessment/Transformer'
 import { writeTerminalSides } from '../../InsulationResistance/terminalUtils'
 
+const BUSHING_WINDING_BY_TEST = {
+    BushingPrimC1: 'prim',
+    BushingPrimC2: 'prim',
+    BushingSecC1: 'sec',
+    BushingSecC2: 'sec',
+    BushingTertC1: 'tert',
+    BushingTertC2: 'tert'
+}
+
 export default {
     methods: {
+        testAvailability(testType, assetData) {
+            const winding = BUSHING_WINDING_BY_TEST[testType && testType.alias_name]
+            if (!winding) return { enabled: true }
+
+            let bushingData = (assetData && assetData.bushing_data) || {}
+            if (typeof bushingData === 'string') {
+                try {
+                    bushingData = JSON.parse(bushingData)
+                } catch (error) {
+                    bushingData = {}
+                }
+            }
+            const bushings = Array.isArray(bushingData[winding]) ? bushingData[winding] : []
+            return bushings.length > 0
+                ? { enabled: true }
+                : {
+                    enabled: false,
+                    message: 'Unable to create bushing test. No bushing is configured for this transformer.'
+                }
+        },
         async initTest(testTypeCode, assetData) {
             let data = null
             switch (testTypeCode) {

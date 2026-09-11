@@ -21,9 +21,11 @@ export default {
     methods: {
         async saveCtrS() {
             try {
-                const { success, data, changed } = await this.saveSubstation()
+                const { success, data, changed } = this.isPowerPlant
+                    ? await this.savePowerPlant()
+                    : await this.saveSubstation()
                 if (success) {
-                    this.$message.success('Substation saved successfully')
+                    this.$message.success(this.isPowerPlant ? 'Power Plant saved successfully' : 'Substation saved successfully')
                     
                     // ✅ Emit reload event với savedData - KHÔNG cần gọi API!
                     // Substation emit với format khác: (substation, savedData)
@@ -32,7 +34,8 @@ export default {
                             locationList: this.locationListData,
                             personList: this.personListData,
                             dto: this.properties,
-                            substation: this.substation
+                            substation: this.substation,
+                            powerPlantCapacity: this.getPowerPlantCapacityData()
                         },
                         changed: changed === true
                     })
@@ -44,7 +47,7 @@ export default {
 
         async loadData(data) {
             try {
-                const { locationList, personList, dto, substation } = data
+                const { locationList, personList, dto, substation, powerPlantCapacity } = data
                 
                 // ✅ Validation: Đảm bảo dto luôn có giá trị
                 if (!dto) {
@@ -58,6 +61,9 @@ export default {
                 this.locationTemp = this.properties.locationId || ""
                 this.personTemp = this.properties.personId || ""
                 this.substation = substation
+                if (this.isPowerPlant && typeof this.loadPowerPlantCapacity === 'function') {
+                    this.loadPowerPlantCapacity(powerPlantCapacity)
+                }
                 if (this.properties.attachment && this.properties.attachment.path) {
                     this.attachmentData = JSON.parse(this.properties.attachment.path)
                 }
@@ -75,6 +81,131 @@ export default {
             this.locationListData = this.locationList
             this.locationTemp = ""
             this.personTemp = ""
+            if (this.isPowerPlant && typeof this.resetPowerPlantCapacity === 'function') {
+                this.resetPowerPlantCapacity()
+            }
+        },
+
+        getPowerPlantCapacityData() {
+            return {
+                plantType: this.plantType,
+                acCapacity: JSON.parse(JSON.stringify(this.acCapacity || {})),
+                dcCapacity: JSON.parse(JSON.stringify(this.dcCapacity || {})),
+                generatingUnits: JSON.parse(JSON.stringify(this.generatingUnits || []))
+            }
+        },
+
+        toActivePower(valueData, existingMrid) {
+            if (!valueData || valueData.value === '' || valueData.value === null || valueData.value === undefined) {
+                return null
+            }
+            const unit = String(valueData.unit || 'MW').replace('Wp', 'W')
+            return {
+                mrid: existingMrid || uuid.newUuid(),
+                multiplier: unit === 'kW' ? 'k' : 'M',
+                unit: 'W',
+                value: String(valueData.value)
+            }
+        },
+
+        async savePowerPlant() {
+            if (!String(this.properties.name || '').trim()) {
+                this.$message.error('Please enter the name of the Power Plant')
+                return { success: false }
+            }
+            if (!this.properties.subsId) this.properties.subsId = uuid.newUuid()
+
+            const dto = JSON.parse(JSON.stringify(this.properties))
+            dto.type = this.plantType
+            if (!this.checkSubstation(dto)) return { success: false }
+
+            try {
+                const common = subsMapper.mapDtoToEntity(dto)
+                const acCapacity = this.toActivePower(this.acCapacity, this.acCapacity && this.acCapacity.mrid)
+                const dcCapacity = this.isSolarPlant
+                    ? this.toActivePower(this.dcCapacity, this.dcCapacity && this.dcCapacity.mrid)
+                    : null
+                const unitLabel = this.isWindPlant
+                    ? 'Wind turbine'
+                    : (this.isSolarPlant ? 'PV array/block' : 'Generating unit')
+                const generatingUnits = (this.generatingUnits || [])
+                    .filter((unit) => (
+                        unit.quantity !== '' || unit.acRatedPower !== '' || (this.isSolarPlant && unit.dcRatedPower !== '')
+                    ))
+                    .map((unit, index) => {
+                        const mrid = unit.mrid || uuid.newUuid()
+                        const nominalPower = this.toActivePower(
+                            { value: unit.acRatedPower, unit: unit.acUnit },
+                            unit.nominalPowerId
+                        )
+                        const unitDcRatedPower = this.isSolarPlant
+                            ? this.toActivePower(
+                                { value: unit.dcRatedPower, unit: unit.dcUnit },
+                                unit.dcRatedPowerId
+                            )
+                            : null
+                        const quantity = Number(unit.quantity)
+                        return {
+                            mrid,
+                            name: `${dto.name} - ${unitLabel} ${index + 1}`,
+                            alias_name: null,
+                            description: null,
+                            psr_type_id: null,
+                            location: dto.locationId || null,
+                            aggregate: Number.isFinite(quantity) && quantity > 1 ? 'true' : 'false',
+                            in_service: null,
+                            network_analysis_enabled: null,
+                            normally_in_service: null,
+                            equipment_container: dto.subsId,
+                            quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : 1,
+                            sequence_number: index + 1,
+                            nominalPower,
+                            dcRatedPower: unitDcRatedPower,
+                            userIdentifiedObject: {
+                                mrid: unit.userIdentifiedObjectId || uuid.newUuid(),
+                                user_id: dto.userId,
+                                identified_object_id: mrid
+                            }
+                        }
+                    })
+
+                const entity = {
+                    ...common,
+                    powerPlant: {
+                        ...common.substation,
+                        plant_type: this.plantType,
+                        ac_capacity: acCapacity ? acCapacity.mrid : null,
+                        dc_capacity: dcCapacity ? dcCapacity.mrid : null
+                    },
+                    acCapacity,
+                    dcCapacity,
+                    generatingUnits,
+                    personPowerPlant: {
+                        mrid: common.personSubstation.mrid,
+                        person_id: common.personSubstation.person_id,
+                        power_plant_id: dto.subsId
+                    }
+                }
+                delete entity.substation
+                delete entity.personSubstation
+                entity.configurationEvent = []
+                if (entity.attachment && entity.attachment.id) {
+                    entity.attachment.type = 'power-plant'
+                    entity.attachment.id_foreign = dto.subsId
+                }
+
+                const result = await window.electronAPI.insertPowerPlantEntity(entity)
+                if (!result.success) {
+                    this.$message.error('Error saving Power Plant: ' + result.message)
+                    return { success: false }
+                }
+                this.properties = dto
+                return { success: true, data: result.data, changed: result.changed }
+            } catch (error) {
+                this.$message.error('Error saving Power Plant: ' + error.message)
+                console.error('Error saving Power Plant:', error)
+                return { success: false }
+            }
         },
 
         async saveSubstation() {

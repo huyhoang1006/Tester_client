@@ -101,8 +101,14 @@ export default {
             if (data.voltageLevelId === null || data.voltageLevelId === '') {
                 data.voltageLevelId = uuid.newUuid();
             }
-            if (data.substationId === null || data.substationId === '') {
-                data.substationId = this.parent ? this.parent.mrid : null
+            if ((!data.substationId && !data.powerPlantId) && this.parent) {
+                if (this.parent.mode === 'powerPlant') {
+                    data.powerPlantId = this.parent.mrid
+                    data.substationId = null
+                } else {
+                    data.substationId = this.parent.mrid
+                    data.powerPlantId = null
+                }
             }
             if (data.locationId === null || data.locationId === '') {
                 data.locationId = this.locationId ? this.locationId : null

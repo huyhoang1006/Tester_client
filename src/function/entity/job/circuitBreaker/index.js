@@ -20,6 +20,14 @@ import { insertAssessmentTransaction, deleteAssessmentByIdTransaction, getAssess
 import { insertAssessmentGroupTransaction, deleteAssessmentGroupByIdTransaction, getAssessmentGroupByParentId, getAssessmentGroupByRuleId } from '@/function/cim/assessmentGroup/index.js'
 import { insertAssessmentRuleTransaction, deleteAssessmentRuleByIdTransaction, getAssessmentRuleByStandardId } from '@/function/cim/assessmentRule/index.js'
 import { rollbackQuietly } from '@/function/datacontext/rollback'
+import {
+    replaceCbMotorCurrentPointsTransaction,
+    getCbMotorCurrentPointsByDatasetIds,
+} from '@/function/cim/cbMotorCurrentPoint'
+import {
+    replaceCbTimingTracesTransaction,
+    getCbTimingTracesByWorkTaskIds,
+} from '@/function/cim/cbTimingTrace'
 
 
 export const insertCircuitBreakerJobEntity = async (old_entity,entity) => {
@@ -138,6 +146,17 @@ export const insertCircuitBreakerJobEntity = async (old_entity,entity) => {
                 await insertWorkTaskTransaction(workTask, db);
             }
 
+            // Raw CIBANO timing channels belong to the timing work task as a
+            // whole. An empty map is a regular UI save and leaves imported
+            // traces untouched; an explicit key replaces that test's traces.
+            if (entity.cbTimingTraces && typeof entity.cbTimingTraces === 'object') {
+                for (const workTaskMrid of Object.keys(entity.cbTimingTraces)) {
+                    await replaceCbTimingTracesTransaction(
+                        workTaskMrid, entity.cbTimingTraces[workTaskMrid], db
+                    );
+                }
+            }
+
 
             // equipmentTestType.work_task_id -> work_task.mrid nên PHẢI insert sau workTask
             for (const equipmentTestType of toAddSet) {
@@ -247,6 +266,18 @@ export const insertCircuitBreakerJobEntity = async (old_entity,entity) => {
 
             for (const testData of toUpdateTestDataSet) {
                 await insertTestDataSetTransaction(testData, db);
+            }
+
+            // Motor Current waveforms are children of individual measurement rows.
+            // Write them in the same transaction after procedure_dataset exists.
+            // An empty map means a normal UI save and deliberately leaves stored
+            // waveforms untouched.
+            if (entity.cbMotorCurrentPoints && typeof entity.cbMotorCurrentPoints === 'object') {
+                for (const rowMrid of Object.keys(entity.cbMotorCurrentPoints)) {
+                    await replaceCbMotorCurrentPointsTransaction(
+                        rowMrid, entity.cbMotorCurrentPoints[rowMrid], db
+                    );
+                }
             }
 
             //analog value
@@ -465,6 +496,28 @@ export const getCircuitBreakerJobEntity = async (id) => {
                 const discreteValue = await getDiscreteValueByTestDataSetMrids(mrids);
                 if(discreteValue.success) {
                     entity.discreteValues = discreteValue.data;
+                }
+
+                try {
+                    const motorCurrentPoints = await getCbMotorCurrentPointsByDatasetIds(mrids)
+                    entity.cbMotorCurrentPoints = (motorCurrentPoints && motorCurrentPoints.success)
+                        ? motorCurrentPoints.data
+                        : {}
+                } catch (waveformError) {
+                    console.error('[Circuit Breaker job] Could not read Motor Current waveforms:', waveformError)
+                    entity.cbMotorCurrentPoints = {}
+                }
+
+                try {
+                    const timingTraces = await getCbTimingTracesByWorkTaskIds(
+                        entity.workTasks.map(workTask => workTask.mrid)
+                    )
+                    entity.cbTimingTraces = (timingTraces && timingTraces.success)
+                        ? timingTraces.data
+                        : {}
+                } catch (traceError) {
+                    console.error('[Circuit Breaker job] Could not read timing traces:', traceError)
+                    entity.cbTimingTraces = {}
                 }
 
                 return {

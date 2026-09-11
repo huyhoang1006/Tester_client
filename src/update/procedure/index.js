@@ -22,6 +22,114 @@ export const updateProcedure = async (dbsql) => {
     await createProcedure(dbsql)
 }
 
+const DYNAMIC_CONTACT_RESISTANCE_CODES = [
+    'ODynamicContactResistance',
+    'CDynamicContactResistance',
+]
+
+const TRANSFORMER_PTM_IMPORT_CODES = [
+    'WindingDfCap',
+    'BushingPrimC1',
+    'BushingPrimC2',
+    'BushingSecC1',
+    'BushingSecC2',
+    'BushingTertC1',
+    'BushingTertC2',
+    'RatioPrimSec',
+    'ExcitingCurrent',
+    'ShortCircuitImpedancePrim',
+    'ShortCircuitImpedanceSec',
+    'ShortCircuitImpedanceTert',
+    'DCWindingPrim',
+    'DCWindingSec',
+]
+
+const pickConfigEntries = (source, codes) => {
+    return codes.reduce((result, code) => {
+        if (source && source[code]) result[code] = source[code]
+        return result
+    }, {})
+}
+
+/**
+ * Keep this small catalogue addition independent from the database version.
+ * Existing installations may already carry a newer user_version while still
+ * missing these config rows. Every insert in the procedure seeder is an upsert,
+ * so this is safe to run at startup and does not touch job/result data.
+ */
+export const ensureDynamicContactResistanceProcedures = async (dbsql) => {
+    const circuitBreakerProcedures = procedureDataMap.CircuitBreaker || { procedure: [] }
+    const selectedProcedureMap = {
+        CircuitBreaker: {
+            ...circuitBreakerProcedures,
+            procedure: (circuitBreakerProcedures.procedure || []).filter(item => {
+                return DYNAMIC_CONTACT_RESISTANCE_CODES.includes(item.code)
+            }),
+        },
+    }
+    const selectedTestMap = {
+        CircuitBreaker: pickConfigEntries(
+            testDataMap.CircuitBreaker,
+            DYNAMIC_CONTACT_RESISTANCE_CODES
+        ),
+    }
+    const selectedConditionMap = {
+        CircuitBreaker: pickConfigEntries(
+            testConditionMap.CircuitBreaker,
+            DYNAMIC_CONTACT_RESISTANCE_CODES
+        ),
+    }
+
+    await circuitBreakerProcedureFunc.createProcedureCircuitBreaker(
+        dbsql,
+        selectedProcedureMap,
+        selectedTestMap,
+        selectedConditionMap,
+        getProcedureInfo,
+        getTestDefinitionInfo,
+        getTestConditionInfo
+    )
+}
+
+/**
+ * PTM import can start writing a newly-added measurement before an older
+ * database has advanced through a full procedure refresh. Keep the exact
+ * Transformer catalogue slice used by the importer available on every start.
+ */
+export const ensureTransformerPtmImportProcedures = async (dbsql) => {
+    const transformerProcedures = procedureDataMap.Transformer || { procedure: [] }
+    const selectedProcedureMap = {
+        Transformer: {
+            ...transformerProcedures,
+            procedure: (transformerProcedures.procedure || []).filter(item => {
+                return TRANSFORMER_PTM_IMPORT_CODES.includes(item.code)
+            }),
+        },
+    }
+    const selectedTestMap = {
+        Transformer: pickConfigEntries(
+            testDataMap.Transformer,
+            TRANSFORMER_PTM_IMPORT_CODES
+        ),
+    }
+    const selectedConditionMap = {
+        Transformer: pickConfigEntries(
+            testConditionMap.Transformer,
+            TRANSFORMER_PTM_IMPORT_CODES
+        ),
+    }
+
+    await transformerProcedureFunc.createProcedureTransformer(
+        dbsql,
+        selectedProcedureMap,
+        selectedTestMap,
+        selectedConditionMap,
+        getProcedureInfo,
+        getTestDefinitionInfo,
+        getTestConditionInfo
+    )
+}
+
 export const createProcedure = async (dbsql) => {
     try {
         await surgeArresterProcedureFunc.createProcedureSurgeArrester(dbsql, procedureDataMap, testDataMap, testConditionMap,

@@ -1,7 +1,7 @@
 import db from '../datacontext/index'
 
 /**
- * ĐỐI CHIẾU TRÙNG THIẾT BỊ theo (serial, manufacturer, manufacturer type).
+ * ĐỐI CHIẾU TRÙNG THIẾT BỊ theo (serial, manufacturer, manufacturer type, asset kind).
  *
  * Quy tắc nghiệp vụ đã chốt:
  *
@@ -36,7 +36,7 @@ const all = (sql, params) => new Promise((resolve, reject) => {
 /**
  * Tìm thiết bị trùng trong phạm vi của MỘT người dùng.
  *
- * @param {object} criteria { serialNumber, manufacturer, manufacturerType }
+ * @param {object} criteria { serialNumber, manufacturer, manufacturerType, kind? }
  * @param {string|number} userId
  * @param {string} targetPsrId mrid của node đang import vào (bay / trạm / cấp điện áp)
  * @returns {{ success, data: { matches: [], inTarget: [], elsewhere: [], matchedOn: [] } }}
@@ -46,6 +46,7 @@ export const findDuplicateAsset = async (criteria, userId, targetPsrId) => {
         const serial = norm(criteria && criteria.serialNumber)
         const manufacturer = norm(criteria && criteria.manufacturer)
         const manufacturerType = norm(criteria && criteria.manufacturerType)
+        const kind = norm(criteria && criteria.kind)
 
         // Không có serial thì không đối chiếu được gì đáng tin. Nói ra thay vì trả "không
         // trùng" — vì "không đối chiếu được" và "đã đối chiếu, không trùng" là hai chuyện.
@@ -67,11 +68,12 @@ export const findDuplicateAsset = async (criteria, userId, targetPsrId) => {
                     a.serial_number,
                     a.kind,
                     pam.manufacturer      AS manufacturer,
-                    pam.model_number      AS manufacturer_type,
+                    COALESCE(ai.manufacturer_type, pam.model_number) AS manufacturer_type,
                     ap.psr_id             AS psr_id,
                     io.name               AS name
                FROM asset a
                JOIN user_identified_object uio ON uio.identified_object_id = a.mrid
+               LEFT JOIN asset_info ai ON ai.mrid = a.asset_info
                LEFT JOIN product_asset_model pam ON pam.mrid = a.product_asset_model
                LEFT JOIN asset_psr ap ON ap.asset_id = a.mrid
                LEFT JOIN identified_object io ON io.mrid = a.mrid
@@ -90,6 +92,13 @@ export const findDuplicateAsset = async (criteria, userId, targetPsrId) => {
         if (manufacturerType) {
             matchedOn.push('manufacturer type')
             matches = matches.filter(r => norm(r.manufacturer_type) === manufacturerType)
+        }
+        // PTM can carry different asset families with the same nameplate identifiers.
+        // A Circuit Breaker must never be considered the same asset as a CT merely
+        // because their serial/manufacturer fields happen to match.
+        if (kind) {
+            matchedOn.push('asset kind')
+            matches = matches.filter(r => norm(r.kind) === kind)
         }
 
         const target = String(targetPsrId || '')

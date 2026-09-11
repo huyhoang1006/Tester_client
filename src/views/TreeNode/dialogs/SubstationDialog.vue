@@ -1,6 +1,6 @@
 <template>
     <el-dialog 
-        title="Add Substation" 
+        :title="dialogTitle" 
         :visible="visible" 
         @close="handleClose"
         @update:visible="$emit('update:visible', $event)"
@@ -14,6 +14,8 @@
             :personList="personList" 
             :locationList="locationList"
             :organisationId="organisationId" 
+            :formVariant="formVariant"
+            :plantType="plantType"
             ref="substation"
         />
         <span slot="footer" class="dialog-footer custom-footer">
@@ -39,6 +41,18 @@ export default {
         isSaving: {
             type: Boolean,
             default: false
+        },
+        dialogTitle: {
+            type: String,
+            default: 'Add Substation'
+        },
+        formVariant: {
+            type: String,
+            default: 'substation'
+        },
+        plantType: {
+            type: String,
+            default: ''
         },
         parentOrganization: {
             type: Object,

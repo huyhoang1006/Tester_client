@@ -1,5 +1,5 @@
 import db from '../../datacontext/index.js'
-import { insertBayTransaction, getBayById, deleteBayByIdTransaction} from '@/function/cim/bay';
+import { ensureBayParentSchema, insertBayTransaction, getBayById, deleteBayByIdTransaction} from '@/function/cim/bay';
 import { normaliseAuditValue, tryWriteAuditLog } from '../auditLog/index'
 import { rollbackQuietly } from '@/function/datacontext/rollback'
 
@@ -12,7 +12,8 @@ const getBayLogFields = (entity) => ({
     'Breaker configuration': entity && entity.breaker_configuration,
     'Bus bar configuration': entity && entity.bus_bar_configuration,
     'Substation': entity && entity.substation,
-    'Voltage level': entity && entity.voltage_level
+    'Voltage level': entity && entity.voltage_level,
+    'Power plant': entity && entity.power_plant
 })
 
 const getBayChanges = (beforeEntity, afterEntity) => {
@@ -63,6 +64,7 @@ const writeBayDeleteLog = async (entity) => {
 export const insertBayEntity = async (entity) => {
     try {
         if(entity.mrid) {
+            await ensureBayParentSchema()
             const beforeResult = await getBayById(entity.mrid)
             const beforeEntity = beforeResult && beforeResult.success ? beforeResult.data : null
             await runAsync('BEGIN TRANSACTION');

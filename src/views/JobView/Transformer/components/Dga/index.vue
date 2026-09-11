@@ -4,6 +4,9 @@
         <div class="test-toolbar">
             <div class="test-toolbar-group">
                 <el-button size="mini" type="primary" @click="calculator"> <i class="fas fa-circle-play"></i> Assess results </el-button>
+                <el-button size="mini" @click="openDuvalDialog = true">
+                    <i class="fa-solid fa-draw-polygon"></i> Duval triangle
+                </el-button>
                 <el-button size="mini" @click="clear"> <i class="fas fa-xmark"></i> Clear all </el-button>
             </div>
             <div class="test-toolbar-group">
@@ -96,6 +99,11 @@
         </table>
         </div>
 
+        <el-dialog append-to-body title="Duval Triangle 1" :visible.sync="openDuvalDialog"
+            width="min(920px, 94vw)" top="4vh" custom-class="duval-dialog">
+            <DuvalTriangle1 :rows="testData.table && testData.table.table1 ? testData.table.table1 : []" />
+        </el-dialog>
+
         <!-- Condition indicator settings -->
         <el-dialog append-to-body title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog"
             width="1120px">
@@ -177,14 +185,16 @@ import transformerTestMap from '@/config/test-definitions/Transformer'
 import * as common from '../../../Common/index.js'
 import GroupNode from '../../../Common/GroupNode.vue'
 import { changeTestStandard } from '../../../Common'
+import DuvalTriangle1 from './DuvalTriangle1.vue'
 
 export default {
     name: "Dga",
-    components: { GroupNode },
+    components: { GroupNode, DuvalTriangle1 },
     data() {
         return {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
+            openDuvalDialog: false,
             option: null
         }
     },

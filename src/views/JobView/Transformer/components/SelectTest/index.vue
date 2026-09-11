@@ -3,6 +3,7 @@
         :data="data"
         :test-type-list-data="testTypeListData"
         :asset-data="assetData"
+        :test-availability="testAvailability"
         :init-test="initTest" />
 </template>
 <script>

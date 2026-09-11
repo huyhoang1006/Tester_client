@@ -106,6 +106,18 @@ export default {
             this.$set(node, 'generation', updatedData.generation || node.generation)
             this.$set(node, 'industry', updatedData.industry || node.industry)
           }
+        } else if (node.mode === 'powerPlant') {
+          const result = await window.electronAPI.getPowerPlantEntityByMrid(
+            node.mrid,
+            this.$store.state.user.user_id,
+            node.parentId
+          )
+          if (result.success && result.data) {
+            const PowerPlantMapping = await import('@/views/Mapping/PowerPlant/index')
+            updatedData = PowerPlantMapping.mapEntityToDto(result.data)
+            this.$set(node, 'name', updatedData.name || node.name)
+            this.$set(node, 'plantType', updatedData.type || node.plantType)
+          }
         } else if (node.mode === 'voltageLevel') {
           const result = await window.electronAPI.getVoltageLevelEntityByMrid(node.mrid)
           if (result.success && result.data) {

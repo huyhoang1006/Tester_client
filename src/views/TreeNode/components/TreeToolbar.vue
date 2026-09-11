@@ -26,6 +26,10 @@
                         <i class="fa-solid fa-file-zipper" style="font-size:12px"></i>
                         Import from PTM (OMICRON)
                     </el-dropdown-item>
+                    <el-dropdown-item command="importCPXpert">
+                        <i class="fa-solid fa-file-zipper" style="font-size:12px"></i>
+                        Import from CPXpert (OMICRON)
+                    </el-dropdown-item>
                     <el-dropdown-item command="importExcel">
                         <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon>
                         Import from Excel

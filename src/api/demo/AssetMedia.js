@@ -42,9 +42,13 @@ export const uploadAssetMedia = (assetType, assetId, formData, options = {}) => 
 export const downloadAssetMedia = (assetType, assetId, mediaId) => requestWithGenericFallback(
     { assetType, assetId },
     path => client.get(`/${path}/${toServerId(mediaId)}/download`, {
-        responseType: 'blob',
+        responseType: 'arraybuffer',
     })
 )
+
+export const downloadAssetMediaUrl = (downloadUrl) => client.get(downloadUrl, {
+    responseType: 'arraybuffer',
+})
 
 export const getAssetMediaDownloadUrl = (assetType, assetId, mediaId) => {
     const base = store.state.serviceAddr ? String(store.state.serviceAddr).replace(/\/$/, '') : ''

@@ -37,6 +37,8 @@ import * as reactorInfoFunc from './reactorInfo/index.js'
 import * as procedureFunc from './procedure/index.js'
 import * as otherFunc from './other/index.js'
 import * as ctExcitationPointFunc from './ctExcitationPoint/index.js'
+import * as cbMotorCurrentPointFunc from './cbMotorCurrentPoint/index.js'
+import * as cbTimingTraceFunc from './cbTimingTrace/index.js'
 
 
 export {
@@ -47,5 +49,5 @@ export {
     bayFunc, voltageLevelFunc, PowerSystemResourceFunc, surgeArresterFunc, ProductAssetModelFunc,
     oldWorkFunc, assetFunc, analogFunc, stringMeasurementFunc, discreteFunc, valueToAliasFunc, valueAliasSetFunc,
     bushingFunc, capacitorInfoFunc, capacitanceInfoFunc, dissipationFactorInfoFunc, reactivePowerFunc, reactorInfoFunc,
-    procedureFunc, otherFunc, ctExcitationPointFunc
+    procedureFunc, otherFunc, ctExcitationPointFunc, cbMotorCurrentPointFunc, cbTimingTraceFunc
 }

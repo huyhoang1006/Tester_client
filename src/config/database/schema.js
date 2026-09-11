@@ -339,11 +339,13 @@ CREATE TABLE IF NOT EXISTS "bay" (
 	"breaker_configuration"	TEXT,
 	"bus_bar_configuration"	TEXT,
 	"substation"	TEXT,
+	"power_plant"	TEXT,
 	"voltage_level"	TEXT,
 	PRIMARY KEY("mrid"),
 	FOREIGN KEY("mrid") REFERENCES "equipment_container"("mrid") ON DELETE CASCADE,
 	FOREIGN KEY("voltage_level") REFERENCES "voltage_level"("mrid") ON DELETE CASCADE,
-	FOREIGN KEY("substation") REFERENCES "substation"("mrid") ON DELETE CASCADE
+	FOREIGN KEY("substation") REFERENCES "substation"("mrid") ON DELETE CASCADE,
+	FOREIGN KEY("power_plant") REFERENCES "power_plant"("mrid") ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS "breaker_contact_system_info" (
 	"mrid"	TEXT NOT NULL,
@@ -922,10 +924,8 @@ CREATE TABLE IF NOT EXISTS "epa_standard" (
 -- Đường cong từ hoá của bài CT Excitation: 32–39 cặp (dòng, áp) cho MỖI cuộn.
 -- Mỗi dòng của bảng test (procedure_dataset) có một đường cong riêng.
 --
--- Đặt tên theo đúng đại lượng thay vì x/y chung chung: quét cả hai file .ptm mẫu thì
--- CHỈ tCTExcitationTest có chuỗi điểm trong XML. Đường cong hành trình / dòng cuộn cắt
--- của CIBANO nằm trong file .blob nhị phân, chưa đọc được. Làm bảng chung lúc này là
--- khái quát cho trường hợp chưa xác minh là có.
+-- Đặt tên theo đúng đại lượng thay vì x/y chung chung. Mỗi loại test có cấu trúc điểm
+-- và đơn vị riêng; Motor Current bên dưới vì vậy có bảng time/current/voltage riêng.
 --
 -- sequence_number NOT NULL: đường cong CÓ thứ tự, mà SQLite không hứa gì nếu thiếu
 -- ORDER BY. Mất thứ tự thì nối điểm ra hình zigzag, và không phân biệt được là dữ liệu
@@ -971,6 +971,55 @@ CREATE TABLE IF NOT EXISTS "ct_excitation_knee_point" (
 );
 CREATE INDEX IF NOT EXISTS "idx_ct_excitation_knee_point_dataset"
 	ON "ct_excitation_knee_point"("procedure_dataset_id");
+-- Chuỗi mẫu Motor Current của CIBANO. Mỗi measurement row có một waveform riêng.
+-- time/current/voltage là TEXT để giữ đúng biểu diễn số đã giải mã từ PTM.
+CREATE TABLE IF NOT EXISTS "cb_motor_current_point" (
+	"mrid"	TEXT NOT NULL,
+	"procedure_dataset_id"	TEXT NOT NULL,
+	"sequence_number"	INTEGER NOT NULL,
+	"time"	TEXT,
+	"current"	TEXT,
+	"voltage"	TEXT,
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("procedure_dataset_id") REFERENCES "procedure_dataset"("mrid") ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS "idx_cb_motor_current_point_dataset"
+	ON "cb_motor_current_point"("procedure_dataset_id","sequence_number");
+-- Du lieu kenh theo thoi gian cua cac bai timing CIBANO. Mot work_task co the
+-- co nhieu lan ghi; moi lan ghi co nhieu kenh dung chung truc thoi gian.
+CREATE TABLE IF NOT EXISTS "cb_timing_trace" (
+	"mrid"	TEXT NOT NULL,
+	"work_task_id"	TEXT NOT NULL,
+	"measurement_index"	INTEGER,
+	"sequence_number"	INTEGER,
+	"column_index"	INTEGER,
+	"name"	TEXT,
+	"signal_type"	TEXT,
+	"phase"	TEXT,
+	"interrupter"	TEXT,
+	"source_type"	TEXT,
+	"source_serial"	TEXT,
+	"source_channel_index"	TEXT,
+	"channel_group"	TEXT,
+	"channel_group_index"	TEXT,
+	"data_type"	TEXT,
+	"unit"	TEXT,
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("work_task_id") REFERENCES "work_task"("mrid") ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS "idx_cb_timing_trace_work_task"
+	ON "cb_timing_trace"("work_task_id");
+CREATE TABLE IF NOT EXISTS "cb_timing_trace_point" (
+	"mrid"	TEXT NOT NULL,
+	"trace_id"	TEXT NOT NULL,
+	"sequence_number"	INTEGER NOT NULL,
+	"time"	TEXT,
+	"value"	TEXT,
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("trace_id") REFERENCES "cb_timing_trace"("mrid") ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS "idx_cb_timing_trace_point_trace"
+	ON "cb_timing_trace_point"("trace_id","sequence_number");
 CREATE TABLE IF NOT EXISTS "equipment" (
 	"mrid"	TEXT NOT NULL,
 	"aggregate"	TEXT,
@@ -981,6 +1030,17 @@ CREATE TABLE IF NOT EXISTS "equipment" (
 	FOREIGN KEY("mrid") REFERENCES "power_system_resource"("mrid") ON DELETE CASCADE,
 	FOREIGN KEY("equipment_container") REFERENCES "equipment_container"("mrid"),
 	PRIMARY KEY("mrid")
+);
+CREATE TABLE IF NOT EXISTS "generating_unit" (
+	"mrid"	TEXT NOT NULL,
+	"nominal_p"	TEXT,
+	"dc_rated_power"	TEXT,
+	"quantity"	INTEGER NOT NULL DEFAULT 1,
+	"sequence_number"	INTEGER,
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("mrid") REFERENCES "equipment"("mrid") ON DELETE CASCADE,
+	FOREIGN KEY("nominal_p") REFERENCES "active_power"("mrid"),
+	FOREIGN KEY("dc_rated_power") REFERENCES "active_power"("mrid")
 );
 CREATE TABLE IF NOT EXISTS "equipment_container" (
 	"mrid"	TEXT NOT NULL,
@@ -1746,6 +1806,14 @@ CREATE TABLE IF NOT EXISTS "person_substation" (
 	FOREIGN KEY("substation_id") REFERENCES "substation"("mrid") ON DELETE CASCADE,
 	PRIMARY KEY("mrid")
 );
+CREATE TABLE IF NOT EXISTS "person_power_plant" (
+	"mrid"	TEXT NOT NULL,
+	"person_id"	TEXT,
+	"power_plant_id"	TEXT,
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("person_id") REFERENCES "person"("mrid") ON DELETE CASCADE,
+	FOREIGN KEY("power_plant_id") REFERENCES "power_plant"("mrid") ON DELETE CASCADE
+);
 CREATE TABLE IF NOT EXISTS "pickup_voltage_breaker_info" (
 	"mrid"	TEXT NOT NULL,
 	"parameter_name"	TEXT,
@@ -2219,6 +2287,16 @@ CREATE TABLE IF NOT EXISTS "substation" (
 	FOREIGN KEY("mrid") REFERENCES "equipment_container"("mrid") ON DELETE CASCADE,
 	PRIMARY KEY("mrid")
 );
+CREATE TABLE IF NOT EXISTS "power_plant" (
+	"mrid"	TEXT NOT NULL,
+	"plant_type"	TEXT NOT NULL,
+	"ac_capacity"	TEXT,
+	"dc_capacity"	TEXT,
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("mrid") REFERENCES "equipment_container"("mrid") ON DELETE CASCADE,
+	FOREIGN KEY("ac_capacity") REFERENCES "active_power"("mrid"),
+	FOREIGN KEY("dc_capacity") REFERENCES "active_power"("mrid")
+);
 CREATE TABLE IF NOT EXISTS "surge_arrester" (
 	"mrid"	TEXT NOT NULL,
 	"unit_count"	INTEGER,
@@ -2681,10 +2759,12 @@ CREATE TABLE IF NOT EXISTS "voltage_level" (
 	"low_voltage_limit"	TEXT,
 	"base_voltage"	TEXT,
 	"substation"	TEXT,
+	"power_plant"	TEXT,
 	FOREIGN KEY("low_voltage_limit") REFERENCES "voltage"("mrid"),
 	FOREIGN KEY("mrid") REFERENCES "equipment_container"("mrid") ON DELETE CASCADE,
 	FOREIGN KEY("high_voltage_limit") REFERENCES "voltage"("mrid"),
 	FOREIGN KEY("substation") REFERENCES "substation"("mrid") ON DELETE CASCADE,
+	FOREIGN KEY("power_plant") REFERENCES "power_plant"("mrid") ON DELETE CASCADE,
 	FOREIGN KEY("base_voltage") REFERENCES "base_voltage"("mrid"),
 	PRIMARY KEY("mrid")
 );

@@ -1,6 +1,7 @@
 'use strict'
 import { ipcMain, dialog } from 'electron'
 import { readPtmArchive } from '@/function/ptm/readPtmArchive'
+import { readCpxpertArchive } from '@/function/cpxpert/readCpxpertArchive'
 import { findDuplicateAsset } from '@/function/ptm/findDuplicateAsset'
 
 /**
@@ -69,6 +70,53 @@ export const readPtmFile = () => {
     })
 }
 
+export const importCpxpert = () => {
+    ipcMain.handle('importCpxpert', async () => {
+        try {
+            const result = await dialog.showOpenDialog({
+                title: 'Select CPXpert file to import',
+                buttonLabel: 'Read file',
+                filters: [{ name: 'OMICRON CPXpert Files', extensions: ['cpxpert'] }],
+                properties: ['openFile'],
+            })
+
+            if (result.canceled || !result.filePaths || result.filePaths.length === 0) {
+                return { success: false, message: 'Import cancelled' }
+            }
+
+            const filePath = result.filePaths[0]
+            const data = readCpxpertArchive(filePath)
+            return {
+                success: true,
+                message: 'CPXpert file read successfully',
+                data: { ...data, filePath },
+            }
+        } catch (error) {
+            console.error('[cpxpert] read failed:', error)
+            return {
+                success: false,
+                message: (error && error.message) ? error.message : 'Could not read CPXpert file',
+            }
+        }
+    })
+}
+
+export const readCpxpertFile = () => {
+    ipcMain.handle('readCpxpertFile', async (event, filePath) => {
+        try {
+            if (!filePath) return { success: false, message: 'No file path given' }
+            const data = readCpxpertArchive(filePath)
+            return { success: true, message: 'CPXpert file read successfully', data: { ...data, filePath } }
+        } catch (error) {
+            console.error('[cpxpert] read failed:', error)
+            return {
+                success: false,
+                message: (error && error.message) ? error.message : 'Could not read CPXpert file',
+            }
+        }
+    })
+}
+
 /**
  * Đối chiếu trùng thiết bị trước khi import.
  *
@@ -92,5 +140,7 @@ export const findPtmDuplicateAsset = () => {
 export const active = () => {
     importPtm()
     readPtmFile()
+    importCpxpert()
+    readCpxpertFile()
     findPtmDuplicateAsset()
 }

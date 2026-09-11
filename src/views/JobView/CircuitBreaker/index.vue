@@ -48,6 +48,8 @@
                                 <component
                                     :is="item.testTypeCode" 
                                     :data="item.data" 
+                                    :work-task-id="item.mrid"
+                                    :test-code="item.testTypeCode"
                                     :asset="assetData"
                                     :testCondition="item.testCondition"
                                     :testAssessment="item.testAssessment"
@@ -83,6 +85,7 @@ import OCOTiming from './components/OCOTiming.vue'
 import COCOTiming from './components/COCOTiming.vue'
 import OCOCOTiming from './components/OCOCOTiming.vue'
 import ContactResistance from './components/ContactResistance.vue'
+import DynamicContactResistance from './components/DynamicContactResistance.vue'
 import MinimumPickup from './components/MinimumPickup.vue'
 import DCWindingTripCoil from './components/DCWindingTripCoil.vue'
 import DCWindingCloseCoil from './components/DCWindingCloseCoil.vue'
@@ -112,6 +115,8 @@ export default {
         COCOTiming,
         OCOCOTiming,
         ContactResistance,
+        ODynamicContactResistance: DynamicContactResistance,
+        CDynamicContactResistance: DynamicContactResistance,
         MinimumPickup,
         DCWindingTripCoil,
         DCWindingCloseCoil,

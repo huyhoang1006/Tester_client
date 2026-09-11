@@ -11,6 +11,8 @@
                         :class="{ active: compareTab(activeTab, tab), 'before-active': compareTab(activeTab, tabs[index + 1]), 'before-hovered': tabs[index + 1] && hoveredTab === (tabs[index + 1].mrid || tabs[index + 1].id) }" ref="tabItems">
                         <div class="icon-wrapper mgl-10">
                             <icon v-if="tab.mode == 'substation'" size="16px" folderType="location" badgeColor="146EBE"></icon>
+                            <i v-else-if="tab.mode == 'powerPlant'"
+                                :class="[getPowerPlantIcon(tab.plantType || tab.plant_type), 'power-plant-tab-icon']"></i>
                             <icon v-else-if="tab.mode == 'voltageLevel'" size="16px" folderType="voltageLevel" badgeColor="146EBE"></icon>
                             <icon v-else-if="tab.mode == 'bay'" size="16px" folderType="bay" badgeColor="146EBE"></icon>
                             <icon v-else-if="tab.mode == 'asset'" size="16px" folderType="asset" :assetDetail="tab.asset" :transformerType="tab.type" badgeColor="146EBE"></icon>
@@ -19,6 +21,7 @@
                             <icon v-else size="16px" folderType="building" badgeColor="008001"></icon>
                             <span v-if="tab.mode == 'organisation'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
                             <span v-else-if="tab.mode == 'substation'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
+                            <span v-else-if="tab.mode == 'powerPlant'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
                             <span v-else-if="tab.mode == 'voltageLevel'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
                             <span v-else-if="tab.mode == 'bay'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
                             <span v-else-if="tab.mode == 'asset'" class="tab-label">{{ tab.apparatus_id || tab.serial_number }}</span>
@@ -30,7 +33,7 @@
                 <div class="scroll-btn right" @click="scrollRight"><i class="fa-solid fa-angle-right"></i></div>
             </div>
 
-            <div class="tabs-content">
+            <div ref="tabsContent" class="tabs-content">
                 <div class="mgr-20 mgt-20 mgb-20 mgl-20">
                     
                     <!-- SỬA TẠI ĐÂY: Thay v-if thành v-show để không bao giờ tiêu diệt keep-alive -->
@@ -45,8 +48,10 @@
                                 mode="update"
                                 @reload="(...args) => handleReload(activeTab, indexTab, ...args)" 
                                 :sideData="sideSign"
-                                :is="checkTab(activeTab)" 
-                                :organisationId="String(activeTab.parentId)"
+                                 :is="checkTab(activeTab)"
+                                 :organisationId="String(activeTab.parentId)"
+                                 :formVariant="activeTab.mode === 'powerPlant' ? 'powerPlant' : 'substation'"
+                                 :plantType="activeTab.plantType || activeTab.plant_type || ''"
 
                                 :testTypeListData="getContext(activeTab.mrid || activeTab.id).testTypeListData" 
                                 :assetData="getContext(activeTab.mrid || activeTab.id).assetData"
@@ -78,6 +83,8 @@
                         :class="{ active: compareTab(activeTab, tab), 'before-active': compareTab(activeTab, tabs[index + 1]), 'before-hovered': tabs[index + 1] && hoveredTab === (tabs[index + 1].mrid || tabs[index + 1].id) }" ref="tabItems">
                         <div class="icon-wrapper mgl-10">
                             <icon v-if="tab.mode == 'substation'" size="16px" folderType="location" badgeColor="146EBE"></icon>
+                            <i v-else-if="tab.mode == 'powerPlant'"
+                                :class="[getPowerPlantIcon(tab.plantType || tab.plant_type), 'power-plant-tab-icon']"></i>
                             <icon v-else-if="tab.mode == 'voltageLevel'" size="16px" folderType="voltageLevel" badgeColor="146EBE"></icon>
                             <icon v-else-if="tab.mode == 'bay'" size="16px" folderType="bay" badgeColor="146EBE"></icon>
                             <icon v-else-if="tab.mode == 'asset'" size="16px" folderType="asset" :assetDetail="tab.asset" :transformerType="tab.type" badgeColor="146EBE"></icon>
@@ -86,6 +93,7 @@
                             <icon v-else size="16px" folderType="building" badgeColor="008001"></icon>
                             <span v-if="tab.mode == 'organisation'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
                             <span v-else-if="tab.mode == 'substation'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
+                            <span v-else-if="tab.mode == 'powerPlant'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
                             <span v-else-if="tab.mode == 'voltageLevel'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
                             <span v-else-if="tab.mode == 'bay'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
                             <span v-else-if="tab.mode == 'asset'" class="tab-label">{{ tab.apparatus_id || tab.serial_number }}</span>
@@ -97,7 +105,7 @@
                 <div class="scroll-btn right" @click="scrollRight"><i class="fa-solid fa-angle-right"></i></div>
             </div>
 
-            <div class="tabs-content">
+            <div ref="tabsContent" class="tabs-content">
                 <div class="mgr-20 mgt-20 mgb-20 mgl-20">
                     <!-- Áp dụng tương tự cho Server -->
                     <div class="tab-scroll-wrapper" v-show="activeTab && (activeTab.mrid || activeTab.id)">
@@ -106,8 +114,10 @@
                                 v-if="activeTab && (activeTab.mrid || activeTab.id)"
                                 :key="activeTab.mrid || activeTab.id" 
                                 :ref="'component_' + (activeTab.mrid || activeTab.id)"
-                                mode="update" @reload="(...args) => handleReload(activeTab, indexTab, ...args)" :sideData="sideSign"
-                                :is="checkTab(activeTab)" :organisationId="String(activeTab.parentId)"
+                                 mode="update" @reload="(...args) => handleReload(activeTab, indexTab, ...args)" :sideData="sideSign"
+                                 :is="checkTab(activeTab)" :organisationId="String(activeTab.parentId)"
+                                 :formVariant="activeTab.mode === 'powerPlant' ? 'powerPlant' : 'substation'"
+                                 :plantType="activeTab.plantType || activeTab.plant_type || ''"
                                 
                                 :testTypeListData="getContext(activeTab.mrid || activeTab.id).testTypeListData" 
                                 :assetData="getContext(activeTab.mrid || activeTab.id).assetData"
@@ -134,6 +144,7 @@
 import LocationViewData from '@/views/LocationInsert/locationLevelView.vue'
 import OrganisationView from '@/views/Organisation/index.vue'
 import * as subsMapper from '@/views/Mapping/Substation/index'
+import * as powerPlantMapper from '@/views/Mapping/PowerPlant/index'
 import SubstationDto from '@/views/Dto/Substation'
 import * as orgMapper from '@/views/Mapping/Organisation/index'
 import * as voltageMapper from '@/views/Mapping/VoltageLevel/index'
@@ -207,6 +218,8 @@ import Icon from '@/views/Common/Icon.vue'
 import * as SurgeArresterServerMapper from '@/views/Mapping/ServerToDTO/SurgeArrester/index.js'
 import { startLoading } from '@/utils/loading'
 import { downloadAssetMediaToAttachmentData } from '@/utils/assetMedia.js'
+import { getPowerPlantIcon } from '@/views/Common/powerPlantIcons'
+import { createStickyTestTableHeader } from '@/views/Common/stickyTestTableHeader'
 
 export default {
     name: "Tabs",
@@ -257,13 +270,31 @@ export default {
                         this.pendingLoadData[id](comp);
                         this.$delete(this.pendingLoadData, id); 
                     }
+                    this.refreshStickyTestHeader();
                 });
             },
             immediate: true,
             deep: true
         }
     },
+    mounted() {
+        this.$nextTick(() => this.initStickyTestHeader())
+    },
+    beforeDestroy() {
+        if (this.stickyTestHeader) this.stickyTestHeader.destroy()
+        this.stickyTestHeader = null
+    },
     methods: {
+        getPowerPlantIcon,
+        initStickyTestHeader() {
+            const container = this.$refs.tabsContent
+            if (!container || this.stickyTestHeader) return
+            this.stickyTestHeader = createStickyTestTableHeader(container)
+        },
+        refreshStickyTestHeader() {
+            this.initStickyTestHeader()
+            if (this.stickyTestHeader) this.stickyTestHeader.refresh()
+        },
         // Hàm cấp phát vùng nhớ độc lập để tránh dữ liệu tab này đè tab kia
         getContext(id) {
             if (!id) return {};
@@ -366,30 +397,41 @@ export default {
                 const id = tab.mrid || tab.id;
                 const ctx = this.getContext(id); // Gọi bộ nhớ độc lập
 
-                if (tab.mode === 'substation') {
+                if (tab.mode === 'substation' || tab.mode === 'powerPlant') {
                     let data
                     if (savedData) {
                         data = savedData
                     } else {
+                        const entityRequest = tab.mode === 'powerPlant'
+                            ? window.electronAPI.getPowerPlantEntityByMrid(tab.mrid, this.$store.state.user.user_id, tab.parentId)
+                            : window.electronAPI.getSubstationEntityByMrid(tab.mrid, this.$store.state.user.user_id, tab.parentId)
                         const[dataLocation, dataPerson, dataEntity] = await Promise.all([
                             window.electronAPI.getLocationByOrganisationId(tab.parentId),
                             window.electronAPI.getPersonByOrganisationId(tab.parentId),
-                            window.electronAPI.getSubstationEntityByMrid(tab.mrid, this.$store.state.user.user_id, tab.parentId)
+                            entityRequest
                         ]);
 
-                        data = { locationList: [], personList:[], dto: null, substation: tab }
+                        data = { locationList: [], personList:[], dto: null, substation: tab, powerPlantCapacity: null }
                         if (dataLocation.success) data.locationList = dataLocation.data;
                         if (dataPerson.success) data.personList = dataPerson.data;
 
                         if (dataEntity.success) {
-                            const dto = subsMapper.mapEntityToDto(dataEntity.data)
+                            const dto = tab.mode === 'powerPlant'
+                                ? powerPlantMapper.mapEntityToDto(dataEntity.data)
+                                : subsMapper.mapEntityToDto(dataEntity.data)
                             if (!dto.name || dto.name === '') dto.name = tab.name || ''
                             data.dto = dto
+                            if (tab.mode === 'powerPlant') {
+                                data.powerPlantCapacity = powerPlantMapper.mapEntityToCapacity(dataEntity.data)
+                            }
                         } else {
                             const dto = new SubstationDto()
                             dto.name = tab.name || ''
                             dto.subsId = tab.mrid || ''
                             dto.organisationId = tab.parentId || ''
+                            if (tab.mode === 'powerPlant') {
+                                dto.type = tab.plantType || tab.plant_type || ''
+                            }
                             data.dto = dto
                         }
                     }
@@ -399,7 +441,7 @@ export default {
                     if (data.dto) {
                         Object.assign(tab, { name: data.dto.name, aliasName: data.dto.aliasName || data.dto.name })
                     }
-                    this.$emit('update-node-data', { mrid: tab.mrid, data: data.dto, mode: 'substation' })
+                    this.$emit('update-node-data', { mrid: tab.mrid, data: data.dto, mode: tab.mode })
                     this.$emit('refresh-properties', tab)
 
                 } else if (tab.mode === 'organisation') {
@@ -1157,7 +1199,7 @@ export default {
             });
         },
         checkTab(tab) {
-            if (tab.mode == 'substation') return 'LocationViewData'
+            if (tab.mode == 'substation' || tab.mode == 'powerPlant') return 'LocationViewData'
             else if (tab.mode == 'organisation') return 'OrganisationView'
             else if (tab.mode == 'voltageLevel') return 'VoltageLevel'
             else if (tab.mode == 'bay') return 'Bay'
@@ -1360,6 +1402,14 @@ export default {
     gap: 7px;
     min-width: 0;
     flex: 1 1 auto;
+}
+
+.power-plant-tab-icon {
+    width: 16px;
+    flex: 0 0 16px;
+    color: #146ebe;
+    font-size: 15px;
+    text-align: center;
 }
 
 .tab-label {

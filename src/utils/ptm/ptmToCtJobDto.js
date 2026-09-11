@@ -84,6 +84,14 @@ const buildRow = (emptyRow, measurement, config) => {
         row[code].value = scaled(measurement[spec.from], spec.factor)
     }
 
+    for (const code of Object.keys(config.plainColumns || {})) {
+        const spec = config.plainColumns[code]
+        if (!row[code]) continue
+        const raw = str(measurement[spec.from])
+        const mapped = spec.map || {}
+        row[code].value = Object.prototype.hasOwnProperty.call(mapped, raw) ? mapped[raw] : raw
+    }
+
     if (config.assessment && row[config.assessment.to || 'assessment']) {
         const cell = row[config.assessment.to || 'assessment']
         const raw = str(measurement[config.assessment.from])
@@ -203,6 +211,7 @@ const buildTest = (ptmTest, testCode, config, jobConditions) => {
 
     // Điều kiện đo: PTM để ở cấp JOB, client để ở cấp TEST. Chép xuống từng bài.
     applyConditions(condition, jobConditions)
+    applyTestConditions(condition, ptmTest.conditions)
 
     // Ô điều kiện cũng cần mrid, đúng như ô của bảng — tầng lưu đối xử với chúng y hệt.
     ensureCellMrids(condition)
@@ -283,6 +292,21 @@ const applyConditions = (condition, jobConditions) => {
     put('humidity', jobConditions.humidity && jobConditions.humidity.value)
     put('bottom_oil_temp', jobConditions.bottomOilTemperature && jobConditions.bottomOilTemperature.value)
     put('top_oil_temp', jobConditions.topOilTemperature && jobConditions.topOilTemperature.value)
+}
+
+const applyTestConditions = (condition, testConditions) => {
+    if (!condition || !testConditions) return
+    const put = (code, entry) => {
+        if (!condition[code]) return
+        const value = entry && typeof entry === 'object' && 'value' in entry ? entry.value : entry
+        if (value === '' || value === undefined || value === null || isPtmUnset(value)) return
+        condition[code].value = str(value)
+    }
+    put('winding_temp', testConditions.windingTemperature)
+    put('reference_temp', testConditions.referenceTemperature)
+    put('ambient_temp', testConditions.ambientTemperature)
+    put('humidity', testConditions.humidity)
+    put('weather', testConditions.weather)
 }
 
 /**

@@ -56,6 +56,25 @@ export const getBayByVoltageBySubstationId = () => {
     })
 }
 
+export const getBayByPowerPlantId = () => {
+    ipcMain.handle('getBayByPowerPlantId', async function (event, powerPlantId) {
+        try {
+            const rs = await cimFunc.bayFunc.getBayByPowerPlantId(powerPlantId)
+            return rs.success
+                ? { success: true, message: rs.message || 'Success', data: rs.data }
+                : { success: false, message: rs.message || 'fail', data: rs.data || [] }
+        } catch (error) {
+            console.log(error)
+            return {
+                error,
+                success: false,
+                message: (error && error.message) ? error.message : 'Internal error',
+                data: []
+            }
+        }
+    })
+}
+
 export const insertBay = () => {
     ipcMain.handle('insertBay', async function (event, data) {
         const rs = await cimFunc.bayFunc.insertBay(data)
@@ -141,6 +160,7 @@ export const deleteBayByMrid = () => {
 export const active = () => {
     getBayByMrid()
     getBayByVoltageBySubstationId()
+    getBayByPowerPlantId()
     insertBay()
     updateBayByMrid()
     deleteBayByMrid()

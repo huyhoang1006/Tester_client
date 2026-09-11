@@ -305,13 +305,15 @@ const buildColumns = (currentRows, referenceRows) => {
 
 /**
  * So sánh 2 snapshot.
+ * @param options.excludedFields mã các cột chỉ dùng làm giá trị tham chiếu nội bộ
  * @returns { tables: [...], conditionDiff: [...], summary: {...} }
  */
-export const compareSnapshots = (current, reference) => {
+export const compareSnapshots = (current, reference, options = {}) => {
     const currentTables = (current && current.tables) || []
     const referenceTables = (reference && reference.tables) || []
     const keyCodes = (current && current.keyCodes) || (reference && reference.keyCodes) || []
     const hasKey = keyCodes.length > 0
+    const excludedFields = new Set(options.excludedFields || [])
 
     const titles = []
     for (const table of currentTables) if (!titles.includes(table.title)) titles.push(table.title)
@@ -329,7 +331,11 @@ export const compareSnapshots = (current, reference) => {
         const columns = buildColumns(currentRows, referenceRows)
         // Bỏ cột mốc (đã hiện ở cột nhãn bên trái, và hai dòng ghép được thì mốc
         // giống nhau) và bỏ assessment / condition_indicator (xem isExcludedFromCompare).
-        const valueColumns = columns.filter(col => !col.isKey && !isExcludedFromCompare(col.aliasName))
+        const valueColumns = columns.filter(col => {
+            return !col.isKey
+                && !isExcludedFromCompare(col.aliasName)
+                && !excludedFields.has(col.aliasName)
+        })
 
         const rows = matchRows(currentRows, referenceRows, hasKey).map((pair, index) => ({
             label: (pair.current && pair.current.label)

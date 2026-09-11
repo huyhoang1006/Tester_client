@@ -1,4 +1,6 @@
 import * as ipcCtExcitationPoint from './ctExcitationPoint/index.js'
+import * as ipcCbMotorCurrentPoint from './cbMotorCurrentPoint/index.js'
+import * as ipcCbTimingTrace from './cbTimingTrace/index.js'
 import * as ipcParentOrganization from './parentOrganization/index.js'
 import * as ipcSubstation from './substation/index.js'
 import * as ipcLocation from './location/index.js'
@@ -63,4 +65,6 @@ export const active = () => {
     ipcLicense.active()
     ipcOther.active()
     ipcCtExcitationPoint.active()
+    ipcCbMotorCurrentPoint.active()
+    ipcCbTimingTrace.active()
 }

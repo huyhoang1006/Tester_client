@@ -51,12 +51,17 @@ export const getBayById = (bayId) => {
     return client.get(`/api/bay/cim/${toServerId(bayId)}`)
 }
 
-export const getAssetById = (assetId, mode) => {
+export const getAssetById = async (assetId, mode) => {
     if (!assetId) {
         return Promise.reject(new Error('assetId is required'))
     } else {
         if (mode == 'PowerCable') {
-            return client.get(`/api/power-cable/${toServerId(assetId)}`)
+            const serverId = toServerId(assetId)
+            try {
+                return await client.get(`/api/cim/power-cable/${serverId}`)
+            } catch (error) {
+                return client.get(`/api/power-cable/${serverId}`)
+            }
         } else if (mode == 'SurgeArrester') {
             return client.get(`/api/surge-arrester/${toServerId(assetId)}`)
         } else if (mode == 'Disconnector') {

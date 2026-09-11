@@ -33,6 +33,7 @@ import * as testingEquipmentEntityFunc from "./testingEquipment/index"
 import * as accessoryTestingEquipmentFunc from "./accessoryTestingEquipment/index"
 import * as treeSearchFunc from './treeSearch/index'
 import * as syncStateFunc from "./syncState/index"
+import * as powerPlantEntityFunc from './powerPlant/index'
 
 
 export {
@@ -43,6 +44,7 @@ export {
     capacitorEntityFunc, breakerEntityFunc, updateEntityFunc, entitySnapshotFunc, mRIDCheckFunc,
     voltageTransformerEntityFunc, bushingEntityFunc, disconnectorEntityFunc, rotatingMachineEntityFunc,
     currentTransformerEntityFunc, reactorEntityFunc, assetPsrFunc, notificationEntityFunc, templateFunc,
-    testingEquipmentEntityFunc, accessoryTestingEquipmentFunc, syncStateFunc, treeSearchFunc
+    testingEquipmentEntityFunc, accessoryTestingEquipmentFunc, syncStateFunc, treeSearchFunc,
+    powerPlantEntityFunc
 
 }

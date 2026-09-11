@@ -13,6 +13,10 @@ export const ptmPreload = () => {
         importPtm: () => ipcRenderer.invoke('importPtm'),
         /** Đọc theo đường dẫn có sẵn (kéo-thả, hoặc đọc lại file đã chọn). */
         readPtmFile: (filePath) => ipcRenderer.invoke('readPtmFile', filePath),
+        /** Mở hộp thoại chọn project CPXpert rồi chuẩn hoá về cùng mô hình import. */
+        importCpxpert: () => ipcRenderer.invoke('importCpxpert'),
+        /** Đọc project CPXpert theo đường dẫn có sẵn. */
+        readCpxpertFile: (filePath) => ipcRenderer.invoke('readCpxpertFile', filePath),
         /** Đối chiếu trùng thiết bị theo (serial, manufacturer, manufacturer type). */
         findPtmDuplicateAsset: (criteria, userId, targetPsrId) =>
             ipcRenderer.invoke('findPtmDuplicateAsset', criteria, userId, targetPsrId),

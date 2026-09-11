@@ -8,13 +8,7 @@ export default {
                     this.signTransformer = true
                     return
                 }
-                let psrId = null
-                if (node.parentArr && node.parentArr.length >= 2) {
-                    psrId = node.parentArr[1].mrid
-                } else {
-                    psrId = node.mrid
-                }
-                const dataLoction = await window.electronAPI.getLocationByPowerSystemResourceMrid(psrId)
+                const dataLoction = await window.electronAPI.getLocationByPowerSystemResourceMrid(node.mrid)
                 if (dataLoction.success) {
                     this.locationId = dataLoction.data.mrid
                 } else {

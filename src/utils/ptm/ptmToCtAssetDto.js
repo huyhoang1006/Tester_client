@@ -1,5 +1,6 @@
 /* eslint-disable */
 import currentTransformerConfig from '@/config/ptm-import/current-transformer.json'
+import uuid from '@/utils/uuid'
 
 /**
  * ÁP THÔNG SỐ THIẾT BỊ TỪ PTM LÊN DTO ASSET ĐANG CÓ.
@@ -114,6 +115,37 @@ export const applyPtmToCtAssetDto = (assetDto, ptmAsset) => {
 }
 
 /**
+ * Complete the identity graph required by CurrentTransformerMapper before insert.
+ * This mirrors the normal Current Transformer save flow, where every inherited
+ * entity and nested value object receives an mRID before mapping to SQLite rows.
+ */
+export const ensureCurrentTransformerDtoIds = (dto) => {
+    const topLevelIds = [
+        'assetInfoId',
+        'productAssetModelId',
+        'lifecycleDateId',
+        'assetPsrId',
+    ]
+    for (const key of topLevelIds) {
+        if (!dto[key]) dto[key] = uuid.newUuid()
+    }
+    if (!dto.properties.mrid) dto.properties.mrid = uuid.newUuid()
+
+    const fill = (value) => {
+        if (Array.isArray(value)) {
+            value.forEach(fill)
+        } else if (value && typeof value === 'object') {
+            if (Object.prototype.hasOwnProperty.call(value, 'mrid') && !value.mrid) {
+                value.mrid = uuid.newUuid()
+            }
+            Object.keys(value).forEach(key => fill(value[key]))
+        }
+    }
+    fill(dto)
+    return dto
+}
+
+/**
  * DỰNG CẤU HÌNH LÕI/TAP TỪ BÀI CT EXCITATION.
  *
  * ─── ÁNH XẠ ĐÃ ĐỐI CHIẾU TRÊN FILE THẬT, KHÔNG SUY ĐOÁN ─────────────────────
@@ -197,7 +229,9 @@ const buildTapTable = (base, measurement, mismatches) => {
     put(table.ipn, measurement.nominalPrimaryCurrent, 'ipn')
     put(table.isn, measurement.nominalSecondaryCurrent, 'isn')
 
-    table.inUse = Array.isArray(measurement.points) && measurement.points.length > 0
+    table.inUse = typeof measurement.inUse === 'boolean'
+        ? measurement.inUse
+        : Array.isArray(measurement.points) && measurement.points.length > 0
     return table
 }
 
@@ -289,4 +323,4 @@ export const buildCtConfigurationFromPtm = (ctExcitationTest, CTConfigurationDto
     return { config, mismatches, notes }
 }
 
-export default { applyPtmToCtAssetDto, buildCtConfigurationFromPtm }
+export default { applyPtmToCtAssetDto, ensureCurrentTransformerDtoIds, buildCtConfigurationFromPtm }

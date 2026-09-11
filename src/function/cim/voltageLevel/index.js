@@ -1,9 +1,30 @@
 import db from '../../datacontext/index'
 import * as equipmentContainerFunc from '../equipmentContainer/index.js'
 
+let parentSchemaPromise = null
+
+export const ensureVoltageLevelParentSchema = (dbsql = db) => {
+    if (parentSchemaPromise) return parentSchemaPromise
+    parentSchemaPromise = new Promise((resolve, reject) => {
+        dbsql.all('PRAGMA table_info(voltage_level)', [], (err, rows) => {
+            if (err) return reject(err)
+            if ((rows || []).some((row) => row.name === 'power_plant')) return resolve()
+            dbsql.run('ALTER TABLE voltage_level ADD COLUMN power_plant TEXT REFERENCES power_plant(mrid)', (alterError) => {
+                if (alterError) return reject(alterError)
+                return resolve()
+            })
+        })
+    }).catch((error) => {
+        parentSchemaPromise = null
+        throw error
+    })
+    return parentSchemaPromise
+}
+
 
 // Thêm mới VoltageLevel (gồm cả insert EquipmentContainer)
 export const insertVoltageLevel = async (voltageLevel) => {
+    await ensureVoltageLevelParentSchema()
     return new Promise((resolve, reject) => {
         db.serialize(() => {
             db.run('BEGIN TRANSACTION')
@@ -14,14 +35,15 @@ export const insertVoltageLevel = async (voltageLevel) => {
                         return reject({ success: false, message: 'Insert EquipmentContainer failed', err: result.err })
                     }
                     db.run(
-                        `INSERT INTO voltage_level(mrid, high_voltage_limit, low_voltage_limit, base_voltage, substation)
-                         VALUES (?, ?, ?, ?, ?)
+                        `INSERT INTO voltage_level(mrid, high_voltage_limit, low_voltage_limit, base_voltage, substation, power_plant)
+                         VALUES (?, ?, ?, ?, ?, ?)
                          ON CONFLICT(mrid) DO UPDATE SET
                             high_voltage_limit = excluded.high_voltage_limit,
                             low_voltage_limit = excluded.low_voltage_limit,
                             base_voltage = excluded.base_voltage,
-                            substation = excluded.substation`,
-                        [voltageLevel.mrid, voltageLevel.high_voltage_limit, voltageLevel.low_voltage_limit, voltageLevel.base_voltage, voltageLevel.substation],
+                            substation = excluded.substation,
+                            power_plant = excluded.power_plant`,
+                        [voltageLevel.mrid, voltageLevel.high_voltage_limit, voltageLevel.low_voltage_limit, voltageLevel.base_voltage, voltageLevel.substation, voltageLevel.power_plant],
                         function (err) {
                             if (err) {
                                 db.run('ROLLBACK')
@@ -42,6 +64,7 @@ export const insertVoltageLevel = async (voltageLevel) => {
 
 // Thêm mới Substation trong transaction (cho lớp cha gọi)
 export const insertVoltageLevelTransaction = async (voltageLevel, dbsql) => {
+    await ensureVoltageLevelParentSchema(dbsql)
     return new Promise((resolve, reject) => {
         equipmentContainerFunc.insertEquipmentContainerTransaction(voltageLevel, dbsql)
             .then(result => {
@@ -49,14 +72,15 @@ export const insertVoltageLevelTransaction = async (voltageLevel, dbsql) => {
                     return reject({ success: false, message: 'Insert EquipmentContainer failed', err: result.err })
                 }
                 dbsql.run(
-                    `INSERT INTO voltage_level(mrid, high_voltage_limit, low_voltage_limit, base_voltage, substation)
-                     VALUES (?, ?, ?, ?, ?)
+                    `INSERT INTO voltage_level(mrid, high_voltage_limit, low_voltage_limit, base_voltage, substation, power_plant)
+                     VALUES (?, ?, ?, ?, ?, ?)
                      ON CONFLICT(mrid) DO UPDATE SET
                         high_voltage_limit = excluded.high_voltage_limit,
                         low_voltage_limit = excluded.low_voltage_limit,
                         base_voltage = excluded.base_voltage,
-                        substation = excluded.substation`,
-                    [voltageLevel.mrid, voltageLevel.high_voltage_limit, voltageLevel.low_voltage_limit, voltageLevel.base_voltage, voltageLevel.substation],
+                        substation = excluded.substation,
+                        power_plant = excluded.power_plant`,
+                    [voltageLevel.mrid, voltageLevel.high_voltage_limit, voltageLevel.low_voltage_limit, voltageLevel.base_voltage, voltageLevel.substation, voltageLevel.power_plant],
                     function (err) {
                         if (err) {
                             return reject({ success: false, err, message: 'Insert VoltageLevel failed' })
@@ -75,6 +99,7 @@ export const insertVoltageLevelTransaction = async (voltageLevel, dbsql) => {
 // Lấy VoltageLevel theo mrid (gộp cả cha, trả về data: data)
 export const getVoltageLevelById = async (mrid) => {
     try {
+        await ensureVoltageLevelParentSchema()
         const ecResult = await equipmentContainerFunc.getEquipmentContainerById(mrid)
         if (!ecResult.success) {
             return { success: false, data: null, message: 'EquipmentContainer not found' }
@@ -92,7 +117,8 @@ export const getVoltageLevelById = async (mrid) => {
     }
 }
 
-export const getVoltageLevelsBySubstationId = (substationId) => {
+const getVoltageLevelsByParent = async (column, parentId, parentLabel) => {
+    await ensureVoltageLevelParentSchema()
     return new Promise((resolve, reject) => {
         const sql = `
             SELECT 
@@ -100,16 +126,16 @@ export const getVoltageLevelsBySubstationId = (substationId) => {
                 io.*
             FROM voltage_level vl
             JOIN identified_object io ON vl.mrid = io.mrid
-            WHERE vl.substation = ?
+            WHERE vl.${column} = ?
         `;
 
-        db.all(sql, [substationId], (err, rows) => {
+        db.all(sql, [parentId], (err, rows) => {
             if (err) {
-                console.error('Get VoltageLevels by substation failed:', err);
+                console.error(`Get VoltageLevels by ${parentLabel} failed:`, err);
                 return reject({
                     success: false,
                     data: null,
-                    message: 'Get VoltageLevels by substation failed',
+                    message: `Get VoltageLevels by ${parentLabel} failed`,
                     err
                 });
             }
@@ -118,23 +144,30 @@ export const getVoltageLevelsBySubstationId = (substationId) => {
                 return resolve({
                     success: false,
                     data: [],
-                    message: 'No voltage levels found for this substation'
+                    message: `No voltage levels found for this ${parentLabel}`
                 });
             }
 
             return resolve({
                 success: true,
                 data: rows,
-                message: 'Get VoltageLevels by substation completed'
+                message: `Get VoltageLevels by ${parentLabel} completed`
             });
         });
     });
 };
 
+export const getVoltageLevelsBySubstationId = (substationId) =>
+    getVoltageLevelsByParent('substation', substationId, 'substation')
+
+export const getVoltageLevelsByPowerPlantId = (powerPlantId) =>
+    getVoltageLevelsByParent('power_plant', powerPlantId, 'power plant')
+
 
 
 // Cập nhật VoltageLevel (gồm cả EquipmentContainer)
 export const updateVoltageLevelById = async (mrid, voltageLevel) => {
+    await ensureVoltageLevelParentSchema()
     return new Promise((resolve, reject) => {
         db.serialize(() => {
             db.run('BEGIN TRANSACTION')
@@ -149,9 +182,10 @@ export const updateVoltageLevelById = async (mrid, voltageLevel) => {
                             high_voltage_limit = ?,
                             low_voltage_limit = ?,
                             base_voltage = ?,
-                            substation = ?
+                            substation = ?,
+                            power_plant = ?
                      WHERE mrid = ?`,
-                        [voltageLevel.high_voltage_limit, voltageLevel.low_voltage_limit, voltageLevel.base_voltage, voltageLevel.substation, mrid],
+                        [voltageLevel.high_voltage_limit, voltageLevel.low_voltage_limit, voltageLevel.base_voltage, voltageLevel.substation, voltageLevel.power_plant, mrid],
                         function (err) {
                             if (err) {
                                 db.run('ROLLBACK')
@@ -172,6 +206,7 @@ export const updateVoltageLevelById = async (mrid, voltageLevel) => {
 
 // Cập nhật VoltageLevel trong transaction (cho lớp cha gọi)
 export const updateVoltageLevelByIdTransaction = async (mrid, voltageLevel, dbsql) => {
+    await ensureVoltageLevelParentSchema(dbsql)
     return new Promise((resolve, reject) => {
         equipmentContainerFunc.updateEquipmentContainerByIdTransaction(mrid, voltageLevel, dbsql)
             .then(result => {
@@ -183,9 +218,10 @@ export const updateVoltageLevelByIdTransaction = async (mrid, voltageLevel, dbsq
                         high_voltage_limit = ?,
                         low_voltage_limit = ?,
                         base_voltage = ?,
-                        substation = ?
+                        substation = ?,
+                        power_plant = ?
                      WHERE mrid = ?`,
-                    [voltageLevel.high_voltage_limit, voltageLevel.low_voltage_limit, voltageLevel.base_voltage, voltageLevel.substation, mrid],
+                    [voltageLevel.high_voltage_limit, voltageLevel.low_voltage_limit, voltageLevel.base_voltage, voltageLevel.substation, voltageLevel.power_plant, mrid],
                     function (err) {
                         if (err) {
                             return reject({ success: false, err, message: 'Update VoltageLevel failed' })

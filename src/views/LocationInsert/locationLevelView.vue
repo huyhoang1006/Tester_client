@@ -5,7 +5,7 @@
             <div class="col-content">
                 <section class="sub-card">
                     <div class="sub-header">
-                        <i class="fa-solid fa-industry"></i>
+                        <i :class="isPowerPlant ? powerPlantIcon : 'fa-solid fa-industry'"></i>
                         <span>Properties</span>
                     </div>
                     <div class="sub-body">
@@ -15,25 +15,131 @@
                                 <el-input v-model="properties.name" v-if="properties"></el-input>
                             </el-form-item>
 
-                            <div class="sub-section">Type</div>
-                            <el-form-item label="Substation">
-                                <el-select filterable v-model="properties.type">
-                                    <el-option v-for="item in substationType" :key="item" :label="item" :value="item">
-                                    </el-option>
-                                </el-select>
-                            </el-form-item>
-                            <el-form-item label="Generation">
-                                <el-select filterable v-model="properties.generation">
-                                    <el-option v-for="item in generationType" :key="item" :label="item" :value="item">
-                                    </el-option>
-                                </el-select>
-                            </el-form-item>
-                            <el-form-item label="Industry">
-                                <el-select filterable v-model="properties.industry">
-                                    <el-option v-for="item in industryType" :key="item" :label="item" :value="item">
-                                    </el-option>
-                                </el-select>
-                            </el-form-item>
+                            <template v-if="isPowerPlant">
+                                <div class="sub-section">Plant Capacity</div>
+                                <el-form-item label="AC capacity" :class="{ 'capacity-mismatch': acCapacityMismatch }">
+                                    <div class="capacity-control">
+                                        <el-input v-model="acCapacity.value" type="number" min="0"
+                                            class="capacity-input">
+                                            <el-select v-model="acCapacity.unit" slot="append" size="mini"
+                                                class="select-in-input">
+                                                <el-option label="MW" value="MW"></el-option>
+                                                <el-option label="kW" value="kW"></el-option>
+                                            </el-select>
+                                        </el-input>
+                                    </div>
+                                </el-form-item>
+                                <el-form-item v-if="isSolarPlant" label="DC capacity"
+                                    :class="{ 'capacity-mismatch': dcCapacityMismatch }">
+                                    <div class="capacity-control">
+                                        <el-input v-model="dcCapacity.value" type="number" min="0"
+                                            class="capacity-input">
+                                            <el-select v-model="dcCapacity.unit" slot="append" size="mini"
+                                                class="select-in-input">
+                                                <el-option label="MWp" value="MWp"></el-option>
+                                                <el-option label="kWp" value="kWp"></el-option>
+                                            </el-select>
+                                        </el-input>
+                                    </div>
+                                </el-form-item>
+                                <div class="plant-units-inline">
+                                    <div class="plant-units-inline-header">
+                                        <div class="plant-units-title">
+                                            <i :class="plantUnitsIcon"></i>
+                                            <span>{{ plantUnitsTitle }}</span>
+                                        </div>
+                                        <el-button class="plant-add-row" type="primary" size="mini"
+                                            @click="addGeneratingUnit">
+                                            <i class="fa-solid fa-plus"></i>
+                                            Add row
+                                        </el-button>
+                                    </div>
+                                    <div class="plant-unit-table" :class="{ 'plant-unit-table--solar': isSolarPlant }">
+                                        <div class="plant-unit-table-header">
+                                            <span>Quantity</span>
+                                            <span>AC Rated Power</span>
+                                            <span v-if="isSolarPlant">DC Rated Power</span>
+                                            <span aria-hidden="true"></span>
+                                        </div>
+                                        <div v-for="(unit, index) in generatingUnits" :key="unit.key"
+                                            class="plant-unit-row">
+                                            <div class="plant-unit-cell" data-label="Quantity">
+                                                <el-input v-model="unit.quantity" type="number" min="0"></el-input>
+                                            </div>
+                                            <div class="plant-unit-cell" data-label="AC Rated Power">
+                                                <div class="capacity-control">
+                                                    <el-input v-model="unit.acRatedPower" type="number" min="0"
+                                                        class="capacity-input">
+                                                        <el-select v-model="unit.acUnit" slot="append" size="mini"
+                                                            class="select-in-input">
+                                                            <el-option label="MW" value="MW"></el-option>
+                                                            <el-option label="kW" value="kW"></el-option>
+                                                        </el-select>
+                                                    </el-input>
+                                                </div>
+                                            </div>
+                                            <div v-if="isSolarPlant" class="plant-unit-cell" data-label="DC Rated Power">
+                                                <div class="capacity-control">
+                                                    <el-input v-model="unit.dcRatedPower" type="number" min="0"
+                                                        class="capacity-input">
+                                                        <el-select v-model="unit.dcUnit" slot="append" size="mini"
+                                                            class="select-in-input">
+                                                            <el-option label="MWp" value="MWp"></el-option>
+                                                            <el-option label="kWp" value="kWp"></el-option>
+                                                        </el-select>
+                                                    </el-input>
+                                                </div>
+                                            </div>
+                                            <div class="plant-unit-action">
+                                                <el-button type="text" class="plant-remove-row" title="Remove row"
+                                                    @click="removeGeneratingUnit(index)">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </el-button>
+                                            </div>
+                                        </div>
+                                        <div v-if="generatingUnits.length === 0" class="plant-unit-empty">
+                                            No generating units added
+                                        </div>
+                                    </div>
+
+                                    <div class="calculated-capacities">
+                                        <div :class="['calculated-capacity', { 'is-mismatch': acCapacityMismatch }]">
+                                            <span>Calculated AC total</span>
+                                            <strong>{{ formattedCalculatedAcTotal }} MW</strong>
+                                            <i
+                                                :class="acCapacityMismatch ? 'fa-solid fa-triangle-exclamation' : 'fa-solid fa-check'"></i>
+                                        </div>
+                                        <div v-if="isSolarPlant"
+                                            :class="['calculated-capacity', { 'is-mismatch': dcCapacityMismatch }]">
+                                            <span>Calculated DC total</span>
+                                            <strong>{{ formattedCalculatedDcTotal }} MWp</strong>
+                                            <i
+                                                :class="dcCapacityMismatch ? 'fa-solid fa-triangle-exclamation' : 'fa-solid fa-check'"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            <template v-else>
+                                <div class="sub-section">Type</div>
+                                <el-form-item label="Substation">
+                                    <el-select filterable v-model="properties.type">
+                                        <el-option v-for="item in substationType" :key="item" :label="item" :value="item">
+                                        </el-option>
+                                    </el-select>
+                                </el-form-item>
+                                <el-form-item label="Generation">
+                                    <el-select filterable v-model="properties.generation">
+                                        <el-option v-for="item in generationType" :key="item" :label="item" :value="item">
+                                        </el-option>
+                                    </el-select>
+                                </el-form-item>
+                                <el-form-item label="Industry">
+                                    <el-select filterable v-model="properties.industry">
+                                        <el-option v-for="item in industryType" :key="item" :label="item" :value="item">
+                                        </el-option>
+                                    </el-select>
+                                </el-form-item>
+                            </template>
 
                             <div class="sub-section">Location</div>
                             <el-form-item label="Street">
@@ -71,7 +177,7 @@
                     </div>
                 </section>
                 <Attachment class="sub-attach-card" :dataParent="this.properties" :deleteList="deleteList"
-                    :attachment_="this.attachmentData" title="substation" height="230px"
+                    :attachment_="this.attachmentData" :title="isPowerPlant ? 'power-plant' : 'substation'" height="230px"
                     @data-attachment="getDataAttachment"></Attachment>
             </div>
         </div>
@@ -224,6 +330,7 @@ import Attachment from '@/views/Common/Attachment.vue'
 import namePlate from '@/views/Common/NamePlate.vue'
 import { country } from '../ConstantAsset/index'
 import geoMap from '@/views/Common/GeoMap.vue'
+import { getPowerPlantIcon } from '@/views/Common/powerPlantIcons'
 
 export default {
     components: {
@@ -254,9 +361,84 @@ export default {
             type: String,
             default: "add"
         },
+        formVariant: {
+            type: String,
+            default: 'substation'
+        },
+        plantType: {
+            type: String,
+            default: ''
+        },
+    },
+    computed: {
+        isPowerPlant() {
+            return this.formVariant === 'powerPlant'
+        },
+        isSolarPlant() {
+            return this.plantType === 'Solar Power'
+        },
+        isWindPlant() {
+            return this.plantType === 'Wind Power'
+        },
+        plantUnitsTitle() {
+            if (this.isWindPlant) return 'Wind turbines'
+            if (this.isSolarPlant) return 'PV Arrays/Blocks'
+            return 'Generating units'
+        },
+        plantUnitsIcon() {
+            return this.powerPlantIcon
+        },
+        powerPlantIcon() {
+            return getPowerPlantIcon(this.plantType)
+        },
+        calculatedAcTotal() {
+            return this.generatingUnits.reduce((total, unit) => {
+                return total + this.capacityToMega(unit.quantity, unit.acRatedPower, unit.acUnit)
+            }, 0)
+        },
+        calculatedDcTotal() {
+            return this.generatingUnits.reduce((total, unit) => {
+                return total + this.capacityToMega(unit.quantity, unit.dcRatedPower, unit.dcUnit)
+            }, 0)
+        },
+        formattedCalculatedAcTotal() {
+            return this.formatCapacity(this.calculatedAcTotal)
+        },
+        formattedCalculatedDcTotal() {
+            return this.formatCapacity(this.calculatedDcTotal)
+        },
+        acCapacityMismatch() {
+            return this.capacityMismatch(this.acCapacity, this.calculatedAcTotal)
+        },
+        dcCapacityMismatch() {
+            return this.isSolarPlant && this.capacityMismatch(this.dcCapacity, this.calculatedDcTotal)
+        }
     },
     data() {
         return {
+            acCapacity: {
+                value: '',
+                unit: 'MW'
+            },
+            dcCapacity: {
+                value: '',
+                unit: 'MWp'
+            },
+            generatingUnits: [
+                {
+                    key: 1,
+                    mrid: '',
+                    quantity: '',
+                    acRatedPower: '',
+                    acUnit: 'MW',
+                    dcRatedPower: '',
+                    dcUnit: 'MWp',
+                    nominalPowerId: '',
+                    dcRatedPowerId: '',
+                    userIdentifiedObjectId: ''
+                }
+            ],
+            nextGeneratingUnitKey: 2,
             geoChosen: {
                 x: '',
                 y: '',
@@ -280,6 +462,85 @@ export default {
         }
     },
     methods: {
+        createGeneratingUnit() {
+            return {
+                key: this.nextGeneratingUnitKey++,
+                mrid: '',
+                quantity: '',
+                acRatedPower: '',
+                acUnit: 'MW',
+                dcRatedPower: '',
+                dcUnit: 'MWp',
+                nominalPowerId: '',
+                dcRatedPowerId: '',
+                userIdentifiedObjectId: ''
+            }
+        },
+        addGeneratingUnit() {
+            this.generatingUnits.push(this.createGeneratingUnit())
+        },
+        removeGeneratingUnit(index) {
+            this.generatingUnits.splice(index, 1)
+        },
+        resetPowerPlantCapacity() {
+            this.acCapacity = { value: '', unit: 'MW' }
+            this.dcCapacity = { value: '', unit: 'MWp' }
+            this.nextGeneratingUnitKey = 2
+            this.generatingUnits = [{
+                key: 1,
+                mrid: '',
+                quantity: '',
+                acRatedPower: '',
+                acUnit: 'MW',
+                dcRatedPower: '',
+                dcUnit: 'MWp',
+                nominalPowerId: '',
+                dcRatedPowerId: '',
+                userIdentifiedObjectId: ''
+            }]
+        },
+        loadPowerPlantCapacity(data) {
+            if (!data) return
+            this.acCapacity = { value: '', unit: 'MW', ...(data.acCapacity || {}) }
+            this.dcCapacity = { value: '', unit: 'MWp', ...(data.dcCapacity || {}) }
+            const units = Array.isArray(data.generatingUnits) ? data.generatingUnits : []
+            this.generatingUnits = units.map((unit, index) => ({
+                key: index + 1,
+                mrid: unit.mrid || '',
+                quantity: unit.quantity == null ? '' : unit.quantity,
+                acRatedPower: unit.acRatedPower == null ? '' : unit.acRatedPower,
+                acUnit: unit.acUnit || 'MW',
+                dcRatedPower: unit.dcRatedPower == null ? '' : unit.dcRatedPower,
+                dcUnit: unit.dcUnit || 'MWp',
+                nominalPowerId: unit.nominalPowerId || '',
+                dcRatedPowerId: unit.dcRatedPowerId || '',
+                userIdentifiedObjectId: unit.userIdentifiedObjectId || ''
+            }))
+            if (this.generatingUnits.length === 0) {
+                this.generatingUnits = [this.createGeneratingUnit()]
+            }
+            this.nextGeneratingUnitKey = this.generatingUnits.length + 1
+        },
+        capacityToMega(quantityValue, ratedPowerValue, unit) {
+            const quantity = Number(quantityValue)
+            const ratedPower = Number(ratedPowerValue)
+            if (!Number.isFinite(quantity) || !Number.isFinite(ratedPower)) return 0
+            const isKilo = unit === 'kW' || unit === 'kWp'
+            return quantity * ratedPower / (isKilo ? 1000 : 1)
+        },
+        capacityMismatch(capacity, calculatedTotal) {
+            if (!capacity || capacity.value === '' || capacity.value === null) return false
+            const enteredValue = Number(capacity.value)
+            if (!Number.isFinite(enteredValue)) return false
+            const enteredMegaValue = (capacity.unit === 'kW' || capacity.unit === 'kWp')
+                ? enteredValue / 1000
+                : enteredValue
+            return Math.abs(enteredMegaValue - calculatedTotal) > 0.000001
+        },
+        formatCapacity(value) {
+            if (!Number.isFinite(value)) return '0'
+            return Number(value.toFixed(6)).toString()
+        },
         getDataAttachment(rowData) {
             this.attachmentData = rowData
         },
@@ -424,6 +685,10 @@ export default {
     margin-top: 14px;
 }
 
+.sub-row-full {
+    grid-template-columns: minmax(0, 1fr);
+}
+
 .col-content {
     min-width: 0;
 }
@@ -480,6 +745,190 @@ export default {
     color: #606266;
     font-size: 12px;
     font-weight: 600;
+}
+
+.capacity-control {
+    width: 100%;
+}
+
+.capacity-input {
+    width: 100%;
+    min-width: 0;
+}
+
+.capacity-control ::v-deep(.select-in-input) {
+    width: 92px;
+    min-width: 92px;
+}
+
+.capacity-control ::v-deep(.select-in-input.el-select--mini input.el-input__inner) {
+    width: 92px;
+}
+
+.capacity-mismatch ::v-deep(.el-input__inner) {
+    border-color: #d70018;
+}
+
+.plant-units-inline {
+    margin: 10px 0 4px;
+    padding-top: 10px;
+    border-top: 1px solid #e4e7ed;
+}
+
+.plant-units-inline-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+    color: #606266;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.plant-units-title {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    gap: 8px;
+}
+
+.plant-add-row {
+    height: 30px;
+    padding: 0 12px;
+    flex-shrink: 0;
+}
+
+.plant-add-row i {
+    margin-right: 6px;
+}
+
+.plant-unit-table {
+    min-width: 0;
+    border: 1px solid #dcdfe6;
+    border-bottom: 0;
+}
+
+.plant-unit-table-header,
+.plant-unit-row {
+    display: grid;
+    grid-template-columns: minmax(90px, 0.55fr) minmax(220px, 1.45fr) 44px;
+}
+
+.plant-unit-table--solar .plant-unit-table-header,
+.plant-unit-table--solar .plant-unit-row {
+    grid-template-columns: minmax(90px, 0.5fr) minmax(210px, 1fr) minmax(210px, 1fr) 44px;
+}
+
+.plant-units-inline .plant-unit-table-header,
+.plant-units-inline .plant-unit-row {
+    grid-template-columns: minmax(72px, 0.55fr) minmax(0, 1.45fr) 38px;
+}
+
+.plant-units-inline .plant-unit-table--solar .plant-unit-table-header,
+.plant-units-inline .plant-unit-table--solar .plant-unit-row {
+    grid-template-columns: minmax(68px, 0.5fr) minmax(0, 1fr) minmax(0, 1fr) 38px;
+}
+
+.plant-units-inline .plant-unit-table-header > span,
+.plant-units-inline .plant-unit-cell,
+.plant-units-inline .plant-unit-action {
+    padding: 6px;
+}
+
+.plant-unit-table-header {
+    min-height: 38px;
+    background: #f5f7fa;
+    color: #606266;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.plant-unit-table-header > span,
+.plant-unit-cell,
+.plant-unit-action {
+    min-width: 0;
+    padding: 7px 10px;
+    border-right: 1px solid #e4e7ed;
+    border-bottom: 1px solid #e4e7ed;
+    box-sizing: border-box;
+}
+
+.plant-unit-table-header > span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.plant-unit-table-header > span:last-child,
+.plant-unit-action {
+    border-right: 0;
+}
+
+.plant-unit-row {
+    background: #fff;
+}
+
+.plant-unit-row:hover {
+    background: #fafcff;
+}
+
+.plant-unit-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.plant-remove-row {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    color: #d70018;
+}
+
+.plant-unit-empty {
+    padding: 20px 12px;
+    border-bottom: 1px solid #e4e7ed;
+    color: #909399;
+    font-size: 12px;
+    text-align: center;
+}
+
+.calculated-capacities {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px 24px;
+    padding: 0 2px;
+}
+
+.plant-units-inline .calculated-capacities {
+    margin-top: 10px;
+}
+
+.calculated-capacity {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto 18px;
+    align-items: center;
+    gap: 10px;
+    min-height: 28px;
+    color: #606266;
+    font-size: 12px;
+}
+
+.calculated-capacity strong {
+    color: #303133;
+    font-weight: 600;
+}
+
+.calculated-capacity i {
+    color: #14853b;
+    text-align: center;
+}
+
+.calculated-capacity.is-mismatch,
+.calculated-capacity.is-mismatch strong,
+.calculated-capacity.is-mismatch i {
+    color: #d70018;
 }
 
 .sub-comment-form,
@@ -637,6 +1086,49 @@ export default {
 
     .sub-body {
         padding: 10px;
+    }
+
+    .plant-unit-table {
+        border-bottom: 1px solid #dcdfe6;
+    }
+
+    .plant-unit-table-header {
+        display: none;
+    }
+
+    .plant-unit-row,
+    .plant-unit-table--solar .plant-unit-row {
+        grid-template-columns: minmax(0, 1fr);
+        padding: 4px 10px;
+        border-bottom: 1px solid #dcdfe6;
+    }
+
+    .plant-unit-row:last-child {
+        border-bottom: 0;
+    }
+
+    .plant-unit-cell,
+    .plant-unit-action {
+        padding: 7px 0;
+        border-right: 0;
+        border-bottom: 0;
+    }
+
+    .plant-unit-cell::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: 5px;
+        color: #606266;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .plant-unit-action {
+        justify-content: flex-end;
+    }
+
+    .calculated-capacities {
+        grid-template-columns: minmax(0, 1fr);
     }
 
     ::v-deep(.el-form-item) {

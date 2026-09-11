@@ -12,6 +12,9 @@
                 <el-button size="mini" :type="compareOpen ? 'primary' : ''" @click="$emit('toggle-compare')">
                     <i class="fa-solid fa-scale-balanced"></i> Compare with previous results
                 </el-button>
+                <el-button size="mini" :loading="waveformLoading" @click="openTimeSeriesData">
+                    <i class="fa-solid fa-table-list"></i> Time series data
+                </el-button>
             </div>
         </div>
 
@@ -77,6 +80,12 @@
                 </tr>
             </tbody>
         </table></div>
+
+        <el-dialog class="motor-current-waveform-dialog" title="Motor current time series data"
+            :visible.sync="showWaveform" width="min(1180px, 95vw)" top="4vh" append-to-body destroy-on-close>
+            <MotorCurrentWaveformTable v-if="showWaveform" :rows="testData.table.table1"
+                :points-by-dataset="waveformPoints" />
+        </el-dialog>
 
         <el-dialog class="cb-assessment-dialog motor-current-assessment-dialog" append-to-body title="Assessment settings" :visible.sync="openAssessmentDialog" width="min(1080px, 92vw)">
             <el-radio-group v-radio-clearable v-model="assetData.assessmentLimits.limits">
@@ -161,15 +170,22 @@
 import CircuitBreakerTestMap from '@/config/test-definitions/CircuitBreaker'
 import * as common from '../../Common/index'
 import assessmentMixin from './assessmentMixin'
+import MotorCurrentWaveformTable from './MotorCurrentWaveformTable.vue'
 export default {
     mixins: [assessmentMixin],
     name: "MotorCurrent",
+    components: {
+        MotorCurrentWaveformTable
+    },
     data() {
         return {
             openAssessmentDialog: false,
             backupLimits: null,
             assessmentIpcChannel: 'updateMotorCharacteristicsLimits',
             openConditionIndicatorDialog: false,
+            showWaveform: false,
+            waveformLoading: false,
+            waveformPoints: {},
             motorCharacteristics: [
                 { label: "Inrush current", key: "inrush_current", unit: "A" },
                 { label: "Charging time", key: "charging_time", unit: "s" },
@@ -201,8 +217,41 @@ export default {
         }
     },
     methods: {
+        async openTimeSeriesData() {
+            if (this.waveformLoading) return
 
+            const rows = this.testData && this.testData.table && Array.isArray(this.testData.table.table1)
+                ? this.testData.table.table1
+                : []
+            const datasetIds = rows.map(row => row && row.mrid).filter(Boolean)
+            const api = window.electronAPI
 
+            if (datasetIds.length === 0 || !api || typeof api.getCbMotorCurrentPointsByDatasetIds !== 'function') {
+                this.$message.warning('Time series data is only available for Motor Current results imported from PTM (OMICRON)')
+                return
+            }
+
+            this.waveformLoading = true
+            try {
+                const result = await api.getCbMotorCurrentPointsByDatasetIds(datasetIds)
+                const grouped = result && result.success && result.data ? result.data : {}
+                const hasPoints = Object.keys(grouped).some(datasetId =>
+                    Array.isArray(grouped[datasetId]) && grouped[datasetId].length > 0
+                )
+
+                if (!hasPoints) {
+                    this.$message.warning('Time series data is only available for Motor Current results imported from PTM (OMICRON)')
+                    return
+                }
+
+                this.waveformPoints = grouped
+                this.showWaveform = true
+            } catch {
+                this.$message.error('Could not load Motor Current time series data')
+            } finally {
+                this.waveformLoading = false
+            }
+        },
         add() {
             this.testData.table.table1.push(JSON.parse(JSON.stringify(this.rowData)))
         },

@@ -5,6 +5,7 @@ export const bayPreload = () => {
         getBayByMrid : (mrid) => ipcRenderer.invoke('getBayByMrid', mrid),
         insertBay : (data) => ipcRenderer.invoke('insertBay', data),
         getBayByVoltageBySubstationId : (voltage_level, substationId) => ipcRenderer.invoke('getBayByVoltageBySubstationId', voltage_level, substationId),
+        getBayByPowerPlantId : (powerPlantId) => ipcRenderer.invoke('getBayByPowerPlantId', powerPlantId),
         updateBayByMrid : (mrid, data) => ipcRenderer.invoke('updateBayByMrid', mrid, data),
         deleteBayByMrid : (mrid) => ipcRenderer.invoke('deleteBayByMrid', mrid),
     }

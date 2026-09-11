@@ -56,6 +56,25 @@ export const getVoltageLevelBySubstationId = () => {
     })
 }
 
+export const getVoltageLevelByPowerPlantId = () => {
+    ipcMain.handle('getVoltageLevelByPowerPlantId', async function (event, powerPlantId) {
+        try {
+            const rs = await cimFunc.voltageLevelFunc.getVoltageLevelsByPowerPlantId(powerPlantId)
+            return rs.success
+                ? { success: true, message: rs.message || 'Success', data: rs.data }
+                : { success: false, message: rs.message || 'fail', data: rs.data || [] }
+        } catch (error) {
+            console.log(error)
+            return {
+                error,
+                success: false,
+                message: (error && error.message) ? error.message : 'Internal error',
+                data: []
+            }
+        }
+    })
+}
+
 export const insertVoltageLevel = () => {
     ipcMain.handle('insertVoltageLevel', async function (event, data) {
         const rs = await cimFunc.voltageLevelFunc.insertVoltageLevel(data)
@@ -141,6 +160,7 @@ export const deleteVoltageLevelByMrid = () => {
 export const active = () => {
     getVoltageLevelByMrid()
     getVoltageLevelBySubstationId()
+    getVoltageLevelByPowerPlantId()
     insertVoltageLevel()
     updateVoltageLevelByMrid()
     deleteVoltageLevelByMrid()

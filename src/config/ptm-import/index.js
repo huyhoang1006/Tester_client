@@ -1,4 +1,6 @@
 import currentTransformer from './current-transformer.json'
+import circuitBreaker from './circuit-breaker.json'
+import transformer from './transformer.json'
 
 /**
  * CẤU HÌNH IMPORT PTM.
@@ -25,6 +27,8 @@ import currentTransformer from './current-transformer.json'
 
 const ASSET_CONFIGS = {
     CurrentTransformer: currentTransformer,
+    CircuitBreaker: circuitBreaker,
+    Transformer: transformer,
 }
 
 /** Loại thiết bị PTM nào đang hỗ trợ import. */
@@ -37,15 +41,26 @@ export const SUPPORTED_ASSET_TYPES = Object.keys(ASSET_CONFIGS)
  * @param {string} ptmType   loại bài test PTM, vd 'CTExcitationTest'
  * @returns {{ testCode, config }|null} null nghĩa là chưa hỗ trợ bài này
  */
-export const findTestConfig = (assetType, ptmType) => {
+export const findTestConfig = (assetType, ptmType, ptmName = '') => {
     const assetConfig = ASSET_CONFIGS[assetType]
     if (!assetConfig) return null
+    let unnamedMatch = null
     for (const testCode of Object.keys(assetConfig)) {
         if (testCode.indexOf('_') === 0) continue      // bỏ khoá tài liệu `_doc`
         const config = assetConfig[testCode]
-        if (config && config.ptmType === ptmType) return { testCode, config }
+        if (!config || config.ptmType !== ptmType) continue
+        if (config.ptmName) {
+            // Older importers only supplied the PTM type. Keep that behavior
+            // for asset types whose test type is already unambiguous.
+            if (!String(ptmName).trim()) return { testCode, config }
+            if (String(config.ptmName).trim().toLowerCase() === String(ptmName).trim().toLowerCase()) {
+                return { testCode, config }
+            }
+            continue
+        }
+        unnamedMatch = unnamedMatch || { testCode, config }
     }
-    return null
+    return unnamedMatch
 }
 
 /** Mọi mã bài test client đang hỗ trợ cho một loại thiết bị. */

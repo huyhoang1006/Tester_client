@@ -490,7 +490,42 @@ export const updateOperatingTimeLimits = async (assetId, assessmentLimits) => {
     }
 }
 
-// ─── 8. Auxiliary Contacts (Trip + Close operation) ───────────────────────────
+// ─── 8. Contact Travel ───────────────────────────────────────────────────────
+export const updateContactTravelLimits = async (assetId, assessmentLimits) => {
+    try {
+        await runAsync('BEGIN TRANSACTION')
+        const { assessmentLimitBreakerInfoId, breakerInfoId } = await getLimitId(assetId)
+        await updateLimitType(assessmentLimitBreakerInfoId, breakerInfoId, assessmentLimits.limits)
+
+        for (const item of breaker_constant.contact_travel) {
+            const key = item.value
+            const abs = assessmentLimits.contact_travel.abs[key]
+            const rel = assessmentLimits.contact_travel.rel[key]
+            await upsertUnit(insertLengthTransaction, abs.d_min)
+            await upsertUnit(insertLengthTransaction, abs.d_max)
+            await upsertUnit(insertLengthTransaction, rel.d_ref)
+            await upsertUnit(insertLengthTransaction, rel.d_dev)
+            await insertContactTravelBreakerInfoTransaction({
+                mrid:                             abs.mrid || null,
+                parameter_name:                   item.label,
+                assessment_limit_breaker_info_id: assessmentLimitBreakerInfoId,
+                d_min: abs.d_min.mrid || null,
+                d_max: abs.d_max.mrid || null,
+                d_ref: rel.d_ref.mrid || null,
+                d_dev: rel.d_dev.mrid || null,
+            }, db)
+        }
+
+        await runAsync('COMMIT')
+        return { success: true, message: 'Contact travel limits updated' }
+    } catch (error) {
+        await rollbackQuietly(runAsync, error);
+        console.error('updateContactTravelLimits error:', error)
+        return { success: false, message: error.message }
+    }
+}
+
+// ─── 9. Auxiliary Contacts (Trip + Close operation) ───────────────────────────
 export const updateAuxContactsLimits = async (assetId, assessmentLimits) => {
     try {
         var _a = await getLimitId(assetId)
@@ -557,7 +592,7 @@ export const updateAuxContactsLimits = async (assetId, assessmentLimits) => {
     }
 }
 
-// ─── 9. Miscellaneous ─────────────────────────────────────────────────────────
+// ─── 10. Miscellaneous ────────────────────────────────────────────────────────
 export const updateMiscellaneousLimits = async (assetId, assessmentLimits) => {
     try {
         var _a = await getLimitId(assetId)
@@ -597,20 +632,23 @@ export const updateMiscellaneousLimits = async (assetId, assessmentLimits) => {
     }
 }
 
-// ─── 10. Combined Timing update (operating_time + aux_contacts + misc + coil) ─
+// ─── 11. Combined Timing update ───────────────────────────────────────────────
 export const updateTimingAssessmentLimits = async (assetId, assessmentLimits) => {
     try {
         var r1 = await updateOperatingTimeLimits(assetId, assessmentLimits)
         if (!r1.success) throw new Error('updateOperatingTimeLimits failed: ' + r1.message)
 
-        var r2 = await updateAuxContactsLimits(assetId, assessmentLimits)
-        if (!r2.success) throw new Error('updateAuxContactsLimits failed: ' + r2.message)
+        var r2 = await updateContactTravelLimits(assetId, assessmentLimits)
+        if (!r2.success) throw new Error('updateContactTravelLimits failed: ' + r2.message)
 
-        var r3 = await updateMiscellaneousLimits(assetId, assessmentLimits)
-        if (!r3.success) throw new Error('updateMiscellaneousLimits failed: ' + r3.message)
+        var r3 = await updateAuxContactsLimits(assetId, assessmentLimits)
+        if (!r3.success) throw new Error('updateAuxContactsLimits failed: ' + r3.message)
 
-        var r4 = await updateCoilCharacteristicsLimits(assetId, assessmentLimits, null)
-        if (!r4.success) throw new Error('updateCoilCharacteristicsLimits failed: ' + r4.message)
+        var r4 = await updateMiscellaneousLimits(assetId, assessmentLimits)
+        if (!r4.success) throw new Error('updateMiscellaneousLimits failed: ' + r4.message)
+
+        var r5 = await updateCoilCharacteristicsLimits(assetId, assessmentLimits, null)
+        if (!r5.success) throw new Error('updateCoilCharacteristicsLimits failed: ' + r5.message)
 
         return { success: true, message: 'Timing assessment limits updated' }
     } catch (error) {

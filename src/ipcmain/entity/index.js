@@ -29,6 +29,7 @@ import * as ipcAuditLog from './auditLog/index.js'
 import * as ipcCompareTest from './compareTest/index.js'
 import * as ipcTreeSearch from './treeSearch/index.js'
 import * as ipcUserIdentifiedObject from './userIdentifiedObject/index.js'
+import * as ipcPowerPlant from './powerPlant/index.js'
 
 
 export const active = () => {
@@ -63,4 +64,5 @@ export const active = () => {
     ipcCompareTest.active()
     ipcUserIdentifiedObject.active()
     ipcTreeSearch.active()
+    ipcPowerPlant.active()
 }

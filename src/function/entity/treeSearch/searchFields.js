@@ -98,6 +98,37 @@ export const SEARCH_TARGETS = {
         ],
     },
 
+    powerPlant: {
+        mode: 'powerPlant',
+        typeLabel: 'Power plant',
+        base: 'power_plant pp',
+        joins: [
+            'LEFT JOIN identified_object io ON io.mrid = pp.mrid',
+            'LEFT JOIN power_system_resource psr ON psr.mrid = pp.mrid',
+            'LEFT JOIN location loc ON loc.mrid = psr.location',
+            'LEFT JOIN identified_object lio ON lio.mrid = loc.mrid',
+            'LEFT JOIN street_address sa ON sa.mrid = loc.main_address',
+            'LEFT JOIN street_detail sd ON sd.mrid = sa.street_detail',
+            'LEFT JOIN town_detail td ON td.mrid = sa.town_detail',
+            'LEFT JOIN electronic_address ea ON ea.mrid = loc.electronic_address',
+            'LEFT JOIN telephone_number tn ON tn.mrid = loc.phone',
+        ],
+        idColumn: 'pp.mrid',
+        fields: [
+            ...IDENTIFIED_OBJECT_FIELDS,
+            { expr: 'pp.plant_type', label: 'Plant type' },
+            { expr: 'lio.name', label: 'Location name' },
+            { expr: 'sd.address_general', label: 'Address' },
+            { expr: 'td.ward_or_commune', label: 'Ward/Suburb' },
+            { expr: 'td.city', label: 'City/Province/State' },
+            { expr: 'td.country', label: 'Country' },
+            { expr: 'sa.postal_code', label: 'Postal code' },
+            { expr: 'ea.email', label: 'Email' },
+            { expr: 'ea.fax', label: 'Fax' },
+            { expr: 'tn.itu_phone', label: 'Phone' },
+        ],
+    },
+
     voltageLevel: {
         mode: 'voltageLevel',
         typeLabel: 'Voltage level',

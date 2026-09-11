@@ -1,5 +1,10 @@
 export const TRANSFORMER_TERMINALS = ['Prim', 'Sec', 'Tert', 'GND']
 
+export const terminalsForTransformerType = transformerType => {
+    const hasTertiaryWinding = transformerType === 'Three-winding' || transformerType === 'Auto w/ tert'
+    return TRANSFORMER_TERMINALS.filter(terminal => hasTertiaryWinding || terminal !== 'Tert')
+}
+
 const TERMINAL_ALIASES = {
     HV: 'Prim',
     PRIM: 'Prim',
@@ -63,7 +68,8 @@ export const normalizeTerminalRow = row => {
     return writeTerminalSides(row, sides.terminal1, sides.terminal2)
 }
 
-export const validateInsulationResistanceTerminals = testList => {
+export const validateInsulationResistanceTerminals = (testList, transformerType) => {
+    const availableTerminals = terminalsForTransformerType(transformerType)
     const tests = (Array.isArray(testList) ? testList : [])
         .filter(test => test && test.testTypeCode === 'InsulationResistance')
 
@@ -73,13 +79,15 @@ export const validateInsulationResistanceTerminals = testList => {
             : []
         for (let index = 0; index < rows.length; index++) {
             const sides = readTerminalSides(rows[index])
-            if (sides.terminal1.length === 0 || sides.terminal2.length === 0) {
+            const terminal1 = sides.terminal1.filter(terminal => availableTerminals.includes(terminal))
+            const terminal2 = sides.terminal2.filter(terminal => availableTerminals.includes(terminal))
+            if (terminal1.length === 0 || terminal2.length === 0) {
                 return {
                     valid: false,
                     message: `Please select at least one option for both Terminal 1 and Terminal 2 in row ${index + 1}.`,
                 }
             }
-            writeTerminalSides(rows[index], sides.terminal1, sides.terminal2)
+            writeTerminalSides(rows[index], terminal1, terminal2)
         }
     }
     return { valid: true, message: '' }

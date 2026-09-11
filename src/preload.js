@@ -74,6 +74,8 @@ const assetPsrAPI = entityPreload.assetPsrPreload.assetPsrPreload()
 const procedureAPI = cimPreload.procedurePreload.procedurePreload()
 const licenseAPI = cimPreload.licensePreload.licensePreload()
 const ctExcitationPointAPI = cimPreload.ctExcitationPointPreload.ctExcitationPointPreload()
+const cbMotorCurrentPointAPI = cimPreload.cbMotorCurrentPointPreload.cbMotorCurrentPointPreload()
+const cbTimingTraceAPI = cimPreload.cbTimingTracePreload.cbTimingTracePreload()
 // HAI cấp, không phải ba: `ptmPreload` là namespace của src/preload/ptm/index.js, và hàm
 // nằm ngay trong đó. Những dòng ba cấp ở trên (cimPreload.xPreload.xPreload) có thêm một
 // tầng gom nhóm ở src/preload/cim/index.js — ptm không có tầng đó.
@@ -88,6 +90,7 @@ const syncStateAPI = entityPreload.syncStatePreload.syncStatePreload()
 const auditLogAPI = entityPreload.auditLogPreload.auditLogPreload()
 const compareTestAPI = entityPreload.compareTestPreload.compareTestPreload()
 const userIdentifiedObjectAPI = entityPreload.userIdentifiedObjectPreload.userIdentifiedObjectPreload()
+const powerPlantAPI = entityPreload.powerPlantPreload.powerPlantPreload()
 
 
 // Update API from entity preload
@@ -156,6 +159,8 @@ const ipcMain = Object.assign(
     windowControlAPI,
     licenseAPI,
     ctExcitationPointAPI,
+    cbMotorCurrentPointAPI,
+    cbTimingTraceAPI,
     ptmAPI,
     treeSearchAPI,
     notificationEntityAPI,
@@ -169,6 +174,7 @@ const ipcMain = Object.assign(
     syncStateAPI,
     auditLogAPI,
     compareTestAPI,
-    userIdentifiedObjectAPI
+    userIdentifiedObjectAPI,
+    powerPlantAPI
 )
 contextBridge.exposeInMainWorld('electronAPI', ipcMain)

@@ -930,6 +930,7 @@ export function mapEntityToDto(entity) {
     }
 
     // Joint
+    dto.datasData.jointsData.mrid = entity.joint.mrid || '';
     dto.datasData.jointsData.rated_u.mrid = entity.joint.rated_u || null;
     for (const voltage of entity.voltage) {
         if (voltage && dto.datasData.jointsData.rated_u.mrid === voltage.mrid) {
@@ -949,6 +950,7 @@ export function mapEntityToDto(entity) {
     dto.datasData.jointsData.service_condition.value = entity.joint.service_condition || null;
 
     // Terminal
+    dto.datasData.terminalsData.mrid = entity.terminal.mrid || '';
     dto.datasData.terminalsData.rated_u.mrid = entity.terminal.rated_u || null;
     for (const voltage of entity.voltage) {
         if (voltage && dto.datasData.terminalsData.rated_u.mrid === voltage.mrid) {
@@ -976,6 +978,7 @@ export function mapEntityToDto(entity) {
     dto.datasData.terminalsData.class.value = entity.terminal.class || null;
 
     // Sheath Voltage Limiter
+    dto.datasData.sheathLimitsData.mrid = entity.sheathVoltageLimiter.mrid || '';
     dto.datasData.sheathLimitsData.rated_voltage_ur.mrid = entity.sheathVoltageLimiter.rated_voltage_ur || null;
     for (const voltage of entity.voltage) {
         if (voltage && dto.datasData.sheathLimitsData.rated_voltage_ur.mrid === voltage.mrid) {

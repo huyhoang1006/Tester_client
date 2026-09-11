@@ -30,6 +30,13 @@
             "unit": "k|V"
         },
         {
+            "mrid": "118dac0b-4b13-426e-a4ae-c79cb7349fa1",
+            "code": "i_out",
+            "name": "I Out",
+            "type": "analog",
+            "unit": "m|A"
+        },
+        {
             "mrid": "b543f045-32ad-46fd-80ac-eb555de0f3e7",
             "code": "nominal_ratio",
             "name": "Nominal Ratio",

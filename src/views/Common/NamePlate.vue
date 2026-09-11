@@ -3,7 +3,7 @@
         <div class="np-header">
             <div class="np-title">
                 <i class="fa-solid fa-image"></i>
-                <span>{{ title || 'Name plate' }}</span>
+                <span>{{ title || 'Nameplate' }}</span>
             </div>
             <div class="np-actions">
                 <button type="button" class="np-btn" :class="{ disabled: !hasImage }" title="Download" @click="downloadItem()">
@@ -36,13 +36,14 @@
 
 <script>
 import { mapState } from 'vuex'
+import { createServerMediaPreviewUrl, materializeServerMediaItem } from '@/utils/assetMedia'
 
 export default {
     name: 'namePlate',
     props: {
         title: {
             type: String,
-            default: 'Name plate'
+            default: 'Nameplate'
         },
         height: {
             type: String,
@@ -69,7 +70,9 @@ export default {
         return {
             rowData: null,
             imageUrl: null,
-            fileURL: '-1'
+            fileURL: '-1',
+            previewObjectUrl: null,
+            previewRequestId: 0
         }
     },
     watch: {
@@ -84,7 +87,9 @@ export default {
             immediate: true,
             handler(value) {
                 this.fileURL = value || '-1'
-                this.imageUrl = this.fileURL !== '-1' ? this.toDisplayUrl(this.fileURL) : null
+                if (!this.rowData) {
+                    this.setLocalPreview(this.fileURL)
+                }
             }
         }
     },
@@ -97,23 +102,82 @@ export default {
             return Boolean(this.rowData && this.rowData.path)
         }
     },
+    beforeDestroy() {
+        this.invalidatePreviewRequest()
+    },
     methods: {
-        setAttachment(value) {
+        async setAttachment(value) {
+            const requestId = ++this.previewRequestId
+            this.releasePreviewObjectUrl()
             const item = Array.isArray(value) ? value[0] : value
             if (item && item.path) {
                 this.rowData = { ...item, role: item.role || 'nameplate' }
                 this.fileURL = item.path
-                this.imageUrl = this.toDisplayUrl(item.path)
+                if (this.isPendingServerMedia(this.rowData)) {
+                    this.imageUrl = null
+                    try {
+                        const previewUrl = await createServerMediaPreviewUrl(this.rowData)
+                        if (requestId !== this.previewRequestId) {
+                            URL.revokeObjectURL(previewUrl)
+                            return
+                        }
+                        this.previewObjectUrl = previewUrl
+                        this.imageUrl = previewUrl
+                    } catch (error) {
+                        if (requestId === this.previewRequestId) {
+                            this.imageUrl = null
+                        }
+                        console.warn('[asset-media] Cannot preview nameplate:', error)
+                    }
+                } else {
+                    this.imageUrl = this.toDisplayUrl(item.path)
+                }
             } else {
                 this.rowData = null
                 this.fileURL = '-1'
                 this.imageUrl = null
             }
         },
+        releasePreviewObjectUrl() {
+            if (this.previewObjectUrl) {
+                URL.revokeObjectURL(this.previewObjectUrl)
+                this.previewObjectUrl = null
+            }
+        },
+        invalidatePreviewRequest() {
+            this.previewRequestId += 1
+            this.releasePreviewObjectUrl()
+        },
+        setLocalPreview(path) {
+            this.invalidatePreviewRequest()
+            this.imageUrl = path && path !== '-1' ? this.toDisplayUrl(path) : null
+        },
+        isPendingServerMedia(item) {
+            return Boolean(item && item.serverMediaId && item.remote)
+        },
+        async ensureLocalServerMedia() {
+            if (!this.isPendingServerMedia(this.rowData)) {
+                return true
+            }
+            try {
+                const localItem = await materializeServerMediaItem(this.rowData)
+                localItem.remote = false
+                this.rowData = localItem
+                this.fileURL = localItem.path
+                this.setLocalPreview(localItem.path)
+                this.emitAttachment()
+                return true
+            } catch (error) {
+                console.warn('[asset-media] Cannot materialize nameplate:', error)
+                this.$message.error('Cannot download image from server')
+                return false
+            }
+        },
         emitAttachment() {
             this.$emit('data-attachment', this.rowData, this.fileURL)
         },
         reload() {
+            this.invalidatePreviewRequest()
             this.rowData = null
             this.fileURL = '-1'
             this.imageUrl = null
@@ -129,6 +193,7 @@ export default {
                 type: 'warning'
             })
                 .then(() => {
+                    this.invalidatePreviewRequest()
                     this.rowData = null
                     this.fileURL = '-1'
                     this.imageUrl = null
@@ -157,7 +222,7 @@ export default {
                 role: 'nameplate'
             }
             this.fileURL = rs.path
-            this.imageUrl = this.toDisplayUrl(rs.path)
+            this.setLocalPreview(rs.path)
             this.emitAttachment()
         },
         async openFile() {
@@ -172,11 +237,8 @@ export default {
         },
         async launchFile() {
             if (this.hasImage) {
-                if (this.isExternalPreview(this.rowData.path)) {
-                    window.open(this.rowData.path)
-                } else {
-                    await window.electronAPI.openFile(this.rowData.path)
-                }
+                if (!await this.ensureLocalServerMedia()) return
+                await window.electronAPI.openFile(this.rowData.path)
             } else {
                 this.$message.error('No file to open')
             }
@@ -218,6 +280,7 @@ export default {
                 return
             }
             try {
+                if (!await this.ensureLocalServerMedia()) return
                 if (this.isExternalPreview(this.rowData.path)) {
                     const a = this.$refs.download
                     a.href = this.rowData.path

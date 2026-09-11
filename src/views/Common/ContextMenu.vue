@@ -8,7 +8,16 @@
         <transition name="fade">
             <ul v-if="sign == 'onlysubs'">
                 <li @click="addSubs">
-                    <i class="fa-solid fa-plus"></i> Add substation
+                    <icon class="menu-tree-icon" size="16px" folderType="location"></icon> Add substation
+                </li>
+                <li class="has-submenu">
+                    <i class="fa-solid fa-industry"></i> Add Power Plant
+                    <ul class="submenu">
+                        <li v-for="plantType in powerPlantTypes" :key="plantType"
+                            @click="selectPowerPlantType(plantType)">
+                            <i :class="getPowerPlantIcon(plantType)"></i> {{ plantType }}
+                        </li>
+                    </ul>
                 </li>
             </ul>
             <ul v-else>
@@ -16,28 +25,37 @@
                     <i class="fa-solid fa-plus"></i> Add organisation
                 </li>
                 <li v-if="canTreeCrud && this.selectedNode && this.selectedNode.mode == 'organisation'" @click="addSubsInTree">
-                    <i class="fa-solid fa-plus"></i> Add substation
+                    <icon class="menu-tree-icon" size="16px" folderType="location"></icon> Add substation
                 </li>
-                <li v-if="canTreeCrud && this.selectedNode && this.selectedNode.mode == 'substation'" @click="addVoltageLevel">
-                    <i class="fa-solid fa-plus"></i> Add voltage level
+                <li v-if="canTreeCrud && this.selectedNode && this.selectedNode.mode == 'organisation'" class="has-submenu">
+                    <i class="fa-solid fa-industry"></i> Add Power Plant
+                    <ul class="submenu">
+                        <li v-for="plantType in powerPlantTypes" :key="plantType"
+                            @click="selectPowerPlantType(plantType)">
+                            <i :class="getPowerPlantIcon(plantType)"></i> {{ plantType }}
+                        </li>
+                    </ul>
                 </li>
-                <li v-if="canTreeCrud && this.selectedNode && (this.selectedNode.mode == 'voltageLevel' || this.selectedNode.mode == 'substation')" @click="addBay">
-                    <i class="fa-solid fa-plus"></i> Add bay
+                <li v-if="canTreeCrud && this.selectedNode && (this.selectedNode.mode == 'substation' || this.selectedNode.mode == 'powerPlant')" @click="addVoltageLevel">
+                    <icon class="menu-tree-icon" size="16px" folderType="voltageLevel"></icon> Add voltage level
                 </li>
-                <li class="has-submenu" v-if="canTreeCrud && this.selectedNode && (this.selectedNode.mode == 'bay' || this.selectedNode.mode == 'substation')">
+                <li v-if="canTreeCrud && this.selectedNode && (this.selectedNode.mode == 'voltageLevel' || this.selectedNode.mode == 'substation' || this.selectedNode.mode == 'powerPlant')" @click="addBay">
+                    <icon class="menu-tree-icon" size="16px" folderType="bay"></icon> Add bay
+                </li>
+                <li class="has-submenu" v-if="canTreeCrud && this.selectedNode && (this.selectedNode.mode == 'bay' || this.selectedNode.mode == 'substation' || this.selectedNode.mode == 'powerPlant')">
                     <i class="fa-solid fa-plus"></i> Add asset
                     <ul class="submenu">
-                        <li @click="addTransformer"><i class="fa-solid fa-bolt"></i> Add transformer</li>
-                        <li @click="addBushing"><i class="fa-solid fa-shield"></i> Add Bushing</li>
-                        <li @click="addBreaker"><i class="fa-solid fa-plug"></i> Add Breaker</li>
-                        <li @click="addCt"><i class="fa-solid fa-ruler"></i> Add CT</li>
-                        <li @click="addVt"><i class="fa-solid fa-bolt-lightning"></i> Add VT</li>
-                        <li @click="addSurgeArrester"><i class="fa-solid fa-shield-halved"></i> Add Surge Arrester</li>
-                        <li @click="addPowerCable"><i class="fa-solid fa-route"></i> Add Power Cable</li>
-                        <li @click="addDisconnector"><i class="fa-solid fa-plug-circle-xmark"></i> Add Disconnector</li>
-                        <li v-if="isClient" @click="addRotatingMachine"><i class="fa-solid fa-group-arrows-rotate"></i> Add Rotating Machine</li>
-                        <li v-if="isClient" @click="addCapacitor"><i class="fa-solid fa-bolt"></i> Add Capacitor</li>
-                        <li v-if="isClient" @click="addReactor"><i class="fa-solid fa-bolt"></i> Add Reactor</li>
+                        <li @click="addTransformer"><icon class="menu-tree-icon" size="16px" folderType="asset" assetDetail="Transformer"></icon> Add transformer</li>
+                        <li @click="addBushing"><icon class="menu-tree-icon" size="16px" folderType="asset" assetDetail="Bushing"></icon> Add Bushing</li>
+                        <li @click="addBreaker"><icon class="menu-tree-icon" size="16px" folderType="asset" assetDetail="Circuit breaker"></icon> Add Breaker</li>
+                        <li @click="addCt"><icon class="menu-tree-icon" size="16px" folderType="asset" assetDetail="Current transformer"></icon> Add CT</li>
+                        <li @click="addVt"><icon class="menu-tree-icon" size="16px" folderType="asset" assetDetail="Voltage transformer"></icon> Add VT</li>
+                        <li @click="addSurgeArrester"><icon class="menu-tree-icon" size="16px" folderType="asset" assetDetail="Surge arrester"></icon> Add Surge Arrester</li>
+                        <li @click="addPowerCable"><icon class="menu-tree-icon" size="16px" folderType="asset" assetDetail="Power cable"></icon> Add Power Cable</li>
+                        <li @click="addDisconnector"><icon class="menu-tree-icon" size="16px" folderType="asset" assetDetail="Disconnector"></icon> Add Disconnector</li>
+                        <li v-if="isClient" @click="addRotatingMachine"><icon class="menu-tree-icon" size="16px" folderType="asset" assetDetail="Rotating machine"></icon> Add Rotating Machine</li>
+                        <li v-if="isClient" @click="addCapacitor"><icon class="menu-tree-icon" size="16px" folderType="asset" assetDetail="Capacitor"></icon> Add Capacitor</li>
+                        <li v-if="isClient" @click="addReactor"><icon class="menu-tree-icon" size="16px" folderType="asset" assetDetail="Reactor"></icon> Add Reactor</li>
                     </ul>
                 </li>
                 <li @click="addJob" v-if="isClient && this.selectedNode && this.selectedNode.mode == 'asset'">
@@ -99,6 +117,7 @@
                         <li @click="importExcel"><i class="fa-solid fa-file-excel"></i> Import from Excel</li>
                         <li @click="importWord"><i class="fa-solid fa-file-word"></i> Import from Word</li>
                         <li @click="importPtm"><i class="fa-solid fa-wave-square"></i> Import from PTM (OMICRON)</li>
+                        <li @click="importCpxpert"><i class="fa-solid fa-file-zipper"></i> Import from CPXpert (OMICRON)</li>
                     </ul>
                 </li>
             </ul>
@@ -109,7 +128,13 @@
 
 <script>
 /* eslint-disable */
+import { getPowerPlantIcon } from '@/views/Common/powerPlantIcons'
+import icon from '@/views/Common/Icon.vue'
+
 export default {
+    components: {
+        icon
+    },
     props: {
         // 'client' | 'server' — hiển thị đúng bộ chức năng như toolbar từng bên
         side: {
@@ -123,6 +148,15 @@ export default {
             position: { x: 0, y: 0 },
             selectedNode: null, // Lưu trữ node đang mở menu
             sign : '',
+            powerPlantTypes: [
+                'Wind Power',
+                'Solar Power',
+                'Waste-to-Energy',
+                'Biomass Power',
+                'Thermal Power',
+                'Hydropower',
+                'Nuclear Power'
+            ],
             organisationId: '00000000-0000-0000-0000-000000000000' // Mặc định là ID của tổ chức
         };
     },
@@ -132,6 +166,7 @@ export default {
         canTreeCrud() { return this.isClient || this.isServer }
     },
     methods: {
+        getPowerPlantIcon,
         openContextMenu(event, node, { top, left } = {}) {
             event.preventDefault();
             
@@ -244,6 +279,15 @@ export default {
         addSubsInTree() {
             console.log("tree", this.selectedNode)
             this.$emit("show-addSubsInTree", this.selectedNode)
+            this.closeContextMenu()
+        },
+        selectPowerPlantType(plantType) {
+            const parentNode = this.selectedNode || {
+                id: this.organisationId,
+                mrid: this.organisationId,
+                mode: 'organisation'
+            }
+            this.$emit('show-addPowerPlant', { parentNode, plantType })
             this.closeContextMenu()
         },
         addOrganisation() {
@@ -405,6 +449,10 @@ export default {
             this.$emit("import-ptm", this.selectedNode)
             this.closeContextMenu()
         },
+        importCpxpert() {
+            this.$emit("import-cpxpert", this.selectedNode)
+            this.closeContextMenu()
+        },
         importPDF() {
             this.$emit("import-pdf", this.selectedNode)
             this.closeContextMenu()
@@ -449,6 +497,10 @@ export default {
     padding: 10px 15px;
     cursor: pointer;
     transition: background 0.2s;
+}
+
+.context-menu .menu-tree-icon {
+    flex: 0 0 16px;
 }
 
 .context-menu li:hover {

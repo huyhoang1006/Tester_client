@@ -24,6 +24,8 @@
             </el-button>
         </div>
 
+        <ShortCircuitImpedanceCharts :table="testData.table" :mode="currentOption" />
+
         <div class="table-scroll">
         <table class="table-strip-input-data test-table">
             <thead>
@@ -360,10 +362,11 @@ import transformerTestMap from '@/config/test-definitions/Transformer'
 import * as common from '../../../Common/index.js'
 import GroupNode from '../../../Common/GroupNode.vue'
 import { changeTestStandard } from '../../../Common'
+import ShortCircuitImpedanceCharts from '../ShortCircuitImpedanceCharts.vue'
 
 export default {
     name: "ShortCircuitImpedancePrim",
-    components: { GroupNode },
+    components: { GroupNode, ShortCircuitImpedanceCharts },
     data() {
         return {
             currentOption: 'threePhase',

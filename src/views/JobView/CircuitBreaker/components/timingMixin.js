@@ -27,7 +27,45 @@ export default {
         }
     },
 
+    computed: {
+        timingSynchronismSourceSignature() {
+            var table = this.testData && this.testData.table ? this.testData.table : {}
+            var entries = Array.isArray(table)
+                ? table
+                : Object.keys(table).map(function(key) { return table[key] })
+            return JSON.stringify(entries.map(function(rows) {
+                if (!Array.isArray(rows)) return []
+                return rows.map(function(row) {
+                    return [
+                        row && row.phase ? row.phase.value : '',
+                        row && row.interrupter ? row.interrupter.value : '',
+                        row && row.opening_time ? row.opening_time.value : '',
+                        row && row.closing_time ? row.closing_time.value : '',
+                    ]
+                })
+            }))
+        },
+    },
+
+    watch: {
+        timingSynchronismSourceSignature: {
+            immediate: true,
+            handler() {
+                this.scheduleTimingSynchronismCalculation()
+            },
+        },
+    },
+
     methods: {
+
+        scheduleTimingSynchronismCalculation() {
+            if (this._timingSynchronismCalculationScheduled) return
+            this._timingSynchronismCalculationScheduled = true
+            this.$nextTick(function() {
+                this._timingSynchronismCalculationScheduled = false
+                this.calculateTimingSynchronism()
+            })
+        },
 
         // ─── Iterate testData.table safely (handles both object and array) ──────
         getTableEntries() {
@@ -221,6 +259,11 @@ export default {
                 'closing_time', 'closing_sync_within_phase', 'closing_sync_breaker_phase',
                 'reclosing_time', 'open_close_time', 'close_open_time'
             ]
+            var contactTravelMapping = [
+                'total_travel', 'over_travel_trip', 'over_travel_close',
+                'rebound_trip', 'rebound_close', 'contact_wipe_trip',
+                'contact_wipe_close', 'damping_distance'
+            ]
             var tripMapping = ['switching_time_type_a','diff_to_main_type_a','switching_time_type_b','diff_to_main_type_b','switching_time_wiper','duration']
             var miscMapping = ['bounce_time','bounce_count','pir_close_time','reaction_time']
             var coilMapping = ['peak_close_coil_current','peak_trip_coil_current','average_close_coil_current','average_trip_coil_current','average_close_coil_voltage','average_trip_coil_voltage','close_coil_resistance','trip_coil_resistance']
@@ -241,6 +284,22 @@ export default {
                         if (al.operating_time.rel[key].t_ref)      al.operating_time.rel[key].t_ref.value       = rel.rref  || ''
                         if (al.operating_time.rel[key].minus_t_dev) al.operating_time.rel[key].minus_t_dev.value = rel.tdevZ || ''
                         if (al.operating_time.rel[key].plus_t_dev)  al.operating_time.rel[key].plus_t_dev.value  = rel.tdevN || ''
+                    }
+                })
+            }
+
+            // contact_travel
+            if (asset_.contactTravel && al.contact_travel) {
+                contactTravelMapping.forEach(function(key, i) {
+                    var abs = asset_.contactTravel.abs ? asset_.contactTravel.abs[i] || {} : {}
+                    var rel = asset_.contactTravel.rel ? asset_.contactTravel.rel[i] || {} : {}
+                    if (al.contact_travel.abs[key]) {
+                        if (al.contact_travel.abs[key].d_min) al.contact_travel.abs[key].d_min.value = abs.min || ''
+                        if (al.contact_travel.abs[key].d_max) al.contact_travel.abs[key].d_max.value = abs.max || ''
+                    }
+                    if (al.contact_travel.rel[key]) {
+                        if (al.contact_travel.rel[key].d_ref) al.contact_travel.rel[key].d_ref.value = rel.ref || ''
+                        if (al.contact_travel.rel[key].d_dev) al.contact_travel.rel[key].d_dev.value = rel.dev || ''
                     }
                 })
             }

@@ -1,0 +1,289 @@
+{
+  "_doc": [
+    "Map OMICRON CPXpert Transformer tests to the existing Transformer tests.",
+    "Calculated/reference fields are not sourced from CPXpert unless the client already stores them as test results.",
+    "Explicit PTM Pass/Fail results are preserved; unassessed or indeterminate results remain blank."
+  ],
+  "RatioPrimSec": {
+    "ptmType": "TransformerRatioTest",
+    "columns": {
+      "tap": { "from": "tap", "factor": 1 },
+      "voltage_prim": { "from": "voltagePrimary", "factor": 0.001 },
+      "voltage_sec": { "from": "voltageSecondary", "factor": 0.001 },
+      "i_out": { "from": "currentOut", "factor": 1000 },
+      "nominal_ratio": { "from": "nominalRatio", "factor": 1 },
+      "ratio_meas": { "from": "measuredRatio", "factor": 1 },
+      "ratio_dev": { "from": "ratioDeviation", "factor": 1 }
+    },
+    "plainColumns": {
+      "phase": { "from": "phase" }
+    },
+    "assessment": {
+      "from": "assessment",
+      "map": { "Pass": "Pass", "Passed": "Pass", "ManualPass": "Pass", "Fail": "Fail", "Failed": "Fail", "ManualFail": "Fail", "None": "", "NotPossible": "", "Investigate": "", "": "" }
+    }
+  },
+  "WindingDfCap": {
+    "ptmType": "TanDeltaTest",
+    "ptmName": "Winding DF & CAP",
+    "columns": {
+      "test_voltage": { "from": "testVoltage", "factor": 0.001 },
+      "frequency": { "from": "frequency", "factor": 1 },
+      "df_ref": { "from": "powerFactorReference", "factor": 1 },
+      "c_ref": { "from": "capacitanceReference", "factor": 1000000000000 },
+      "df_meas": { "from": "powerFactorMeasured", "factor": 1 },
+      "c_meas": { "from": "capacitanceMeasured", "factor": 1000000000000 }
+    },
+    "plainColumns": {
+      "measurement": { "from": "baseMeasurement" },
+      "test_mode": { "from": "testMode" }
+    },
+    "assessment": {
+      "from": "assessment",
+      "map": { "Pass": "Pass", "Passed": "Pass", "ManualPass": "Pass", "Fail": "Fail", "Failed": "Fail", "ManualFail": "Fail", "Investigate": "", "NotPossible": "", "None": "", "": "" }
+    }
+  },
+  "BushingPrimC1": {
+    "ptmType": "TanDeltaTest",
+    "ptmName": "Bushing Prim DF & CAP - C1",
+    "columns": {
+      "test_voltage": { "from": "testVoltage", "factor": 0.001 },
+      "frequency": { "from": "frequency", "factor": 1 },
+      "df_ref": { "from": "powerFactorReference", "factor": 1 },
+      "c_ref": { "from": "capacitanceReference", "factor": 1000000000000 },
+      "df_meas": { "from": "powerFactorMeasured", "factor": 1 },
+      "c_meas": { "from": "capacitanceMeasured", "factor": 1000000000000 }
+    },
+    "plainColumns": {
+      "measurement": { "from": "baseMeasurement" },
+      "test_mode": { "from": "testMode" }
+    },
+    "assessment": {
+      "from": "assessment",
+      "map": { "Pass": "Pass", "Passed": "Pass", "ManualPass": "Pass", "Fail": "Fail", "Failed": "Fail", "ManualFail": "Fail", "Investigate": "", "NotPossible": "", "None": "", "": "" }
+    }
+  },
+  "BushingPrimC2": {
+    "ptmType": "TanDeltaTest",
+    "ptmName": "Bushing Prim DF & CAP - C2",
+    "columns": {
+      "test_voltage": { "from": "testVoltage", "factor": 0.001 },
+      "frequency": { "from": "frequency", "factor": 1 },
+      "df_ref": { "from": "powerFactorReference", "factor": 1 },
+      "c_ref": { "from": "capacitanceReference", "factor": 1000000000000 },
+      "df_meas": { "from": "powerFactorMeasured", "factor": 1 },
+      "c_meas": { "from": "capacitanceMeasured", "factor": 1000000000000 }
+    },
+    "plainColumns": {
+      "measurement": { "from": "baseMeasurement" },
+      "test_mode": { "from": "testMode" }
+    },
+    "assessment": {
+      "from": "assessment",
+      "map": { "Pass": "Pass", "Passed": "Pass", "ManualPass": "Pass", "Fail": "Fail", "Failed": "Fail", "ManualFail": "Fail", "Investigate": "", "NotPossible": "", "None": "", "": "" }
+    }
+  },
+  "BushingSecC1": {
+    "ptmType": "TanDeltaTest",
+    "ptmName": "Bushing Sec DF & CAP - C1",
+    "columns": {
+      "test_voltage": { "from": "testVoltage", "factor": 0.001 },
+      "frequency": { "from": "frequency", "factor": 1 },
+      "df_ref": { "from": "powerFactorReference", "factor": 1 },
+      "c_ref": { "from": "capacitanceReference", "factor": 1000000000000 },
+      "df_meas": { "from": "powerFactorMeasured", "factor": 1 },
+      "c_meas": { "from": "capacitanceMeasured", "factor": 1000000000000 }
+    },
+    "plainColumns": {
+      "measurement": { "from": "baseMeasurement" },
+      "test_mode": { "from": "testMode" }
+    },
+    "assessment": {
+      "from": "assessment",
+      "map": { "Pass": "Pass", "Passed": "Pass", "ManualPass": "Pass", "Fail": "Fail", "Failed": "Fail", "ManualFail": "Fail", "Investigate": "", "NotPossible": "", "None": "", "": "" }
+    }
+  },
+  "BushingSecC2": {
+    "ptmType": "TanDeltaTest",
+    "ptmName": "Bushing Sec DF & CAP - C2",
+    "columns": {
+      "test_voltage": { "from": "testVoltage", "factor": 0.001 },
+      "frequency": { "from": "frequency", "factor": 1 },
+      "df_ref": { "from": "powerFactorReference", "factor": 1 },
+      "c_ref": { "from": "capacitanceReference", "factor": 1000000000000 },
+      "df_meas": { "from": "powerFactorMeasured", "factor": 1 },
+      "c_meas": { "from": "capacitanceMeasured", "factor": 1000000000000 }
+    },
+    "plainColumns": {
+      "measurement": { "from": "baseMeasurement" },
+      "test_mode": { "from": "testMode" }
+    },
+    "assessment": {
+      "from": "assessment",
+      "map": { "Pass": "Pass", "Passed": "Pass", "ManualPass": "Pass", "Fail": "Fail", "Failed": "Fail", "ManualFail": "Fail", "Investigate": "", "NotPossible": "", "None": "", "": "" }
+    }
+  },
+  "BushingTertC1": {
+    "ptmType": "TanDeltaTest",
+    "ptmName": "Bushing Tert DF & CAP - C1",
+    "columns": {
+      "test_voltage": { "from": "testVoltage", "factor": 0.001 },
+      "frequency": { "from": "frequency", "factor": 1 },
+      "df_ref": { "from": "powerFactorReference", "factor": 1 },
+      "c_ref": { "from": "capacitanceReference", "factor": 1000000000000 },
+      "df_meas": { "from": "powerFactorMeasured", "factor": 1 },
+      "c_meas": { "from": "capacitanceMeasured", "factor": 1000000000000 }
+    },
+    "plainColumns": {
+      "measurement": { "from": "baseMeasurement" },
+      "test_mode": { "from": "testMode" }
+    },
+    "assessment": {
+      "from": "assessment",
+      "map": { "Pass": "Pass", "Passed": "Pass", "ManualPass": "Pass", "Fail": "Fail", "Failed": "Fail", "ManualFail": "Fail", "Investigate": "", "NotPossible": "", "None": "", "": "" }
+    }
+  },
+  "BushingTertC2": {
+    "ptmType": "TanDeltaTest",
+    "ptmName": "Bushing Tert DF & CAP - C2",
+    "columns": {
+      "test_voltage": { "from": "testVoltage", "factor": 0.001 },
+      "frequency": { "from": "frequency", "factor": 1 },
+      "df_ref": { "from": "powerFactorReference", "factor": 1 },
+      "c_ref": { "from": "capacitanceReference", "factor": 1000000000000 },
+      "df_meas": { "from": "powerFactorMeasured", "factor": 1 },
+      "c_meas": { "from": "capacitanceMeasured", "factor": 1000000000000 }
+    },
+    "plainColumns": {
+      "measurement": { "from": "baseMeasurement" },
+      "test_mode": { "from": "testMode" }
+    },
+    "assessment": {
+      "from": "assessment",
+      "map": { "Pass": "Pass", "Passed": "Pass", "ManualPass": "Pass", "Fail": "Fail", "Failed": "Fail", "ManualFail": "Fail", "Investigate": "", "NotPossible": "", "None": "", "": "" }
+    }
+  },
+  "ExcitingCurrent": {
+    "ptmType": "ExcitingCurrentTest",
+    "columns": {
+      "tap": { "from": "tap", "factor": 1 },
+      "i_out": { "from": "currentOut", "factor": 1000 },
+      "watt_losses": { "from": "wattLosses", "factor": 1 }
+    },
+    "plainColumns": {
+      "phase": { "from": "phase" }
+    },
+    "assessment": {
+      "from": "assessment",
+      "map": { "Pass": "Pass", "Passed": "Pass", "ManualPass": "Pass", "Fail": "Fail", "Failed": "Fail", "ManualFail": "Fail", "Investigate": "", "NotPossible": "", "None": "", "": "" }
+    }
+  },
+  "ShortCircuitImpedancePrim": {
+    "ptmType": "LeakageReactancePrimTest",
+    "columns": {
+      "tap": { "from": "tap", "factor": 1 },
+      "rk": { "from": "resistance", "factor": 1 },
+      "xk": { "from": "reactance", "factor": 1 },
+      "zk": { "from": "impedance", "factor": 1 },
+      "frequency": { "from": "frequency", "factor": 1 },
+      "lk": { "from": "inductance", "factor": 1000 },
+      "xk_percent": { "from": "xkPercent", "factor": 1 },
+      "zk_percent": { "from": "zkPercent", "factor": 1 },
+      "uk_cal": { "from": "ukCalculated", "factor": 1 },
+      "uk_ref": { "from": "ukReference", "factor": 1 },
+      "uk_dev": { "from": "ukDeviation", "factor": 1 }
+    },
+    "plainColumns": {
+      "phase": { "from": "phase" }
+    },
+    "assessment": {
+      "from": "assessment",
+      "map": { "Pass": "Pass", "Passed": "Pass", "ManualPass": "Pass", "Fail": "Fail", "Failed": "Fail", "ManualFail": "Fail", "Investigate": "", "NotPossible": "", "None": "", "": "" }
+    }
+  },
+  "ShortCircuitImpedanceSec": {
+    "ptmType": "LeakageReactanceSecTest",
+    "columns": {
+      "tap": { "from": "tap", "factor": 1 },
+      "rk": { "from": "resistance", "factor": 1 },
+      "xk": { "from": "reactance", "factor": 1 },
+      "zk": { "from": "impedance", "factor": 1 },
+      "frequency": { "from": "frequency", "factor": 1 },
+      "lk": { "from": "inductance", "factor": 1000 },
+      "xk_percent": { "from": "xkPercent", "factor": 1 },
+      "zk_percent": { "from": "zkPercent", "factor": 1 },
+      "uk_cal": { "from": "ukCalculated", "factor": 1 },
+      "uk_ref": { "from": "ukReference", "factor": 1 },
+      "uk_dev": { "from": "ukDeviation", "factor": 1 }
+    },
+    "plainColumns": {
+      "phase": { "from": "phase" }
+    },
+    "assessment": {
+      "from": "assessment",
+      "map": { "Pass": "Pass", "Passed": "Pass", "ManualPass": "Pass", "Fail": "Fail", "Failed": "Fail", "ManualFail": "Fail", "Investigate": "", "NotPossible": "", "None": "", "": "" }
+    }
+  },
+  "ShortCircuitImpedanceTert": {
+    "ptmType": "LeakageReactanceTertTest",
+    "columns": {
+      "tap": { "from": "tap", "factor": 1 },
+      "rk": { "from": "resistance", "factor": 1 },
+      "xk": { "from": "reactance", "factor": 1 },
+      "zk": { "from": "impedance", "factor": 1 },
+      "frequency": { "from": "frequency", "factor": 1 },
+      "lk": { "from": "inductance", "factor": 1000 },
+      "xk_percent": { "from": "xkPercent", "factor": 1 },
+      "zk_percent": { "from": "zkPercent", "factor": 1 },
+      "uk_cal": { "from": "ukCalculated", "factor": 1 },
+      "uk_ref": { "from": "ukReference", "factor": 1 },
+      "uk_dev": { "from": "ukDeviation", "factor": 1 }
+    },
+    "plainColumns": {
+      "phase": { "from": "phase" }
+    },
+    "assessment": {
+      "from": "assessment",
+      "map": { "Pass": "Pass", "Passed": "Pass", "ManualPass": "Pass", "Fail": "Fail", "Failed": "Fail", "ManualFail": "Fail", "Investigate": "", "NotPossible": "", "None": "", "": "" }
+    }
+  },
+  "DCWindingPrim": {
+    "ptmType": "TransformerWindingResistance1Test",
+    "rowName": { "from": ["phase"], "join": "" },
+    "columns": {
+      "tap": { "from": "tap", "factor": 1 },
+      "r_meas": { "from": "resistanceMeasured", "factor": 1 },
+      "r_corr": { "from": "resistanceCorrected", "factor": 1 }
+    },
+    "assessment": {
+      "from": "assessment",
+      "map": { "Pass": "Pass", "Passed": "Pass", "ManualPass": "Pass", "Fail": "Fail", "Failed": "Fail", "ManualFail": "Fail", "None": "", "NotPossible": "", "Investigate": "", "": "" }
+    }
+  },
+  "DCWindingSec": {
+    "ptmType": "TransformerWindingResistance2Test",
+    "rowName": { "from": ["phase"], "join": "" },
+    "columns": {
+      "tap": { "from": "tap", "factor": 1 },
+      "r_meas": { "from": "resistanceMeasured", "factor": 1 },
+      "r_corr": { "from": "resistanceCorrected", "factor": 1 }
+    },
+    "assessment": {
+      "from": "assessment",
+      "map": { "Pass": "Pass", "Passed": "Pass", "ManualPass": "Pass", "Fail": "Fail", "Failed": "Fail", "ManualFail": "Fail", "None": "", "NotPossible": "", "Investigate": "", "": "" }
+    }
+  },
+  "DCWindingTert": {
+    "ptmType": "TransformerWindingResistance3Test",
+    "rowName": { "from": ["phase"], "join": "" },
+    "columns": {
+      "tap": { "from": "tap", "factor": 1 },
+      "r_meas": { "from": "resistanceMeasured", "factor": 1 },
+      "r_corr": { "from": "resistanceCorrected", "factor": 1 }
+    },
+    "assessment": {
+      "from": "assessment",
+      "map": { "Pass": "Pass", "Passed": "Pass", "ManualPass": "Pass", "Fail": "Fail", "Failed": "Fail", "ManualFail": "Fail", "None": "", "NotPossible": "", "Investigate": "", "": "" }
+    }
+  }
+}

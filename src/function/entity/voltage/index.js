@@ -1,7 +1,7 @@
 import db from '../../datacontext/index.js'
 import { insertVoltageTransaction, getVoltageById, deleteVoltageByIdTransaction } from '@/function/cim/voltage';
 import { insertBaseVoltageTransaction, getBaseVoltageById, deleteBaseVoltageByIdTransaction } from '@/function/cim/baseVoltage';
-import { insertVoltageLevelTransaction, getVoltageLevelById, deleteVoltageLevelByIdTransaction } from '@/function/cim/voltageLevel';
+import { ensureVoltageLevelParentSchema, insertVoltageLevelTransaction, getVoltageLevelById, deleteVoltageLevelByIdTransaction } from '@/function/cim/voltageLevel';
 import { deleteBayByIdTransaction, getBayByVoltageLevelOrSubstation } from '@/function/cim/bay';
 import { normaliseAuditValue, tryWriteAuditLog } from '../auditLog/index'
 import { rollbackQuietly } from '@/function/datacontext/rollback'
@@ -25,7 +25,8 @@ const getVoltageLevelLogFields = (entity) => ({
     'High voltage limit': getVoltageRefValue(entity, readLogValue(entity, 'voltageLevel', 'high_voltage_limit')),
     'Low voltage limit': getVoltageRefValue(entity, readLogValue(entity, 'voltageLevel', 'low_voltage_limit')),
     'Base voltage': getVoltageRefValue(entity, entity && entity.baseVoltage ? entity.baseVoltage.nominal_voltage : null),
-    'Substation': readLogValue(entity, 'voltageLevel', 'substation')
+    'Substation': readLogValue(entity, 'voltageLevel', 'substation'),
+    'Power plant': readLogValue(entity, 'voltageLevel', 'power_plant')
 })
 
 const getVoltageLevelChanges = (beforeEntity, afterEntity) => {
@@ -80,6 +81,7 @@ const writeVoltageLevelDeleteLog = async (entity) => {
 export const insertVoltageLevelEntity = async (entity) => {
     try {
         if (entity.voltageLevel.mrid) {
+            await ensureVoltageLevelParentSchema()
             const beforeResult = await getVoltageLevelEntity(entity.voltageLevel.mrid)
             const beforeEntity = beforeResult && beforeResult.success ? beforeResult.data : null
             await runAsync('BEGIN TRANSACTION');

@@ -21,7 +21,13 @@ export default {
                 this.$message.warning(validation.message)
                 return { success: false, validation: true, message: validation.message }
             }
-            const terminalValidation = validateInsulationResistanceTerminals(this.transformerJobDto.testList)
+            const transformerType = this.assetData && this.assetData.properties
+                ? this.assetData.properties.type
+                : ''
+            const terminalValidation = validateInsulationResistanceTerminals(
+                this.transformerJobDto.testList,
+                transformerType
+            )
             if (!terminalValidation.valid) {
                 this.$message.warning(terminalValidation.message)
                 return { success: false, validation: true, message: terminalValidation.message }

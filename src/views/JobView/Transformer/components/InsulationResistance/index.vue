@@ -214,8 +214,8 @@ import GroupNode from '../../../Common/GroupNode.vue'
 import { changeTestStandard } from '../../../Common'
 import transformerAssessmentMap from '@/config/testing-assessment/Transformer/index.js'
 import {
-    TRANSFORMER_TERMINALS,
     readTerminalSides,
+    terminalsForTransformerType,
     writeTerminalSides,
 } from './terminalUtils'
 
@@ -240,6 +240,10 @@ export default {
     computed: {
         testData()     { return this.data },
         assetData()    { return this.asset },
+        transformerType() {
+            return this.assetData && this.assetData.properties ? this.assetData.properties.type : ''
+        },
+        availableTerminals() { return terminalsForTransformerType(this.transformerType) },
         conditions()   { return (this.testCondition && this.testCondition.condition) ? this.testCondition.condition : {} },
         rowData()      { return common.buildEmptyTestRow(transformerTestMap['InsulationResistance'].columns) },
         assessmentData()        { return this.testAssessment ? this.testAssessment.assessment : [] },
@@ -278,16 +282,19 @@ export default {
     methods: {
         terminalValues(row, side) {
             return readTerminalSides(row)[side]
+                .filter(terminal => this.availableTerminals.includes(terminal))
         },
         availableTerminalOptions(row, side) {
             const sides = readTerminalSides(row)
             const otherSide = side === 'terminal1' ? sides.terminal2 : sides.terminal1
-            return TRANSFORMER_TERMINALS.filter(terminal => !otherSide.includes(terminal))
+            return this.availableTerminals.filter(terminal => !otherSide.includes(terminal))
         },
         updateTerminalSide(row, side, values) {
             const current = readTerminalSides(row)
-            current[side] = values
-            writeTerminalSides(row, current.terminal1, current.terminal2)
+            current[side] = values.filter(terminal => this.availableTerminals.includes(terminal))
+            const terminal1 = current.terminal1.filter(terminal => this.availableTerminals.includes(terminal))
+            const terminal2 = current.terminal2.filter(terminal => this.availableTerminals.includes(terminal))
+            writeTerminalSides(row, terminal1, terminal2)
         },
         add() {
             if (!this.testData.table) this.$set(this.testData, 'table', {})

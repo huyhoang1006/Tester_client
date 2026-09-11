@@ -32,12 +32,13 @@ export const uploadAssetMediaFromAttachmentData = async (assetTypeLabel, assetId
         if (!item || !item.path || item.remote || isRemotePath(item.path)) continue
         const file = await localPathToFile(item.path)
         if (!file) continue
+        const uploadName = item.name || file.name
 
         if (item.role === 'nameplate') {
-            nameplateFormData.append('nameplate', file, file.name)
+            nameplateFormData.append('nameplate', file, uploadName)
             hasNameplate = true
         } else {
-            attachmentsFormData.append('attachments', file, file.name)
+            attachmentsFormData.append('attachments', file, uploadName)
             attachmentCount += 1
         }
     }
@@ -87,18 +88,20 @@ export const downloadAssetMediaToAttachmentData = async (assetTypeLabel, assetId
         const mediaId = item.mediaId || item.id || item.mrid || item.mRID
         const name = item.fileName || item.filename || item.name || item.originalFileName || `asset-media-${mediaId || Date.now()}`
         const role = resolveMediaRole(item)
+        const serverDownloadUrl = item.downloadUrl || item.url || item.path
 
         if (!mediaId) {
-            if (item.path || item.url || item.downloadUrl) {
-                output.push({ path: item.path || item.url || item.downloadUrl, name, role })
+            if (serverDownloadUrl) {
+                output.push({ path: serverDownloadUrl, name, role })
             }
             continue
         }
 
         output.push({
-            path: item.downloadUrl || AssetMediaAPI.getAssetMediaDownloadUrl(assetType, assetId, mediaId),
+            path: serverDownloadUrl || AssetMediaAPI.getAssetMediaDownloadUrl(assetType, assetId, mediaId),
             name,
             role,
+            serverDownloadUrl,
             serverMediaId: mediaId,
             serverAssetType: assetType,
             serverAssetId: assetId,
@@ -112,14 +115,62 @@ export const downloadAssetMediaToAttachmentData = async (assetTypeLabel, assetId
 export const materializeServerMediaItem = async (item, refreshStaleMetadata = true) => {
     if (!item || !item.serverAssetType || !item.serverAssetId || !item.serverMediaId) return item
 
+    const downloaded = await downloadServerMediaBlob(item, refreshStaleMetadata)
+    const resolvedItem = downloaded.item
+    const blob = downloaded.blob
+
+    const base64 = await blobToBase64(blob)
+    const canWriteLocal = window.electronAPI
+        && typeof window.electronAPI.writeAttachmentFileData === 'function'
+    const saved = canWriteLocal
+        ? await window.electronAPI.writeAttachmentFileData(
+            base64,
+            buildLocalMediaName(
+                resolvedItem.serverAssetType,
+                resolvedItem.serverAssetId,
+                resolvedItem.serverMediaId,
+                resolvedItem.name
+            )
+        )
+        : null
+
+    return {
+        ...resolvedItem,
+        path: saved && saved.success && saved.path ? saved.path : URL.createObjectURL(blob),
+        downloadFailed: false,
+    }
+}
+
+export const createServerMediaPreviewUrl = async (item) => {
+    const downloaded = await downloadServerMediaBlob(item)
+    return URL.createObjectURL(downloaded.blob)
+}
+
+const downloadServerMediaBlob = async (item, refreshStaleMetadata = true) => {
     let response
     try {
-        response = await AssetMediaAPI.downloadAssetMedia(
-            item.serverAssetType,
-            item.serverAssetId,
-            item.serverMediaId
-        )
+        response = item.serverDownloadUrl
+            ? await AssetMediaAPI.downloadAssetMediaUrl(item.serverDownloadUrl)
+            : await AssetMediaAPI.downloadAssetMedia(
+                item.serverAssetType,
+                item.serverAssetId,
+                item.serverMediaId
+            )
     } catch (error) {
+        if (item.serverDownloadUrl) {
+            try {
+                response = await AssetMediaAPI.downloadAssetMedia(
+                    item.serverAssetType,
+                    item.serverAssetId,
+                    item.serverMediaId
+                )
+            } catch (fallbackError) {
+                error = fallbackError
+            }
+        }
+        if (response) {
+            return buildDownloadedMedia(response, item)
+        }
         if (!refreshStaleMetadata) throw error
 
         const { assetType, media } = await getAssetMediaWithFallback(item.serverAssetType, item.serverAssetId)
@@ -130,38 +181,55 @@ export const materializeServerMediaItem = async (item, refreshStaleMetadata = tr
         const latestMediaId = latestItem && (latestItem.mediaId || latestItem.id || latestItem.mrid || latestItem.mRID)
         if (!latestMediaId || String(latestMediaId) === String(item.serverMediaId)) throw error
 
-        return materializeServerMediaItem({
+        return downloadServerMediaBlob({
             ...item,
             path: latestItem.downloadUrl || AssetMediaAPI.getAssetMediaDownloadUrl(assetType, item.serverAssetId, latestMediaId),
+            serverDownloadUrl: latestItem.downloadUrl || latestItem.url || latestItem.path,
             serverAssetType: assetType,
             serverMediaId: latestMediaId,
         }, false)
     }
-    const blob = unwrapResponseData(response)
-    if (!(blob instanceof Blob)) {
-        throw new TypeError(`Media ${item.serverMediaId} did not return binary content`)
-    }
 
-    const base64 = await blobToBase64(blob)
-    const canWriteLocal = window.electronAPI
-        && typeof window.electronAPI.writeAttachmentFileData === 'function'
-    const saved = canWriteLocal
-        ? await window.electronAPI.writeAttachmentFileData(
-            base64,
-            buildLocalMediaName(
-                item.serverAssetType,
-                item.serverAssetId,
-                item.serverMediaId,
-                item.name
-            )
-        )
-        : null
+    return buildDownloadedMedia(response, item)
+}
+
+const buildDownloadedMedia = (response, item) => {
+    const blob = toMediaBlob(unwrapResponseData(response), item.name)
+    if (!blob) throw new TypeError(`Media ${item.serverMediaId} did not return binary content`)
 
     return {
-        ...item,
-        path: saved && saved.success && saved.path ? saved.path : URL.createObjectURL(blob),
-        downloadFailed: false,
+        blob,
+        item,
     }
+}
+
+const toMediaBlob = (value, name) => {
+    const mimeType = imageMimeType(name)
+    if (value instanceof Blob) {
+        return value.type || !mimeType
+            ? value
+            : new Blob([value], { type: mimeType })
+    }
+    if (value instanceof ArrayBuffer) {
+        return new Blob([value], { type: mimeType || 'application/octet-stream' })
+    }
+    if (ArrayBuffer.isView(value)) {
+        return new Blob([value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength)], {
+            type: mimeType || 'application/octet-stream',
+        })
+    }
+    if (typeof value === 'string') {
+        const dataUrlMatch = value.match(/^data:([^;,]+)?;base64,(.+)$/)
+        const base64 = dataUrlMatch ? dataUrlMatch[2] : value
+        if (dataUrlMatch || /^[A-Za-z0-9+/=\r\n]+$/.test(base64)) {
+            return base64ToBlob(base64.replace(/\s/g, ''), dataUrlMatch && dataUrlMatch[1] || mimeType || 'application/octet-stream')
+        }
+    }
+    if (value && typeof value === 'object') {
+        const binary = value.base64 || value.content || value.bytes || value.fileData
+        if (binary) return toMediaBlob(binary, name)
+    }
+    return null
 }
 
 const resolveAssetMediaType = (assetTypeLabel) => {
@@ -299,3 +367,11 @@ const getExtension = (value) => {
     const parts = fileName(value).split('.')
     return parts.length > 1 ? parts.pop().toLowerCase() : ''
 }
+const imageMimeType = (value) => ({
+    png: 'image/png',
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    gif: 'image/gif',
+    bmp: 'image/bmp',
+    webp: 'image/webp',
+}[getExtension(value)] || '')

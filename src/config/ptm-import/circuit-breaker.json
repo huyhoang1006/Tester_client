@@ -1,0 +1,197 @@
+{
+  "_doc": [
+    "Map OMICRON CIBANO PTM tests to Circuit Breaker tests in the client.",
+    "Only test types listed here are imported. Adding a verified test mapper makes it",
+    "appear automatically in the existing PTM preview and merge workflow."
+  ],
+  "GeneralInspection": {
+    "ptmType": "GeneralInspectionTest",
+    "ptmName": "General inspection",
+    "columns": {}
+  },
+  "ContactResistance": {
+    "ptmType": "ContactResistanceTest",
+    "ptmName": "Contact resistance",
+    "columns": {
+      "phase": { "from": "phase", "kind": "scalar" },
+      "interrupter": { "from": "interrupter", "kind": "scalar" },
+      "i_test": { "from": "measuredCurrentDc", "factor": 1 },
+      "contact_resistance": { "from": "measuredResistance", "factor": 1000000 }
+    },
+    "assessment": {
+      "from": "assessment",
+      "to": "assessment",
+      "map": {
+        "Pass": "",
+        "Passed": "",
+        "Acceptable": "",
+        "Fail": "Fail",
+        "Failed": "Fail",
+        "NotAcceptable": "Fail",
+        "None": "",
+        "Empty": "",
+        "Unknown": ""
+      }
+    }
+  },
+  "ODynamicContactResistance": {
+    "ptmType": "DynamicContactResistanceTest",
+    "ptmName": "O Dynamic Contact Resistance",
+    "columns": {
+      "phase": { "from": "phase", "kind": "scalar" },
+      "interrupter": { "from": "interrupter", "kind": "scalar" },
+      "i_test": { "from": "testCurrent", "factor": 1 },
+      "opening_time": { "from": "openingTime", "factor": 1000 }
+    },
+    "assessment": {
+      "from": "assessment",
+      "to": "assessment",
+      "map": {
+        "Pass": "",
+        "Passed": "",
+        "Acceptable": "",
+        "Fail": "Fail",
+        "Failed": "Fail",
+        "NotAcceptable": "Fail",
+        "None": "",
+        "Empty": "",
+        "Unknown": ""
+      }
+    },
+    "timingTraces": { "from": "timingTraces" }
+  },
+  "CDynamicContactResistance": {
+    "ptmType": "DynamicContactResistanceTest",
+    "ptmName": "C Dynamic Contact Resistance",
+    "columns": {
+      "phase": { "from": "phase", "kind": "scalar" },
+      "interrupter": { "from": "interrupter", "kind": "scalar" },
+      "i_test": { "from": "testCurrent", "factor": 1 },
+      "closing_time": { "from": "closingTime", "factor": 1000 }
+    },
+    "assessment": {
+      "from": "assessment",
+      "to": "assessment",
+      "map": {
+        "Pass": "",
+        "Passed": "",
+        "Acceptable": "",
+        "Fail": "Fail",
+        "Failed": "Fail",
+        "NotAcceptable": "Fail",
+        "None": "",
+        "Empty": "",
+        "Unknown": ""
+      }
+    },
+    "timingTraces": { "from": "timingTraces" }
+  },
+  "MotorCurrent": {
+    "ptmType": "MotorCurrentTest",
+    "ptmName": "Motor current",
+    "columns": {
+      "inrush_current": { "from": "inrushCurrent", "factor": 1 },
+      "charging": { "from": "chargingTime", "factor": 1 },
+      "charging_current": { "from": "chargingCurrent", "factor": 1 },
+      "mini_voltage": { "from": "minimumVoltage", "factor": 1 }
+    },
+    "assessment": {
+      "from": "assessment",
+      "to": "assessment",
+      "map": {
+        "Pass": "",
+        "Passed": "",
+        "Acceptable": "",
+        "Fail": "Fail",
+        "Failed": "Fail",
+        "NotAcceptable": "Fail",
+        "None": "",
+        "Empty": "",
+        "Unknown": ""
+      }
+    },
+    "waveform": {
+      "from": "points"
+    }
+  },
+  "MinimumPickup": {
+    "ptmType": "MinimumPickupTest",
+    "ptmName": "Minimum Pickup",
+    "columns": {
+      "operation": { "from": "operation", "kind": "scalar" },
+      "trip_coil_no": { "from": "tripCoilNo", "kind": "scalar" },
+      "close_coil_no": { "from": "closeCoilNo", "kind": "scalar" },
+      "v_pickup": { "from": "pickupVoltage", "factor": 1 }
+    },
+    "assessment": {
+      "from": "assessment",
+      "to": "assessment",
+      "map": {
+        "Pass": "",
+        "Passed": "",
+        "Acceptable": "",
+        "Fail": "Fail",
+        "Failed": "Fail",
+        "NotAcceptable": "Fail",
+        "None": "",
+        "Empty": "",
+        "Unknown": ""
+      }
+    }
+  },
+  "OTiming": {
+    "ptmType": "TimingTest",
+    "ptmName": "O Timing",
+    "columns": {
+      "phase": { "from": "phase", "kind": "scalar" },
+      "interrupter": { "from": "interrupter", "kind": "scalar" },
+      "opening_time": { "from": "openingTime", "factor": 1000 }
+    },
+    "assessment": {
+      "from": "assessment",
+      "to": "assessment",
+      "map": {
+        "Pass": "",
+        "Passed": "",
+        "Acceptable": "",
+        "Fail": "Fail",
+        "Failed": "Fail",
+        "NotAcceptable": "Fail",
+        "None": "",
+        "Empty": "",
+        "Unknown": ""
+      }
+    },
+    "timingTraces": {
+      "from": "timingTraces"
+    }
+  },
+  "OCOCOTiming": {
+    "ptmType": "TimingTest",
+    "ptmName": "O-CO-CO Timing",
+    "columns": {
+      "phase": { "from": "phase", "kind": "scalar" },
+      "trip_coil": { "from": "tripCoilNo", "kind": "scalar" },
+      "interrupter": { "from": "interrupter", "kind": "scalar" },
+      "opening_time": { "from": "openingTime", "factor": 1000 }
+    },
+    "assessment": {
+      "from": "assessment",
+      "to": "assessment",
+      "map": {
+        "Pass": "",
+        "Passed": "",
+        "Acceptable": "",
+        "Fail": "Fail",
+        "Failed": "Fail",
+        "NotAcceptable": "Fail",
+        "None": "",
+        "Empty": "",
+        "Unknown": ""
+      }
+    },
+    "timingTraces": {
+      "from": "timingTraces"
+    }
+  }
+}

@@ -37,6 +37,34 @@
             "unit": "Ω"
         },
         {
+            "mrid": "15bd3c25-910f-45fe-ae32-62b28fa46e01",
+            "code": "frequency",
+            "name": "Frequency",
+            "type": "analog",
+            "unit": "Hz"
+        },
+        {
+            "mrid": "eb2db214-80c2-4594-9dbf-b113cd0e1402",
+            "code": "lk",
+            "name": "Lk",
+            "type": "analog",
+            "unit": "m|H"
+        },
+        {
+            "mrid": "1467a6a7-b6ef-40b2-8b17-0cde330db703",
+            "code": "xk_percent",
+            "name": "Xk percent",
+            "type": "analog",
+            "unit": "%"
+        },
+        {
+            "mrid": "63acfb2f-4cdc-4b5e-95e3-39a4aab98104",
+            "code": "zk_percent",
+            "name": "Zk percent",
+            "type": "analog",
+            "unit": "%"
+        },
+        {
             "mrid": "02121b30-c92a-41cc-aa0e-b7a4e6592f46",
             "code": "uk_cal",
             "name": "Uk cal",

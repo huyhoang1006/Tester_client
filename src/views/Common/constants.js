@@ -1862,6 +1862,34 @@ export const FEATURE_TREE = {
             cond_humidity: { label: 'Humidity (cond.)', value: 'ContactResistance_cond_humidity' },
             cond_weather: { label: 'Weather (cond.)', value: 'ContactResistance_cond_weather' }
             }},
+            ODynamicContactResistance: { label: 'O Dynamic Contact Resistance', children: {
+            phase: { label: 'Phase', value: 'ODynamicContactResistance_phase' },
+            interrupter: { label: 'Interrupter', value: 'ODynamicContactResistance_interrupter' },
+            i_test: { label: 'I test', value: 'ODynamicContactResistance_i_test' },
+            opening_time: { label: 'Opening time', value: 'ODynamicContactResistance_opening_time' },
+            opening_sync_between_phase: { label: 'Opening sync. between phase (ms)', value: 'ODynamicContactResistance_opening_sync_between_phase' },
+            opening_sync_between_interrupter: { label: 'Opening sync. between interrupter (ms)', value: 'ODynamicContactResistance_opening_sync_between_interrupter' },
+            assessment: { label: 'Assessment', value: 'ODynamicContactResistance_assessment' },
+            condition_indicator: { label: 'Condition indicator', value: 'ODynamicContactResistance_condition_indicator' },
+            cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'ODynamicContactResistance_cond_reference_temp' },
+            cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'ODynamicContactResistance_cond_ambient_temp' },
+            cond_humidity: { label: 'Humidity (cond.)', value: 'ODynamicContactResistance_cond_humidity' },
+            cond_weather: { label: 'Weather (cond.)', value: 'ODynamicContactResistance_cond_weather' }
+            }},
+            CDynamicContactResistance: { label: 'C Dynamic Contact Resistance', children: {
+            phase: { label: 'Phase', value: 'CDynamicContactResistance_phase' },
+            interrupter: { label: 'Interrupter', value: 'CDynamicContactResistance_interrupter' },
+            i_test: { label: 'I test', value: 'CDynamicContactResistance_i_test' },
+            closing_time: { label: 'Closing time', value: 'CDynamicContactResistance_closing_time' },
+            closing_sync_between_phase: { label: 'Closing sync. between phase (ms)', value: 'CDynamicContactResistance_closing_sync_between_phase' },
+            closing_sync_between_interrupter: { label: 'Closing sync. between interrupter (ms)', value: 'CDynamicContactResistance_closing_sync_between_interrupter' },
+            assessment: { label: 'Assessment', value: 'CDynamicContactResistance_assessment' },
+            condition_indicator: { label: 'Condition indicator', value: 'CDynamicContactResistance_condition_indicator' },
+            cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'CDynamicContactResistance_cond_reference_temp' },
+            cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'CDynamicContactResistance_cond_ambient_temp' },
+            cond_humidity: { label: 'Humidity (cond.)', value: 'CDynamicContactResistance_cond_humidity' },
+            cond_weather: { label: 'Weather (cond.)', value: 'CDynamicContactResistance_cond_weather' }
+            }},
             DCWindingCloseCoil: { label: 'DC winding resistance of close coil', children: {
             close_coil_no: { label: 'Close Coil No', value: 'DCWindingCloseCoil_close_coil_no' },
             r_meas: { label: 'R meas', value: 'DCWindingCloseCoil_r_meas' },

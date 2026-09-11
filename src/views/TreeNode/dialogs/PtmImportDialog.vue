@@ -1,6 +1,6 @@
 <template>
     <el-dialog
-        title="Import PTM file"
+        :title="`Import ${sourceLabel} file`"
         :visible="visible"
         width="min(920px, 94vw)"
         :close-on-click-modal="false"
@@ -27,6 +27,7 @@
             <!-- ─── Thiết bị trong file ───────────────────────────────────── -->
             <div class="ptm-section">
                 <div class="ptm-head">Asset</div>
+                <div class="ptm-row"><span class="k">Asset type</span><span class="v">{{ preview.assetKind || asset.type || '—' }}</span></div>
                 <div class="ptm-row"><span class="k">Serial number</span><span class="v">{{ asset.serialNumber || '—' }}</span></div>
                 <div class="ptm-row"><span class="k">Manufacturer</span><span class="v">{{ asset.manufacturer || '—' }}</span></div>
                 <div class="ptm-row"><span class="k">Manufacturer type</span><span class="v">{{ asset.manufacturerType || '—' }}</span></div>
@@ -42,13 +43,21 @@
                       title="A new asset will be created" class="ptm-alert">
                 <div class="ptm-row"><span class="k">Name</span><span class="v">{{ newAssetName }}</span></div>
                 <div class="ptm-row"><span class="k">Serial number</span><span class="v">{{ asset.serialNumber || '—' }}</span></div>
-                <div class="ptm-row"><span class="k">Core configuration</span><span class="v">{{ coreSummary }}</span></div>
-                <ul v-if="coreNotes.length" class="ptm-list">
+                <div class="ptm-row">
+                    <span class="k">{{ isCurrentTransformer ? 'Core configuration' : 'Configuration' }}</span>
+                    <span class="v">{{ isCurrentTransformer ? coreSummary : assetConfigurationSummary }}</span>
+                </div>
+                <ul v-if="isCurrentTransformer && coreNotes.length" class="ptm-list">
                     <li v-for="(n, i) in coreNotes" :key="'cn' + i">{{ n }}</li>
                 </ul>
-                <div class="ptm-hint">
-                    "In use" is ticked for taps that were actually measured — the file has no such flag,
-                    so check it before saving.
+                <div v-if="isCurrentTransformer" class="ptm-hint">
+                    <template v-if="sourceLabel === 'CPXpert'">
+                        Core, tap and "In use" configuration is read from the CPXpert asset profile.
+                    </template>
+                    <template v-else>
+                        "In use" is ticked for taps that were actually measured — the file has no such flag,
+                        so check it before saving.
+                    </template>
                 </div>
             </el-alert>
 
@@ -58,7 +67,7 @@
                       description="This asset has no serial number, so it cannot be matched against existing assets."
                       class="ptm-alert" />
 
-            <el-alert v-else-if="dup && dup.elsewhere.length > 0" type="error" :closable="false" show-icon
+            <el-alert v-else-if="dup && dup.elsewhere && dup.elsewhere.length > 0" type="error" :closable="false" show-icon
                       title="This asset already exists somewhere else" class="ptm-alert">
                 <div>
                     Matched on {{ dup.matchedOn.join(' + ') }}. Handle the existing asset before importing —
@@ -131,15 +140,15 @@
             <div class="ptm-section">
                 <div class="ptm-head">
                     Tests
-                    <span class="ptm-sub">{{ preview.tests.length }} in file,
-                        {{ preview.skipped.length }} unsupported</span>
+                    <span class="ptm-sub">{{ tests.length }} in file,
+                        {{ skipped.length }} unsupported</span>
                 </div>
 
-                <el-table v-if="preview.tests.length" :data="mergeRows" size="mini" border max-height="260">
+                <el-table v-if="tests.length" :data="mergeRows" size="mini" border max-height="260">
                     <el-table-column prop="name" label="Test" min-width="150" />
                     <el-table-column prop="rows" label="Rows" width="70" align="right" />
-                    <el-table-column prop="curves" label="Curves" width="80" align="right" />
-                    <el-table-column prop="points" label="Curve points" width="110" align="right" />
+                    <el-table-column prop="series" label="Series" width="80" align="right" />
+                    <el-table-column prop="dataPoints" label="Data points" width="100" align="right" />
                     <el-table-column v-if="showMergeDecisions" label="Import action" min-width="210">
                         <template slot-scope="scope">
                             <el-tag v-if="scope.row.matches.length === 0" type="success" size="mini">
@@ -171,8 +180,8 @@
                   Bài bị bỏ vẫn LIỆT KÊ ĐỦ kèm lý do. Bỏ im lặng thì người dùng tưởng file
                   chỉ có bấy nhiêu bài, và không bao giờ biết mình mất gì.
                 -->
-                <div v-if="preview.skipped.length" class="ptm-skip">
-                    <div v-for="(s, i) in preview.skipped" :key="i" class="ptm-skip-row">
+                <div v-if="skipped.length" class="ptm-skip">
+                    <div v-for="(s, i) in skipped" :key="i" class="ptm-skip-row">
                         <i class="el-icon-warning-outline"></i>
                         <b>{{ s.name }}</b><span class="ptm-reason">{{ s.reason }}</span>
                     </div>
@@ -206,7 +215,7 @@ export default {
     name: 'PtmImportDialog',
     props: {
         visible:   { type: Boolean, default: false },
-        /** { job, asset, tests: [{name,rows,curves,points}], skipped: [{name,reason}] } */
+        /** { job, asset, tests: [{name,rows,series,dataPoints}], skipped: [{name,reason}] } */
         preview:   { type: Object, default: null },
         /** Kết quả findDuplicateAsset: { inTarget, elsewhere, matchedOn, skippedCheck } */
         dup:       { type: Object, default: null },
@@ -232,8 +241,32 @@ export default {
         }
     },
     computed: {
+        isCircuitBreaker() {
+            return !!(this.preview && this.preview.assetType === 'CircuitBreaker')
+        },
+
+        isCurrentTransformer() {
+            return !!(this.preview && this.preview.assetType === 'CurrentTransformer')
+        },
+
+        isTransformer() {
+            return !!(this.preview && this.preview.assetType === 'Transformer')
+        },
+
+        sourceLabel() {
+            return (this.preview && this.preview.sourceLabel) || 'PTM'
+        },
+
         asset() {
             return (this.preview && this.preview.asset) || {}
+        },
+
+        tests() {
+            return (this.preview && this.preview.tests) || []
+        },
+
+        skipped() {
+            return (this.preview && this.preview.skipped) || []
         },
 
         /**
@@ -254,7 +287,37 @@ export default {
             const fromFile = String(a.apparatusId || a.assetSystemCode || '').trim()
             if (fromFile) return fromFile
             const bits = [a.manufacturer, a.manufacturerType, a.serialNumber]
-            return bits.map(b => String(b || '').trim()).filter(Boolean).join(' ') || 'CT from PTM'
+            return bits.map(b => String(b || '').trim()).filter(Boolean).join(' ') ||
+                (this.isCircuitBreaker
+                    ? `Circuit breaker from ${this.sourceLabel}`
+                    : (this.isTransformer
+                        ? `Transformer from ${this.sourceLabel}`
+                        : `CT from ${this.sourceLabel}`))
+        },
+
+        assetConfigurationSummary() {
+            if (this.isTransformer) {
+                const profile = this.asset.transformerProfile || {}
+                const windings = profile.windings || []
+                const tapChanger = windings.map(winding => winding.tapChanger).find(Boolean)
+                const parts = []
+                if (profile.numberOfPhases) parts.push(`${profile.numberOfPhases} phase(s)`)
+                if (windings.length) parts.push(`${windings.length} winding(s)`)
+                if (profile.vectorGroup) parts.push(profile.vectorGroup)
+                if (tapChanger) parts.push(`${tapChanger.type || 'tap changer'}, ${(tapChanger.taps || []).length} tap(s)`)
+                return parts.join(', ') || 'not available in this file'
+            }
+            const raw = this.asset.raw || {}
+            const value = (key) => raw[key] && raw[key].value
+            const parts = []
+            if (value('NumberOfPhases')) parts.push(`${value('NumberOfPhases')} phase(s)`)
+            if (value('NumberOfInterruptersPerPhase')) {
+                parts.push(`${value('NumberOfInterruptersPerPhase')} interrupter(s) per phase`)
+            }
+            const mechanism = this.preview && this.preview.operatingMechanism
+            const mechanismType = mechanism && mechanism.raw && mechanism.raw.Type && mechanism.raw.Type.value
+            if (mechanismType) parts.push(`${mechanismType} mechanism`)
+            return parts.join(', ') || 'not available in this file'
         },
 
         coreSummary() {
@@ -271,7 +334,7 @@ export default {
         canImport() {
             if (!this.preview) return false
             if (this.dup && this.dup.elsewhere && this.dup.elsewhere.length > 0) return false
-            if (this.preview.tests.length === 0) return false
+            if (this.tests.length === 0) return false
             if (this.jobDup.length > 0 && this.jobAction === 'merge') {
                 if (!this.selectedJob || this.selectedJob.loadError) return false
                 return this.mergeChangeCount > 0
@@ -309,9 +372,8 @@ export default {
         },
 
         mergeRows() {
-            const tests = (this.preview && this.preview.tests) || []
             const existingTests = (this.selectedJob && this.selectedJob.tests) || []
-            return tests.map(test => ({
+            return this.tests.map(test => ({
                 ...test,
                 matches: existingTests.filter(existing => existing.testTypeCode === test.testTypeCode),
             }))

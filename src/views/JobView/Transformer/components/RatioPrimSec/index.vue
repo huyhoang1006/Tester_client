@@ -15,6 +15,11 @@
             </div>
         </div>
 
+        <ratio-prim-sec-plot
+            :rows="testRows"
+            :asset="assetData">
+        </ratio-prim-sec-plot>
+
         <div class="table-scroll">
         <table class="table-strip-input-data test-table">
             <thead>
@@ -23,6 +28,7 @@
                     <th class="phase-col">Phase</th>
                     <th>V prim (kV)</th>
                     <th>V sec (kV)</th>
+                    <th>I out (mA)</th>
                     <th>Nominal ratio</th>
                     <th>Ratio meas</th>
                     <th>Ratio dev (%)</th>
@@ -31,7 +37,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(item, index) in testData.table.table1" :key="index">
+                <tr v-for="(item, index) in testRows" :key="index">
                     <td>{{ item.tap.value }}</td>
                     <td>
                         <div class="col-phase">
@@ -48,6 +54,9 @@
                     </td>
                     <td>
                         <el-input size="mini" type="text" number="positive" v-model="item.voltage_sec.value" @input="computeFields"></el-input>
+                    </td>
+                    <td>
+                        <el-input size="mini" type="text" number="positive" v-model="item.i_out.value"></el-input>
                     </td>
                     <td>
                         <el-input size="mini" type="text" v-model="item.nominal_ratio.value" readonly></el-input>
@@ -173,10 +182,11 @@ import transformerTestMap from '@/config/test-definitions/Transformer'
 import * as common from '../../../Common/index.js'
 import GroupNode from '../../../Common/GroupNode.vue'
 import { changeTestStandard } from '../../../Common'
+import RatioPrimSecPlot from './RatioPrimSecPlot.vue'
 
 export default {
     name: "RatioPrimSec",
-    components: { GroupNode },
+    components: { GroupNode, RatioPrimSecPlot },
     data() {
         return {
             openAssessmentDialog: false,
@@ -194,6 +204,7 @@ export default {
     computed: {
         testData()     { return this.data },
         assetData()    { return this.asset },
+        testRows()     { return (this.testData.table && this.testData.table.table1) || [] },
         conditions()   { return (this.testCondition && this.testCondition.condition) ? this.testCondition.condition : {} },
         rowData()      { return common.buildEmptyTestRow(transformerTestMap['RatioPrimSec'].columns) },
         assessmentData()        { return this.testAssessment ? this.testAssessment.assessment : [] },
@@ -209,6 +220,15 @@ export default {
         testStandardData() { return this.testAssessment ? this.testAssessment.testStandard : null }
     },
     watch: {
+        testRows: {
+            immediate: true,
+            handler(rows) {
+                const emptyCurrent = this.rowData.i_out
+                rows.forEach(row => {
+                    if (!row.i_out) this.$set(row, 'i_out', JSON.parse(JSON.stringify(emptyCurrent)))
+                })
+            }
+        },
         'option': {
             immediate: true,
             handler: async function (newVal) {

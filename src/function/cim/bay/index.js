@@ -1,9 +1,30 @@
 import db from '../../datacontext/index'
 import * as equipmentContainerFunc from '../equipmentContainer/index.js'
 
+let parentSchemaPromise = null
+
+export const ensureBayParentSchema = (dbsql = db) => {
+    if (parentSchemaPromise) return parentSchemaPromise
+    parentSchemaPromise = new Promise((resolve, reject) => {
+        dbsql.all('PRAGMA table_info(bay)', [], (err, rows) => {
+            if (err) return reject(err)
+            if ((rows || []).some((row) => row.name === 'power_plant')) return resolve()
+            dbsql.run('ALTER TABLE bay ADD COLUMN power_plant TEXT REFERENCES power_plant(mrid)', (alterError) => {
+                if (alterError) return reject(alterError)
+                return resolve()
+            })
+        })
+    }).catch((error) => {
+        parentSchemaPromise = null
+        throw error
+    })
+    return parentSchemaPromise
+}
+
 
 // Thêm mới Bay (gồm cả insert EquipmentContainer)
 export const insertBay = async (bay) => {
+    await ensureBayParentSchema()
     return new Promise((resolve, reject) => {
         db.serialize(() => {
             db.run('BEGIN TRANSACTION')
@@ -14,16 +35,17 @@ export const insertBay = async (bay) => {
                         return reject({ success: false, message: 'Insert EquipmentContainer failed', err: result.err })
                     }
                     db.run(
-                        `INSERT INTO bay(mrid, bay_energy_meas_flag, bay_power_meas_flag, breaker_configuration, bus_bar_configuration, substation, voltage_level)
-                         VALUES (?, ?, ?, ?, ?, ?, ?)
+                        `INSERT INTO bay(mrid, bay_energy_meas_flag, bay_power_meas_flag, breaker_configuration, bus_bar_configuration, substation, power_plant, voltage_level)
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                          ON CONFLICT(mrid) DO UPDATE SET
                             bay_energy_meas_flag = excluded.bay_energy_meas_flag,
                             bay_power_meas_flag = excluded.bay_power_meas_flag,
                             breaker_configuration = excluded.breaker_configuration,
                             bus_bar_configuration = excluded.bus_bar_configuration,
                             substation = excluded.substation,
+                            power_plant = excluded.power_plant,
                             voltage_level = excluded.voltage_level`,
-                        [bay.mrid, bay.bay_energy_meas_flag, bay.bay_power_meas_flag, bay.breaker_configuration, bay.bus_bar_configuration, bay.substation, bay.voltage_level],
+                        [bay.mrid, bay.bay_energy_meas_flag, bay.bay_power_meas_flag, bay.breaker_configuration, bay.bus_bar_configuration, bay.substation, bay.power_plant, bay.voltage_level],
                         function (err) {
                             if (err) {
                                 db.run('ROLLBACK')
@@ -44,6 +66,7 @@ export const insertBay = async (bay) => {
 
 // Thêm mới Substation trong transaction (cho lớp cha gọi)
 export const insertBayTransaction = async (bay, dbsql) => {
+    await ensureBayParentSchema(dbsql)
     return new Promise((resolve, reject) => {
         equipmentContainerFunc.insertEquipmentContainerTransaction(bay, dbsql)
             .then(result => {
@@ -51,16 +74,17 @@ export const insertBayTransaction = async (bay, dbsql) => {
                     return reject({ success: false, message: 'Insert EquipmentContainer failed', err: result.err })
                 }
                 dbsql.run(
-                    `INSERT INTO bay(mrid, bay_energy_meas_flag, bay_power_meas_flag, breaker_configuration, bus_bar_configuration, substation, voltage_level)
-                     VALUES (?, ?, ?, ?, ?, ?, ?)
+                    `INSERT INTO bay(mrid, bay_energy_meas_flag, bay_power_meas_flag, breaker_configuration, bus_bar_configuration, substation, power_plant, voltage_level)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                      ON CONFLICT(mrid) DO UPDATE SET
                         bay_energy_meas_flag = excluded.bay_energy_meas_flag,
                         bay_power_meas_flag = excluded.bay_power_meas_flag,
                         breaker_configuration = excluded.breaker_configuration,
                         bus_bar_configuration = excluded.bus_bar_configuration,
                         substation = excluded.substation,
+                        power_plant = excluded.power_plant,
                         voltage_level = excluded.voltage_level`,
-                    [bay.mrid, bay.bay_energy_meas_flag, bay.bay_power_meas_flag, bay.breaker_configuration, bay.bus_bar_configuration, bay.substation, bay.voltage_level],
+                    [bay.mrid, bay.bay_energy_meas_flag, bay.bay_power_meas_flag, bay.breaker_configuration, bay.bus_bar_configuration, bay.substation, bay.power_plant, bay.voltage_level],
                     function (err) {
                         if (err) {
                             return reject({ success: false, err, message: 'Insert Bay failed' })
@@ -79,6 +103,7 @@ export const insertBayTransaction = async (bay, dbsql) => {
 // Lấy Bay theo mrid (gộp cả cha, trả về data: data)
 export const getBayById = async (mrid) => {
     try {
+        await ensureBayParentSchema()
         const ecResult = await equipmentContainerFunc.getEquipmentContainerById(mrid)
         if (!ecResult.success) {
             return { success: false, data: null, message: 'EquipmentContainer not found' }
@@ -152,9 +177,32 @@ export const getBayByVoltageLevelOrSubstation = (voltageLevel, substation) => {
     });
 };
 
+export const getBayByPowerPlantId = async (powerPlantId) => {
+    await ensureBayParentSchema()
+    return new Promise((resolve, reject) => {
+        const sql = `
+            SELECT b.*, io.*
+            FROM bay b
+            JOIN identified_object io ON b.mrid = io.mrid
+            WHERE b.power_plant = ?
+        `
+        db.all(sql, [powerPlantId], (err, rows) => {
+            if (err) {
+                return reject({ success: false, data: null, message: 'Get Bays by power plant failed', err })
+            }
+            return resolve({
+                success: Boolean(rows && rows.length),
+                data: rows || [],
+                message: rows && rows.length ? 'Get Bays by power plant completed' : 'No bays found for this power plant'
+            })
+        })
+    })
+}
+
 
 // Cập nhật Bay (gồm cả EquipmentContainer)
 export const updateBayById = async (mrid, bay) => {
+    await ensureBayParentSchema()
     return new Promise((resolve, reject) => {
         db.serialize(() => {
             db.run('BEGIN TRANSACTION');
@@ -172,7 +220,8 @@ export const updateBayById = async (mrid, bay) => {
                             breaker_configuration = ?,
                             bus_bar_configuration = ?,
                             voltage_level = ?,
-                            substation = ?
+                            substation = ?,
+                            power_plant = ?
                          WHERE mrid = ?`,
                         [
                             bay.bay_energy_meas_flag,
@@ -180,7 +229,8 @@ export const updateBayById = async (mrid, bay) => {
                             bay.breaker_configuration,
                             bay.bus_bar_configuration,
                             bay.voltage_level,
-                            bay.substation, // ✅ Thêm dòng này
+                            bay.substation,
+                            bay.power_plant,
                             mrid             // ✅ Giữ đúng vị trí cuối
                         ],
                         function (err) {
@@ -204,6 +254,7 @@ export const updateBayById = async (mrid, bay) => {
 
 // Cập nhật Bay trong transaction (cho lớp cha gọi)
 export const updateBayByIdTransaction = async (mrid, bay, dbsql) => {
+    await ensureBayParentSchema(dbsql)
     return new Promise((resolve, reject) => {
         equipmentContainerFunc.updateEquipmentContainerByIdTransaction(mrid, bay, dbsql)
             .then(result => {
@@ -217,9 +268,10 @@ export const updateBayByIdTransaction = async (mrid, bay, dbsql) => {
                         breaker_configuration = ?,
                         bus_bar_configuration = ?,
                         voltage_level = ?,
-                        substation = ?
+                        substation = ?,
+                        power_plant = ?
                      WHERE mrid = ?`,
-                    [bay.bay_energy_meas_flag, bay.bay_power_meas_flag, bay.breaker_configuration, bay.bus_bar_configuration, bay.voltage_level, bay.substation, mrid],
+                    [bay.bay_energy_meas_flag, bay.bay_power_meas_flag, bay.breaker_configuration, bay.bus_bar_configuration, bay.voltage_level, bay.substation, bay.power_plant, mrid],
                     function (err) {
                         if (err) {
                             return reject({ success: false, err, message: 'Update Bay failed' })

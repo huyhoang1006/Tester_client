@@ -1,4 +1,39 @@
 import Vue from 'vue'
+
+const ASSET_TYPES = [
+    'Transformer',
+    'Surge arrester',
+    'Bushing',
+    'Voltage transformer',
+    'Disconnector',
+    'Power cable',
+    'Rotating machine',
+    'Current transformer',
+    'Capacitor',
+    'Circuit breaker',
+    'Reactor'
+]
+
+const appendAssetRows = (target, responses, parentNode, parentDisplayName) => {
+    if (!Array.isArray(responses)) return
+    responses.forEach((response, index) => {
+        if (!response || !response.success || !response.data) return
+        const rows = Array.isArray(response.data) ? response.data : [response.data]
+        rows.forEach((row) => {
+            row.parentId = parentNode.mrid
+            row.mode = 'asset'
+            row.asset = ASSET_TYPES[index]
+            row.parentName = [parentNode.parentName, parentNode.name].filter(Boolean).join('/')
+            row.parentArr = [...(parentNode.parentArr || []), {
+                mrid: parentNode.mrid,
+                parent: parentDisplayName
+            }]
+            row._hasFullProperties = true
+        })
+        target.push(...rows)
+    })
+}
+
 export default {
     methods: {
         async filterRowsByCurrentUserOwnership(rows) {
@@ -31,7 +66,7 @@ export default {
                 try {
                     let newRows = []
                     let parentDisplayName = node.name;
-                    if (['organisation', 'substation', 'voltageLevel', 'bay'].includes(node.mode)) {
+                    if (['organisation', 'substation', 'powerPlant', 'voltageLevel', 'bay'].includes(node.mode)) {
                         parentDisplayName = node.aliasName || node.name;
                     } else if (node.mode === 'asset') {
                         parentDisplayName = node.apparatus_id || node.serial_number || node.name;
@@ -685,11 +720,47 @@ export default {
                             })
                             newRows.push(...assetBreakerReturn.data)
                         }
+                    } else if (node.mode === 'powerPlant') {
+                        const clickedRow = node
+                        const [voltageLevelReturn, bayReturn, assetReturns] = await Promise.all([
+                            window.electronAPI.getVoltageLevelByPowerPlantId(clickedRow.mrid),
+                            window.electronAPI.getBayByPowerPlantId(clickedRow.mrid),
+                            this.fetchAssetByPsr(clickedRow.mrid)
+                        ])
+
+                        if (voltageLevelReturn.success && Array.isArray(voltageLevelReturn.data)) {
+                            voltageLevelReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'voltageLevel'
+                                row.parentName = [clickedRow.parentName, clickedRow.name].filter(Boolean).join('/')
+                                row.parentArr = [...(clickedRow.parentArr || []), {
+                                    mrid: clickedRow.mrid,
+                                    parent: parentDisplayName
+                                }]
+                            })
+                            newRows.push(...voltageLevelReturn.data)
+                        }
+
+                        if (bayReturn.success && Array.isArray(bayReturn.data)) {
+                            bayReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'bay'
+                                row.parentName = [clickedRow.parentName, clickedRow.name].filter(Boolean).join('/')
+                                row.parentArr = [...(clickedRow.parentArr || []), {
+                                    mrid: clickedRow.mrid,
+                                    parent: parentDisplayName
+                                }]
+                            })
+                            newRows.push(...bayReturn.data)
+                        }
+
+                        appendAssetRows(newRows, assetReturns, clickedRow, parentDisplayName)
                     } else {
                         const clickedRow = node
-                        const [organisationReturn, substationReturn] = await Promise.all([
+                        const [organisationReturn, substationReturn, powerPlantReturn] = await Promise.all([
                             window.electronAPI.getParentOrganizationByParentMrid(clickedRow.mrid),
-                            window.electronAPI.getSubstationsInOrganisationForUser(clickedRow.mrid, this.$store.state.user.user_id)
+                            window.electronAPI.getSubstationsInOrganisationForUser(clickedRow.mrid, this.$store.state.user.user_id),
+                            window.electronAPI.getPowerPlantsInOrganisationForUser(clickedRow.mrid, this.$store.state.user.user_id)
                         ])
 
                         if (organisationReturn.success && organisationReturn.data && organisationReturn.data.length > 0) {
@@ -723,6 +794,21 @@ export default {
                                 })
                             })
                             newRows.push(...substationReturn.data)
+                        }
+
+                        if (powerPlantReturn.success && powerPlantReturn.data && powerPlantReturn.data.length > 0) {
+                            powerPlantReturn.data.forEach((row) => {
+                                row.parentId = clickedRow.mrid
+                                row.mode = 'powerPlant'
+                                row.plantType = row.plant_type || ''
+                                row.parentName = clickedRow.parentName + '/' + clickedRow.name
+                                row.parentArr = [...(clickedRow.parentArr || [])]
+                                row.parentArr.push({
+                                    mrid: clickedRow.mrid,
+                                    parent: parentDisplayName
+                                })
+                            })
+                            newRows.push(...powerPlantReturn.data)
                         }
                     }
                     // Merge với children hiện có (nếu có) để không mất asset đã add trước đó

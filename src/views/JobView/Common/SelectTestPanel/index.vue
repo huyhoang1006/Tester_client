@@ -17,10 +17,15 @@
                     v-for="item in filteredTestTypes"
                     :key="item.mrid"
                     class="st-item"
+                    :class="{ 'is-disabled': isUnavailable(item) }"
                     @dblclick="add(item)">
                     <span class="st-item-name" :title="item.name">{{ item.name }}</span>
                     <span v-if="usageCount[item.mrid]" class="st-badge" title="Times added">{{ usageCount[item.mrid] }}</span>
-                    <button type="button" class="st-btn add" title="Add test" @click="add(item)">
+                    <button type="button" class="st-btn add"
+                        :class="{ 'is-disabled': isUnavailable(item) }"
+                        :aria-disabled="String(isUnavailable(item))"
+                        :title="availabilityOf(item).message || 'Add test'"
+                        @click="add(item)">
                         <i class="fa-solid fa-plus"></i>
                     </button>
                 </div>
@@ -74,6 +79,10 @@ export default {
         initTest: {
             type: Function,
             required: true
+        },
+        testAvailability: {
+            type: Function,
+            default: null
         }
     },
     data() {
@@ -101,7 +110,23 @@ export default {
         }
     },
     methods: {
+        availabilityOf(testType) {
+            if (!this.testAvailability) return { enabled: true, message: '' }
+            const availability = this.testAvailability(testType, this.assetData) || {}
+            return {
+                enabled: availability.enabled !== false,
+                message: availability.message || ''
+            }
+        },
+        isUnavailable(testType) {
+            return !this.availabilityOf(testType).enabled
+        },
         async add(testType) {
+            const availability = this.availabilityOf(testType)
+            if (!availability.enabled) {
+                this.$message.warning(availability.message)
+                return
+            }
             const count = this.usageCount[testType.mrid] || 0
             const initTest = await this.initTest(testType.alias_name, this.assetData)
             const name = count === 0 ? testType.name : `${testType.name} (${count})`
@@ -277,5 +302,13 @@ export default {
     transition: background 0.15s, color 0.15s;
 }
 .st-btn.add:hover { color: #409eff; background: #ecf5ff; }
+.st-item.is-disabled .st-item-name { color: #a8abb2; }
+.st-btn.add.is-disabled,
+.st-btn.add.is-disabled:hover {
+    color: #c0c4cc;
+    background: #f5f7fa;
+    cursor: not-allowed;
+    opacity: 0.65;
+}
 .st-btn.danger:hover { color: #f56c6c; background: #fef0f0; }
 </style>

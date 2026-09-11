@@ -20,6 +20,18 @@
       "kind": "test"
     },
     {
+      "mrid": "f2c97d9a-8be5-42cf-a917-1c61ce8d52a4",
+      "code": "ODynamicContactResistance",
+      "name": "O Dynamic Contact Resistance",
+      "kind": "test"
+    },
+    {
+      "mrid": "0e86ec63-4d92-4c67-b3ca-57a026f0b413",
+      "code": "CDynamicContactResistance",
+      "name": "C Dynamic Contact Resistance",
+      "kind": "test"
+    },
+    {
       "mrid": "4ac548da-4f12-4385-acbd-22752f0b68b7",
       "code": "CTiming",
       "name": "C Timing",
