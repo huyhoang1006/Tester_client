@@ -97,27 +97,29 @@ export const updateDatabase = async () => {
         console.error('[DB] Sync schema failed, tinh nang dung bang moi se loi:', schemaError)
     }
 
-    // These procedures were added after databases in the field had already
-    // advanced their user_version. Seed only this small, idempotent catalogue
-    // slice on every startup so procedure_asset can always satisfy its FKs.
-    try {
-        await runAsync('BEGIN TRANSACTION', db)
-        await procedureFunc.ensureDynamicContactResistanceProcedures(db)
-        await runAsync('COMMIT', db)
-    } catch (procedureError) {
-        await runAsync('ROLLBACK', db).catch(() => {})
-        console.error('[DB] Dynamic Contact Resistance procedure sync failed:', procedureError)
-    }
+    if (oldVersion) {
+        // These procedures were added after databases in the field had already
+        // advanced their user_version. Seed only this small, idempotent catalogue
+        // slice on every startup so procedure_asset can always satisfy its FKs.
+        try {
+            await runAsync('BEGIN TRANSACTION', db)
+            await procedureFunc.ensureDynamicContactResistanceProcedures(db)
+            await runAsync('COMMIT', db)
+        } catch (procedureError) {
+            await runAsync('ROLLBACK', db).catch(() => {})
+            console.error('[DB] Dynamic Contact Resistance procedure sync failed:', procedureError)
+        }
 
-    // PTM Transformer imports use measurement definitions that may have been
-    // added after an existing database last ran the full procedure migration.
-    try {
-        await runAsync('BEGIN TRANSACTION', db)
-        await procedureFunc.ensureTransformerPtmImportProcedures(db)
-        await runAsync('COMMIT', db)
-    } catch (procedureError) {
-        await runAsync('ROLLBACK', db).catch(() => {})
-        console.error('[DB] Transformer PTM procedure sync failed:', procedureError)
+        // PTM Transformer imports use measurement definitions that may have been
+        // added after an existing database last ran the full procedure migration.
+        try {
+            await runAsync('BEGIN TRANSACTION', db)
+            await procedureFunc.ensureTransformerPtmImportProcedures(db)
+            await runAsync('COMMIT', db)
+        } catch (procedureError) {
+            await runAsync('ROLLBACK', db).catch(() => {})
+            console.error('[DB] Transformer PTM procedure sync failed:', procedureError)
+        }
     }
 
     if(!oldVersion) {

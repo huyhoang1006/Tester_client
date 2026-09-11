@@ -20,6 +20,7 @@ export const createProcedureTransformer = async (dbsql, procedureDataMap, testDa
     const transformerProcedure = await getProcedureInfo(transformerProcedureInfo)
     const transformerTestDefinitions = await getTestDefinitionInfo(transformerTestDefinitionInfo)
     const transformerTestingConditions = await getTestConditionInfo(transformerTestingConditionInfo)
+    const selectedProcedureIds = new Set(transformerProcedure.map(procedure => procedure.mrid))
 
     for (const procedure of transformerProcedure) {
         await procedureFunc.insertProcedureTransaction(procedure, dbsql)
@@ -69,6 +70,7 @@ export const createProcedureTransformer = async (dbsql, procedureDataMap, testDa
         var testKeys = Object.keys(transformerAssessmentInfo)
         for (var ti = 0; ti < testKeys.length; ti++) {
             var testEntry = transformerAssessmentInfo[testKeys[ti]]
+            if (!testEntry || !selectedProcedureIds.has(testEntry.testId)) continue
             var testStandards = testEntry && testEntry.testStandard ? testEntry.testStandard : []
             for (var si = 0; si < testStandards.length; si++) {
                 await common.seedStandard(testStandards[si], dbsql)

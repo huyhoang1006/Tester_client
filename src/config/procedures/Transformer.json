@@ -156,6 +156,18 @@
       "code": "EnergyEfficiency",
       "name": "Energy Efficiency",
       "kind": "test"
+    },
+    {
+      "mrid": "84b45a72-5aeb-49fb-9000-5e8e6c7ab03c",
+      "code": "DimensionWeight",
+      "name": "Dimension and weight",
+      "kind": "test"
+    },
+    {
+      "mrid": "0e78e50b-ce66-4329-9201-d795a827f962",
+      "code": "TestingInstruments",
+      "name": "Testing instruments",
+      "kind": "test"
     }
   ]
 }
