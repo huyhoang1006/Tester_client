@@ -5,6 +5,7 @@ import * as transformerMapping from "@/views/Mapping/Transformer"
 import OldTransformerEndInfo from "@/views/Cim/OldTransformerEndInfo"
 import { WindingConnection } from "@/views/Enum/WindingConnection"
 import { PhaseCode } from "@/views/Enum/PhaseCode"
+import { parseServerVectorGroup } from "@/views/Mapping/ServerToDTO/Transformer/vectorGroup"
 import { ensureUniqueAssetBeforeSave } from "@/views/AssetView/mixin/assetDuplicateGuard";
 export default {
     data() {
@@ -88,7 +89,8 @@ export default {
                     const data = JSON.parse(JSON.stringify(this.transformerDto));
                     if (!(await ensureUniqueAssetBeforeSave(this, data))) return { success: false, duplicate: true };
                     const result = this.checkTransformerDto(data);
-                    const oldResult = this.checkTransformerDto(this.oldTransformerDto);
+                    const oldData = JSON.parse(JSON.stringify(this.oldTransformerDto));
+                    const oldResult = this.checkTransformerDto(oldData, { normalizeTransformerEnds: false });
                     const resultEntity = transformerMapping.transformerDtoToEntity(result);
                     const oldResultEntity = transformerMapping.transformerDtoToEntity(oldResult);
                     let rs = await window.electronAPI.insertTransformerEntity(oldResultEntity, resultEntity)
@@ -129,6 +131,7 @@ export default {
         },
 
         loadData(data) {
+            this.repairStructuredVectorGroup(data)
             this.oldTransformerDto = JSON.parse(JSON.stringify(data));
             const surgeArresterTemp = JSON.parse(JSON.stringify(data.surge_arrester))
             data.surge_arrester = {
@@ -145,6 +148,27 @@ export default {
             this.$nextTick(async () => {
                 await this.loadSurgeArrester(surgeArresterTemp, this.transformerDto.surge_arrester);
             });
+        },
+
+        repairStructuredVectorGroup(data) {
+            const windingConfiguration = data && data.winding_configuration
+            const vectorGroup = windingConfiguration && windingConfiguration.vector_group
+            const tertiary = vectorGroup && vectorGroup.tert
+            const requiresTertiary = data && data.properties &&
+                (data.properties.type === this.$constant.THREE_WINDING ||
+                    data.properties.type === this.$constant.WITH_TERT)
+
+            if (!requiresTertiary || !tertiary || tertiary.i || !windingConfiguration.vector_group_data) return
+
+            const parsed = parseServerVectorGroup(
+                windingConfiguration.vector_group_data,
+                windingConfiguration.phases,
+                data.properties.type
+            )
+            if (parsed && parsed.vectorGroup && parsed.vectorGroup.tert.i) {
+                windingConfiguration.vector_group = parsed.vectorGroup
+                windingConfiguration.vector_group_data = parsed.vectorGroupData
+            }
         },
 
         async loadSurgeArrester(surgeTemp, surgeArray) {
@@ -187,9 +211,9 @@ export default {
                 this.attachmentData = []
         },
 
-        checkTransformerDto(data) {
+        checkTransformerDto(data, options = {}) {
             this.checkPsrId(data)
-            this.checkOldTransformerEndInfo(data)
+            this.checkOldTransformerEndInfo(data, options.normalizeTransformerEnds !== false)
             this.checkAsset(data)
             this.checkLifecycleDate(data)
             this.checkAssetInfo(data)
@@ -224,41 +248,29 @@ export default {
             }
         },
 
-        checkOldTransformerEndInfo(data) {
-            if (data.oldTransformerEndInfo.length === 0) {
-                if (data.properties.type === this.$constant.THREE_WINDING || data.properties.type === this.$constant.WITH_TERT) {
-                    for (let i = 1; i <= 3; i++) {
-                        const transformerEndInfo = new OldTransformerEndInfo();
-                        transformerEndInfo.mrid = uuid.newUuid();
-                        transformerEndInfo.end_number = i
-                        data.oldTransformerEndInfo.push(transformerEndInfo);
-                    }
-                } else {
-                    for (let i = 1; i <= 2; i++) {
-                        const transformerEndInfo = new OldTransformerEndInfo();
-                        transformerEndInfo.mrid = uuid.newUuid();
-                        transformerEndInfo.end_number = i
-                        data.oldTransformerEndInfo.push(transformerEndInfo);
-                    }
+        checkOldTransformerEndInfo(data, normalize = true) {
+            if (!normalize) return
+
+            if (!Array.isArray(data.oldTransformerEndInfo)) {
+                data.oldTransformerEndInfo = []
+            }
+
+            const hasTertiaryEnd = data.properties.type === this.$constant.THREE_WINDING ||
+                data.properties.type === this.$constant.WITH_TERT
+            const requiredEndNumbers = hasTertiaryEnd ? [1, 2, 3] : [1, 2]
+
+            for (const endNumber of requiredEndNumbers) {
+                const exists = data.oldTransformerEndInfo.some(item => Number(item.end_number) === endNumber)
+                if (!exists) {
+                    const transformerEndInfo = new OldTransformerEndInfo()
+                    transformerEndInfo.mrid = uuid.newUuid()
+                    transformerEndInfo.end_number = endNumber
+                    data.oldTransformerEndInfo.push(transformerEndInfo)
                 }
-            } else {
-                if (data.properties.type === this.$constant.THREE_WINDING || data.properties.type !== this.$constant.WITH_TERT) {
-                    if (data.oldTransformerEndInfo.length < 3) {
-                        const transformerEndInfo = new OldTransformerEndInfo();
-                        transformerEndInfo.mrid = uuid.newUuid();
-                        transformerEndInfo.end_number = 3
-                        data.oldTransformerEndInfo.push(transformerEndInfo);
-                    }
-                } else {
-                    if (data.oldTransformerEndInfo.length > 2) {
-                        for (let i = 1; i <= data.oldTransformerEndInfo.length; i++) {
-                            if (data.oldTransformerEndInfo[i - 1].end_number === 3) {
-                                data.oldTransformerEndInfo.splice(i - 1, 1);
-                                break;
-                            }
-                        }
-                    }
-                }
+            }
+
+            if (!hasTertiaryEnd) {
+                data.oldTransformerEndInfo = data.oldTransformerEndInfo.filter(item => Number(item.end_number) !== 3)
             }
         },
 

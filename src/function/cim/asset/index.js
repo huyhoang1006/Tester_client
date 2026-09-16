@@ -538,10 +538,15 @@ export const deleteAssetByIdTransaction = async (mrid, dbsql) => {
     return new Promise((resolve, reject) => {
         IdentifiedObjectFunc.deleteIdentifiedObjectByIdTransaction(mrid, dbsql)
             .then(result => {
-                if (!result.success) {
+                if (!result.success && result.message !== 'Identified object not found') {
                     return reject({ success: false, message: 'Delete identified object failed', err: result.err })
                 }
-                return resolve({ success: true, data: mrid, message: 'Delete asset (and cascade identified object) completed' })
+                return resolve({
+                    success: true,
+                    data: mrid,
+                    alreadyDeleted: result.message === 'Identified object not found',
+                    message: 'Delete asset (and cascade identified object) completed'
+                })
             })
             .catch(err => {
                 return reject({ success: false, err: err, message: 'Delete asset transaction failed' })

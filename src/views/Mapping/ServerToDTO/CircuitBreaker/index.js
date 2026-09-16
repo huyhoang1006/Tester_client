@@ -21,6 +21,7 @@ const OPERATING_TYPE_MAP = {
     'Pneumatic': 'Pneumatic',
     'Motor':     'Motor',
     'Magnetic':  'magnetic',
+    'Not Supported': 'notSupport',
 }
 
 const TANK_TYPE_MAP = {
@@ -180,7 +181,7 @@ export const mapServerToDto = (serverData) => {
     dto.ratings.rated_frequency_custom               = flat(ratings.ratedFrequencyCustom,          'Hz',  ratings.ratedFrequencyCustomUnit)
 
     // 4. CircuitBreaker section
-    dto.circuitBreaker.numberOfPhases        = numberOrBlank(cbCore.numberOfPhases)
+    dto.circuitBreaker.numberOfPhases        = numberOrBlank(cbCore.numberOfPhases ?? assetInfo.numberOfPhase)
     dto.circuitBreaker.phase                 = cbCore.phase || serverData.phase || assetInfo.phase || ''
     dto.circuitBreaker.interruptersPerPhase  = numberOrBlank(cbCore.interruptersPerPhase)
     dto.circuitBreaker.poleOperation         = cbCore.poleOperation       || ''
@@ -487,6 +488,7 @@ const OPERATING_TYPE_TO_SERVER = {
     'Pneumatic': 'Pneumatic',
     'Motor':     'Motor',
     'magnetic':  'Magnetic',
+    'notSupport': 'Not Supported',
 }
 
 // Loại cơ cấu truyền động KHÔNG có áp suất vận hành.
@@ -701,6 +703,8 @@ export const mapDtoToServer = (dto) => {
             mRID:              assetInfoId,
             manufacturer:      p.manufacturer || null,
             manufacturerType:  p.manufacturer_type || null,
+            phase:             strU(cb.phase),
+            numberOfPhase:     numU(cb.numberOfPhases),
             productAssetModel: null,
             name: null, aliasName: null, description: null,
         },
@@ -711,7 +715,9 @@ export const mapDtoToServer = (dto) => {
             name:         null,
             aliasName:    null,
             description:  op.comment    || null,
-            type:         OPERATING_TYPE_TO_SERVER[op.type] || op.type || null,
+            type:         op.type === '<Select asset type>'
+                ? null
+                : (OPERATING_TYPE_TO_SERVER[op.type] || op.type || null),
             kind:         null,
             serialNumber: op.serial_no  || null,
 
