@@ -39,6 +39,11 @@
                     :key="r.mode + r.mrid + i"
                     type="button"
                     class="search-item"
+                    @mouseenter="schedulePreview(r, $event)"
+                    @mousemove="movePreview"
+                    @mouseleave="closePreview"
+                    @focus="schedulePreview(r, $event)"
+                    @blur="closePreview"
                     @click="$emit('select', r)">
                     <div class="search-item-top">
                         <span class="search-title">{{ r.title }}</span>
@@ -63,10 +68,25 @@
                 Could not search: {{ failures.join('; ') }}
             </div>
         </div>
+
+        <div v-if="previewVisible" class="properties-preview" :style="previewStyle">
+            <div v-if="previewData.loading" class="preview-loading">Loading properties...</div>
+            <template v-else>
+                <div v-for="section in previewData.sections" :key="section.title" class="preview-section">
+                    <div class="preview-heading">{{ section.title }}</div>
+                    <div v-for="row in section.rows" :key="section.title + row.label" class="preview-row">
+                        <span class="preview-label">{{ row.label }}</span>
+                        <span class="preview-value">{{ row.value }}</span>
+                    </div>
+                </div>
+            </template>
+        </div>
     </div>
 </template>
 
 <script>
+import * as demoAPI from '@/api/demo'
+
 /**
  * Ô TÌM KIẾM TRÊN CÂY.
  *
@@ -86,6 +106,16 @@
  */
 export default {
     name: 'TreeSearchPanel',
+    props: {
+        clientSlide: {
+            type: Boolean,
+            default: true,
+        },
+        previewData: {
+            type: Object,
+            default: null,
+        },
+    },
     data() {
         return {
             keyword: '',
@@ -94,8 +124,36 @@ export default {
             truncated: false,
             loading: false,
             timer: null,
+            previewTimer: null,
+            previewedKey: '',
+            activePreviewKey: '',
+            previewX: 0,
+            previewY: 0,
             runId: 0,
         }
+    },
+    computed: {
+        previewVisible() {
+            return !!(this.activePreviewKey
+                && this.previewData
+                && this.previewData.key === this.activePreviewKey)
+        },
+        previewStyle() {
+            const width = 300
+            const gap = 14
+            const viewportWidth = window.innerWidth || document.documentElement.clientWidth
+            const viewportHeight = window.innerHeight || document.documentElement.clientHeight
+            const left = this.previewX + gap + width < viewportWidth
+                ? this.previewX + gap
+                : Math.max(8, this.previewX - width - gap)
+            const top = Math.max(8, Math.min(this.previewY + gap, viewportHeight - 368))
+            return { left: `${left}px`, top: `${top}px` }
+        },
+    },
+    watch: {
+        clientSlide() {
+            this.reset()
+        },
     },
     methods: {
         focus() {
@@ -106,6 +164,7 @@ export default {
         },
 
         onType() {
+            this.closePreview()
             if (this.timer) clearTimeout(this.timer)
             const term = this.keyword.trim()
             if (term.length < 2) {
@@ -119,23 +178,12 @@ export default {
 
         async run() {
             const term = this.keyword.trim()
-            const api = window.electronAPI
-            if (!api || !api.searchTree) {
-                this.failures = ['search is not available in this build']
-                return
-            }
-            const userId = this.$store && this.$store.state && this.$store.state.user
-                ? this.$store.state.user.user_id
-                : null
-            if (!userId) {
-                this.failures = ['no user is signed in']
-                return
-            }
-
             const myRun = ++this.runId
             this.loading = true
             try {
-                const rs = await api.searchTree(userId, term, { limit: 50 })
+                const rs = this.clientSlide
+                    ? await this.searchClient(term)
+                    : await this.searchServer(term)
                 // Lượt cũ về muộn thì BỎ, không ghi đè kết quả của lượt mới hơn.
                 if (myRun !== this.runId) return
                 if (rs && rs.success) {
@@ -156,6 +204,69 @@ export default {
             }
         },
 
+        async searchClient(term) {
+            const api = window.electronAPI
+            if (!api || !api.searchTree) {
+                throw new Error('search is not available in this build')
+            }
+            const userId = this.$store && this.$store.state && this.$store.state.user
+                ? this.$store.state.user.user_id
+                : null
+            if (!userId) throw new Error('no user is signed in')
+            return api.searchTree(userId, term, { limit: 50 })
+        },
+
+        async searchServer(term) {
+            const response = await demoAPI.searchAssetTree(term, 50)
+            return {
+                success: true,
+                data: response && Array.isArray(response.results) ? response.results : [],
+                truncated: !!(response && response.truncated),
+                failures: [],
+            }
+        },
+
+        schedulePreview(result, event) {
+            this.cancelPreview()
+            this.movePreview(event)
+            const key = `${result.mode}:${result.mrid}:${result.assetType || ''}`
+            if (key === this.previewedKey) {
+                this.activePreviewKey = key
+                return
+            }
+            this.previewTimer = setTimeout(() => {
+                this.previewedKey = key
+                this.activePreviewKey = key
+                this.$emit('preview', result)
+            }, 180)
+        },
+
+        movePreview(event) {
+            if (!event) return
+            if (Number.isFinite(event.clientX) && Number.isFinite(event.clientY)) {
+                this.previewX = event.clientX
+                this.previewY = event.clientY
+                return
+            }
+            const rect = event.currentTarget && event.currentTarget.getBoundingClientRect
+                ? event.currentTarget.getBoundingClientRect()
+                : null
+            if (rect) {
+                this.previewX = rect.right
+                this.previewY = rect.top
+            }
+        },
+
+        closePreview() {
+            this.cancelPreview()
+            this.activePreviewKey = ''
+        },
+
+        cancelPreview() {
+            if (this.previewTimer) clearTimeout(this.previewTimer)
+            this.previewTimer = null
+        },
+
         reset() {
             this.keyword = ''
             this.results = []
@@ -163,10 +274,14 @@ export default {
             this.truncated = false
             this.loading = false
             if (this.timer) clearTimeout(this.timer)
+            this.cancelPreview()
+            this.previewedKey = ''
+            this.activePreviewKey = ''
         },
     },
     beforeDestroy() {
         if (this.timer) clearTimeout(this.timer)
+        this.cancelPreview()
     },
 }
 </script>
@@ -244,5 +359,52 @@ export default {
     color: #e6a23c;
     background: #fdf6ec;
     border-radius: 4px;
+}
+
+.properties-preview {
+    position: fixed;
+    z-index: 4000;
+    width: 300px;
+    max-height: 360px;
+    overflow: hidden;
+    pointer-events: none;
+    background: #ffffff;
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    color: #606266;
+}
+
+.preview-loading {
+    padding: 14px;
+    font-size: 12px;
+    color: #909399;
+}
+
+.preview-section + .preview-section { border-top: 1px solid #ebeef5; }
+
+.preview-heading {
+    padding: 8px 10px;
+    background: #f5f7fa;
+    color: #606266;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.preview-row {
+    display: grid;
+    grid-template-columns: minmax(90px, 42%) minmax(0, 1fr);
+    gap: 10px;
+    padding: 5px 10px;
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+.preview-label { color: #909399; }
+
+.preview-value {
+    color: #303133;
+    text-align: right;
+    overflow-wrap: anywhere;
 }
 </style>

@@ -7,6 +7,12 @@ export const getOwnerOrganisation = () => {
     return client.get('/api/organisation/get-owner-organisation')
 }
 
+export const searchAssetTree = (keyword, limit = 50) => {
+    return client.get('/api/asset-tree/search', {
+        params: { keyword, limit }
+    })
+}
+
 export const getChildOrganisation = (organisationId) => {
     return client.get(`/api/organisation/get-child-organisation/${toServerId(organisationId)}`)
 }

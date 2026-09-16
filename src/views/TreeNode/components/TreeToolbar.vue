@@ -71,7 +71,6 @@
               và danh sách kết quả.
             -->
             <el-popover
-                v-if="clientSlide"
                 v-model="searchOpen"
                 placement="right-start"
                 trigger="click"
@@ -79,7 +78,13 @@
                 popper-class="tree-search-popper"
                 width="380"
                 @after-enter="onSearchOpened">
-                <TreeSearchPanel ref="searchPanel" @select="onSearchSelect" @close="searchOpen = false" />
+                <TreeSearchPanel
+                    ref="searchPanel"
+                    :client-slide="clientSlide"
+                    :preview-data="searchPreviewData"
+                    @select="onSearchSelect"
+                    @preview="$emit('search-preview', $event)"
+                    @close="searchOpen = false" />
                 <button slot="reference" type="button" class="rail-tab" :class="{ active: searchOpen }" title="Search">
                     <i class="fa-solid fa-magnifying-glass"></i>
                 </button>
@@ -128,6 +133,10 @@ export default {
         clientSlide: {
             type: Boolean,
             default: false
+        },
+        searchPreviewData: {
+            type: Object,
+            default: null
         }
     },
     data() {

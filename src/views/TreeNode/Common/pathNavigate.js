@@ -160,20 +160,29 @@ export default {
          * từng nhánh một, với cây vài nghìn node là bung gần hết cây để tìm một cái.
          */
         async goToNodeByMrid(result) {
-            const api = window.electronAPI
-            if (!api || !api.getNodePath) {
-                this.$message.error('Cannot locate the node in this build')
-                return false
+            const isServer = !this.clientSlide
+            let rs
+            if (isServer) {
+                rs = {
+                    success: Array.isArray(result.path) && result.path.length > 0,
+                    data: result.path || [],
+                }
+            } else {
+                const api = window.electronAPI
+                if (!api || !api.getNodePath) {
+                    this.$message.error('Cannot locate the node in this build')
+                    return false
+                }
+                rs = await api.getNodePath(result.mrid, result.mode)
             }
-
-            const rs = await api.getNodePath(result.mrid, result.mode)
             if (!rs || !rs.success || !Array.isArray(rs.data) || rs.data.length === 0) {
                 this.$message.error(`Could not locate "${result.title}": ${(rs && rs.message) || 'path not found'}`)
                 return false
             }
             const chain = rs.data
 
-            const roots = this.organisationClientList
+            const roots = isServer ? this.ownerServerList : this.organisationClientList
+            const fetchChildren = isServer ? this.fetchChildrenServer : this.fetchChildren
             if (!Array.isArray(roots) || roots.length === 0) {
                 this.$message.error('Cannot locate the node (tree is empty)')
                 return false
@@ -184,7 +193,14 @@ export default {
 
             for (let i = 0; i < chain.length; i++) {
                 const step = chain[i]
-                const found = (level || []).find(n => n && n.mrid === step.mrid)
+                const found = (level || []).find((node) => {
+                    if (!node || String(node.mrid) !== String(step.mrid)) return false
+                    if (step.mode && node.mode !== step.mode) return false
+                    if (i === chain.length - 1 && result.assetType && node.mode === 'asset') {
+                        return node.asset === result.assetType
+                    }
+                    return true
+                })
                 if (!found) {
                     // Nói rõ đứt ở cấp nào. Thường gặp nhất: node thuộc về người dùng khác
                     // nên không có mặt trên cây — mà tìm kiếm đã lọc theo quyền sở hữu, nên
@@ -197,7 +213,7 @@ export default {
                 current = found
                 if (i < chain.length - 1) {
                     try {
-                        if (typeof this.fetchChildren === 'function') await this.fetchChildren(current)
+                        if (typeof fetchChildren === 'function') await fetchChildren(current)
                     } catch (error) {
                         console.error('[search] nap con that bai:', error)
                         this.$message.error(`Could not open "${step.name || step.mrid}"`)
@@ -209,12 +225,60 @@ export default {
             }
 
             await this.$nextTick()
-            await this.revealPathTarget('client', current)
+            await this.revealPathTarget(isServer ? 'server' : 'client', current)
 
             if (rs.truncatedPath) {
                 this.$message.warning(`Went to ${nodeLabel(current)} — the parent chain looks broken, check the tree`)
             }
             return true
+        },
+
+        /**
+         * Nạp ngầm node của một kết quả tìm kiếm để xem properties khi hover.
+         * Không expand, không select và không đổi breadcrumb.
+         */
+        async resolveSearchResultNode(result, side) {
+            const isServer = side === 'server'
+            let pathResult
+            if (isServer) {
+                pathResult = {
+                    success: Array.isArray(result.path) && result.path.length > 0,
+                    data: result.path || []
+                }
+            } else {
+                const api = window.electronAPI
+                if (!api || !api.getNodePath) return null
+                pathResult = await api.getNodePath(result.mrid, result.mode)
+            }
+            if (!pathResult || !pathResult.success || !Array.isArray(pathResult.data)) return null
+
+            const roots = isServer ? this.ownerServerList : this.organisationClientList
+            const fetchChildren = isServer ? this.fetchChildrenServer : this.fetchChildren
+            let level = roots
+            let current = null
+            let parent = null
+
+            for (let i = 0; i < pathResult.data.length; i++) {
+                const step = pathResult.data[i]
+                const found = (level || []).find((node) => {
+                    if (!node || String(node.mrid) !== String(step.mrid)) return false
+                    if (step.mode && node.mode !== step.mode) return false
+                    if (i === pathResult.data.length - 1 && result.assetType && node.mode === 'asset') {
+                        return node.asset === result.assetType
+                    }
+                    return true
+                })
+                if (!found) return null
+
+                current = found
+                if (parent && !current.parent) this.$set(current, 'parent', parent)
+                if (i < pathResult.data.length - 1) {
+                    if (typeof fetchChildren === 'function') await fetchChildren(current)
+                    parent = current
+                    level = Array.isArray(current.children) ? current.children : []
+                }
+            }
+            return current
         },
 
         /**

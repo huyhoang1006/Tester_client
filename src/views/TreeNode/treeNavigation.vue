@@ -4,13 +4,14 @@
         <!-- Thanh điều hướng có thể kéo rộng/kéo hẹp -->
         <div class="resizable-sidebar" :class="{ 'full-height': activeWorkspaceTab !== 'tree' }">
             <!-- Tree Toolbar: rail dọc bên trái, thu gọn được -->
-            <TreeToolbar ref="treeToolBar"  :clientSlide="clientSlide" @add-command="handleAddCommand"
+            <TreeToolbar ref="treeToolBar"  :clientSlide="clientSlide" :search-preview-data="searchPreviewData" @add-command="handleAddCommand"
                 @dropdown-visible-change="handleDropdownVisibleChange" @asset-command="handleAssetCommand"
                 @import-command="handleImportCommand" @export-command="handleCommand" @open-node="handleOpenNode"
                 @duplicate="duplicateSelectedNodes" @upload="handleUploadNode" @download="handleDownloadPathTree"
                 @delete="handleDeleteNode" @fmeca="handleClickFmeca" @move="handleMoveNode" @openDropdown="openDropdown"
                 @explorer-tab="handleExplorerTab"
                 @search-select="handleSearchSelect"
+                @search-preview="handleSearchPreview"
                 @show-equipment="handleShowEquipment" />
 
             <div v-show="activeWorkspaceTab === 'tree'" class="tree-workspace">
@@ -725,6 +726,7 @@ export default {
             sl: 10,
             count: '',
             ownerServerList: [],
+            searchPreviewData: null,
             clientList: [],
             ownerList: [],
             locationList: [],
@@ -1066,6 +1068,99 @@ export default {
             this.handleExplorerTab()
             await this.$nextTick()
             await this.goToNodeByMrid(result)
+        },
+        handleSearchPreview(result) {
+            if (!result || !result.mrid) return
+            const side = this.clientSlide ? 'client' : 'server'
+            const key = this.getSearchPreviewKey(result)
+            this.searchPreviewData = { key, loading: true, sections: [] }
+            this._pendingSearchPreview = {
+                result,
+                side,
+                key
+            }
+            if (!this._searchPreviewPromise) {
+                this._searchPreviewPromise = this.processSearchPreviews()
+            }
+        },
+        async processSearchPreviews() {
+            try {
+                while (this._pendingSearchPreview) {
+                    const request = this._pendingSearchPreview
+                    this._pendingSearchPreview = null
+                    const node = await this.resolveSearchResultNode(request.result, request.side)
+
+                    // Nếu người dùng đã rê sang kết quả khác trong lúc nạp cây, bỏ preview cũ.
+                    if (this._pendingSearchPreview) continue
+                    const currentSide = this.clientSlide ? 'client' : 'server'
+                    if (currentSide !== request.side) continue
+                    this.searchPreviewData = this.buildSearchPreviewData(node, request.result, request.key)
+                }
+            } catch (error) {
+                console.error('[search] preview properties failed:', error)
+            } finally {
+                this._searchPreviewPromise = null
+                // Một hover mới có thể đến đúng lúc vòng lặp kết thúc.
+                if (this._pendingSearchPreview) {
+                    this._searchPreviewPromise = this.processSearchPreviews()
+                }
+            }
+        },
+        getSearchPreviewKey(result) {
+            return `${result.mode}:${result.mrid}:${result.assetType || ''}`
+        },
+        firstSearchPreviewValue(...values) {
+            const value = values.find((item) => item !== null
+                && item !== undefined
+                && ['string', 'number', 'boolean'].includes(typeof item)
+                && String(item).trim() !== '')
+            return value === undefined ? '' : String(value)
+        },
+        buildSearchPreviewData(node, result, key) {
+            const source = node || {}
+            const value = (...values) => this.firstSearchPreviewValue(...values)
+            const rows = (items) => items
+                .map(([label, rowValue]) => ({ label, value: rowValue }))
+                .filter((row) => row.value !== '')
+            const parent = source.parent && typeof source.parent === 'object' ? source.parent : null
+            const sections = []
+
+            const positionRows = rows([
+                ['Name', value(source.aliasName, source.name, result.title)],
+                ['Parent', value(parent && parent.aliasName, parent && parent.name, source.parentName)],
+                ['Region', value(source.region, source.generation)],
+                ['Plant', value(source.plant, source.industry)],
+                ['Address', value(source.street, source.address)],
+                ['City', value(source.city)],
+                ['State/Province', value(source.state_or_province, source.state_province)],
+                ['Country', value(source.country)],
+            ])
+            if (positionRows.length) sections.push({ title: 'Owner & Position', rows: positionRows })
+
+            if (source.mode === 'asset' || result.mode === 'asset') {
+                const assetRows = rows([
+                    ['Asset', value(source.asset, result.assetType, result.typeLabel)],
+                    ['Asset type', value(source.asset_type, source.type)],
+                    ['Serial number', value(source.serial_number, source.serial_no)],
+                    ['Manufacturer', value(source.manufacturer)],
+                    ['Manufacturer type', value(source.manufacturer_type, source.asset_info_manufacturer_type)],
+                    ['Manufacturing year', value(source.manufacturing_year, source.manufacturer_year)],
+                    ['Country', value(source.country_of_origin, source.country)],
+                    ['Apparatus ID', value(source.apparatus_id, source.apparatusId, source.name)],
+                    ['Asset ID', value(source.mrid, source.id, result.mrid)],
+                ])
+                if (assetRows.length) sections.push({ title: 'Asset Properties', rows: assetRows })
+            } else {
+                const objectRows = rows([
+                    ['Type', value(result.typeLabel, source.mode)],
+                    ['Object ID', value(source.mrid, source.id, result.mrid)],
+                    ['Comment', value(source.description)],
+                    [result.matchedField || 'Matched value', value(result.matchedValue)],
+                ])
+                if (objectRows.length) sections.push({ title: 'Object Properties', rows: objectRows })
+            }
+
+            return { key, loading: false, sections }
         },
         getWorkspaceStatePayload() {
             return {
