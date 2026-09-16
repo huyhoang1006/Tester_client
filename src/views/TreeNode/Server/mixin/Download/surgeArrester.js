@@ -129,6 +129,14 @@ export async function downloadSurgeArresterChain(data, ctx) {
         })
         mergedDto.ratings.unitStack = serverDto.ratings.unitStack
 
+        if (serverDto.attachment?.path) {
+            mergedDto.attachmentId = clientDto.attachmentId || serverDto.attachmentId
+            mergedDto.attachment = {
+                ...serverDto.attachment,
+                id: mergedDto.attachmentId,
+            }
+        }
+
         // Giữ lại các mrid cũ để tránh orphan records
         mergedDto.assetInfoId         = clientDto.assetInfoId         || serverDto.assetInfoId
         mergedDto.productAssetModelId = clientDto.productAssetModelId || serverDto.productAssetModelId

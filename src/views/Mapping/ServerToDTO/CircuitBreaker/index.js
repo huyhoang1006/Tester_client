@@ -111,6 +111,11 @@ const applyServerAssessment = (target, source) => {
     })
 }
 
+const assessmentLeafValue = (value) => {
+    if (value && typeof value === 'object' && 'value' in value) return value.value
+    return value
+}
+
 // ─── Mapper ──────────────────────────────────────────────────────────────────
 export const mapServerToDto = (serverData) => {
     const dto = new CircuitBreakerDto();
@@ -176,6 +181,7 @@ export const mapServerToDto = (serverData) => {
 
     // 4. CircuitBreaker section
     dto.circuitBreaker.numberOfPhases        = numberOrBlank(cbCore.numberOfPhases)
+    dto.circuitBreaker.phase                 = cbCore.phase || serverData.phase || assetInfo.phase || ''
     dto.circuitBreaker.interruptersPerPhase  = numberOrBlank(cbCore.interruptersPerPhase)
     dto.circuitBreaker.poleOperation         = cbCore.poleOperation       || ''
     dto.circuitBreaker.hasPIR                = cbCore.hasPIR ?? ''
@@ -252,8 +258,12 @@ export const mapServerToDto = (serverData) => {
         // val = số; unit = đơn vị server trả (giữ nguyên unit mặc định nếu server null)
         const setLeaf = (target, val, unit) => {
             if (!target) return
-            if (val !== null && val !== undefined) target.value = str(val)
-            if (unit) target.unit = unit
+            const sourceUnit = val && typeof val === 'object'
+                ? joinUnitFromServer(val, unit)
+                : unit
+            const sourceValue = assessmentLeafValue(val)
+            if (sourceValue !== null && sourceValue !== undefined) target.value = str(sourceValue)
+            if (sourceUnit) target.unit = sourceUnit
         }
 
         // 8.1 contact_resistance (abs: r_min/r_max | rel: r_ref/r_dev)
@@ -759,6 +769,7 @@ export const mapDtoToServer = (dto) => {
 
         circuitBreaker: {
             numberOfPhases:       strU(cb.numberOfPhases),
+            phase:                strU(cb.phase),
             interruptersPerPhase: strU(cb.interruptersPerPhase),
             poleOperation:        cb.poleOperation || null,
             hasPIR:               cb.hasPIR ?? null,

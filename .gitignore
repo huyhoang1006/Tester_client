@@ -36,3 +36,7 @@ template/
 .opencode/
 .planning/
 .opencode/opencode.json
+# Playwright - ket qua chay test, khong dua vao git
+/test-results/
+/playwright-report/
+/playwright/.cache/

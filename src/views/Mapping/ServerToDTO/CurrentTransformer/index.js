@@ -182,6 +182,8 @@ export const mapServerToDto = (serverData) => {
         dto.properties.kind = properties.kind || 'Current transformer'
         dto.properties.manufacturer_year = properties.manufacturer_year || properties.manufacturing_year || ''
         dto.properties.manufacturing_year = properties.manufacturing_year || properties.manufacturer_year || ''
+        dto.config.phase = properties.phase || ct.config?.phase || ''
+        dto.config.number_of_phase = properties.numberOfPhase ?? ct.config?.number_of_phase ?? ''
 
         // mergeIntoDto đã lo việc gói giá trị nguyên thuỷ vào `.value` và bỏ qua null,
         // nên không cần chặn riêng `system_voltage_type` nữa.

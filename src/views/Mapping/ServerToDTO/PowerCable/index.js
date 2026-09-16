@@ -126,6 +126,7 @@ function mapCimServerToDto(data) {
     dto.productAssetModelId = str(model.mRID || model.mrid)
 
     dto.configsData.number_of_phase = info.phaseCount ?? ''
+    dto.configsData.phase = info.phase || ''
     dto.configsData.cores.value = info.coreCount === 1 ? 'Single' : (info.coreCount ? 'Multiple' : '')
 
     setCimMeasurement(dto.ratingsData.rated_voltage, info.ratedU, 'V')
@@ -680,6 +681,7 @@ export const mapDtoToCimServer = (dto) => {
             mRID: textT(dto.oldCableInfoId),
             cableInfoId: textT(dto.assetInfoId),
             phaseCount: intT(c.number_of_phase),
+            phase: textT(c.phase),
             coreCount: powerCableCoreCount(c.cores?.value),
             ratedU: measurementToCim(r.rated_voltage, 'k|V'),
             maxU: measurementToCim(r.max_voltage, 'k|V'),

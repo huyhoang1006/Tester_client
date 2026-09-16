@@ -33,7 +33,7 @@
                 </el-row>
                 <el-row :gutter="20" class="content mgt-10">
                     <el-col :span="24" class="col-content">
-                        <span class="bolder">Tap changers configuration</span>
+                        <span class="bolder">Tap changer configuration</span>
                         <el-divider></el-divider>
                         <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                             <el-form-item label="Winding">
@@ -154,7 +154,7 @@
                 </el-row>
                 <el-row :gutter="20" class="content mgt-10">
                     <el-col :span="24" class="col-content">
-                        <span class="bolder">Tap changers configuration</span>
+                        <span class="bolder">Tap changer configuration</span>
                         <el-divider></el-divider>
                         <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                             <el-form-item label="Winding">

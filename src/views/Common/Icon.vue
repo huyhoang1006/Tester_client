@@ -14,7 +14,7 @@
 </template>
   
 <script>
-import { IconVT, IconCB } from '@/views/TreeNode/dialogs/icons.js';
+import { IconVT, IconCB, IconBushing, IconRotatingMachine } from '@/views/TreeNode/dialogs/icons.js';
 
 export default {
     name: 'FolderIconWithBadge',
@@ -89,12 +89,15 @@ export default {
                 }
 
                 if (this.folderType === 'asset') {
-                    if (this.assetDetail === 'Voltage transformer') {
-                        return { type: 'component', component: IconVT };
-                    }
-                    if (this.assetDetail === 'Circuit breaker' || this.assetDetail === 'Breaker') {
-                        return { type: 'component', component: IconCB };
-                    }
+                    const componentMap = {
+                        'Voltage transformer': IconVT,
+                        'Circuit breaker': IconCB,
+                        'Breaker': IconCB,
+                        'Bushing': IconBushing,
+                        'Rotating machine': IconRotatingMachine
+                    };
+                    const component = componentMap[this.assetDetail];
+                    if (component) return { type: 'component', component };
 
                     const assetMap = {
                         'Disconnector': 'Disconnector.png',

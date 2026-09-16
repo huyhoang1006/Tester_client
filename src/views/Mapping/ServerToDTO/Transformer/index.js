@@ -2,6 +2,17 @@
 import TransformerDataDto from '@/views/Dto/Transformer'
 import { toServerId } from '@/utils/serverId'
 import uuid from '@/utils/uuid'
+import {
+    buildClientVectorGroupText,
+    buildServerVectorGroup,
+    fromServerAccessibility,
+    fromServerConnection,
+    fromServerPrimary,
+    parseServerVectorGroup,
+    toServerAccessibility,
+    toServerConnection,
+    toServerPrimary
+} from './vectorGroup'
 
 // ─── Lookup maps ─────────────────────────────────────────────────────────────
 
@@ -22,16 +33,6 @@ const WINDING_MAP = {
     SEC: 'Sec',
     TERT: 'Tert'
 }
-
-// Server gửi connection kind ở các field tách (vectorGroupPrim/Sec/Tert) viết HOA
-// cho hậu tố neutral: 'YN'/'ZN'. Client dùng enum WindingConnection 'Yn'/'Zn'.
-// Không chuẩn hoá ⇒ changeDataBushing/bushingPosReturn không nhận ra winding có neutral
-// ⇒ cắt mất bushing trung tính (N/n1/n2). (Chuỗi vectorGroup gộp server đã đúng 'Yn'.)
-const WINDING_CONN_MAP = {
-    YN: 'Yn',
-    ZN: 'Zn'
-}
-const mapConn = (v) => WINDING_CONN_MAP[v] || v || ''
 
 const TAP_TYPE_MAP = {
     OLTC: 'oltc',
@@ -69,15 +70,6 @@ const BUSHING_INSUL_MAP = {
     SOLID_PORCELAIN: 'solidPorcelain',
     PORCELAIN_DRY_TYPE: 'porcelainDryType',
     COMPOSITE_DRY_TYPE: 'compositeDryType'
-}
-
-const TERT_ACCESSIBILITY_MAP = {
-    ACCESSIBLE4: '4 Accessible',
-    ACCESSIBLE3: '3 Accessible',
-    ACCESSIBLE2: '2 Accessible',
-    ACCESSIBLE1: '1 Accessible',
-    BURIED: 'Buried',
-    BURIED_WITH_GROUNDING: 'Buried /w grounding'
 }
 
 const OTHERS_STATUS_MAP = {
@@ -167,8 +159,6 @@ const extractYear = (dateStr) => {
     return match ? match[1] : ''
 }
 
-const reversed = (obj) => Object.fromEntries(Object.entries(obj).map(([key, value]) => [value, key]))
-
 // ─── Mapper ──────────────────────────────────────────────────────────────────
 
 export const mapServerToDto = (serverData) => {
@@ -208,23 +198,28 @@ export const mapServerToDto = (serverData) => {
     dto.winding_configuration.phases = PHASES_MAP[tr.phases] || str(tr.numberOfPhase || assetInfo.numberOfPhase)
     dto.winding_configuration.phase = tr.phase || assetInfo.phase || ''
 
-    // Vector group:
-    // Ưu tiên dùng các field tách sẵn server trả (vectorGroupPrim/Sec/Tert...)
-    // Nếu server chỉ trả string "Yna0d11" (không tách) → để unsupported_vector_group
+    // Prefer split fields. Older server records may only contain the composite value.
     const hasSplitVG = tr.vectorGroupPrim || tr.vectorGroupSec || tr.vectorGroupTertiary
     if (hasSplitVG) {
-        // Server đã tách sẵn các thành phần → build vector_group object + vector_group_data
-        dto.winding_configuration.vector_group.prim = mapConn(tr.vectorGroupPrim)
-        dto.winding_configuration.vector_group.sec.i = mapConn(tr.vectorGroupSec)
+        dto.winding_configuration.vector_group.prim = fromServerPrimary(tr.vectorGroupPrim)
+        dto.winding_configuration.vector_group.sec.i = fromServerConnection(tr.vectorGroupSec)
         dto.winding_configuration.vector_group.sec.value = str(tr.vectorGroupSecVal)
-        dto.winding_configuration.vector_group.tert.i = mapConn(tr.vectorGroupTertiary)
+        dto.winding_configuration.vector_group.tert.i = fromServerConnection(tr.vectorGroupTertiary)
         dto.winding_configuration.vector_group.tert.value = str(tr.vectorGroupTertiaryVal)
-        dto.winding_configuration.vector_group.tert.accessible = TERT_ACCESSIBILITY_MAP[tr.vectorGroupTertiaryAccessibility] || ''
-        // vector_group_data = string đầy đủ để View biết đây là dạng parsed (type null)
-        dto.winding_configuration.vector_group_data = tr.vectorGroup || ''
+        dto.winding_configuration.vector_group.tert.accessible = fromServerAccessibility(tr.vectorGroupTertiaryAccessibility)
+        dto.winding_configuration.vector_group_data = buildClientVectorGroupText(dto.winding_configuration.vector_group)
     } else if (tr.vectorGroup) {
-        // Chỉ có string, không tách được → unsupported
-        dto.winding_configuration.unsupported_vector_group = tr.vectorGroup
+        const parsed = parseServerVectorGroup(
+            tr.vectorGroup,
+            dto.winding_configuration.phases,
+            dto.properties.type
+        )
+        if (parsed) {
+            dto.winding_configuration.vector_group = parsed.vectorGroup
+            dto.winding_configuration.vector_group_data = parsed.vectorGroupData
+        } else {
+            dto.winding_configuration.unsupported_vector_group = tr.vectorGroup
+        }
     }
 
     // ─── 4. Ratings ───────────────────────────────────────────────────────────
@@ -599,28 +594,6 @@ const joinUnitT = (u) => {
     return u.includes('|') ? u.replace('|', '') : u
 }
 
-const buildVectorGroupText = (wc) => {
-    const directValue = textT(wc.vector_group_data) || textT(wc.vector_group_custom) || textT(wc.unsupported_vector_group)
-    if (directValue) return directValue
-
-    const vg = wc.vector_group || {}
-    const prim = textT(vg.prim)
-    const sec = textT(vg.sec?.i)
-    const secVal = textT(vg.sec?.value)
-    const tert = textT(vg.tert?.i)
-    const tertVal = textT(vg.tert?.value)
-    const tertAccessible = textT(vg.tert?.accessible)
-
-    const parsedValue = [
-        prim,
-        sec || secVal ? `${sec || ''}${secVal || ''}` : null,
-        tert || tertVal || tertAccessible ? `${tert || ''}${tertVal || ''}${tertAccessible || ''}` : null
-    ].filter(Boolean).join('') || null
-    if (parsedValue) return parsedValue
-
-    return null
-}
-
 export const mapDtoToServer = (dto, ownerType) => {
     if (!dto) return null
 
@@ -648,7 +621,7 @@ export const mapDtoToServer = (dto, ownerType) => {
 
     // ─── transformer core ──────────────────────────────────────────────────────
     const vg = wc.vector_group || {}
-    const vectorGroupText = buildVectorGroupText(wc)
+    const vectorGroupText = buildServerVectorGroup(wc)
     const transformer = {
         assetType: ASSET_TYPE_TO_SERVER[p.type] || p.type || null,
         phases: PHASES_TO_SERVER[wc.phases] || wc.phases || null,
@@ -657,12 +630,12 @@ export const mapDtoToServer = (dto, ownerType) => {
 
         // vector group: ưu tiên data parsed, fallback custom/unsupported
         vectorGroup: vectorGroupText,
-        vectorGroupPrim: textT(vg.prim),
-        vectorGroupSec: textT(vg.sec?.i),
+        vectorGroupPrim: toServerPrimary(vg.prim),
+        vectorGroupSec: toServerConnection(vg.sec?.i),
         vectorGroupSecVal: intT(vg.sec?.value),
-        vectorGroupTertiary: textT(vg.tert?.i),
+        vectorGroupTertiary: toServerConnection(vg.tert?.i),
         vectorGroupTertiaryVal: intT(vg.tert?.value),
-        vectorGroupTertiaryAccessibility: textT(reversed(TERT_ACCESSIBILITY_MAP)[vg.tert?.accessible]),
+        vectorGroupTertiaryAccessibility: toServerAccessibility(vg.tert?.accessible),
 
         // tần số: nếu Custom thì dùng custom_value
         ratedFrequency: numT(rt.rated_frequency?.value === 'Custom' ? rt.rated_frequency?.custom_value : rt.rated_frequency?.value),

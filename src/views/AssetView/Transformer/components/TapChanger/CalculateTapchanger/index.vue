@@ -1,9 +1,38 @@
 <template>
-    <el-dialog title="Calculate Tap changer" :modal="true" :visible="openDialog" @close="handleCancel" append-to-body>
-        <div>Base on ...</div><br>
+    <el-dialog title="Calculate Tap Voltages" :modal="true" :visible="openDialog" @close="handleCancel" append-to-body>
+        <div>Based on ...</div><br>
 
-        <el-tabs v-if="tapVoltable.length > 1" type="card" v-model="activeName">
-            <el-tab-pane label="First and second" name="fas">
+        <el-tabs v-if="tapVoltable.length" type="card" v-model="activeName">
+            <el-tab-pane label="Principal tap & Tap step (%)" name="principal">
+                <div class="principal-summary">
+                    <div class="principal-summary-item">
+                        <span>Number of taps:</span>
+                        <strong>{{ normalizedNumberOfTaps }}</strong>
+                    </div>
+                    <div class="principal-summary-item">
+                        <span>Principal tap position:</span>
+                        <strong>{{ principalTapPosition }}</strong>
+                    </div>
+                </div>
+
+                <el-row :gutter="20" class="principal-fields">
+                    <el-col :xs="24" :sm="12">
+                        <label class="field-label">Principal tap voltage</label>
+                        <el-input size="mini" type="text" number="positive" v-model.number="principalTapVoltage">
+                            <template slot="append">V</template>
+                        </el-input>
+                    </el-col>
+                    <el-col :xs="24" :sm="12">
+                        <label class="field-label">Tap step</label>
+                        <el-input size="mini" type="text" number="positive" v-model.number="tapStepPercent">
+                            <template slot="prepend">&plusmn;</template>
+                            <template slot="append">%</template>
+                        </el-input>
+                    </el-col>
+                </el-row>
+            </el-tab-pane>
+
+            <el-tab-pane v-if="tapVoltable.length > 1" label="First & Second" name="fas">
                 <table class="w-100 mgt-5 table-strip-input-data">
                     <thead>
                         <tr>
@@ -36,7 +65,8 @@
                 </table>
             </el-tab-pane>
 
-            <el-tab-pane label="First/Middle/Last" name="fml" v-if="(numberOfTaps % 2) != 0">
+            <el-tab-pane label="First/Middle/Last" name="fml"
+                v-if="tapVoltable.length > 1 && (numberOfTaps % 2) != 0">
                 <table class="w-100 mgt-5 table-strip-input-data">
                     <thead>
                         <tr>
@@ -92,7 +122,9 @@ export default {
     name: 'CalculateTapchanger',
     data() {
         return {
-            activeName: 'fas',
+            activeName: 'principal',
+            principalTapVoltage: 0,
+            tapStepPercent: 0,
             voltage_1: 0,
             voltage_2: 0,
             voltage_first: 0,
@@ -108,7 +140,13 @@ export default {
         tapScheme: String
     },
     computed: {
-
+        normalizedNumberOfTaps() {
+            const numberOfTaps = Number(this.numberOfTaps)
+            return Number.isFinite(numberOfTaps) && numberOfTaps > 0 ? numberOfTaps : this.tapVoltable.length
+        },
+        principalTapPosition() {
+            return Math.ceil(this.normalizedNumberOfTaps / 2)
+        }
     },
     methods: {
         async handleCancel() {
@@ -116,7 +154,25 @@ export default {
         },
 
         async handleCalculate() {
-            if (this.activeName == 'fas') {
+            if (this.activeName == 'principal') {
+                const principalVoltage = Number(this.principalTapVoltage)
+                const tapStep = Math.abs(Number(this.tapStepPercent))
+
+                if (!Number.isFinite(principalVoltage) || principalVoltage <= 0) {
+                    this.$message.error('Principal tap voltage must be greater than 0')
+                    return
+                }
+                if (!Number.isFinite(tapStep)) {
+                    this.$message.error('Tap step must be a valid percentage')
+                    return
+                }
+
+                this.result = this.tapVoltable.map((item, index) => {
+                    const parsedTapPosition = Number(item.tap)
+                    const tapPosition = Number.isFinite(parsedTapPosition) ? parsedTapPosition : index + 1
+                    return Math.round(principalVoltage * (1 + (tapPosition - this.principalTapPosition) * tapStep / 100))
+                })
+            } else if (this.activeName == 'fas') {
                 this.result.push(parseInt(this.voltage_1))
                 this.result.push(parseInt(this.voltage_2))
                 for (let i = 2; i < this.numberOfTaps; i++) {
@@ -170,7 +226,8 @@ export default {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    width: 35%;
+    width: 58%;
+    max-width: 900px;
 }
 
 ::v-deep(.el.dialog__body) {
@@ -178,9 +235,41 @@ export default {
     flex: 1;
 }
 
+.principal-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 4px 0 22px;
+}
+
+.principal-summary-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 210px;
+    padding: 10px 12px;
+    border: 1px solid #e4e7ed;
+    border-radius: 6px;
+    background: #f5f7fa;
+    color: #303133;
+    font-size: 12px;
+}
+
+.principal-fields {
+    margin-bottom: 8px;
+}
+
+.field-label {
+    display: block;
+    margin-bottom: 8px;
+    color: #303133;
+    font-size: 12px;
+    font-weight: 600;
+}
+
 @media (max-width: 991px) {
     ::v-deep(.el-dialog) {
-        width: 50%;
+        width: 80%;
     }
 }
 
@@ -193,6 +282,14 @@ export default {
     ::v-deep(.custom-footer .footer-btn) {
         width: 100%;
         margin: 0;
+    }
+
+    ::v-deep(.el-dialog) {
+        width: 94%;
+    }
+
+    .principal-fields .el-col + .el-col {
+        margin-top: 16px;
     }
 }
 </style>

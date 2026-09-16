@@ -912,7 +912,7 @@ export function mapEntityToDto(entity) {
                 break
             }
         }
-        if (dataComponent.component.includes("trip")) {
+        if (String(dataComponent.component || '').toLowerCase().includes("trip")) {
             dto.operating.trip_coil_component.push(dataComponent)
         } else {
             dto.operating.close_coil_component.push(dataComponent)
