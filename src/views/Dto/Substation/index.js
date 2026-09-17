@@ -3,6 +3,7 @@ import Attachment from "@/views/Flatten/Attachment"
 class SubstationDto {
     constructor() {
         this.name = ''
+        this.operating_date = ''
         this.aliasName = ''
         this.type = ''
         this.generation = ''

@@ -352,7 +352,15 @@ export const getSurgeArresterEntityById = async (id, psrId) => {
                     message: 'Surge Arrester entity retrieved successfully'
                 }
             } else {
-                return { success: false, error: dataSurgeArrester.error, message: dataSurgeArrester.message };
+                // Tầng dưới đặt tên trường là `err`, không phải `error`. Chỉ chép `.error`
+                // là vứt luôn nguyên nhân thật (câu SQLite), và người dùng chỉ còn thấy
+                // "Get surge arrester by id failed" — đúng thứ không nói lên điều gì.
+                return {
+                    success: false,
+                    error: dataSurgeArrester.error || dataSurgeArrester.err,
+                    err: dataSurgeArrester.err || dataSurgeArrester.error,
+                    message: dataSurgeArrester.message,
+                };
             }
         }
     } catch (error) {
@@ -429,7 +437,15 @@ export const getSurgeArresterLiteEntityById = async (id) => {
                     message: 'Surge Arrester entity retrieved successfully'
                 }
             } else {
-                return { success: false, error: dataSurgeArrester.error, message: dataSurgeArrester.message };
+                // Tầng dưới đặt tên trường là `err`, không phải `error`. Chỉ chép `.error`
+                // là vứt luôn nguyên nhân thật (câu SQLite), và người dùng chỉ còn thấy
+                // "Get surge arrester by id failed" — đúng thứ không nói lên điều gì.
+                return {
+                    success: false,
+                    error: dataSurgeArrester.error || dataSurgeArrester.err,
+                    err: dataSurgeArrester.err || dataSurgeArrester.error,
+                    message: dataSurgeArrester.message,
+                };
             }
         }
     } catch (error) {

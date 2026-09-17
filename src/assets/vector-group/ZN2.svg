@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" role="img" aria-labelledby="title">
+  <title id="title">Vector group ZN2</title>
+  <style>
+    .wire { fill: none; stroke: #263648; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+    .terminal-dot { fill: #ffffff; stroke: #263648; stroke-width: 1.8; }
+    .neutral-dot { fill: #ffffff; stroke: #263648; stroke-width: 2; }
+    .terminal { fill: #263648; font: 600 10px Arial, sans-serif; }
+    .tap { fill: #263648; }
+  </style>
+  <path d="M 60 62 L 80 62 L 90 44.68" class="wire"/>
+  <circle cx="90" cy="44.68" r="2.4" class="terminal-dot"/>
+  <text x="101.26" y="38.18" text-anchor="start" class="terminal">a</text>
+  <path d="M 60 62 L 50 79.32 L 60 96.64" class="wire"/>
+  <circle cx="60" cy="96.64" r="2.4" class="terminal-dot"/>
+  <text x="60" y="117.64" text-anchor="middle" class="terminal">b</text>
+  <path d="M 60 62 L 50 44.68 L 30 44.68" class="wire"/>
+  <circle cx="30" cy="44.68" r="2.4" class="terminal-dot"/>
+  <text x="18.74" y="38.18" text-anchor="end" class="terminal">c</text>
+  <circle cx="60" cy="62" r="4" class="neutral-dot"/>
+  <text x="67" y="55" class="terminal">n</text>
+</svg>

@@ -286,6 +286,23 @@ export default {
     },
     methods: {
         getPowerPlantIcon,
+        /**
+         * NẠP HỒ SƠ THIẾT BỊ HỎNG THÌ PHẢI NÓI RA.
+         *
+         * Cả 11 nhánh nạp thiết bị đều viết `if (data.success) { ... }` mà KHÔNG có `else`.
+         * Nạp hỏng thì không gọi `loadData`, không log, không báo — màn hình trắng tinh và
+         * người dùng không có gì để bám vào.
+         *
+         * Hay gặp nhất: bản ghi có trong bảng `asset` nhưng THIẾU dòng ở bảng riêng của loại
+         * (`surge_arrester`, `bushing`…). Lúc đó hàm nạp trả về `success: false` kèm
+         * "… not found", và trước đây câu đó bị nuốt mất.
+         */
+        reportAssetLoadFailure(tab, data) {
+            const label = (tab && (tab.apparatus_id || tab.name || tab.mrid)) || 'this asset'
+            const reason = (data && data.message) || 'unknown error'
+            console.error('[asset] khong nap duoc ho so thiet bi:', { mrid: tab && tab.mrid, asset: tab && tab.asset, data })
+            this.$message.error(`Could not load "${label}": ${reason}`)
+        },
         initStickyTestHeader() {
             const container = this.$refs.tabsContent
             if (!container || this.stickyTestHeader) return
@@ -532,11 +549,22 @@ export default {
                             const data = await window.electronAPI.getSurgeArresterEntityByMrid(tab.mrid, tab.parentId)
                             if (data.success) {
                                 const surgeArresterDto = surgeMapper.mapEntityToDto(data.data)
-                                if (!surgeArresterDto.properties?.serial_no) surgeArresterDto.properties = { serial_no: tab.serial_number || '' }
+                                // CHỈ điền serial còn thiếu, KHÔNG thay cả khối properties.
+                                //
+                                // Bản trước gán `properties = { serial_no }` — tức là xoá sạch kind,
+                                // type, apparatus_id, manufacturer, comment… chỉ vì serial trống.
+                                // Màn hình thiết bị bind vào đúng những trường đó nên hiện ra trắng
+                                // trơn, mà dữ liệu trong CSDL vẫn còn nguyên.
+                                if (!surgeArresterDto.properties) surgeArresterDto.properties = {}
+                                if (!surgeArresterDto.properties.serial_no) {
+                                    surgeArresterDto.properties.serial_no = tab.serial_number || ''
+                                }
 
                                 this.executeOrQueueLoadData(id, (comp) => comp.loadData(surgeArresterDto));
 
                                 this.$emit('update-node-data', { mrid: tab.mrid, data: surgeArresterDto, mode: 'asset', assetType: tab.asset })
+                            } else {
+                                this.reportAssetLoadFailure(tab, data)
                             }
                         } else if (tab.asset === 'Bushing') {
                             ctx.parentOrganization = { mrid: tab.parentId }
@@ -544,110 +572,130 @@ export default {
                             console.log('Bushing data:', data); // Debugging line
                             if (data.success) {
                                 const BushingDto = bushingMapper.mapEntityToDto(data.data)
-                                if (!BushingDto.properties?.serial_no) BushingDto.properties = { serial_no: tab.serial_number || '' }
+                                if (!BushingDto.properties?.serial_no) BushingDto.properties.serial_no = tab.serial_number || ''
 
                                 this.executeOrQueueLoadData(id, (comp) => comp.loadData(BushingDto));
 
                                 this.$emit('update-node-data', { mrid: tab.mrid, data: BushingDto, mode: 'asset', assetType: tab.asset })
+                            } else {
+                                this.reportAssetLoadFailure(tab, data)
                             }
                         } else if (tab.asset === 'Current transformer') {
                             ctx.parentOrganization = { mrid: tab.parentId }
                             const data = await window.electronAPI.getCurrentTransformerEntityByMrid(tab.mrid, tab.parentId)
                             if (data.success) {
                                 const currentTransformerDto = currentTransformerMapper.mapEntityToDto(data.data)
-                                if (!currentTransformerDto.properties?.serial_no) currentTransformerDto.properties = { serial_no: tab.serial_number || '' }
+                                if (!currentTransformerDto.properties?.serial_no) currentTransformerDto.properties.serial_no = tab.serial_number || ''
 
                                 this.executeOrQueueLoadData(id, (comp) => comp.loadData(currentTransformerDto));
 
                                 this.$emit('update-node-data', { mrid: tab.mrid, data: currentTransformerDto, mode: 'asset', assetType: tab.asset })
+                            } else {
+                                this.reportAssetLoadFailure(tab, data)
                             }
                         } else if (tab.asset === 'Voltage transformer') {
                             ctx.parentOrganization = { mrid: tab.parentId }
                             const data = await window.electronAPI.getVoltageTransformerEntityByMrid(tab.mrid, tab.parentId)
                             if (data.success) {
                                 const vtDto = vtMapper.mapEntityToDto(data.data)
-                                if (!vtDto.properties?.serial_no) vtDto.properties = { serial_no: tab.serial_number || '' }
+                                if (!vtDto.properties?.serial_no) vtDto.properties.serial_no = tab.serial_number || ''
 
                                 this.executeOrQueueLoadData(id, (comp) => comp.loadData(vtDto));
 
                                 this.$emit('update-node-data', { mrid: tab.mrid, data: vtDto, mode: 'asset', assetType: tab.asset })
+                            } else {
+                                this.reportAssetLoadFailure(tab, data)
                             }
                         } else if (tab.asset === 'Disconnector') {
                             ctx.parentOrganization = { mrid: tab.parentId }
                             const data = await window.electronAPI.getDisconnectorEntityByMrid(tab.mrid, tab.parentId)
                             if (data.success) {
                                 const disconnectorDto = disconnectorMapper.disconnectorEntityToDto(data.data)
-                                if (!disconnectorDto.properties?.serial_no) disconnectorDto.properties = { serial_no: tab.serial_number || '' }
+                                if (!disconnectorDto.properties?.serial_no) disconnectorDto.properties.serial_no = tab.serial_number || ''
 
                                 this.executeOrQueueLoadData(id, (comp) => comp.loadData(disconnectorDto));
 
                                 this.$emit('update-node-data', { mrid: tab.mrid, data: disconnectorDto, mode: 'asset', assetType: tab.asset })
+                            } else {
+                                this.reportAssetLoadFailure(tab, data)
                             }
                         } else if (tab.asset === 'Power cable') {
                             ctx.parentOrganization = { mrid: tab.parentId }
                             const data = await window.electronAPI.getPowerCableEntityByMrid(tab.mrid, tab.parentId)
                             if (data.success) {
                                 const powerCableDto = PowerCableMapper.mapEntityToDto(data.data)
-                                if (!powerCableDto.properties?.serial_no) powerCableDto.properties = { serial_no: tab.serial_number || '' }
+                                if (!powerCableDto.properties?.serial_no) powerCableDto.properties.serial_no = tab.serial_number || ''
 
                                 this.executeOrQueueLoadData(id, (comp) => comp.loadData(powerCableDto));
 
                                 this.$emit('update-node-data', { mrid: tab.mrid, data: powerCableDto, mode: 'asset', assetType: tab.asset })
+                            } else {
+                                this.reportAssetLoadFailure(tab, data)
                             }
                         } else if (tab.asset === 'Rotating machine') {
                             ctx.parentOrganization = { mrid: tab.parentId }
                             const data = await window.electronAPI.getRotatingMachineEntityByMrid(tab.mrid, tab.parentId)
                             if (data.success) {
                                 const rotatingMachineDto = RotatingMachineMapper.mapEntityToDto(data.data)
-                                if (!rotatingMachineDto.properties?.serial_no) rotatingMachineDto.properties = { serial_no: tab.serial_number || '' }
+                                if (!rotatingMachineDto.properties?.serial_no) rotatingMachineDto.properties.serial_no = tab.serial_number || ''
 
                                 this.executeOrQueueLoadData(id, (comp) => comp.loadData(rotatingMachineDto));
 
                                 this.$emit('update-node-data', { mrid: tab.mrid, data: rotatingMachineDto, mode: 'asset', assetType: tab.asset })
+                            } else {
+                                this.reportAssetLoadFailure(tab, data)
                             }
                         } else if (tab.asset === 'Capacitor') {
                             ctx.parentOrganization = { mrid: tab.parentId }
                             const data = await window.electronAPI.getCapacitorEntityByMrid(tab.mrid, tab.parentId)
                             if (data.success) {
                                 const capacitorDto = CapacitorMapper.mapEntityToDto(data.data)
-                                if (!capacitorDto.properties?.serial_no) capacitorDto.properties = { serial_no: tab.serial_number || '' }
+                                if (!capacitorDto.properties?.serial_no) capacitorDto.properties.serial_no = tab.serial_number || ''
 
                                 this.executeOrQueueLoadData(id, (comp) => comp.loadData(capacitorDto));
 
                                 this.$emit('update-node-data', { mrid: tab.mrid, data: capacitorDto, mode: 'asset', assetType: tab.asset })
+                            } else {
+                                this.reportAssetLoadFailure(tab, data)
                             }
                         } else if (tab.asset === 'Circuit breaker') {
                             ctx.parentOrganization = { mrid: tab.parentId }
                             const data = await window.electronAPI.getBreakerEntityByMrid(tab.mrid, tab.parentId)
                             if (data.success) {
                                 const breakerDto = BreakerMapper.mapEntityToDto(data.data)
-                                if (!breakerDto.properties?.serial_no) breakerDto.properties = { serial_no: tab.serial_number || '' }
+                                if (!breakerDto.properties?.serial_no) breakerDto.properties.serial_no = tab.serial_number || ''
 
                                 this.executeOrQueueLoadData(id, (comp) => comp.loadData(breakerDto));
 
                                 this.$emit('update-node-data', { mrid: tab.mrid, data: breakerDto, mode: 'asset', assetType: tab.asset })
+                            } else {
+                                this.reportAssetLoadFailure(tab, data)
                             }
                         } else if (tab.asset === 'Transformer') {
                             ctx.parentOrganization = { mrid: tab.parentId }
                             const data = await window.electronAPI.getTransformerEntityByMrid(tab.mrid, tab.parentId)
                             if (data.success) {
                                 const transformerDto = transformerMapper.transformerEntityToDto(data.data)
-                                if (!transformerDto.properties?.serial_no) transformerDto.properties = { serial_no: tab.serial_number || '' }
+                                if (!transformerDto.properties?.serial_no) transformerDto.properties.serial_no = tab.serial_number || ''
 
                                 this.executeOrQueueLoadData(id, (comp) => comp.loadData(transformerDto));
 
                                 this.$emit('update-node-data', { mrid: tab.mrid, data: transformerDto, mode: 'asset', assetType: tab.asset })
+                            } else {
+                                this.reportAssetLoadFailure(tab, data)
                             }
                         } else if (tab.asset === 'Reactor') {
                             ctx.parentOrganization = { mrid: tab.parentId }
                             const data = await window.electronAPI.getReactorEntityByMrid(tab.mrid, tab.parentId)
                             if (data.success) {
                                 const reactorDto = reactorMapper.mapEntityToDto(data.data)
-                                if (!reactorDto.properties?.serial_no) reactorDto.properties = { serial_no: tab.serial_number || '' }
+                                if (!reactorDto.properties?.serial_no) reactorDto.properties.serial_no = tab.serial_number || ''
 
                                 this.executeOrQueueLoadData(id, (comp) => comp.loadData(reactorDto));
 
                                 this.$emit('update-node-data', { mrid: tab.mrid, data: reactorDto, mode: 'asset', assetType: tab.asset })
+                            } else {
+                                this.reportAssetLoadFailure(tab, data)
                             }
                         }
                     }
@@ -845,8 +893,14 @@ export default {
                     } else if (tab.job === 'Reactor') {
                         const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Reactor")
                         ctx.testTypeListData = dataTestType.success ? dataTestType.data :[]
-                        const dataReactor = await window.electronAPI.getReactorByMrid(tab.parentId)
-                        ctx.assetData = dataReactor.success ? dataReactor.data : {}
+                        // `getReactorByMrid` KHÔNG TỒN TẠI — không có trong preload, cũng không
+                        // có handler IPC nào. Gọi nó là `undefined is not a function`, và cả
+                        // việc mở tab job của kháng điện đổ ngay từ dòng này.
+                        //
+                        // Dùng đúng hàm mà 8 loại job khác đang dùng, và cũng là hàm mà chính
+                        // file này dùng ở nhánh tab asset (dòng ~643).
+                        const dataReactor = await window.electronAPI.getReactorEntityByMrid(tab.parentId)
+                        ctx.assetData = dataReactor.success ? reactorMapper.mapEntityToDto(dataReactor.data) : {}
 
                         const data = await window.electronAPI.getReactorJobByMrid(tab.mrid)
                         if (data.success) {

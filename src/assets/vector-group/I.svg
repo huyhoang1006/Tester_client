@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" role="img" aria-labelledby="title">
+  <title id="title">Vector group I</title>
+  <style>
+    .wire { fill: none; stroke: #263648; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+    .terminal-dot { fill: #ffffff; stroke: #263648; stroke-width: 1.8; }
+    .neutral-dot { fill: #ffffff; stroke: #263648; stroke-width: 2; }
+    .terminal { fill: #263648; font: 600 10px Arial, sans-serif; }
+    .tap { fill: #263648; }
+  </style>
+  <path d="M 60 31 L 60 93" class="wire"/>
+  <circle cx="60" cy="31" r="2.4" class="terminal-dot"/>
+  <circle cx="60" cy="93" r="2.4" class="terminal-dot"/>
+  <text x="60" y="17" text-anchor="middle" class="terminal">P1</text>
+  <text x="60" y="115" text-anchor="middle" class="terminal">P2</text>
+</svg>

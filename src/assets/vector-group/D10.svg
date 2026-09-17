@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" role="img" aria-labelledby="title">
+  <title id="title">Vector group D10</title>
+  <style>
+    .wire { fill: none; stroke: #263648; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+    .terminal-dot { fill: #ffffff; stroke: #263648; stroke-width: 1.8; }
+    .neutral-dot { fill: #ffffff; stroke: #263648; stroke-width: 2; }
+    .terminal { fill: #263648; font: 600 10px Arial, sans-serif; }
+    .tap { fill: #263648; }
+  </style>
+  <path d="M 33.15 46.5 L 86.85 46.5 L 60 93 Z" class="wire"/>
+  <circle cx="33.15" cy="46.5" r="2.4" class="terminal-dot"/>
+  <circle cx="86.85" cy="46.5" r="2.4" class="terminal-dot"/>
+  <circle cx="60" cy="93" r="2.4" class="terminal-dot"/>
+  <text x="21.89" y="40" text-anchor="end" class="terminal">a</text>
+  <text x="98.11" y="40" text-anchor="start" class="terminal">b</text>
+  <text x="60" y="114" text-anchor="middle" class="terminal">c</text>
+</svg>

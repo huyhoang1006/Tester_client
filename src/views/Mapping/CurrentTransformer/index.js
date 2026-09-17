@@ -13,6 +13,7 @@ import CoreDto from "@/views/Dto/CurrentTransformer/CTConfiguration/CoreDto";
 import Percent from "@/views/Cim/Percent";
 import { UnitSymbol } from "@/views/Enum/UnitSymbol";
 import uuid from "@/utils/uuid";
+import { mapCommonAssetPropertiesToDto, mapCommonAssetPropertiesToEntity } from '@/utils/assetProperties'
 
 const ensureMrid = (value) => value || uuid.newUuid();
 
@@ -27,6 +28,46 @@ const mappingUnit = (map, unitDto) => {
     const unitParts = (unitDto.unit || '').split('|'); // ví dụ: "k|V"
     map.multiplier = unitParts.length > 1 ? unitParts[0] : null;
     map.unit = unitParts.length > 1 ? unitParts[1] : unitParts[0] || null;
+};
+
+export const alignCtTapRowsByName = (existingRows, expectedNames, type, coreIndex) => {
+    const normalizeTapName = name => String(name || '').replace(/\s+/g, '').toUpperCase();
+    const rowsByName = new Map();
+    (existingRows || []).forEach(row => {
+        const key = normalizeTapName(row && row.table && row.table.name);
+        if (key && !rowsByName.has(key)) rowsByName.set(key, row);
+    });
+
+    return expectedNames.map(name => {
+        const existing = rowsByName.get(normalizeTapName(name));
+        if (existing) {
+            existing.table.name = name;
+            existing.table.type = type;
+            return existing;
+        }
+
+        return {
+            table: {
+                mrid: '',
+                name,
+                isShow: false,
+                ipn: { mrid: '', value: '', unit: UnitSymbol.A },
+                isn: { mrid: '', value: '', unit: UnitSymbol.A },
+                inUse: false,
+                type
+            },
+            classRating: {
+                mrid: '',
+                rated_burden: { mrid: '', value: '', unit: UnitSymbol.VA },
+                extended_burden: false,
+                burden: { mrid: '', value: '', unit: UnitSymbol.VA },
+                burdenCos: '',
+                operatingBurden: { mrid: '', value: '', unit: UnitSymbol.VA },
+                operatingBurdenCos: '',
+                core_index: coreIndex
+            }
+        };
+    });
 };
 
 export const mapDtoToEntity = (dto) => {
@@ -60,6 +101,7 @@ export const mapDtoToEntity = (dto) => {
     entity.asset.lifecycle_date = dto.lifecycleDateId || null;
     entity.lifecycleDate.mrid = dto.lifecycleDateId || null;
     entity.lifecycleDate.manufactured_date = dto.properties.manufacturing_year || null;
+    mapCommonAssetPropertiesToEntity(dto.properties, entity)
 
     //assetPsr
     entity.assetPsr.mrid = dto.assetPsrId || null;
@@ -264,6 +306,7 @@ export const mapEntityToDto = (entity) => {
     // lifecycle date
     dto.lifecycleDateId = entity.lifecycleDate.mrid || null;
     dto.properties.manufacturing_year = entity.lifecycleDate.manufactured_date || null;
+    mapCommonAssetPropertiesToDto(entity, dto.properties)
 
     //assetPsr
     dto.assetPsrId = entity.assetPsr.mrid || '';
@@ -445,38 +488,9 @@ export const mapEntityToDto = (entity) => {
                 : tapName(1, terminal));
         }
 
-        const requiredMainTaps = expectedMainNames.length;
-        while (core.mainTap.data.length < requiredMainTaps) {
-            const idx = core.mainTap.data.length;
-            core.mainTap.data.push({
-                table: {
-                    mrid: '',
-                    name: expectedMainNames[idx] || '', // Gán tên tự động
-                    isShow: false,
-                    ipn: { mrid: '', value: '', unit: UnitSymbol.A },
-                    isn: { mrid: '', value: '', unit: UnitSymbol.A },
-                    inUse: false, type: 'maintap'
-                },
-                classRating: {
-                    mrid: '',
-                    rated_burden: { mrid: '', value: '', unit: UnitSymbol.VA },
-                    extended_burden: false,
-                    burden: { mrid: '', value: '', unit: UnitSymbol.VA },
-                    burdenCos: '',
-                    operatingBurden: { mrid: '', value: '', unit: UnitSymbol.VA },
-                    operatingBurdenCos: '',
-                    core_index: coreIndex
-                }
-            });
-        }
-
-        if (core.mainTap.data.length > requiredMainTaps) {
-            core.mainTap.data.splice(requiredMainTaps);
-        }
-        core.mainTap.data.forEach((tap, index) => {
-            tap.table.name = expectedMainNames[index];
-            tap.table.type = 'maintap';
-        });
+        // Chỉ các tap có dữ liệu được lưu trong DB. Ghép lại theo tên để dữ liệu của
+        // S1-S3 không bị dồn lên hàng đầu tiên S1-S2 khi các hàng trống được sinh lại.
+        core.mainTap.data = alignCtTapRowsByName(core.mainTap.data, expectedMainNames, 'maintap', coreIndex);
 
         // 3. Sinh Inter Tap theo common tap hiện tại, cùng quy tắc với UI.
         const expectedInterNames = [];
@@ -494,39 +508,7 @@ export const mapEntityToDto = (entity) => {
             }
         }
 
-        const requiredInterTaps = expectedInterNames.length;
-
-        while (core.interTap.data.length < requiredInterTaps) {
-            const idx = core.interTap.data.length;
-            core.interTap.data.push({
-                table: {
-                    mrid: '',
-                    name: expectedInterNames[idx] || '', // Gán tên tự động
-                    isShow: false,
-                    ipn: { mrid: '', value: '', unit: UnitSymbol.A },
-                    isn: { mrid: '', value: '', unit: UnitSymbol.A },
-                    inUse: false, type: 'intertap'
-                },
-                classRating: {
-                    mrid: '',
-                    rated_burden: { mrid: '', value: '', unit: UnitSymbol.VA },
-                    extended_burden: false,
-                    burden: { mrid: '', value: '', unit: UnitSymbol.VA },
-                    burdenCos: '',
-                    operatingBurden: { mrid: '', value: '', unit: UnitSymbol.VA },
-                    operatingBurdenCos: '',
-                    core_index: coreIndex
-                }
-            });
-        }
-
-        if (core.interTap.data.length > requiredInterTaps) {
-            core.interTap.data.splice(requiredInterTaps);
-        }
-        core.interTap.data.forEach((tap, index) => {
-            tap.table.name = expectedInterNames[index];
-            tap.table.type = 'intertap';
-        });
+        core.interTap.data = alignCtTapRowsByName(core.interTap.data, expectedInterNames, 'intertap', coreIndex);
         // --- FIX END ---
 
         dto.ctConfiguration.dataCT.push(core);

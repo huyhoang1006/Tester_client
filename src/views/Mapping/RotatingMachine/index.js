@@ -4,6 +4,7 @@ import Frequency from "@/views/Cim/Frequency";
 import Voltage from "@/views/Cim/Voltage";
 import RotatingMachineEntity from "@/views/Flatten/RotatingMachine";
 import RotatingMachineDTO from "@/views/Dto/RotatingMachine";
+import { mapCommonAssetPropertiesToDto, mapCommonAssetPropertiesToEntity } from '@/utils/assetProperties'
 
 const mappingUnit = (map, unitDto) => {
     if (!map || !unitDto) return;
@@ -39,6 +40,7 @@ export function mapDtoToEntity(dto) {
     entity.lifecycleDate.mrid = dto.lifecycleDateId || null;
     entity.lifecycleDate.manufactured_date = dto.properties.manufacturer_year || null;
     entity.asset.lifecycle_date = dto.lifecycleDateId || null;
+    mapCommonAssetPropertiesToEntity(dto.properties, entity)
 
     //assetPsr
     entity.assetPsr.mrid = dto.assetPsrId || null;
@@ -113,6 +115,7 @@ export function mapEntityToDto(entity) {
 
     // lifecycle date
     dto.properties.manufacturer_year = entity.lifecycleDate.manufactured_date || null;
+    mapCommonAssetPropertiesToDto(entity, dto.properties)
     dto.lifecycleDateId = entity.lifecycleDate.mrid || null;
     dto.lifecycleDateId = entity.asset.lifecycle_date || null;
 

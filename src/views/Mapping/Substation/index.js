@@ -12,6 +12,7 @@ export function mapDtoToEntity(dto) {
     entity.substation.name = dto.name || null
     entity.substation.generation = dto.generation || null
     entity.substation.industry = dto.industry || null
+    entity.substation.operating_date = dto.operating_date || null
     entity.substation.description = dto.comment || null
     entity.substation.mrid = dto.subsId || null
     entity.substation.location = dto.locationId || null
@@ -127,6 +128,7 @@ export function mapEntityToDto(entity) {
     dto.name = entity.substation.name || ''
     dto.generation = entity.substation.generation || ''
     dto.industry = entity.substation.industry || ''
+    dto.operating_date = entity.substation.operating_date || ''
     dto.comment = entity.substation.description || ''
     dto.subsId = entity.substation.mrid || ''
 

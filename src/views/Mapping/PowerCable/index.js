@@ -7,6 +7,7 @@ import Length from "@/views/Cim/Length";
 import Area from "@/views/Cim/Area";
 import PowerCableDTO from "@/views/Dto/PowerCable";
 import CurrentFlow from "@/views/Cim/CurrentFlow";
+import { mapCommonAssetPropertiesToDto, mapCommonAssetPropertiesToEntity } from '@/utils/assetProperties'
 
 const mappingUnit = (map, unitDto) => {
     if (!map || !unitDto) return;
@@ -55,6 +56,7 @@ export function mapDtoToEntity(dto) {
     entity.lifecycleDate.manufactured_date = dto.properties.manufacturer_year || null;
     entity.lifecycleDate.mrid = dto.lifecycleDateId || null;
     entity.asset.lifecycle_date = dto.lifecycleDateId || null;
+    mapCommonAssetPropertiesToEntity(dto.properties, entity)
 
     //assetPsr
     entity.assetPsr.mrid = dto.assetPsrId || null;
@@ -433,6 +435,7 @@ export function mapEntityToDto(entity) {
 
     // lifecycle date
     dto.properties.manufacturer_year = entity.lifecycleDate.manufactured_date || null;
+    mapCommonAssetPropertiesToDto(entity, dto.properties)
     dto.lifecycleDateId = entity.asset.lifecycle_date || null;
 
     // assetPsr

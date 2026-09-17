@@ -14,6 +14,7 @@
                             <el-form-item label="Name">
                                 <el-input v-model="properties.name" v-if="properties"></el-input>
                             </el-form-item>
+                            <OperatingDateField v-if="!isPowerPlant" :properties="properties"></OperatingDateField>
 
                             <template v-if="isPowerPlant">
                                 <div class="sub-section">Plant Capacity</div>
@@ -331,12 +332,14 @@ import namePlate from '@/views/Common/NamePlate.vue'
 import { country } from '../ConstantAsset/index'
 import geoMap from '@/views/Common/GeoMap.vue'
 import { getPowerPlantIcon } from '@/views/Common/powerPlantIcons'
+import OperatingDateField from '@/views/Common/OperatingDateField.vue'
 
 export default {
     components: {
         Attachment,
         namePlate,
-        geoMap
+        geoMap,
+        OperatingDateField
     },
     name: 'LocationViewData',
     mixins: [mixin],

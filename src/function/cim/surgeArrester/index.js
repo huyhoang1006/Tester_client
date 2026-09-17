@@ -3,22 +3,49 @@ import * as AssetFunc from '../asset/index.js'
 
 // Lấy thông tin surge arrester theo mrid
 export const getSurgeArresterById = async (mrid) => {
+    // Đọc bản ghi asset chung TRƯỚC, và tách riêng lỗi của bước này.
+    //
+    // `getAssetById` không trả về lỗi mà NÉM (nó reject khi truy vấn SQLite hỏng). Bản
+    // trước bắt chung vào `catch` cuối hàm và trả đúng câu 'Get surge arrester by id
+    // failed' — trùng với câu của bước truy vấn bảng `surge_arrester`. Hai nguyên nhân
+    // hoàn toàn khác nhau mà nói y hệt nhau thì nhìn thông báo không lần được gì.
+    let assetResult
     try {
-        const assetResult = await AssetFunc.getAssetById(mrid)
-        if (!assetResult.success) {
-            return { success: false, data: null, message: 'Asset not found' }
-        }
-        return new Promise((resolve, reject) => {
-            db.get("SELECT * FROM surge_arrester WHERE mrid=?", [mrid], (err, row) => {
-                if (err) return reject({ success: false, err: err, message: 'Get surge arrester by id failed' })
-                if (!row) return resolve({ success: false, data: null, message: 'Surge arrester not found' })
-                const data = { ...assetResult.data, ...row }
-                return resolve({ success: true, data: data, message: 'Get surge arrester by id completed' })
-            })
-        })
+        assetResult = await AssetFunc.getAssetById(mrid)
     } catch (err) {
-        return { success: false, err: err, message: 'Get surge arrester by id failed' }
+        return {
+            success: false, err,
+            message: `Reading the asset record failed for ${mrid}`,
+        }
     }
+    if (!assetResult || !assetResult.success) {
+        return {
+            success: false,
+            err: assetResult && (assetResult.err || assetResult.error),
+            message: (assetResult && assetResult.message) || `Asset not found: ${mrid}`,
+        }
+    }
+
+    return new Promise((resolve) => {
+        db.get("SELECT * FROM surge_arrester WHERE mrid=?", [mrid], (err, row) => {
+            // KHÔNG reject: chỗ gọi bắt bằng try/catch rồi lại gói vào một câu chung chung
+            // nữa. Trả về thất bại có kèm câu SQLite thì nó đi thẳng lên giao diện.
+            if (err) {
+                return resolve({
+                    success: false, err,
+                    message: `Reading the surge arrester record failed: ${err.message || err}`,
+                })
+            }
+            if (!row) {
+                return resolve({
+                    success: false, data: null,
+                    message: `No row in table "surge_arrester" for ${mrid} — the asset exists but its surge arrester details are missing`,
+                })
+            }
+            const data = { ...assetResult.data, ...row }
+            return resolve({ success: true, data: data, message: 'Get surge arrester by id completed' })
+        })
+    })
 }
 
 export const getSurgeArresterByAssetId = (assetId) => {

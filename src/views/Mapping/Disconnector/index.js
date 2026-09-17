@@ -5,6 +5,7 @@ import Frequency from '@/views/Cim/Frequency'
 import CurrentFlow from '@/views/Cim/CurrentFlow'
 import Seconds from '@/views/Cim/Seconds'
 import uuid from '@/utils/uuid'
+import { mapCommonAssetPropertiesToDto, mapCommonAssetPropertiesToEntity } from '@/utils/assetProperties'
 
 /**
  * Helper để map đơn vị đo (đơn vị đo là các đơn vị như Voltage, Frequency, CurrentFlow, Seconds)
@@ -68,6 +69,7 @@ export const disconnectorDtoToEntity = (dto) => {
     entity.lifecycleDate.manufactured_date = dto.properties.manufacturing_year || null
     // liên kết lifecycle vào asset để phía DB insert asset có thể tham chiếu
     entity.asset.lifecycle_date = dto.lifecycleDateId || null
+    mapCommonAssetPropertiesToEntity(dto.properties, entity)
 
     /** ================== assetPsr ================== */
     entity.assetPsr.mrid = dto.assetPsrId || null
@@ -190,6 +192,7 @@ export const disconnectorEntityToDto = (entity) => {
     // lifecycle date
     dto.lifecycleDateId = entity.asset.lifecycle_date || '';
     dto.properties.manufacturing_year = entity.lifecycleDate.manufactured_date || '';
+    mapCommonAssetPropertiesToDto(entity, dto.properties)
 
     dto.config.number_of_phase = entity.asset.number_of_phase || '';
     dto.config.phase = entity.asset.phase || '';

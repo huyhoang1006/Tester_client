@@ -5,6 +5,9 @@ class OldPowerTransformerInfo extends PowerTransformerInfo {
         super();
         this.phases = null; // Phase configuration of the transformer (e.g., single-phase, three-phase)
         this.vector_group = null; // Vector group of the transformer
+        this.vector_group_data = null;
+        this.vector_group_custom = null;
+        this.unsupported_vector_group = null;
         this.rated_frequency = null; // Rated frequency of the transformer
         this.impedance_temperature = null; // Impedance temperature of the transformer
         this.category = null; // Category of the transformer (e.g., power, distribution)

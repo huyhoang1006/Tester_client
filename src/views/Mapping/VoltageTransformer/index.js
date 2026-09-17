@@ -5,6 +5,7 @@ import Voltage from "@/views/Cim/Voltage";
 import PotentialTransformerTable from "@/views/Cim/PotentialTransformerTable";
 import ApparentPower from "@/views/Cim/ApparentPower";
 import Capacitance from "@/views/Cim/Capacitance";
+import { mapCommonAssetPropertiesToDto, mapCommonAssetPropertiesToEntity } from '@/utils/assetProperties'
 
 const mappingUnit = (map, unitDto) => {
     if (!map || !unitDto) return;
@@ -91,6 +92,7 @@ export function mapDtoToEntity(dto) {
     entity.asset.lifecycle_date = dto.lifecycleDateId || null;
     entity.lifecycleDate.mrid = dto.lifecycleDateId || null;
     entity.lifecycleDate.manufactured_date = dto.properties.manufacturing_year || null;
+    mapCommonAssetPropertiesToEntity(dto.properties, entity)
 
     //assetPsr
     entity.assetPsr.mrid = dto.assetPsrId || null;
@@ -124,6 +126,7 @@ export function mapEntityToDto(entity) {
     // lifecycle date
     dto.lifecycleDateId = entity.lifecycleDate.mrid || null;
     dto.properties.manufacturing_year = entity.lifecycleDate.manufactured_date || null;
+    mapCommonAssetPropertiesToDto(entity, dto.properties)
     dto.lifecycleDateId = entity.lifecycleDate.mrid || null;
 
     //assetPsr

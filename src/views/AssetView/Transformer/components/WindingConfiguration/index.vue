@@ -34,6 +34,13 @@
                         <div v-if="vectorGroup !== null && vectorGroup !== '' && vectorGroup !== undefined"
                             class="vector-preview">{{ vectorGroup }}
                         </div>
+                        <div v-if="vectorPreviewItems.length" class="vector-diagram-preview">
+                            <div v-for="item in vectorPreviewItems" :key="item.label" class="vector-diagram-item">
+                                <span class="diagram-label">{{ item.label }}</span>
+                                <img :src="item.image" :alt="`${item.label} ${item.code} vector diagram`">
+                                <span class="diagram-code">{{ item.code }}</span>
+                            </div>
+                        </div>
                         <el-input size="mini" v-model="windingConfigurationData.vector_group_custom"
                             placeholder="Enter custom vector group"></el-input>
                         <el-button class="winding-select-btn" type="primary"
@@ -60,6 +67,14 @@ import VectorGroup from '../VectorGroup/index.vue'
 import { WindingConnection } from '@/views/Enum/WindingConnection'
 import { PhaseCode } from '@/views/Enum/PhaseCode'
 import { Accessible } from '@/views/Enum/Accessible'
+
+const vectorImageContext = require.context('@/assets/vector-group', false, /\.svg$/)
+const vectorImages = {}
+vectorImageContext.keys().forEach((key) => {
+    const name = key.replace('./', '').replace('.svg', '')
+    const image = vectorImageContext(key)
+    vectorImages[name] = image.default || image
+})
 
 const MapData = [
     {
@@ -200,6 +215,24 @@ export default {
         windingConfigurationData: function () {
             return this.data
         },
+        vectorPreviewItems() {
+            const vectorGroup = this.windingConfigurationData.vector_group || {}
+            const secondary = vectorGroup.sec || {}
+            const tertiary = vectorGroup.tert || {}
+            const items = []
+
+            if (vectorGroup.prim) {
+                items.push(this.createVectorPreviewItem('Prim', vectorGroup.prim))
+            }
+            if (secondary.i) {
+                items.push(this.createVectorPreviewItem('Sec', secondary.i, secondary.value))
+            }
+            if (tertiary.i) {
+                items.push(this.createVectorPreviewItem('Tert', tertiary.i, tertiary.value))
+            }
+
+            return items
+        },
         vectorGroup: function () {
             function mapEvery(data, mapData) {
                 let temp = data
@@ -221,6 +254,24 @@ export default {
         }
     },
     methods: {
+        normalizeVectorConnection(connection) {
+            if (!connection) return ''
+            if (connection === 'YyNa') return connection
+            if (connection.indexOf(WindingConnection.I) === 0) return 'I'
+            if (connection === WindingConnection.Yn) return 'YN'
+            if (connection === WindingConnection.Zn) return 'ZN'
+            return connection
+        },
+        createVectorPreviewItem(label, connection, phaseShift) {
+            const normalizedConnection = this.normalizeVectorConnection(connection)
+            const hasPhaseShift = phaseShift !== undefined && phaseShift !== null && phaseShift !== ''
+            const code = `${normalizedConnection}${hasPhaseShift ? phaseShift : ''}`
+            return {
+                label,
+                code,
+                image: vectorImages[code] || vectorImages[normalizedConnection] || ''
+            }
+        },
         onChangePhase() {
             if (this.windingConfigurationData.phases === '3') {
                 this.windingConfigurationData.phase = ''
@@ -315,6 +366,48 @@ export default {
     font-weight: 600;
     text-transform: uppercase;
     word-break: break-word;
+}
+
+.vector-diagram-preview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(58px, 1fr));
+    gap: 6px;
+    padding: 4px 0;
+}
+
+.vector-diagram-item {
+    display: grid;
+    grid-template-rows: 16px 64px 16px;
+    min-width: 0;
+    text-align: center;
+}
+
+.vector-diagram-item + .vector-diagram-item {
+    border-left: 1px solid #ebeef5;
+}
+
+.diagram-label,
+.diagram-code {
+    overflow: hidden;
+    color: #606a78;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 16px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.diagram-code {
+    color: #303846;
+}
+
+.vector-diagram-item img {
+    display: block;
+    width: 64px;
+    max-width: 100%;
+    height: 64px;
+    margin: 0 auto;
+    object-fit: contain;
 }
 
 .winding-select-btn {

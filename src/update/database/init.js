@@ -75,7 +75,76 @@ export const syncSchemaTables = async (dbsql) => {
     })
 }
 
+const getTableColumns = async (dbsql, table) => {
+    return new Promise((resolve, reject) => {
+        dbsql.all(`PRAGMA table_info("${table}")`, (err, rows) => {
+            if (err) return reject(err)
+            resolve(new Set((rows || []).map((row) => row.name)))
+        })
+    })
+}
+
+const run = async (dbsql, sql) => {
+    return new Promise((resolve, reject) => {
+        dbsql.run(sql, (err) => {
+            if (err) return reject(err)
+            resolve()
+        })
+    })
+}
+
+/**
+ * Store computed, customized and unsupported vector groups independently.
+ * The backfill preserves records written by older versions that used one value
+ * plus vector_group_type to represent all three inputs.
+ */
+export const ensureTransformerVectorGroupColumns = async (dbsql) => {
+    const table = 'old_power_transformer_info'
+    const columns = await getTableColumns(dbsql, table)
+    const additions = [
+        ['vector_group_data', 'TEXT'],
+        ['vector_group_custom', 'TEXT'],
+        ['unsupported_vector_group', 'TEXT']
+    ]
+
+    for (const [name, type] of additions) {
+        if (!columns.has(name)) {
+            await run(dbsql, `ALTER TABLE "${table}" ADD COLUMN "${name}" ${type}`)
+        }
+    }
+
+    await run(dbsql, `
+        UPDATE "${table}"
+        SET vector_group_data = CASE
+                WHEN COALESCE(vector_group_data, '') = ''
+                    AND COALESCE(vector_group_type, '') NOT IN ('custom', 'unsupport')
+                THEN vector_group
+                ELSE vector_group_data
+            END,
+            vector_group_custom = CASE
+                WHEN COALESCE(vector_group_custom, '') = '' AND vector_group_type = 'custom'
+                THEN vector_group
+                ELSE vector_group_custom
+            END,
+            unsupported_vector_group = CASE
+                WHEN COALESCE(unsupported_vector_group, '') = '' AND vector_group_type = 'unsupport'
+                THEN vector_group
+                ELSE unsupported_vector_group
+            END
+    `)
+}
+
+export const ensureSubstationOperatingDateColumn = async (dbsql) => {
+    const table = 'substation'
+    const columns = await getTableColumns(dbsql, table)
+    if (!columns.has('operating_date')) {
+        await run(dbsql, `ALTER TABLE "${table}" ADD COLUMN "operating_date" TEXT`)
+    }
+}
+
 export const updateDatabaseFromSQL = async (dbsql, oldVersion, newVersion) => {
     console.log(`Sync schema for database upgrade ${oldVersion} -> ${newVersion}`)
     await syncSchemaTables(dbsql)
+    await ensureTransformerVectorGroupColumns(dbsql)
+    await ensureSubstationOperatingDateColumn(dbsql)
 }

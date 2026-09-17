@@ -27,6 +27,7 @@ import SurgeArresterEntity from '@/views/Flatten/SurgeArrester'
 import Capacitance from "@/views/Cim/Capacitance"
 import OldSurgeArresterInfo from "@/views/Cim/OldSurgeArresterInfo"
 import SurgeArrester from "@/views/Cim/SurgeArrester"
+import { mapCommonAssetPropertiesToDto, mapCommonAssetPropertiesToEntity } from '@/utils/assetProperties'
 
 export const transformerDtoToEntity = (dto) => {
     const entity = new TransformerEntity();
@@ -51,6 +52,10 @@ export const transformerDtoToEntity = (dto) => {
     entity.lifecycleDate.manufactured_date = dto.properties.manufacturer_year || null;
     entity.lifecycleDate.mrid = dto.lifecycleDateId || null;
     entity.asset.lifecycle_date = dto.lifecycleDateId || null;
+    if (!dto.properties.status && dto.others && dto.others.status) {
+        dto.properties.status = dto.others.status
+    }
+    mapCommonAssetPropertiesToEntity(dto.properties, entity)
 
     //assetPsr
     entity.assetPsr.mrid = dto.assetPsrId || null;
@@ -66,29 +71,33 @@ export const transformerDtoToEntity = (dto) => {
 
     entity.asset.name = dto.properties.apparatus_id || null;
     entity.oldPowerTransformerInfo.phases = dto.winding_configuration.phases || null;
-    if (dto.winding_configuration.unsupported_vector_group) {
-        entity.oldPowerTransformerInfo.vector_group = dto.winding_configuration.unsupported_vector_group || null
-    }
-    if (dto.winding_configuration.vector_group_custom) {
-        entity.oldPowerTransformerInfo.vector_group = dto.winding_configuration.vector_group_custom || null
-        entity.oldPowerTransformerInfo.vector_group_type = 'custom'
-    }
-    if (dto.winding_configuration.vector_group_unsupport) {
-        entity.oldPowerTransformerInfo.vector_group = dto.winding_configuration.unsupported_vector_group || null
+    const vectorGroup = dto.winding_configuration.vector_group || {}
+    const secondary = vectorGroup.sec || {}
+    const tertiary = vectorGroup.tert || {}
+    const getVectorValue = (val) => (val === 'null' || val === null || val === undefined || val === '') ? '' : val
+    const primaryValue = getVectorValue(vectorGroup.prim).includes('Spare I')
+        ? 'I'
+        : getVectorValue(vectorGroup.prim)
+    const computedVectorGroup = primaryValue +
+        getVectorValue(secondary.i) +
+        getVectorValue(secondary.value) +
+        getVectorValue(tertiary.i) +
+        getVectorValue(tertiary.value) +
+        getVectorValue(tertiary.accessible)
+
+    entity.oldPowerTransformerInfo.vector_group_data = dto.winding_configuration.vector_group_data || computedVectorGroup || null
+    entity.oldPowerTransformerInfo.vector_group_custom = dto.winding_configuration.vector_group_custom || null
+    entity.oldPowerTransformerInfo.unsupported_vector_group = dto.winding_configuration.unsupported_vector_group || null
+
+    // Keep the legacy fields populated for older code and previously exported data.
+    if (entity.oldPowerTransformerInfo.unsupported_vector_group) {
+        entity.oldPowerTransformerInfo.vector_group = entity.oldPowerTransformerInfo.unsupported_vector_group
         entity.oldPowerTransformerInfo.vector_group_type = 'unsupport'
-    }
-    if (dto.winding_configuration.vector_group_data) {
-        entity.oldPowerTransformerInfo.vector_group = ''
-        const getVal = (val) => (val === 'null' || val === null || val === undefined || val === '') ? '' : val
-        if (dto.winding_configuration.vector_group.prim.includes('Spare I')) {
-            entity.oldPowerTransformerInfo.vector_group += 'I'
-        } else {
-            entity.oldPowerTransformerInfo.vector_group += getVal(dto.winding_configuration.vector_group.prim)
-        }
-        entity.oldPowerTransformerInfo.vector_group += getVal(dto.winding_configuration.vector_group.sec.i)
-        entity.oldPowerTransformerInfo.vector_group += getVal(dto.winding_configuration.vector_group.sec.value)
-        entity.oldPowerTransformerInfo.vector_group += getVal(dto.winding_configuration.vector_group.tert.i)
-        entity.oldPowerTransformerInfo.vector_group += getVal(dto.winding_configuration.vector_group.tert.value)
+    } else if (entity.oldPowerTransformerInfo.vector_group_custom) {
+        entity.oldPowerTransformerInfo.vector_group = entity.oldPowerTransformerInfo.vector_group_custom
+        entity.oldPowerTransformerInfo.vector_group_type = 'custom'
+    } else {
+        entity.oldPowerTransformerInfo.vector_group = entity.oldPowerTransformerInfo.vector_group_data
         entity.oldPowerTransformerInfo.vector_group_type = null
     }
 
@@ -538,7 +547,6 @@ export const transformerDtoToEntity = (dto) => {
     entity.other.category = dto.others.category || null;
     entity.other.mrid = dto.others.mrid || null;
     console.log(entity.other.mrid)
-    entity.asset.in_use_state = dto.others.status || null;
     entity.other.insulation_medium = dto.others.insulation_medium || null;
     entity.other.insulation_key = dto.others.insulation.key || null;
     entity.other.insulation_volume = dto.others.insulation.volume.mrid || null;
@@ -754,6 +762,7 @@ export const transformerEntityToDto = (entity) => {
     dto.lifecycleDateId = entity.lifecycleDate.mrid || ''
     dto.properties.manufacturer_year = entity.lifecycleDate.manufactured_date || ''
     dto.properties.comment = entity.asset.description || ''
+    mapCommonAssetPropertiesToDto(entity, dto.properties)
     dto.locationId = entity.asset.location || ''
     dto.assetPsrId = entity.assetPsr.mrid || ''
     dto.psrId = entity.assetPsr.psr_id || ''
@@ -765,31 +774,33 @@ export const transformerEntityToDto = (entity) => {
 
     dto.oldPowerTransformerInfoId = entity.oldPowerTransformerInfo.mrid || ''
     dto.winding_configuration.phases = entity.oldPowerTransformerInfo.phases || ''
-    if (entity.oldPowerTransformerInfo.vector_group_type == "custom") {
-        dto.winding_configuration.vector_group_custom = entity.oldPowerTransformerInfo.vector_group || ''
-    } else if (entity.oldPowerTransformerInfo.vector_group_type == "unsupport") {
-        dto.winding_configuration.unsupported_vector_group = entity.oldPowerTransformerInfo.vector_group || ''
-    } else {
-        dto.winding_configuration.vector_group_data = entity.oldPowerTransformerInfo.vector_group || ''
-        dto.oldTransformerEndInfo = entity.oldTransformerEndInfo || []
-        const getVal = (val) => (val === 'null' || val === null || val === undefined || val === '') ? '' : val
-        for (const winding of dto.oldTransformerEndInfo) {
-            if (winding.end_number == 1) {
-                if (winding.spare == true) {
-                    dto.winding_configuration.vector_group.prim = 'Spare I'
-                } else {
-                    const connKind = getVal(winding.connection_kind)
-                    const phase = getVal(winding.phase)
-                    dto.winding_configuration.vector_group.prim = (connKind === 'I' || (connKind && connKind.startsWith('I'))) ? connKind + phase : connKind
-                }
-            } else if (winding.end_number == 2) {
-                dto.winding_configuration.vector_group.sec.i = getVal(winding.connection_kind)
-                dto.winding_configuration.vector_group.sec.value = getVal(winding.phase_angle_clock)
-            } else if (winding.end_number == 3) {
-                dto.winding_configuration.vector_group.tert.i = getVal(winding.connection_kind)
-                dto.winding_configuration.vector_group.tert.value = getVal(winding.phase_angle_clock)
-                dto.winding_configuration.vector_group.tert.accessible = winding.accessibility || ''
+    const legacyVectorGroup = entity.oldPowerTransformerInfo.vector_group || ''
+    const legacyVectorGroupType = entity.oldPowerTransformerInfo.vector_group_type
+    dto.winding_configuration.vector_group_data = entity.oldPowerTransformerInfo.vector_group_data ||
+        (!legacyVectorGroupType ? legacyVectorGroup : '')
+    dto.winding_configuration.vector_group_custom = entity.oldPowerTransformerInfo.vector_group_custom ||
+        (legacyVectorGroupType == "custom" ? legacyVectorGroup : '')
+    dto.winding_configuration.unsupported_vector_group = entity.oldPowerTransformerInfo.unsupported_vector_group ||
+        (legacyVectorGroupType == "unsupport" ? legacyVectorGroup : '')
+
+    dto.oldTransformerEndInfo = entity.oldTransformerEndInfo || []
+    const getVal = (val) => (val === 'null' || val === null || val === undefined || val === '') ? '' : val
+    for (const winding of dto.oldTransformerEndInfo) {
+        if (winding.end_number == 1) {
+            if (winding.spare == true) {
+                dto.winding_configuration.vector_group.prim = 'Spare I'
+            } else {
+                const connKind = getVal(winding.connection_kind)
+                const phase = getVal(winding.phase)
+                dto.winding_configuration.vector_group.prim = (connKind === 'I' || (connKind && connKind.startsWith('I'))) ? connKind + phase : connKind
             }
+        } else if (winding.end_number == 2) {
+            dto.winding_configuration.vector_group.sec.i = getVal(winding.connection_kind)
+            dto.winding_configuration.vector_group.sec.value = getVal(winding.phase_angle_clock)
+        } else if (winding.end_number == 3) {
+            dto.winding_configuration.vector_group.tert.i = getVal(winding.connection_kind)
+            dto.winding_configuration.vector_group.tert.value = getVal(winding.phase_angle_clock)
+            dto.winding_configuration.vector_group.tert.accessible = winding.accessibility || ''
         }
     }
     dto.ratings.rated_frequency.mrid = entity.oldPowerTransformerInfo.rated_frequency || ''

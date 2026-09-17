@@ -28,6 +28,7 @@ import UnderVoltageReleaseBreakerInfo from "../../Cim/UnderVoltageReleaseBreaker
 import OvercurrentReleaseBreakerInfo from "../../Cim/OvercurrentReleaseBreakerInfo"
 
 import * as breaker_constant from "../../AssetView/CircuitBreaker/components/assessment"
+import { mapCommonAssetPropertiesToDto, mapCommonAssetPropertiesToEntity } from '@/utils/assetProperties'
 
 
 export function mapDtoToEntity(dto) {
@@ -52,6 +53,7 @@ export function mapDtoToEntity(dto) {
     entity.lifecycleDate.mrid = dto.lifecycleDateId || null;
     entity.lifecycleDate.manufactured_date = dto.properties.manufacturer_year || null;
     entity.asset.lifecycle_date = dto.lifecycleDateId || null;
+    mapCommonAssetPropertiesToEntity(dto.properties, entity)
 
     /** ---------- assetPsr ---------- */
     entity.assetPsr.mrid = dto.assetPsrId || null;
@@ -630,6 +632,7 @@ export function mapEntityToDto(entity) {
     dto.lifecycleDateId = entity.lifecycleDate?.mrid || ''
     dto.properties.manufacturer_year = entity.lifecycleDate?.manufactured_date || ''
     dto.properties.comment = entity.asset?.description || ''
+    mapCommonAssetPropertiesToDto(entity, dto.properties)
     dto.locationId = entity.asset?.location || ''
     dto.circuitBreaker.numberOfPhases = entity.asset?.number_of_phase || entity.oldBreakerInfo?.phase_number || ''
     dto.circuitBreaker.phase = entity.asset?.phase || ''

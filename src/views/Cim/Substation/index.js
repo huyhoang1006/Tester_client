@@ -5,6 +5,7 @@ class Substation extends EquipmentContainer {
         super()
         this.generation = null
         this.industry = null
+        this.operating_date = null
     }
 }
 export default Substation

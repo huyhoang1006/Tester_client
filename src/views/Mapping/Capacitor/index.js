@@ -9,6 +9,7 @@ import Percent from "@/views/Cim/Percent";
 import Mass from "@/views/Cim/Mass";
 import CapacitanceCapacitorInfo from "@/views/Cim/CapacitanceCapacitorInfo";
 import DissipationFactorCapacitorInfo from "@/views/Cim/DissipationFactorCapacitorInfo";
+import { mapCommonAssetPropertiesToDto, mapCommonAssetPropertiesToEntity } from '@/utils/assetProperties'
 
 
 /** ============================
@@ -53,6 +54,7 @@ export function mapDtoToEntity(dto) {
     entity.lifecycleDate.mrid = dto.lifecycleDateId || null;
     entity.lifecycleDate.manufactured_date = dto.properties.manufacturing_year || null;
     entity.asset.lifecycle_date = dto.lifecycleDateId || null;
+    mapCommonAssetPropertiesToEntity(dto.properties, entity)
 
     /** ---------- assetPsr ---------- */
     entity.assetPsr.mrid = dto.assetPsrId || null;
@@ -208,6 +210,7 @@ export function mapEntityToDto(entity) {
     /** ---------- Lifecycle ---------- */
     dto.lifecycleDateId = entity.lifecycleDate.mrid || null;
     dto.properties.manufacturing_year = entity.lifecycleDate.manufactured_date || null;
+    mapCommonAssetPropertiesToDto(entity, dto.properties)
 
     /** ---------- assetPsr ---------- */
     dto.assetPsrId = entity.assetPsr.mrid || null;

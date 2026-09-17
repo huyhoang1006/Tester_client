@@ -25,16 +25,6 @@
                                 <el-option label="Other" value="Other"></el-option>
                             </el-select>
                         </el-form-item>
-                        <el-form-item label="Status">
-                            <el-select allow-create filterable :reserve-keyword="false" v-model="othersData.status"
-                                placeholder="Select status" class="w-100">
-                                <el-option label="In operation" value="In operation"></el-option>
-                                <el-option label="Spare" value="Spare"></el-option>
-                                <el-option label="Repair" value="Repair"></el-option>
-                                <el-option label="Out of operation" value="Out of operation"></el-option>
-                                <el-option label="Scrap" value="Scrap"></el-option>
-                            </el-select>
-                        </el-form-item>
                         <el-form-item allow-create filterable :reserve-keyword="false" label="Tank type">
                             <el-select v-model="othersData.tank_type" placeholder="Select tank type" class="w-100">
                                 <el-option label="Free breathing" value="Free breathing"></el-option>

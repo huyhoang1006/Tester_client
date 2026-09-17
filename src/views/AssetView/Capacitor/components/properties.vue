@@ -26,7 +26,7 @@
                                     </el-option>
                                 </el-select>
                             </el-form-item>
-                            <el-form-item label="Manufacturer type">
+                            <el-form-item label="Model">
                                 <el-input v-model="propertiesData.manufacturer_type"></el-input>
                             </el-form-item>
                             <el-form-item label="Manufacturing year">
@@ -40,6 +40,8 @@
                             <el-form-item label="Asset ID">
                                 <el-input v-model="propertiesData.apparatus_id"></el-input>
                             </el-form-item>
+                            <OperatingDateField :properties="propertiesData"></OperatingDateField>
+                            <AssetStatusField :properties="propertiesData"></AssetStatusField>
                         </el-form>
                     </div>
                 </section>
@@ -73,10 +75,14 @@
 <script>
 import { country } from '@/views/ConstantAsset/index'
 import Attachment from '@/views/Common/Attachment.vue'
+import AssetStatusField from '@/views/Common/AssetStatusField.vue'
+import OperatingDateField from '@/views/Common/OperatingDateField.vue'
 export default {
     name: 'capacitorProperty',
     components: {
         Attachment,
+        AssetStatusField,
+        OperatingDateField
     },
     props: {
         data: {

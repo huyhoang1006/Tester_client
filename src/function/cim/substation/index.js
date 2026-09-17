@@ -13,12 +13,13 @@ export const insertSubstation = async (substation) => {
                         return reject({ success: false, message: 'Insert EquipmentContainer failed', err: result.err })
                     }
                     db.run(
-                        `INSERT INTO substation(mrid, generation, industry)
-                         VALUES (?, ?, ?)
+                        `INSERT INTO substation(mrid, generation, industry, operating_date)
+                         VALUES (?, ?, ?, ?)
                          ON CONFLICT(mrid) DO UPDATE SET
                             generation = excluded.generation,
-                            industry = excluded.industry`,
-                        [substation.mrid, substation.generation, substation.industry],
+                            industry = excluded.industry,
+                            operating_date = excluded.operating_date`,
+                        [substation.mrid, substation.generation, substation.industry, substation.operating_date],
                         function (err) {
                             if (err) {
                                 db.run('ROLLBACK')
@@ -46,12 +47,13 @@ export const insertSubstationTransaction = async (substation, dbsql) => {
                     return reject({ success: false, message: 'Insert EquipmentContainer failed', err: result.err })
                 }
                 dbsql.run(
-                    `INSERT INTO substation(mrid, generation, industry)
-                     VALUES (?, ?, ?)
+                    `INSERT INTO substation(mrid, generation, industry, operating_date)
+                     VALUES (?, ?, ?, ?)
                      ON CONFLICT(mrid) DO UPDATE SET
                         generation = excluded.generation,
-                        industry = excluded.industry`,
-                    [substation.mrid, substation.generation, substation.industry],
+                        industry = excluded.industry,
+                        operating_date = excluded.operating_date`,
+                    [substation.mrid, substation.generation, substation.industry, substation.operating_date],
                     function (err) {
                         if (err) {
                             return reject({ success: false, err, message: 'Insert Substation failed' })
@@ -138,9 +140,10 @@ export const updateSubstationById = async (mrid, substation) => {
                     db.run(
                         `UPDATE substation SET
                             generation = ?,
-                            industry = ?
+                            industry = ?,
+                            operating_date = ?
                          WHERE mrid = ?`,
-                        [substation.generation, substation.industry, mrid],
+                        [substation.generation, substation.industry, substation.operating_date, mrid],
                         function (err) {
                             if (err) {
                                 db.run('ROLLBACK')
@@ -170,9 +173,10 @@ export const updateSubstationByIdTransaction = async (mrid, substation, dbsql) =
                 dbsql.run(
                     `UPDATE substation SET
                         generation = ?,
-                        industry = ?
+                        industry = ?,
+                        operating_date = ?
                      WHERE mrid = ?`,
-                    [substation.generation, substation.industry, mrid],
+                    [substation.generation, substation.industry, substation.operating_date, mrid],
                     function (err) {
                         if (err) {
                             return reject({ success: false, err, message: 'Update Substation failed' })

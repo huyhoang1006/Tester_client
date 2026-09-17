@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" role="img" aria-labelledby="title">
+  <title id="title">Vector group Y9</title>
+  <style>
+    .wire { fill: none; stroke: #263648; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+    .terminal-dot { fill: #ffffff; stroke: #263648; stroke-width: 1.8; }
+    .neutral-dot { fill: #ffffff; stroke: #263648; stroke-width: 2; }
+    .terminal { fill: #263648; font: 600 10px Arial, sans-serif; }
+    .tap { fill: #263648; }
+  </style>
+  <path d="M 60 62 L 29 62" class="wire"/>
+  <path d="M 60 62 L 75.5 35.15" class="wire"/>
+  <path d="M 60 62 L 75.5 88.85" class="wire"/>
+  <circle cx="29" cy="62" r="2.4" class="terminal-dot"/>
+  <circle cx="75.5" cy="35.15" r="2.4" class="terminal-dot"/>
+  <circle cx="75.5" cy="88.85" r="2.4" class="terminal-dot"/>
+  <text x="16" y="65" text-anchor="end" class="terminal">a</text>
+  <text x="82" y="23.89" text-anchor="start" class="terminal">b</text>
+  <text x="82" y="108.11" text-anchor="start" class="terminal">c</text>
+  <circle cx="60" cy="62" r="2.4" class="tap"/>
+</svg>

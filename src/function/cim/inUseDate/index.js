@@ -16,7 +16,7 @@ const all = (dbsql, sql, params = []) => new Promise((resolve, reject) => {
     })
 })
 
-const ensureInUseDateColumns = async (dbsql) => {
+export const ensureInUseDateColumns = async (dbsql) => {
     const rows = await all(dbsql, 'PRAGMA table_info(in_use_date)')
     const existing = new Set(rows.map(row => row.name))
     const columns = [
@@ -113,6 +113,20 @@ export const deleteInUseDateByAssetIdTransaction = async (assetId, dbsql) => {
             if (err) return reject({ success: false, err, message: 'Delete in-use date by asset failed' })
             return resolve({ success: true, data: null, message: 'Delete in-use date by asset completed' })
         })
+    })
+}
+
+export const deleteInUseDateByAssetAndTypeTransaction = async (assetId, dateType = COMMISSIONING_DATE_TYPE, dbsql) => {
+    await ensureInUseDateColumns(dbsql)
+    return new Promise((resolve, reject) => {
+        dbsql.run(
+            'DELETE FROM in_use_date WHERE asset_id = ? AND date_type = ?',
+            [assetId, dateType],
+            function (err) {
+                if (err) return reject({ success: false, err, message: 'Delete in-use date by asset and type failed' })
+                return resolve({ success: true, data: null, message: 'Delete in-use date by asset and type completed' })
+            }
+        )
     })
 }
 

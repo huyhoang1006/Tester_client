@@ -25,6 +25,8 @@ class Asset extends IdentifiedObject {
         this.country_of_origin = null; // Associated country of origin of the asset
         this.number_of_phase = null; // Number of phases in the asset
         this.phase = null; // Phase of the asset
+        this.current_status = null; // Transient status record persisted through asset.status
+        this.current_in_use_date = null; // Transient commissioning date persisted after the asset
     }
 }
 

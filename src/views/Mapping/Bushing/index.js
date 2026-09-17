@@ -6,6 +6,7 @@ import CurrentFlow from "@/views/Cim/CurrentFlow";
 import Frequency from "@/views/Cim/Frequency";
 import Percent from "@/views/Cim/Percent";
 import Capacitance from '@/views/Cim/Capacitance'
+import { mapCommonAssetPropertiesToDto, mapCommonAssetPropertiesToEntity } from '@/utils/assetProperties'
 export function mapDtoToEntity(dto) {
     const entity = new BushingingEntity();
 
@@ -32,6 +33,7 @@ export function mapDtoToEntity(dto) {
     entity.lifecycleDate.manufactured_date = dto.properties.manufacturer_year || null;
     entity.lifecycleDate.mrid = dto.lifecycleDateId || null;
     entity.bushing.lifecycle_date = dto.lifecycleDateId || null;
+    mapCommonAssetPropertiesToEntity(dto.properties, entity)
 
     //assetPsr
     entity.assetPsr.mrid = dto.assetPsrId || null;
@@ -166,6 +168,7 @@ export function mapEntityToDto(entity) {
     // lifecycle date
     dto.lifecycleDateId = entity.bushing.lifecycle_date || '';
     dto.properties.manufacturer_year = entity.lifecycleDate.manufactured_date || '';
+    mapCommonAssetPropertiesToDto(entity, dto.properties)
 
     //assetPsr
     dto.assetPsrId = entity.assetPsr.mrid || '';

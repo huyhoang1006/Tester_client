@@ -80,7 +80,7 @@ export const updateDatabase = async () => {
     // measurement definitions into databases that were created before those
     // tests were added. Without this migration, procedure_asset references a
     // procedure that only exists in the JSON config and SQLite rejects it.
-    const LATEST_DB_VERSION = 3;
+    const LATEST_DB_VERSION = 5;
     const oldVersion = await databaseInitFunc.getDbVersion(db)
 
     // Tạo những BẢNG còn thiếu, ở mọi lần khởi động.
@@ -93,6 +93,8 @@ export const updateDatabase = async () => {
     // tính năng nào sẽ lỗi.
     try {
         await databaseInitFunc.syncSchemaTables(db)
+        await databaseInitFunc.ensureTransformerVectorGroupColumns(db)
+        await databaseInitFunc.ensureSubstationOperatingDateColumn(db)
     } catch (schemaError) {
         console.error('[DB] Sync schema failed, tinh nang dung bang moi se loi:', schemaError)
     }

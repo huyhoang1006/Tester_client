@@ -6,6 +6,7 @@ import ReactorEntity from "@/views/Flatten/Reactor";
 import ReactorDTO from "@/views/Dto/Reactor";
 import Mass from "@/views/Cim/Mass";
 import Inductance from "@/views/Cim/Inductance";
+import { mapCommonAssetPropertiesToDto, mapCommonAssetPropertiesToEntity } from '@/utils/assetProperties'
 
 
 
@@ -56,6 +57,7 @@ export function mapDtoToEntity(dto) {
     entity.lifecycleDate.mrid = dto.lifecycleDateId || null;
     entity.lifecycleDate.manufactured_date = dto.properties.manufacturing_year || null;
     entity.asset.lifecycle_date = dto.lifecycleDateId || null;
+    mapCommonAssetPropertiesToEntity(dto.properties, entity)
 
     /** ---------- assetPsr ---------- */
     entity.assetPsr.mrid = dto.assetPsrId || null;
@@ -114,6 +116,7 @@ export function mapEntityToDto(entity) {
     dto.properties.apparatus_id = entity.asset.name || null;
     dto.properties.comment = entity.asset.description || null;
     dto.properties.manufacturing_year = entity.lifecycleDate.manufactured_date || null;
+    mapCommonAssetPropertiesToDto(entity, dto.properties)
     dto.locationId = entity.asset.location || null;
 
     dto.config.number_of_phase = entity.asset.number_of_phase || null;

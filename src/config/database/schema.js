@@ -1496,6 +1496,9 @@ CREATE TABLE IF NOT EXISTS "old_power_transformer_info" (
 	"category"	TEXT,
 	"phases"	TEXT,
 	"vector_group"	TEXT,
+	"vector_group_data"	TEXT,
+	"vector_group_custom"	TEXT,
+	"unsupported_vector_group"	TEXT,
 	"rated_frequency"	TEXT,
 	"impedance_temperature"	TEXT,
 	"apparatus_id"	TEXT,
@@ -2284,6 +2287,7 @@ CREATE TABLE IF NOT EXISTS "substation" (
 	"mrid"	TEXT NOT NULL,
 	"generation"	TEXT,
 	"industry"	TEXT,
+	"operating_date"	TEXT,
 	FOREIGN KEY("mrid") REFERENCES "equipment_container"("mrid") ON DELETE CASCADE,
 	PRIMARY KEY("mrid")
 );

@@ -7,6 +7,7 @@ import CurrentFlow from "@/views/Cim/CurrentFlow";
 import Seconds from "@/views/Cim/Seconds";
 import { UnitMultiplier } from "@/views/Enum/UnitMultiplier";
 import { UnitSymbol } from "@/views/Enum/UnitSymbol";
+import { mapCommonAssetPropertiesToDto, mapCommonAssetPropertiesToEntity } from '@/utils/assetProperties'
 
 // Ghép multiplier + unit an toàn: tránh 'null|s' khi multiplier rỗng
 // có multiplier → 'm|s'; không có → 's' (không pipe)
@@ -42,6 +43,7 @@ export function mapDtoToEntity(dto) {
     entity.lifecycleDate.manufactured_date = dto.properties.manufacturer_year || null;
     entity.lifecycleDate.mrid = dto.lifecycleDateId || null;
     entity.surgeArrester.lifecycle_date = dto.lifecycleDateId || null;
+    mapCommonAssetPropertiesToEntity(dto.properties, entity)
 
     entity.oldSurgeArresterInfo.mrid = dto.assetInfoId || null
     entity.oldSurgeArresterInfo.product_asset_model = entity.productAssetModel.mrid || null
@@ -170,6 +172,7 @@ export function mapEntityToDto(entity) {
     // lifecycle date
     dto.lifecycleDateId = entity.surgeArrester.lifecycle_date || '';
     dto.properties.manufacturer_year = entity.lifecycleDate.manufactured_date || '';
+    mapCommonAssetPropertiesToDto(entity, dto.properties)
 
     //unit count
     dto.ratings.unitStack = entity.surgeArrester.unit_count || '';

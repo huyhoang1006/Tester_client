@@ -1,75 +1,97 @@
 <template>
     <el-dialog title="Edit Vector Group" :visible="openDialog" :modal="true" :append-to-body="true"
-        @close="handleCancel">
-        <div class="vector-group">
-            Vector group: <b style="text-transform: uppercase">{{ vectorGroup }}</b>
+        :close-on-click-modal="false" custom-class="vector-group-dialog" @close="handleCancel">
+        <div class="vector-group-summary">
+            Vector group: <b>{{ vectorGroup }}</b>
         </div>
-        <el-form :model="winding_config" label-position="top" class="vector-form">
-            <el-row :gutter="12" align="top">
-                <el-col :xs="24" :lg="8">
-                    <!-- prim -->
-                    <el-form-item label="Primary (Prim)">
-                        <el-select size="small" @change="changePrim" v-model="winding_config.prim" placeholder="Select"
-                            style="width: 100%">
-                            <el-option v-for="item in handlePrimArray()" :key="item.value" :label="item.label"
-                                :value="item.value" />
-                        </el-select>
-                    </el-form-item>
-                </el-col>
-                <!-- secondary -->
-                <el-col :xs="24" :lg="8"
-                    v-if="this.winding_config.prim !== '' && this.asset_type !== $constant.WITHOUT_TERT && this.asset_type !== $constant.WITH_TERT"
-                    class="vertical-col">
-                    <!-- secondary I -->
-                    <el-form-item label="Secondary I (Sec I)">
-                        <el-select size="small" @change="changeSecI" v-model="winding_config.sec.i" placeholder="Select"
-                            style="width: 100%">
-                            <el-option v-for="item in handleSecIArray()" :key="item.value" :label="item.label"
-                                :value="item.value" />
-                        </el-select>
-                    </el-form-item>
-                    <!-- secondary value -->
-                    <el-form-item v-if="this.winding_config.sec.i !== ''" label="Secondary value (Sec value)">
-                        <el-select size="small" v-model="winding_config.sec.value" placeholder="Select"
-                            style="width: 100%">
-                            <el-option v-for="item in handleSecValueArray()" :key="item.value" :label="item.label"
-                                :value="item.value" />
-                        </el-select>
-                    </el-form-item>
-                </el-col>
-                <!-- tertiary -->
-                <el-col :xs="24" :lg="8"
-                    v-if="(this.asset_type === 'Three-winding' && this.winding_config.prim !== '') || (this.asset_type === 'Auto w/ tert' && this.winding_config.prim !== '')">
-                    <!-- tert I -->
-                    <el-form-item label="Tertiary I (Tert I)">
-                        <el-select size="small" @change="changeTertI" v-model="winding_config.tert.i"
-                            placeholder="Select" style="width: 100%">
-                            <el-option v-for="item in handleTertIArray()" :key="item.value" :label="item.label"
-                                :value="item.value" />
-                        </el-select>
-                    </el-form-item>
-                    <!-- tert value -->
-                    <el-form-item
-                        v-if="(this.asset_type === 'Three-winding' || this.asset_type === 'Auto w/ tert') && this.winding_config.tert.i !== ''"
-                        label="Tertiary value (Tert Value)">
-                        <el-select size="small" @change="winding_config.tert.accessible = ''"
-                            v-model="winding_config.tert.value" placeholder="Select" style="width: 100%">
-                            <el-option v-for="item in handleTertValueArray()" :key="item.value" :label="item.label"
-                                :value="item.value" />
-                        </el-select>
-                    </el-form-item>
-                    <!-- tert assessibility -->
-                    <el-form-item v-if="this.winding_config.tert.i === 'D' && this.winding_config.tert.value !== ''"
-                        label="Tertiary Accessibility">
+
+        <div class="vector-columns" :class="`columns-${visibleColumnCount}`">
+            <section class="vector-column">
+                <h3>Primary (Prim)</h3>
+                <div class="picker-panel">
+                    <div class="picker-title">Winding configuration</div>
+                    <div class="visual-options">
+                        <button v-for="item in handlePrimArray()" :key="item.value" type="button"
+                            class="vector-option" :class="{ selected: winding_config.prim === item.value }"
+                            :title="item.label" @click="selectPrim(item.value)">
+                            <span class="option-code">{{ item.label }}</span>
+                            <img :src="vectorImage(item.value)" :alt="`${item.label} winding configuration`">
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section v-if="showSecondary" class="vector-column">
+                <h3>Secondary (Sec)</h3>
+                <div class="winding-pickers">
+                    <div class="picker-panel">
+                        <div class="picker-title">Winding configuration</div>
+                        <div class="visual-options">
+                            <button v-for="item in handleSecIArray()" :key="item.value" type="button"
+                                class="vector-option" :class="{ selected: winding_config.sec.i === item.value }"
+                                :title="item.label" @click="selectSecI(item.value)">
+                                <span class="option-code">{{ item.label }}</span>
+                                <img :src="vectorImage(item.value)" :alt="`${item.label} winding configuration`">
+                            </button>
+                        </div>
+                    </div>
+
+                    <div v-if="winding_config.sec.i" class="picker-panel">
+                        <div class="picker-title">Phase shift</div>
+                        <div class="visual-options">
+                            <button v-for="item in handleSecValueArray()" :key="item.value" type="button"
+                                class="vector-option" :class="{ selected: winding_config.sec.value === item.value }"
+                                :title="`${winding_config.sec.i}${item.label}`" @click="selectSecValue(item.value)">
+                                <span class="option-code">{{ vectorOptionCode(winding_config.sec.i, item.label) }}</span>
+                                <img :src="vectorImage(winding_config.sec.i, item.value)"
+                                    :alt="`${winding_config.sec.i}${item.label} phase shift`">
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section v-if="showTertiary" class="vector-column">
+                <h3>Tertiary (Tert)</h3>
+                <div class="winding-pickers">
+                    <div class="picker-panel">
+                        <div class="picker-title">Winding configuration</div>
+                        <div class="visual-options">
+                            <button v-for="item in handleTertIArray()" :key="item.value" type="button"
+                                class="vector-option" :class="{ selected: winding_config.tert.i === item.value }"
+                                :title="item.label" @click="selectTertI(item.value)">
+                                <span class="option-code">{{ item.label }}</span>
+                                <img :src="vectorImage(item.value)" :alt="`${item.label} winding configuration`">
+                            </button>
+                        </div>
+                    </div>
+
+                    <div v-if="winding_config.tert.i" class="picker-panel">
+                        <div class="picker-title">Phase shift</div>
+                        <div class="visual-options">
+                            <button v-for="item in handleTertValueArray()" :key="item.value" type="button"
+                                class="vector-option" :class="{ selected: winding_config.tert.value === item.value }"
+                                :title="`${winding_config.tert.i}${item.label}`" @click="selectTertValue(item.value)">
+                                <span class="option-code">{{ vectorOptionCode(winding_config.tert.i, item.label) }}</span>
+                                <img :src="vectorImage(winding_config.tert.i, item.value)"
+                                    :alt="`${winding_config.tert.i}${item.label} phase shift`">
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <el-form v-if="winding_config.tert.i === 'D' && winding_config.tert.value !== ''"
+                    label-position="top" class="accessibility-form">
+                    <el-form-item label="Tertiary Accessibility">
                         <el-select size="small" v-model="winding_config.tert.accessible" placeholder="Select"
                             style="width: 100%">
                             <el-option v-for="item in handleTertAssessibleArray()" :key="item.value" :label="item.label"
                                 :value="item.value" />
                         </el-select>
                     </el-form-item>
-                </el-col>
-            </el-row>
-        </el-form>
+                </el-form>
+            </section>
+        </div>
         <span slot="footer" class="dialog-footer custom-footer">
             <el-button class="footer-btn" type="danger" size="small" @click="handleCancel">Cancel</el-button>
             <el-button class="footer-btn" type="primary" size="small" @click="handleClose">Confirm</el-button>
@@ -82,6 +104,14 @@
 import { WindingConnection } from '@/views/Enum/WindingConnection'
 import { PhaseCode } from '@/views/Enum/PhaseCode'
 import { Accessible } from '@/views/Enum/Accessible'
+
+const vectorImageContext = require.context('@/assets/vector-group', false, /\.svg$/)
+const vectorImages = {}
+vectorImageContext.keys().forEach((key) => {
+    const name = key.replace('./', '').replace('.svg', '')
+    const image = vectorImageContext(key)
+    vectorImages[name] = image.default || image
+})
 
 const MapData = [
     {
@@ -344,6 +374,23 @@ export default {
         asset_winding_config: Object
     },
     computed: {
+        showSecondary() {
+            return this.winding_config.prim !== '' &&
+                this.asset_type !== this.$constant.WITHOUT_TERT &&
+                this.asset_type !== this.$constant.WITH_TERT
+        },
+
+        showTertiary() {
+            return this.winding_config.prim !== '' &&
+                (this.asset_type === this.$constant.THREE_WINDING || this.asset_type === this.$constant.WITH_TERT)
+        },
+
+        visibleColumnCount() {
+            if (this.showTertiary) return 3
+            if (this.showSecondary) return 2
+            return 1
+        },
+
         vectorGroup: function () {
             function mapEvery(data, mapData) {
                 let temp = data
@@ -368,6 +415,53 @@ export default {
         }
     },
     methods: {
+        normalizeVectorConnection(connection) {
+            if (!connection) return ''
+            if (connection === 'YyNa') return connection
+            if (connection.indexOf(WindingConnection.I) === 0) return 'I'
+            if (connection === WindingConnection.Yn) return 'YN'
+            if (connection === WindingConnection.Zn) return 'ZN'
+            return connection
+        },
+
+        vectorImage(connection, phaseShift) {
+            const normalizedConnection = this.normalizeVectorConnection(connection)
+            const hasPhaseShift = phaseShift !== undefined && phaseShift !== null && phaseShift !== ''
+            const imageName = `${normalizedConnection}${hasPhaseShift ? phaseShift : ''}`
+            return vectorImages[imageName] || ''
+        },
+
+        vectorOptionCode(connection, phaseShift) {
+            return `${this.normalizeVectorConnection(connection)}${phaseShift}`
+        },
+
+        selectPrim(value) {
+            if (this.winding_config.prim === value) return
+            this.winding_config.prim = value
+            this.changePrim()
+        },
+
+        selectSecI(value) {
+            if (this.winding_config.sec.i === value) return
+            this.winding_config.sec.i = value
+            this.changeSecI()
+        },
+
+        selectSecValue(value) {
+            this.winding_config.sec.value = value
+        },
+
+        selectTertI(value) {
+            if (this.winding_config.tert.i === value) return
+            this.winding_config.tert.i = value
+            this.changeTertI()
+        },
+
+        selectTertValue(value) {
+            this.winding_config.tert.value = value
+            this.winding_config.tert.accessible = ''
+        },
+
         async handleClose() {
             this.$emit('close-dialog', this.winding_config)
         },
@@ -528,72 +622,212 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-::v-deep(.el-dialog) {
-    max-height: 85vh;
+::v-deep(.vector-group-dialog) {
+    width: 94vw;
+    max-width: 1480px;
+    max-height: 90vh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    width: 50%;
 }
 
-::v-deep(.el-dialog__body) {
-    padding: 10px 20px;
+::v-deep(.vector-group-dialog .el-dialog__body) {
+    padding: 8px 20px 16px;
     overflow-y: auto;
     flex: 1;
 }
 
-::v-deep(.vector-group) {
-    margin-bottom: 20px;
+.vector-group-summary {
+    margin-bottom: 14px;
+    color: #303846;
+    font-size: 15px;
 }
 
-::v-deep(.vector-form .el-form-item) {
-    margin-bottom: 10px;
+.vector-group-summary b {
+    color: #102f9f;
+    text-transform: uppercase;
 }
 
-::v-deep(.vector-form .el-form-item__label) {
-    white-space: normal;
-    word-break: keep-all;
-    overflow-wrap: break-word;
-    line-height: 1.2;
+.vector-columns {
+    display: grid;
+    gap: 18px;
+    align-items: start;
+}
+
+.vector-columns.columns-1 {
+    grid-template-columns: minmax(320px, 480px);
+}
+
+.vector-columns.columns-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.vector-columns.columns-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.vector-column {
+    min-width: 0;
+}
+
+.vector-column + .vector-column {
+    border-left: 1px solid #d8dee8;
+    padding-left: 18px;
+}
+
+.vector-column h3 {
+    margin: 0 0 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #7b8797;
+    color: #303846;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.winding-pickers {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    align-items: start;
+}
+
+.picker-panel {
+    min-width: 0;
+}
+
+.picker-title {
+    min-height: 30px;
+    margin-bottom: 6px;
+    color: #5a6472;
+    font-size: 13px;
+    line-height: 1.25;
+}
+
+.visual-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+    gap: 7px;
+}
+
+.winding-pickers .visual-options {
+    grid-template-columns: repeat(auto-fill, minmax(94px, 1fr));
+}
+
+.vector-option {
+    position: relative;
+    width: 100%;
+    height: 122px;
+    padding: 21px 5px 5px;
+    border: 1px solid #aeb8c6;
+    border-radius: 2px;
+    background: #ffffff;
+    color: #303846;
+    cursor: pointer;
+    overflow: hidden;
+    transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.vector-option:hover {
+    border-color: #0b6fcf;
+}
+
+.vector-option:focus-visible {
+    outline: 2px solid #0b6fcf;
+    outline-offset: 1px;
+}
+
+.vector-option.selected {
+    border-color: #0b6fcf;
+    background: #247fd6;
+    color: #ffffff;
+}
+
+.option-code {
+    position: absolute;
+    top: 5px;
+    left: 7px;
+    right: 7px;
+    overflow: hidden;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 15px;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.vector-option img {
+    display: block;
+    width: 92px;
+    max-width: 100%;
+    height: 92px;
+    margin: 0 auto;
+    object-fit: contain;
+}
+
+.vector-option.selected img {
+    filter: brightness(0) invert(1);
+}
+
+.accessibility-form {
+    margin-top: 12px;
+}
+
+::v-deep(.accessibility-form .el-form-item) {
+    margin-bottom: 0;
+}
+
+::v-deep(.accessibility-form .el-form-item__label) {
     padding-bottom: 4px;
-}
-
-::v-deep(.vertical-col) {
-    display: flex;
-    flex-direction: column;
+    line-height: 1.2;
 }
 
 ::v-deep(.custom-footer) {
     display: flex;
-    justify-content: space-between;
-    gap: 12px;
+    justify-content: flex-end;
+    gap: 8px;
 }
 
 ::v-deep(.custom-footer .footer-btn) {
     display: flex;
-    flex: 1;
+    flex: 0 0 110px;
     align-items: center;
     justify-content: center;
+    width: 110px;
+    margin: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-@media (max-width: 1199px) {
-    ::v-deep(.el-dialog) {
-        width: 35%;
+@media (max-width: 1100px) {
+    .vector-columns.columns-3 {
+        grid-template-columns: 1fr;
+    }
+
+    .vector-column + .vector-column {
+        border-left: 0;
+        border-top: 1px solid #d8dee8;
+        padding-top: 18px;
+        padding-left: 0;
     }
 }
 
 @media (max-width: 767px) {
-    ::v-deep(.custom-footer) {
-        flex-direction: column;
-        align-items: stretch;
+    ::v-deep(.vector-group-dialog) {
+        width: 96vw;
     }
 
-    ::v-deep(.custom-footer .footer-btn) {
-        width: 100%;
-        margin: 0;
+    .vector-columns.columns-2,
+    .vector-columns.columns-3,
+    .winding-pickers {
+        grid-template-columns: 1fr;
     }
+
+    .visual-options,
+    .winding-pickers .visual-options {
+        grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    }
+
 }
 </style>
