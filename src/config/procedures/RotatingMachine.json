@@ -1,5 +1,41 @@
 {
   "name": "Rotating machine",
   "procedure": [
+    {
+      "mrid": "a15b8258-4c5f-47e5-a587-7c6ea99f0101",
+      "code": "InsulationResistanceStator",
+      "name": "Insulation resistance of Stator",
+      "kind": "test"
+    },
+    {
+      "mrid": "a15b8258-4c5f-47e5-a587-7c6ea99f0102",
+      "code": "InsulationResistanceRotor",
+      "name": "Insulation resistance of Rotor",
+      "kind": "test"
+    },
+    {
+      "mrid": "a15b8258-4c5f-47e5-a587-7c6ea99f0103",
+      "code": "DCWindingResistanceStator",
+      "name": "DC Winding resistance of Stator",
+      "kind": "test"
+    },
+    {
+      "mrid": "a15b8258-4c5f-47e5-a587-7c6ea99f0104",
+      "code": "DCWindingResistanceRotor",
+      "name": "DC Winding resistance of Rotor",
+      "kind": "test"
+    },
+    {
+      "mrid": "a15b8258-4c5f-47e5-a587-7c6ea99f0105",
+      "code": "StatorWindingDfCap",
+      "name": "Stator winding DF & CAP",
+      "kind": "test"
+    },
+    {
+      "mrid": "a15b8258-4c5f-47e5-a587-7c6ea99f0106",
+      "code": "WithstandVoltage",
+      "name": "Withstand voltage test",
+      "kind": "test"
+    }
   ]
 }

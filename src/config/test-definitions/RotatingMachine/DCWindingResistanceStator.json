@@ -1,0 +1,17 @@
+{
+  "testId": "a15b8258-4c5f-47e5-a587-7c6ea99f0103",
+  "testCode": "DCWindingResistanceStator",
+  "testName": "DC Winding resistance of Stator",
+  "columns": [
+    { "mrid": "d0010000-0000-4000-8000-000000000001", "code": "name", "name": "Name", "type": "string" },
+    { "mrid": "d0010000-0000-4000-8000-000000000002", "code": "test_current", "name": "I test", "type": "analog", "unit": "A" },
+    { "mrid": "d0010000-0000-4000-8000-000000000003", "code": "r_meas", "name": "R meas", "type": "analog", "unit": "Ω" },
+    { "mrid": "d0010000-0000-4000-8000-000000000004", "code": "r_ref", "name": "R ref", "type": "analog", "unit": "Ω" },
+    { "mrid": "d0010000-0000-4000-8000-000000000005", "code": "r_corr", "name": "R corr", "type": "analog", "unit": "Ω" },
+    { "mrid": "d0010000-0000-4000-8000-000000000006", "code": "r_dev", "name": "R dev", "type": "analog", "unit": "%", "measurement_type": "test, assessment" },
+    { "mrid": "d0010000-0000-4000-8000-000000000007", "code": "unbalanced", "name": "Unbalanced", "type": "analog", "unit": "%", "measurement_type": "test, assessment" },
+    { "mrid": "e1d1c6f0-8d8e-4d4b-8b44-2e4c71bdf001", "code": "assessment", "name": "Assessment", "type": "discrete", "measurement_type": "test, assessment", "valueAliasSetId": "40c60468-232a-4643-851f-50616900f601", "options": [{ "value": 0, "alias": "Fail", "mrid": "d8858564-e438-4034-9273-030919163001" }, { "value": 1, "alias": "Pass", "mrid": "d8858564-e438-4034-9273-030919163002" }] },
+    { "mrid": "7e52c7e5-1c3b-4fd1-9a91-3e94db29a002", "code": "condition_indicator", "name": "Condition indicator", "type": "discrete", "valueAliasSetId": "8e323053-481b-4348-89c0-67258380d701", "options": [{ "value": 0, "alias": "Bad", "mrid": "e9969675-f549-4145-a384-141020274001" }, { "value": 1, "alias": "Poor", "mrid": "e9969675-f549-4145-a384-141020274002" }, { "value": 2, "alias": "Fair", "mrid": "e9969675-f549-4145-a384-141020274003" }, { "value": 3, "alias": "Good", "mrid": "e9969675-f549-4145-a384-141020274004" }] }
+  ],
+  "defaultRows": [{ "name": "U" }, { "name": "V" }, { "name": "W" }]
+}

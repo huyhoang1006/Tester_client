@@ -17,6 +17,7 @@ import * as currentTransformerProcedureFunc from './currentTransformer/index'
 import * as transformerProcedureFunc from './transformer/index'
 import * as disconnectorProcedureFunc from './disconnector/index'
 import * as powerCableProcedureFunc from './powerCable/index'
+import * as rotatingMachineProcedureFunc from './rotatingMachine/index'
 
 export const updateProcedure = async (dbsql) => {
     await createProcedure(dbsql)
@@ -130,6 +131,18 @@ export const ensureTransformerPtmImportProcedures = async (dbsql) => {
     )
 }
 
+export const ensureRotatingMachineProcedures = async (dbsql) => {
+    await rotatingMachineProcedureFunc.createProcedureRotatingMachine(
+        dbsql,
+        procedureDataMap,
+        testDataMap,
+        testConditionMap,
+        getProcedureInfo,
+        getTestDefinitionInfo,
+        getTestConditionInfo
+    )
+}
+
 export const createProcedure = async (dbsql) => {
     try {
         await surgeArresterProcedureFunc.createProcedureSurgeArrester(dbsql, procedureDataMap, testDataMap, testConditionMap,
@@ -146,6 +159,7 @@ export const createProcedure = async (dbsql) => {
             getProcedureInfo, getTestDefinitionInfo, getTestConditionInfo)
         await powerCableProcedureFunc.createProcedurePowerCable(dbsql, procedureDataMap, testDataMap, testConditionMap,
             getProcedureInfo, getTestDefinitionInfo, getTestConditionInfo)
+        await ensureRotatingMachineProcedures(dbsql)
     } catch (err) {
         throw new Error('Error creating procedure: ' + err.message)
     }

@@ -15,6 +15,7 @@ const STRUCTURAL_FIELD_CODES = new Set([
 const READ_ONLY_FIELD_CODES = new Set([
   'dev_r_ref', 'dev_phase', 'r_dev', 'ratio_meas', 'ratio_dev', 'i_dev',
   'df_change', 'delta_c_percent', 'zk', 'uk_cal', 'uk_dev',
+  'pi', 'unbalanced', 'delta_tan_delta', 'tan_delta_0_6_minus_0_2',
   'opening_sync_between_phase', 'opening_sync_between_interrupter',
   'closing_sync_between_phase', 'closing_sync_between_interrupter'
 ])

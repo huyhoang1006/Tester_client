@@ -122,10 +122,11 @@ export const buildSnapshotFromForm = (tableData, columns, conditions, keyCodes =
     const columnByCode = {}
     for (const col of (columns || [])) columnByCode[col.code] = col
     const keys = keyCodes || []
+    const normalizedTableData = Array.isArray(tableData) ? { table1: tableData } : (tableData || {})
 
     const tables = []
-    for (const title of Object.keys(tableData || {})) {
-        const rows = tableData[title]
+    for (const title of Object.keys(normalizedTableData)) {
+        const rows = normalizedTableData[title]
         if (!Array.isArray(rows)) continue
 
         const outRows = []

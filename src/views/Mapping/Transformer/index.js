@@ -806,6 +806,7 @@ export const transformerEntityToDto = (entity) => {
     dto.ratings.rated_frequency.mrid = entity.oldPowerTransformerInfo.rated_frequency || ''
     for (const data of entity.frequency) {
         if (data.mrid == entity.oldPowerTransformerInfo.rated_frequency) {
+            dto.ratings.rated_frequency.unit = formatStoredUnit(data, dto.ratings.rated_frequency.unit)
             if (['50', '60', '16.7'].includes(data.value)) {
                 dto.ratings.rated_frequency.value = data.value
             } else {
@@ -853,19 +854,19 @@ export const transformerEntityToDto = (entity) => {
         dataVoltageRating.voltage_ll.mrid = voltageRating.rated_u || ''
         for (const voltage of entity.voltage) {
             if (voltage.mrid == voltageRating.rated_u) {
-                dataVoltageRating.voltage_ll.value = voltage.value || ''
+                mappingDtoUnit(dataVoltageRating.voltage_ll, voltage)
             }
         }
         dataVoltageRating.voltage_ln.mrid = voltageRating.rated_ln || ''
         for (const voltage of entity.voltage) {
             if (voltage.mrid == voltageRating.rated_ln) {
-                dataVoltageRating.voltage_ln.value = voltage.value || ''
+                mappingDtoUnit(dataVoltageRating.voltage_ln, voltage)
             }
         }
         dataVoltageRating.insul_level_ll.mrid = voltageRating.insulation_u || ''
         for (const voltage of entity.voltage) {
             if (voltage.mrid == voltageRating.insulation_u) {
-                dataVoltageRating.insul_level_ll.value = voltage.value || ''
+                mappingDtoUnit(dataVoltageRating.insul_level_ll, voltage)
             }
         }
         dataVoltageRating.voltage_regulation = voltageRating.regulation || ''
@@ -892,14 +893,14 @@ export const transformerEntityToDto = (entity) => {
         dataPowerRating.rated_power.mrid = powerRating.power_rating || ''
         for (const apparentPower of entity.apparentPower) {
             if (apparentPower.mrid == powerRating.power_rating) {
-                dataPowerRating.rated_power.value = apparentPower.value || ''
+                mappingDtoUnit(dataPowerRating.rated_power, apparentPower)
             }
         }
         dataPowerRating.cooling_class = powerRating.cooling_kind || ''
         dataPowerRating.temp_rise_wind.mrid = powerRating.temp_rise_wind || ''
         for (const temperature of entity.temperature) {
             if (temperature.mrid == powerRating.temp_rise_wind) {
-                dataPowerRating.temp_rise_wind.value = temperature.value || ''
+                mappingDtoUnit(dataPowerRating.temp_rise_wind, temperature)
             }
         }
         dto.ratings.power_ratings.push(dataPowerRating);
@@ -942,7 +943,7 @@ export const transformerEntityToDto = (entity) => {
                             dataCurrentRating.prim.data.mrid = currentRating.value || ''
                             for (const currentFlow of entity.currentFlow) {
                                 if (currentFlow.mrid == currentRating.value) {
-                                    dataCurrentRating.prim.data.value = currentFlow.value || ''
+                                    mappingDtoUnit(dataCurrentRating.prim.data, currentFlow)
                                 }
                             }
                         } else if (transformerEndInfo.end_number == 2) {
@@ -950,7 +951,7 @@ export const transformerEntityToDto = (entity) => {
                             dataCurrentRating.sec.data.mrid = currentRating.value || ''
                             for (const currentFlow of entity.currentFlow) {
                                 if (currentFlow.mrid == currentRating.value) {
-                                    dataCurrentRating.sec.data.value = currentFlow.value || ''
+                                    mappingDtoUnit(dataCurrentRating.sec.data, currentFlow)
                                 }
                             }
                         } else if (transformerEndInfo.end_number == 3) {
@@ -958,7 +959,7 @@ export const transformerEntityToDto = (entity) => {
                             dataCurrentRating.tert.data.mrid = currentRating.value || ''
                             for (const currentFlow of entity.currentFlow) {
                                 if (currentFlow.mrid == currentRating.value) {
-                                    dataCurrentRating.tert.data.value = currentFlow.value || ''
+                                    mappingDtoUnit(dataCurrentRating.tert.data, currentFlow)
                                 }
                             }
                         }
@@ -973,20 +974,20 @@ export const transformerEntityToDto = (entity) => {
     dto.ratings.short_circuit.ka.mrid = entity.shortCircuitRating.short_circuit_current || ''
     for (const currentFlow of entity.currentFlow) {
         if (currentFlow.mrid == entity.shortCircuitRating.short_circuit_current) {
-            dto.ratings.short_circuit.ka.value = currentFlow.value || ''
+            mappingDtoUnit(dto.ratings.short_circuit.ka, currentFlow)
         }
     }
     dto.ratings.short_circuit.s.mrid = entity.shortCircuitRating.duration_seconds || ''
     for (const second of entity.seconds) {
         if (second.mrid == entity.shortCircuitRating.duration_seconds) {
-            dto.ratings.short_circuit.s.value = second.value || ''
+            mappingDtoUnit(dto.ratings.short_circuit.s, second)
         }
     }
 
     dto.impedances.ref_temp.mrid = entity.oldPowerTransformerInfo.impedance_temperature || ''
     for (const temperature of entity.temperature) {
         if (temperature.mrid == entity.oldPowerTransformerInfo.impedance_temperature) {
-            dto.impedances.ref_temp.value = temperature.value || ''
+            mappingDtoUnit(dto.impedances.ref_temp, temperature)
         }
     }
 
@@ -1030,7 +1031,7 @@ export const transformerEntityToDto = (entity) => {
         dataCircuitTest.short_circuit_impedances_uk.mrid = shortCircuitTest.voltage || ''
         for (const percent of entity.percent) {
             if (percent.mrid == shortCircuitTest.voltage) {
-                dataCircuitTest.short_circuit_impedances_uk.value = percent.value || ''
+                mappingDtoUnit(dataCircuitTest.short_circuit_impedances_uk, percent)
             }
         }
 
@@ -1040,7 +1041,7 @@ export const transformerEntityToDto = (entity) => {
                 dataCircuitTest.base_power.data.mrid = basePower.base_power || ''
                 for (const apparentPower of entity.apparentPower) {
                     if (apparentPower.mrid == basePower.base_power) {
-                        dataCircuitTest.base_power.data.value = apparentPower.value || ''
+                        mappingDtoUnit(dataCircuitTest.base_power.data, apparentPower)
                     }
                 }
             }
@@ -1051,7 +1052,7 @@ export const transformerEntityToDto = (entity) => {
                 dataCircuitTest.base_voltage.data.mrid = baseVoltage.nominal_voltage || ''
                 for (const voltage of entity.voltage) {
                     if (voltage.mrid == baseVoltage.nominal_voltage) {
-                        dataCircuitTest.base_voltage.data.value = voltage.value || ''
+                        mappingDtoUnit(dataCircuitTest.base_voltage.data, voltage)
                     }
                 }
             }
@@ -1060,7 +1061,7 @@ export const transformerEntityToDto = (entity) => {
         dataCircuitTest.load_losses_pk.mrid = shortCircuitTest.loss || ''
         for (const activePower of entity.activePower) {
             if (activePower.mrid == shortCircuitTest.loss) {
-                dataCircuitTest.load_losses_pk.value = activePower.value || ''
+                mappingDtoUnit(dataCircuitTest.load_losses_pk, activePower)
             }
         }
 
@@ -1106,7 +1107,7 @@ export const transformerEntityToDto = (entity) => {
             dto.impedances.zero_sequence_impedance.base_power.data.mrid = basePower.base_power || ''
             for (const apparentPower of entity.apparentPower) {
                 if (apparentPower.mrid == basePower.base_power) {
-                    dto.impedances.zero_sequence_impedance.base_power.data.value = apparentPower.value || ''
+                    mappingDtoUnit(dto.impedances.zero_sequence_impedance.base_power.data, apparentPower)
                 }
             }
         }
@@ -1117,7 +1118,7 @@ export const transformerEntityToDto = (entity) => {
             dto.impedances.zero_sequence_impedance.base_voltage.data.mrid = baseVoltage.nominal_voltage || ''
             for (const voltage of entity.voltage) {
                 if (voltage.mrid == baseVoltage.nominal_voltage) {
-                    dto.impedances.zero_sequence_impedance.base_voltage.data.value = voltage.value || ''
+                    mappingDtoUnit(dto.impedances.zero_sequence_impedance.base_voltage.data, voltage)
                 }
             }
         }
@@ -1129,7 +1130,7 @@ export const transformerEntityToDto = (entity) => {
             dto.impedances.zero_sequence_impedance.zero_percent.zero.data.mrid = zeroSequenceImpedanceTable.zero || ''
             for (const percent of entity.percent) {
                 if (percent.mrid == zeroSequenceImpedanceTable.zero) {
-                    dto.impedances.zero_sequence_impedance.zero_percent.zero.data.value = percent.value || ''
+                    mappingDtoUnit(dto.impedances.zero_sequence_impedance.zero_percent.zero.data, percent)
                 }
             }
         } else {
@@ -1140,7 +1141,7 @@ export const transformerEntityToDto = (entity) => {
                         dto.impedances.zero_sequence_impedance.zero_percent.prim.data.mrid = zeroSequenceImpedanceTable.zero || ''
                         for (const percent of entity.percent) {
                             if (percent.mrid == zeroSequenceImpedanceTable.zero) {
-                                dto.impedances.zero_sequence_impedance.zero_percent.prim.data.value = percent.value || ''
+                                mappingDtoUnit(dto.impedances.zero_sequence_impedance.zero_percent.prim.data, percent)
                             }
                         }
                     }
@@ -1150,7 +1151,7 @@ export const transformerEntityToDto = (entity) => {
                         dto.impedances.zero_sequence_impedance.zero_percent.sec.data.mrid = zeroSequenceImpedanceTable.zero || ''
                         for (const percent of entity.percent) {
                             if (percent.mrid == zeroSequenceImpedanceTable.zero) {
-                                dto.impedances.zero_sequence_impedance.zero_percent.sec_tert.data.value = percent.value || ''
+                                mappingDtoUnit(dto.impedances.zero_sequence_impedance.zero_percent.sec.data, percent)
                             }
                         }
                     }
@@ -1501,8 +1502,29 @@ export const transformerEntityToDto = (entity) => {
 const mappingUnit = (map, unitDto) => {
     if (!map || !unitDto) return;
     map.mrid = unitDto.mrid || null;
-    map.value = unitDto.value || null;
+    map.value = unitDto.value === null || unitDto.value === undefined || unitDto.value === ''
+        ? null
+        : unitDto.value;
     const unitParts = (unitDto.unit || '').split('|'); // ví dụ "k|V"
     map.multiplier = unitParts.length > 1 ? unitParts[0] : null;
     map.unit = unitParts.length > 1 ? unitParts[1] : unitParts[0] || null;
 };
+
+const legacyUnitMap = {
+    kV: UnitMultiplier.k + '|' + UnitSymbol.V,
+    MVA: UnitMultiplier.M + '|' + UnitSymbol.VA,
+    kVA: UnitMultiplier.k + '|' + UnitSymbol.VA,
+    kA: UnitMultiplier.k + '|' + UnitSymbol.A
+}
+
+const formatStoredUnit = (source, fallback = '') => {
+    if (!source) return fallback
+    if (source.multiplier && source.unit) return source.multiplier + '|' + source.unit
+    return legacyUnitMap[source.unit] || source.unit || fallback
+}
+
+const mappingDtoUnit = (unitDto, source) => {
+    if (!unitDto || !source) return
+    unitDto.value = source.value === null || source.value === undefined ? '' : source.value
+    unitDto.unit = formatStoredUnit(source, unitDto.unit)
+}

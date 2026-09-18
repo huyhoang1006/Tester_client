@@ -1,5 +1,6 @@
 import BushingAssetDto from "@/views/Dto/BushingAsset/index.js";
 import { toServerId } from '@/utils/serverId'
+import { applyServerAssetFields, buildServerAssetFields } from '@/utils/assetServerSync'
 
 const str = (val) => (val !== null && val !== undefined) ? String(val) : '';
 
@@ -101,6 +102,7 @@ export const mapServerToDto = (serverData) => {
     dto.properties.country_of_origin = assetInfo.country || assetInfo.countryName || '';
     dto.properties.apparatus_id      = assetInfo.apparatusId      || '';
     dto.properties.comment           = assetInfo.description      || '';
+    applyServerAssetFields(dto.properties, assetInfo)
 
     dto.configuration.number_of_phase = assetInfo.numberOfPhase !== null && assetInfo.numberOfPhase !== undefined
         ? String(assetInfo.numberOfPhase)
@@ -185,7 +187,8 @@ export const mapDtoToServer = (dto, ownerType) => {
             country: textT(p.country_of_origin),
             countryOfOriginId: null,
             apparatusId: textT(p.apparatus_id),
-            description: textT(p.comment)
+            description: textT(p.comment),
+            ...buildServerAssetFields(p)
         },
         bushing: {
             id: idT(p.mrid),

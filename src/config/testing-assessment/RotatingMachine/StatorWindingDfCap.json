@@ -1,0 +1,12 @@
+{
+  "testId": "a15b8258-4c5f-47e5-a587-7c6ea99f0105",
+  "testCode": "StatorWindingDfCap",
+  "testName": "Stator winding DF & CAP",
+  "testStandard": [{
+    "mrid": "fa110000-0000-4000-8000-000000000001", "code": "customized_df_cap_rotating_machine", "name": "Customized limit", "type": "customized", "standard_edition": "", "standard_number": "",
+    "columns": [{ "mrid": "f0010000-0000-4000-8000-000000000003", "code": "tan_delta_meas", "name": "Tan delta meas", "type": "analog", "unit": "%", "measurement_type": "test, assessment" }, { "mrid": "f0010000-0000-4000-8000-000000000005", "code": "delta_tan_delta", "name": "Delta Tan delta", "type": "analog", "unit": "%", "measurement_type": "test, assessment" }],
+    "assessment_rule": [{ "mrid": "fa110000-0000-4000-8000-000000000011", "standard_id": "fa110000-0000-4000-8000-000000000001", "result": "Pass", "priority": "" }, { "mrid": "fa110000-0000-4000-8000-000000000012", "standard_id": "fa110000-0000-4000-8000-000000000001", "result": "Fail", "priority": "" }],
+    "assessment_group": [{ "mrid": "fa110000-0000-4000-8000-000000000021", "rule_id": "fa110000-0000-4000-8000-000000000011", "parent_id": "", "logic": "AND", "is_default": false }, { "mrid": "fa110000-0000-4000-8000-000000000022", "rule_id": "fa110000-0000-4000-8000-000000000012", "parent_id": "", "logic": "", "is_default": true }],
+    "assessment": [{ "mrid": "fa110000-0000-4000-8000-000000000031", "group_id": "fa110000-0000-4000-8000-000000000021", "measurement_id": "f0010000-0000-4000-8000-000000000003", "operator": "≤", "threshold": "", "label": "Tan delta maximum (%)" }, { "mrid": "fa110000-0000-4000-8000-000000000032", "group_id": "fa110000-0000-4000-8000-000000000021", "measurement_id": "f0010000-0000-4000-8000-000000000005", "operator": "≤", "threshold": "", "label": "Delta Tan delta maximum (%)" }]
+  }]
+}

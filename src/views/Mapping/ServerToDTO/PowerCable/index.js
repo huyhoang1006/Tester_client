@@ -1,5 +1,11 @@
 import PowerCableDTO from "@/views/Dto/PowerCable";
 import { toServerId } from '@/utils/serverId'
+import {
+    applyServerAssetFields,
+    buildServerAssetFields,
+    fromServerOperationDate,
+    toServerOperationDate
+} from '@/utils/assetServerSync'
 
 const str = (value) => (value !== null && value !== undefined ? String(value) : '')
 
@@ -121,6 +127,11 @@ function mapCimServerToDto(data) {
     dto.properties.country_of_origin = asset.countryOfOrigin || model.countryOfOrigin || ''
     dto.properties.apparatus_id = data.name || asset.name || ''
     dto.properties.comment = data.description || asset.description || ''
+    dto.properties.operating_date_id = asset.inUseDate?.mRID || asset.inUseDate?.mrid || ''
+    dto.properties.operating_date = fromServerOperationDate(asset.inUseDate?.inUseDate)
+    dto.properties.status_id = asset.status?.mRID || asset.status?.mrid || ''
+    dto.properties.status_date_time = asset.status?.dateTime || ''
+    dto.properties.status = asset.status?.value || ''
     dto.oldCableInfoId = str(info.mRID || info.mrid)
     dto.assetInfoId = str(info.cableInfoId || neutral.mRID || neutral.mrid)
     dto.productAssetModelId = str(model.mRID || model.mrid)
@@ -273,6 +284,7 @@ export const mapServerToDto = (serverData) => {
     dto.properties.country_of_origin = assetInfo.country || ''
     dto.properties.apparatus_id = assetInfo.apparatusId || assetInfo.assetName || ''
     dto.properties.comment = assetInfo.description || ''
+    applyServerAssetFields(dto.properties, assetInfo)
 
     dto.assetInfoId = assetInfo.id ? String(assetInfo.id) : ''
     dto.psrId = assetInfo.ownerId ? String(assetInfo.ownerId) : null
@@ -411,7 +423,8 @@ export const mapDtoToServer = (dto, ownerType) => {
             country: textT(p.country_of_origin),
             countryOfOriginId: null,
             apparatusId: textT(p.apparatus_id),
-            description: textT(p.comment)
+            description: textT(p.comment),
+            ...buildServerAssetFields(p)
         },
         powerCableCore: {
             assetType: textT(p.type),
@@ -665,6 +678,15 @@ export const mapDtoToCimServer = (dto) => {
             kind: textT(p.kind) || 'Power cable',
             countryOfOrigin: textT(p.country_of_origin),
             inUseState: true,
+            inUseDate: p.operating_date ? {
+                mRID: textT(p.operating_date_id),
+                inUseDate: toServerOperationDate(p.operating_date)
+            } : null,
+            status: p.status ? {
+                mRID: textT(p.status_id),
+                dateTime: p.status_date_time || new Date().toISOString(),
+                value: textT(p.status)
+            } : null,
             mRID: powerCableMrid,
             productAssetModel: {
                 modelNumber: textT(p.manufacturer_type),

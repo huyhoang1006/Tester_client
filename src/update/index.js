@@ -122,6 +122,15 @@ export const updateDatabase = async () => {
             await runAsync('ROLLBACK', db).catch(() => {})
             console.error('[DB] Transformer PTM procedure sync failed:', procedureError)
         }
+
+        try {
+            await runAsync('BEGIN TRANSACTION', db)
+            await procedureFunc.ensureRotatingMachineProcedures(db)
+            await runAsync('COMMIT', db)
+        } catch (procedureError) {
+            await runAsync('ROLLBACK', db).catch(() => {})
+            console.error('[DB] Rotating Machine procedure sync failed:', procedureError)
+        }
     }
 
     if(!oldVersion) {

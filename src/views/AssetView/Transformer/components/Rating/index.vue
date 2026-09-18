@@ -454,7 +454,7 @@ export default {
                 rated_power: {
                     mrid: '',
                     value: '',
-                    unit: 'MVA'
+                    unit: 'M|VA'
                 },
                 cooling_class: '',
                 temp_rise_wind: {

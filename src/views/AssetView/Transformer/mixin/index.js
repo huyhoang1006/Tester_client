@@ -54,8 +54,8 @@ export default {
                 if (value !== this.$constant.THREE_WINDING) {
                     if (item.tert !== undefined) {
                         this.transformerDto.ratings.current_ratings[index].tert.mrid = ''
-                        this.transformerDto.ratings.current_ratings[index].tert.value = ''
-                        this.transformerDto.ratings.current_ratings[index].tert.unit = 'A'
+                        this.transformerDto.ratings.current_ratings[index].tert.data.value = ''
+                        this.transformerDto.ratings.current_ratings[index].tert.data.unit = 'A'
                     }
                 }
             }

@@ -1,6 +1,7 @@
 import DisconnectorDTO from '@/views/Dto/Disconnector'
 import { toServerId } from '@/utils/serverId'
 import uuid from '@/utils/uuid'
+import { applyServerAssetFields, buildServerAssetFields } from '@/utils/assetServerSync'
 
 // Tách unit từ server "kV" → "k|V", "kA" → "k|A", "V" → "V", "A" → "A"
 // Server có thể trả sẵn dạng "kV" hoặc chỉ "V"
@@ -57,6 +58,7 @@ export const mapServerToDto = (serverData) => {
     dto.properties.country_of_origin = assetInfo.country || ''
     dto.properties.apparatus_id = assetInfo.apparatusId || ''
     dto.properties.comment = assetInfo.description || ''
+    applyServerAssetFields(dto.properties, assetInfo)
     dto.config.phase = assetInfo.phase || ''
     dto.config.number_of_phase = assetInfo.numberOfPhase ?? ''
 
@@ -164,7 +166,8 @@ export const mapDtoToServer = (dto, ownerType) => {
             apparatusId: p.apparatus_id || null,
             description: p.comment || null,
             phase: dto.config?.phase || null,
-            numberOfPhase: toNumberOrNull(dto.config?.number_of_phase)
+            numberOfPhase: toNumberOrNull(dto.config?.number_of_phase),
+            ...buildServerAssetFields(p)
         },
 
         core: {

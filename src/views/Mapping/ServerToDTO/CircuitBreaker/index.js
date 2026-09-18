@@ -1,6 +1,7 @@
 /* eslint-disable */
 import CircuitBreakerDto from "@/views/Dto/CircuitBreaker";
 import uuid from "@/utils/uuid";
+import { applyServerAssetFields, buildServerAssetFields } from "@/utils/assetServerSync";
 
 // ─── Lookup maps ─────────────────────────────────────────────────────────────
 const ASSET_TYPE_MAP = {
@@ -165,6 +166,7 @@ export const mapServerToDto = (serverData) => {
         || serverData.position
         || ''
     dto.properties.comment           = serverData.description || ''
+    applyServerAssetFields(dto.properties, assetInfo)
 
     // 3. Ratings
     dto.ratings.rated_voltage_ll                     = flat(ratings.ratedVoltage,                  'k|V', ratings.ratedVoltageUnit)
@@ -707,6 +709,7 @@ export const mapDtoToServer = (dto) => {
             numberOfPhase:     numU(cb.numberOfPhases),
             productAssetModel: null,
             name: null, aliasName: null, description: null,
+            ...buildServerAssetFields(p),
         },
 
         operatingMechanism: {

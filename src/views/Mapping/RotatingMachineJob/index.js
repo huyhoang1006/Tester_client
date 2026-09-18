@@ -13,10 +13,13 @@ import DiscreteValue from "@/views/Cim/DiscreteValue";
 import ProcedureAsset from "@/views/Cim/ProcedureAsset";
 import ProcedureDataSetMeasurementValue from "@/views/Cim/ProcedureDataSetMeasurementValue";
 import rotatingMachineConditionMap from '@/config/testing-condition/RotatingMachine'
-import rotatingMachineTestMap from "@/config/testing-condition/RotatingMachine";
+import rotatingMachineTestMap from "@/config/test-definitions/RotatingMachine";
 import * as commonFunc from '@/views/JobView/Common/index.js'
 import rotatingMachineAssessmentMap from "@/config/testing-assessment/RotatingMachine";
 import TestStandard from "@/views/Cim/TestStandard";
+
+const toEntityValue = value => value === '' || value === null || value === undefined ? null : value
+const toDtoValue = value => value === null || value === undefined ? '' : value
 
 export const jobDtoToEntity = (dto) => {
     const entity = new RotatingMachineJobEntity();
@@ -102,7 +105,7 @@ export const jobDtoToEntity = (dto) => {
                     if (value.type === 'analog') {
                         const analogValue = new AnalogValue();
                         analogValue.mrid = value.mrid || null;
-                        analogValue.value = value.value || null;
+                        analogValue.value = toEntityValue(value.value);
                         analogValue.alias_name = key || null;
                         analogValue.analog = value['measurement_id'] ? value['measurement_id'] : null;
                         analogValue.procedure_dataset_id = data.mrid
@@ -114,7 +117,7 @@ export const jobDtoToEntity = (dto) => {
                     } else if (value.type === 'string') {
                         const stringValue = new StringMeaurementValue();
                         stringValue.mrid = value.mrid || null;
-                        stringValue.value = value.value || null;
+                        stringValue.value = toEntityValue(value.value);
                         stringValue.alias_name = key || null;
                         stringValue.procedure_dataset_id = data.mrid
                         stringValue.string_measurement = value['measurement_id'] ? value['measurement_id'] : null;
@@ -156,7 +159,7 @@ export const jobDtoToEntity = (dto) => {
                 if (value.type === 'analog') {
                     const analogValue = new AnalogValue();
                     analogValue.mrid = value.mrid || null;
-                    analogValue.value = value.value || null;
+                    analogValue.value = toEntityValue(value.value);
                     analogValue.alias_name = key || null;
                     analogValue.analog = value['measurement_id'] ? value['measurement_id'] : null;
                     analogValue.procedure_dataset_id = testDataCondition.mrid
@@ -168,7 +171,7 @@ export const jobDtoToEntity = (dto) => {
                 } else if (value.type === 'string') {
                     const stringValue = new StringMeaurementValue();
                     stringValue.mrid = value.mrid || null;
-                    stringValue.value = value.value || null;
+                    stringValue.value = toEntityValue(value.value);
                     stringValue.alias_name = key || null;
                     stringValue.procedure_dataset_id = testDataCondition.mrid
                     stringValue.string_measurement = value['measurement_id'] ? value['measurement_id'] : null;
@@ -180,8 +183,8 @@ export const jobDtoToEntity = (dto) => {
                 } else if (value.type === 'discrete') {
                     const discreteValue = new DiscreteValue();
                     discreteValue.mrid = value.mrid || null;
-                    discreteValue.value = value.value || null;
-                    discreteValue.vta_alias_name = value.value || null
+                    discreteValue.value = toEntityValue(value.value);
+                    discreteValue.vta_alias_name = toEntityValue(value.value)
                     discreteValue.alias_name = key || null;
                     discreteValue.procedure_dataset_id = testDataCondition.mrid
                     discreteValue.discrete = value['measurement_id'] ? value['measurement_id'] : null;
@@ -405,7 +408,7 @@ export const JobEntityToDto = (entity) => {
                     mrid: smv.mrid,
                     type: "string",
                     unit: "",
-                    value: smv.value || "",
+                    value: toDtoValue(smv.value),
                     measurement_id: smv.string_measurement || ''
                 };
             }
@@ -418,7 +421,7 @@ export const JobEntityToDto = (entity) => {
                     mrid: av.mrid,
                     type: "analog",
                     unit: "",
-                    value: av.value || "",
+                    value: toDtoValue(av.value),
                     measurement_id: av.analog || ''
                 };
             }
@@ -459,7 +462,7 @@ export const JobEntityToDto = (entity) => {
                     mrid: smv.mrid,
                     type: "string",
                     unit: "",
-                    value: smv.value || "",
+                    value: toDtoValue(smv.value),
                     measurement_id: smv.string_measurement || ''
                 };
             }
@@ -472,7 +475,7 @@ export const JobEntityToDto = (entity) => {
                     mrid: av.mrid,
                     type: "analog",
                     unit: "",
-                    value: av.value || "",
+                    value: toDtoValue(av.value),
                     measurement_id: av.analog || ''
                 };
             }
@@ -485,7 +488,7 @@ export const JobEntityToDto = (entity) => {
                     mrid: dv.mrid,
                     type: "discrete",
                     unit: "",
-                    value: dv.value || "",
+                    value: toDtoValue(dv.value),
                     measurement_id: dv.discrete || ''
                 };
             }

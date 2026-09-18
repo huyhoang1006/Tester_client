@@ -165,7 +165,7 @@ export default {
         testCode: { type: String, default: '' },
         testName: { type: String, default: '' },
         excludeWorkMrid: { type: String, default: '' },
-        currentTable: { type: Object, default: () => ({}) },
+        currentTable: { type: [Object, Array], default: () => ({}) },
         currentConditions: { type: Object, default: () => ({}) },
         excludedConditionKeys: { type: Array, default: () => [] },
         columns: { type: Array, default: () => [] },

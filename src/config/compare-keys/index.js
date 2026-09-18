@@ -205,7 +205,14 @@ const COMPARE_KEYS = {
     Bushing: {},
     Capacitor: {},
     Reactor: {},
-    RotatingMachine: {}
+    RotatingMachine: {
+        InsulationResistanceStator: ['measurement'],
+        InsulationResistanceRotor: ['measurement'],
+        DCWindingResistanceStator: ['name'],
+        DCWindingResistanceRotor: ['name'],
+        StatorWindingDfCap: ['measurement', 'test_voltage'],
+        WithstandVoltage: ['measurement']
+    }
 }
 
 /**

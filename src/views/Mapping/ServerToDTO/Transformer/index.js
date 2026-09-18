@@ -1,6 +1,7 @@
 /* eslint-disable */
 import TransformerDataDto from '@/views/Dto/Transformer'
 import { toServerId } from '@/utils/serverId'
+import { applyServerAssetFields, buildServerAssetFields } from '@/utils/assetServerSync'
 import uuid from '@/utils/uuid'
 import {
     buildClientVectorGroupText,
@@ -193,6 +194,7 @@ export const mapServerToDto = (serverData) => {
     dto.properties.country_of_origin = assetInfo.country || ''
     dto.properties.apparatus_id = assetInfo.apparatusId || ''
     dto.properties.comment = assetInfo.description || ''
+    applyServerAssetFields(dto.properties, assetInfo)
 
     // ─── 3. Winding configuration ─────────────────────────────────────────────
     dto.winding_configuration.phases = PHASES_MAP[tr.phases] || str(tr.numberOfPhase || assetInfo.numberOfPhase)
@@ -616,7 +618,8 @@ export const mapDtoToServer = (dto, ownerType) => {
         apparatusId: p.apparatus_id || null,
         phase: wc.phase || null,
         numberOfPhase: numT(wc.phases),
-        description: p.comment || null
+        description: p.comment || null,
+        ...buildServerAssetFields(p)
     }
 
     // ─── transformer core ──────────────────────────────────────────────────────

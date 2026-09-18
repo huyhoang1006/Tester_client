@@ -1,5 +1,6 @@
 import VoltageTransformerDto from "@/views/Dto/VoltageTransformer";
 import uuid from "@/utils/uuid";
+import { applyServerAssetFields, buildServerAssetFields } from "@/utils/assetServerSync";
 
 // ─── Lookup maps ─────────────────────────────────────────────────────────────
 
@@ -95,6 +96,7 @@ export const mapServerToDto = (serverData) => {
     dto.properties.manufacturing_year = info.manufacturingYear
         ? String(info.manufacturingYear)
         : '';
+    applyServerAssetFields(dto.properties, info)
     dto.config.phase = info.phase || '';
     dto.config.number_of_phase = info.numberOfPhase ?? '';
 
@@ -204,6 +206,7 @@ export const mapDtoToServer = (dto) => {
                 country_of_origin: dto.properties?.country_of_origin || null,
                 apparatus_id:      dto.properties?.apparatus_id      || null,
                 comment:           dto.properties?.comment           || null,
+                ...buildServerAssetFields(dto.properties),
             },
 
             ratings: {

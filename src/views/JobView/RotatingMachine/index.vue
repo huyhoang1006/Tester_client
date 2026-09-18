@@ -43,7 +43,9 @@
                                     :compare-columns="compareColumnsOf(item.testTypeCode)"
                                     compare-asset-kind="RotatingMachine"
                                     :compare-asset-mrid="rotatingMachineJobDto.properties.asset_id"
-                                    :compare-exclude-work-mrid="rotatingMachineJobDto.properties.mrid">
+                                    :compare-exclude-work-mrid="rotatingMachineJobDto.properties.mrid"
+                                    :show-oil-and-winding-temperatures="true"
+                                    :winding-temperature-label="temperatureLabel(item.testTypeCode)">
                                 </test-information>
                                 <component
                                     :is="item.testTypeCode" 
@@ -51,6 +53,7 @@
                                     :asset="assetData"
                                     :testCondition="item.testCondition"
                                     :testAssessment="item.testAssessment"
+                                    :test-type-code="item.testTypeCode"
                                     :compare-open="!!compareOpen[item.testTypeCode + index]"
                                     @toggle-compare="toggleCompare(item.testTypeCode + index)">
                                 </component>
@@ -71,6 +74,7 @@ import SelectTest from './components/SelectTest'
 import testInformation from '@/views/Common/TestInformation.vue'
 import compareTestMap from '@/config/test-definitions/RotatingMachine'
 import testingEquipment from './components/TestingEquipment/index.vue'
+import RotatingMachineTest from './components/RotatingMachineTest.vue'
 
 export default {
     name: 'JobViewRotatingMachine',
@@ -79,6 +83,12 @@ export default {
         SelectTest,
         testInformation,
         testingEquipment,
+        InsulationResistanceStator: RotatingMachineTest,
+        InsulationResistanceRotor: RotatingMachineTest,
+        DCWindingResistanceStator: RotatingMachineTest,
+        DCWindingResistanceRotor: RotatingMachineTest,
+        StatorWindingDfCap: RotatingMachineTest,
+        WithstandVoltage: RotatingMachineTest,
     },
     props: {
         
@@ -117,6 +127,11 @@ export default {
         },
         toggleCompare(key) {
             this.$set(this.compareOpen, key, !this.compareOpen[key])
+        },
+        temperatureLabel(testTypeCode) {
+            return testTypeCode === 'InsulationResistanceStator' || testTypeCode === 'InsulationResistanceRotor'
+                ? 'Test object temperature'
+                : 'Winding temperature'
         },
         updateAttachmentOverView(attachment) {
             this.attachmentData = attachment

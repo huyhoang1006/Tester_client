@@ -1,0 +1,12 @@
+{
+  "testId": "a15b8258-4c5f-47e5-a587-7c6ea99f0106",
+  "testCode": "WithstandVoltage",
+  "testName": "Withstand voltage test",
+  "testStandard": [{
+    "mrid": "ab110000-0000-4000-8000-000000000001", "code": "customized_withstand_rotating_machine", "name": "Customized limit", "type": "customized", "standard_edition": "", "standard_number": "",
+    "columns": [{ "mrid": "a1100000-0000-4000-8000-000000000002", "code": "test_voltage", "name": "Test voltage", "type": "analog", "unit": "k|V", "measurement_type": "test, assessment" }, { "mrid": "a1100000-0000-4000-8000-000000000004", "code": "test_duration", "name": "Test duration", "type": "analog", "unit": "min", "measurement_type": "test, assessment" }],
+    "assessment_rule": [{ "mrid": "ab110000-0000-4000-8000-000000000011", "standard_id": "ab110000-0000-4000-8000-000000000001", "result": "Pass", "priority": "" }, { "mrid": "ab110000-0000-4000-8000-000000000012", "standard_id": "ab110000-0000-4000-8000-000000000001", "result": "Fail", "priority": "" }],
+    "assessment_group": [{ "mrid": "ab110000-0000-4000-8000-000000000021", "rule_id": "ab110000-0000-4000-8000-000000000011", "parent_id": "", "logic": "AND", "is_default": false }, { "mrid": "ab110000-0000-4000-8000-000000000022", "rule_id": "ab110000-0000-4000-8000-000000000012", "parent_id": "", "logic": "", "is_default": true }],
+    "assessment": [{ "mrid": "ab110000-0000-4000-8000-000000000031", "group_id": "ab110000-0000-4000-8000-000000000021", "measurement_id": "a1100000-0000-4000-8000-000000000002", "operator": "≥", "threshold": "", "label": "Test voltage minimum (kV)" }, { "mrid": "ab110000-0000-4000-8000-000000000032", "group_id": "ab110000-0000-4000-8000-000000000021", "measurement_id": "a1100000-0000-4000-8000-000000000004", "operator": "≥", "threshold": "", "label": "Test duration minimum (minute)" }]
+  }]
+}

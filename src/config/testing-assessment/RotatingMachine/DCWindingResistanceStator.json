@@ -1,0 +1,12 @@
+{
+  "testId": "a15b8258-4c5f-47e5-a587-7c6ea99f0103",
+  "testCode": "DCWindingResistanceStator",
+  "testName": "DC Winding resistance of Stator",
+  "testStandard": [{
+    "mrid": "da110000-0000-4000-8000-000000000001", "code": "customized_winding_stator_rotating_machine", "name": "Customized limit", "type": "customized", "standard_edition": "", "standard_number": "",
+    "columns": [{ "mrid": "d0010000-0000-4000-8000-000000000006", "code": "r_dev", "name": "R dev", "type": "analog", "unit": "%", "measurement_type": "test, assessment" }, { "mrid": "d0010000-0000-4000-8000-000000000007", "code": "unbalanced", "name": "Unbalanced", "type": "analog", "unit": "%", "measurement_type": "test, assessment" }],
+    "assessment_rule": [{ "mrid": "da110000-0000-4000-8000-000000000011", "standard_id": "da110000-0000-4000-8000-000000000001", "result": "Pass", "priority": "" }, { "mrid": "da110000-0000-4000-8000-000000000012", "standard_id": "da110000-0000-4000-8000-000000000001", "result": "Fail", "priority": "" }],
+    "assessment_group": [{ "mrid": "da110000-0000-4000-8000-000000000021", "rule_id": "da110000-0000-4000-8000-000000000011", "parent_id": "", "logic": "AND", "is_default": false }, { "mrid": "da110000-0000-4000-8000-000000000022", "rule_id": "da110000-0000-4000-8000-000000000012", "parent_id": "", "logic": "", "is_default": true }],
+    "assessment": [{ "mrid": "da110000-0000-4000-8000-000000000031", "group_id": "da110000-0000-4000-8000-000000000021", "measurement_id": "d0010000-0000-4000-8000-000000000006", "operator": "≤", "threshold": "", "label": "R dev maximum (%)" }, { "mrid": "da110000-0000-4000-8000-000000000032", "group_id": "da110000-0000-4000-8000-000000000021", "measurement_id": "d0010000-0000-4000-8000-000000000007", "operator": "≤", "threshold": "", "label": "Unbalanced maximum (%)" }]
+  }]
+}

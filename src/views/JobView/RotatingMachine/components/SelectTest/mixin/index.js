@@ -3,107 +3,47 @@ import rotatingMachineTestMap from '@/config/test-definitions/RotatingMachine'
 import rotatingMachineConditionMap from '@/config/testing-condition/RotatingMachine'
 import rotatingMachineAssessmentMap from '@/config/testing-assessment/RotatingMachine'
 import * as common from '../../../../Common/index.js'
+
+const buildDefaultRows = (definition, rowTemplate) => {
+    const defaults = definition.defaultRows || [{}]
+    return defaults.map(values => {
+        const row = JSON.parse(JSON.stringify(rowTemplate))
+        Object.keys(values).forEach(key => {
+            if (row[key]) row[key].value = values[key]
+        })
+        return row
+    })
+}
+
 export default {
     methods: {
-        async initTest(testTypeCode, assetData) {
-            let data = null
-            switch (testTypeCode) {
-                case 'InsulationResistance':
-                    data = this.initInsulationResistance(testTypeCode)
-                    break
-                case 'GeneralInspection':
-                    data = await this.initGeneralInspection(testTypeCode)
-                    break
-                case 'LeakageCurrent':
-                    data = await this.initLeakageCurrent(assetData, testTypeCode)
-                    break
-                case 'PowerFrequency':
-                    data = await this.initPowerFrequency(assetData, testTypeCode)
-                    break
+        async initTest(testTypeCode) {
+            const definition = rotatingMachineTestMap[testTypeCode]
+            if (!definition) {
+                throw new Error(`Unsupported Rotating Machine test: ${testTypeCode}`)
             }
-            common.markInitialTestValues(data && data.table)
-            return data
-        },
-        async initInsulationResistance(testTypeCode) {
-            const rowDataExample = common.buildEmptyTestRow(rotatingMachineTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(rotatingMachineConditionMap[testTypeCode].columns || [])
-            const rowDataExampleAssessment = common.buildEmptyTestAssessment(rotatingMachineAssessmentMap[testTypeCode].columns || [])
-            const row1 = JSON.parse(JSON.stringify(rowDataExample))
-            row1.measurement.value = 'Phase A - B'
-            const row2 = JSON.parse(JSON.stringify(rowDataExample))
-            row2.measurement.value = 'Phase B - C'
-            const row3 = JSON.parse(JSON.stringify(rowDataExample))
-            row3.measurement.value = 'Phase C - A'
-            const row4 = JSON.parse(JSON.stringify(rowDataExample))
-            row4.measurement.value = 'Phase - GND'
-            let table = [
-                row1,
-                row2,
-                row3,
-                row4
-            ]
+
+            const conditionDefinition = rotatingMachineConditionMap[testTypeCode] || { columns: [] }
+            const assessmentDefinition = rotatingMachineAssessmentMap[testTypeCode] || { testStandard: [] }
+            const rowDataExample = common.buildEmptyTestRow(definition.columns || [])
+            const rowDataExampleCondition = common.buildEmptyTestCondition(conditionDefinition.columns || [])
+            const rowDataAssessment = common.buildEmptyTestAssessment(assessmentDefinition.testStandard || [])
+
+            if (testTypeCode === 'StatorWindingDfCap' && rowDataExampleCondition.step) {
+                rowDataExampleCondition.step.value = '0.2'
+            }
+            if (rowDataExampleCondition.temperature_correction) {
+                rowDataExampleCondition.temperature_correction.value = 'false'
+            }
+
+            const table = testTypeCode === 'StatorWindingDfCap'
+                ? []
+                : buildDefaultRows(definition, rowDataExample)
+
+            common.markInitialTestValues(table)
             return {
                 rowDataExampleCondition,
-                rowDataExampleAssessment,
-                table,
-            }
-        },
-        async initLeakageCurrent(assetData, testTypeCode) {
-            let units = assetData.unit_count || 0
-            let phase = ["A", "B", "C"]
-            let table = []
-            const rowDataExample = common.buildEmptyTestRow(rotatingMachineTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(rotatingMachineConditionMap[testTypeCode].columns || [])
-            const rowDataExampleAssessment = common.buildEmptyTestAssessment(rotatingMachineAssessmentMap[testTypeCode].columns || [])
-            for (let i in phase) {
-                for (let j = 1; j <= units; j++) {
-                    let data = JSON.parse(JSON.stringify(rowDataExample))
-                    data.phase.value = phase[i]
-                    data.unit_no.value = j
-                    table.push(data)
-                }
-            }
-            return {
-                rowDataExampleCondition,
-                rowDataExampleAssessment,
-                table
-            }
-        },
-        async initPowerFrequency(assetData, testTypeCode) {
-            let units = assetData.unit_count || 0
-            let phase = ["A", "B", "C"]
-            let table = []
-            const rowDataExample = common.buildEmptyTestRow(rotatingMachineTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(rotatingMachineConditionMap[testTypeCode].columns || [])
-            const rowDataExampleAssessment = common.buildEmptyTestAssessment(rotatingMachineAssessmentMap[testTypeCode].columns || [])
-            for (let i in phase) {
-                for (let j = 1; j <= units; j++) {
-                    let data = JSON.parse(JSON.stringify(rowDataExample))
-                    data.phase.value = phase[i]
-                    data.unit_no.value = j
-                    table.push(data)
-                }
-            }
-            return {
-                rowDataExampleCondition,
-                rowDataExampleAssessment,
-                table
-            }
-        },
-        async initGeneralInspection(testTypeCode) {
-            let table = []
-            const rowDataExample = common.buildEmptyTestRow(rotatingMachineTestMap[testTypeCode].columns)
-            const rowDataExampleCondition = common.buildEmptyTestCondition(rotatingMachineConditionMap[testTypeCode].columns || [])
-            const rowDataExampleAssessment = common.buildEmptyTestAssessment(rotatingMachineAssessmentMap[testTypeCode].columns || [])
-            const data = ['Nameplate', 'Installation check', 'Grounding check', 'Discharge counter check']
-            data.forEach(element => {
-                const rowData = JSON.parse(JSON.stringify(rowDataExample))
-                rowData.item.value = element
-                table.push(rowData)
-            })
-            return {
-                rowDataExampleCondition,
-                rowDataExampleAssessment,
+                rowDataAssessment,
                 table
             }
         }

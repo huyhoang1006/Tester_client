@@ -14,7 +14,7 @@ class RatingsDto {
             ka: {
                 mrid: '',
                 value: '',
-                unit: 'kA'
+                unit: 'k|A'
             },
             s: {
                 mrid: '',

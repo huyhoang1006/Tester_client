@@ -31,7 +31,7 @@
                                 </td>
                             </tr>
                             <tr v-if="showOilAndWindingTemperatures && conditions.winding_temp">
-                                <td class="condition-head">Winding temperature</td>
+                                <td class="condition-head">{{ windingTemperatureLabel }}</td>
                                 <td>
                                     <el-input size="mini" type="text" number="positive"
                                         v-model="conditions.winding_temp.value">
@@ -159,7 +159,7 @@ export default {
         // không truyền gì thì layout giữ nguyên như cũ.
         showCompare: { type: Boolean, default: false },
         compareTestCode: { type: String, default: '' },
-        compareCurrentTable: { type: Object, default: () => ({}) },
+        compareCurrentTable: { type: [Object, Array], default: () => ({}) },
         compareColumns: { type: Array, default: () => [] },
         // Lấy thẳng từ DTO của job đang mở: properties.asset_id và properties.mrid.
         // Suy từ assetData không đáng tin — job hiện tại từng lọt vào danh sách tham chiếu.
@@ -167,7 +167,8 @@ export default {
         compareExcludeWorkMrid: { type: String, default: '' },
         // Loại thiết bị, để panel tra cột mốc trong config/compare-keys
         compareAssetKind: { type: String, default: '' },
-        showOilAndWindingTemperatures: { type: Boolean, default: false }
+        showOilAndWindingTemperatures: { type: Boolean, default: false },
+        windingTemperatureLabel: { type: String, default: 'Winding temperature' }
     },
     data() {
         return {

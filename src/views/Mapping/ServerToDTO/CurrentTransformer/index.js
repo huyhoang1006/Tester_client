@@ -1,6 +1,7 @@
 import CurrentTransformerDto from "@/views/Dto/CurrentTransformer";
 import FullTapDto from "@/views/Dto/CurrentTransformer/CTConfiguration/FullTapDto";
 import uuid from "@/utils/uuid";
+import { applyServerAssetFields, buildServerAssetFields } from "@/utils/assetServerSync";
 
 // ─── Download maps (server → client) ─────────────────────────────────────────
 
@@ -249,6 +250,7 @@ export const mapServerToDto = (serverData) => {
     dto.properties.manufacturing_year = assetInfo.manufacturingYear
         ? String(assetInfo.manufacturingYear)
         : ''
+    applyServerAssetFields(dto.properties, assetInfo)
     dto.config.phase = assetInfo.phase || ''
     dto.config.number_of_phase = assetInfo.numberOfPhase ?? ''
 
@@ -500,6 +502,7 @@ export const mapDtoToServer = (dto, ownerType) => {
                 country_of_origin: p.country_of_origin || null,
                 apparatus_id:      p.apparatus_id || null,
                 comment:           p.comment || null,
+                ...buildServerAssetFields(p),
                 phase:             dto.config?.phase || null,
                 numberOfPhase:     toNumberOrNull(dto.config?.number_of_phase),
             },
@@ -630,6 +633,7 @@ export const mapDtoToServer = (dto, ownerType) => {
                 country_of_origin: dto.properties?.country_of_origin || null,
                 apparatus_id:      dto.properties?.apparatus_id      || null,
                 comment:           dto.properties?.comment           || null,
+                ...buildServerAssetFields(dto.properties),
                 phase:             dto.config?.phase                 || null,
                 numberOfPhase:     toNumberOrNull(dto.config?.number_of_phase),
             },
