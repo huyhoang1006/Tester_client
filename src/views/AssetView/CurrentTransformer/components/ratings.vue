@@ -34,7 +34,8 @@
                                             <el-option label="50Hz" value="50"></el-option>
                                             <el-option label="16.7Hz" value="16.7"></el-option>
                                         </el-select>
-                                        <el-input class="form-control" v-model="ratingsData.rated_frequency_custom"
+                                        <el-input class="form-control" type="text" number="positive"
+                                            v-model="ratingsData.rated_frequency_custom"
                                             :disabled="ratingsData.rated_frequency.value !== 'Custom'">
                                             <template slot="append">Hz</template>
                                         </el-input>
@@ -81,7 +82,8 @@
                                     </el-input>
                                 </el-form-item>
                                 <el-form-item label="U lightning (peak)">
-                                    <el-input type="text" number="positive" v-model="ratingsData.u_lightning_peak.value">
+                                    <el-input type="text" number="positive"
+                                        v-model="ratingsData.u_lightning_peak.value">
                                         <template slot="append">V</template>
                                     </el-input>
                                 </el-form-item>
@@ -135,7 +137,8 @@
                         <el-row>
                             <el-col :xs="24" :sm="16" :md="12" :lg="8">
                                 <el-form-item label="System voltage">
-                                    <el-input type="text" number="positive" style="width: 100%" v-model="ratingsData.system_voltage.value">
+                                    <el-input type="text" number="positive" style="width: 100%"
+                                        v-model="ratingsData.system_voltage.value">
                                         <template slot="append">V</template>
                                     </el-input>
                                 </el-form-item>
@@ -154,7 +157,8 @@
                         <el-row>
                             <el-col :xs="24" :md="12" :lg="8">
                                 <el-form-item label="Rated insulation level (BIL)">
-                                    <el-input type="text" number="positive" style="width: 100%" v-model="ratingsData.bil.value">
+                                    <el-input type="text" number="positive" style="width: 100%"
+                                        v-model="ratingsData.bil.value">
                                         <template slot="append">V</template>
                                     </el-input>
                                 </el-form-item>
@@ -176,7 +180,7 @@
                             <el-col :xs="1" :sm="1" :md="1" :lg="1"
                                 style="text-align: center; font-size: 12px; white-space: nowrap;">at</el-col>
                             <el-col :xs="13" :sm="12" :md="7" :lg="5">
-                                <el-input style="width: 100%" size="mini"
+                                <el-input style="width: 100%" size="mini" type="text" number="positive"
                                     v-model="ratingsData.rating_factor_temp.value">
                                     <template slot="append">°C</template>
                                 </el-input>
