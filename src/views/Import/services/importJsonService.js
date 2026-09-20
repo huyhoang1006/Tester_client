@@ -474,9 +474,11 @@ const regenBranchIds = (branch, parentNode, uuid) => {
             if (d.bay) d.bay.mrid = m
             // cha có thể là voltageLevel hoặc substation
             if (parentNode && parentNode.mode === 'voltageLevel') {
-                d.voltage_level = pmrid; d.substation = null
+                d.voltage_level = pmrid; d.substation = null; d.power_plant = null
+            } else if (parentNode && parentNode.mode === 'powerPlant') {
+                d.power_plant = pmrid; d.substation = null; d.voltage_level = null
             } else {
-                d.substation = pmrid; d.voltage_level = null
+                d.substation = pmrid; d.power_plant = null; d.voltage_level = null
             }
             break
         }

@@ -61,6 +61,8 @@ import TestStandard from "@/views/Cim/TestStandard";
 
 export const jobDtoToEntity = (dto) => {
     const entity = new CircuitBreakerJobEntity()
+    entity.cbMotorCurrentPoints = dto.cbMotorCurrentPoints || {}
+    entity.cbTimingTraces = dto.cbTimingTraces || {}
 
     //job properties
     entity.oldWork.mrid = dto.properties.mrid || null
@@ -260,6 +262,8 @@ export const jobDtoToEntity = (dto) => {
 
 export const JobEntityToDto = (entity) => {
     const dto = new CircuitBreakerJobDto()
+    dto.cbMotorCurrentPoints = entity.cbMotorCurrentPoints || {}
+    dto.cbTimingTraces = entity.cbTimingTraces || {}
     //job properties
     dto.properties.mrid = entity.oldWork.mrid || ''
     dto.properties.name = entity.oldWork.name || ''

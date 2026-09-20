@@ -25,6 +25,8 @@ class CurrentTransformerJobDto {
         this.attachment = new Attachment();
         this.currentTransformerTestingEquipmentTestType = [];
         this.testStandardId = '';    
+        this.ctExcitationPoints = {};
+        this.ctExcitationKneePoints = {};
     }
 }
 

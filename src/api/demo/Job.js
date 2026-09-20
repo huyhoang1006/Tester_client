@@ -19,6 +19,9 @@ export const JOB_KIND_BY_ASSET = {
     'Circuit breaker':      'cb',
     'Disconnector':         'dc',
     'Surge arrester':       'sa',
+    'Rotating machine':     'rm',
+    'Power cable':          'pc',
+    'Bushing':              'bushing',
 }
 
 /**

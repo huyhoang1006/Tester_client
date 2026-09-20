@@ -101,6 +101,12 @@ export default {
                     confirmAndRun('Disconnector job', this.processUploadDisconnectorJob)
                 } else if (node.job === 'Transformer') {
                     confirmAndRun('Transformer job', this.processUploadTransformerJob)
+                } else if (node.job === 'Rotating machine') {
+                    confirmAndRun('Rotating machine job', this.processUploadRotatingMachineJob)
+                } else if (node.job === 'Power cable') {
+                    confirmAndRun('Power cable job', this.processUploadPowerCableJob)
+                } else if (node.job === 'Bushing') {
+                    confirmAndRun('Bushing job', this.processUploadBushingJob)
                 }
             } else {
                 this.$message.warning('TYPE NOT SUPPORTED FOR UPLOAD')
@@ -413,6 +419,12 @@ export default {
                     return await this.processUploadDisconnectorJob(node)
                 } else if (node.job === 'Transformer') {
                     return await this.processUploadTransformerJob(node)
+                } else if (node.job === 'Rotating machine') {
+                    return await this.processUploadRotatingMachineJob(node)
+                } else if (node.job === 'Power cable') {
+                    return await this.processUploadPowerCableJob(node)
+                } else if (node.job === 'Bushing') {
+                    return await this.processUploadBushingJob(node)
                 }
             }
             return undefined

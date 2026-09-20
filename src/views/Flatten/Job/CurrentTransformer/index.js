@@ -19,6 +19,8 @@ class CurrentTransformerJobEntity {
         this.assessment_group = []
         this.assessment_rule = []
         this.standardCustomized = []
+        this.ctExcitationPoints = {}
+        this.ctExcitationKneePoints = {}
     }
 }
 

@@ -71,14 +71,14 @@ export const insertBayEntity = async (entity) => {
             await insertBayTransaction(entity, db);
             await runAsync('COMMIT');
             const auditResult = await writeBaySaveLog(beforeEntity, entity)
-            return { success: true, data: entity, changed: auditResult.changed, message: 'Voltage level entity inserted successfully' };
+            return { success: true, data: entity, changed: auditResult.changed, message: 'Bay entity inserted successfully' };
         } else {
-            return { success: false, message: 'Error retrieving voltage entity, id is required'};
+            return { success: false, message: 'Error saving bay entity, id is required'};
         }
     } catch (error) {
-        console.error('Error retrieving voltage entity:', error);
+        console.error('Error saving bay entity:', error);
         await rollbackQuietly(runAsync, error);
-        return { success: false, error, message: 'Error retrieving voltage entity'};
+        return { success: false, error, message: 'Error saving bay entity'};
     }
 }
 

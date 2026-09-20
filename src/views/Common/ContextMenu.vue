@@ -10,6 +10,9 @@
                 <li @click="addSubs">
                     <icon class="menu-tree-icon" size="16px" folderType="location"></icon> Add substation
                 </li>
+                <li v-if="isClient" @click="addConfiguredSubstationFromRoot">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Create from configuration
+                </li>
                 <li class="has-submenu">
                     <i class="fa-solid fa-industry"></i> Add Power Plant
                     <ul class="submenu">
@@ -26,6 +29,9 @@
                 </li>
                 <li v-if="canTreeCrud && this.selectedNode && this.selectedNode.mode == 'organisation'" @click="addSubsInTree">
                     <icon class="menu-tree-icon" size="16px" folderType="location"></icon> Add substation
+                </li>
+                <li v-if="isClient && this.selectedNode && this.selectedNode.mode == 'organisation'" @click="addConfiguredSubstation">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Create from configuration
                 </li>
                 <li v-if="canTreeCrud && this.selectedNode && this.selectedNode.mode == 'organisation'" class="has-submenu">
                     <i class="fa-solid fa-industry"></i> Add Power Plant
@@ -279,6 +285,19 @@ export default {
         addSubsInTree() {
             console.log("tree", this.selectedNode)
             this.$emit("show-addSubsInTree", this.selectedNode)
+            this.closeContextMenu()
+        },
+        addConfiguredSubstationFromRoot() {
+            this.$emit('show-addConfiguredSubstation', {
+                id: this.organisationId,
+                mrid: this.organisationId,
+                mode: 'organisation',
+                name: 'Root'
+            })
+            this.closeContextMenu()
+        },
+        addConfiguredSubstation() {
+            this.$emit('show-addConfiguredSubstation', this.selectedNode)
             this.closeContextMenu()
         },
         selectPowerPlantType(plantType) {

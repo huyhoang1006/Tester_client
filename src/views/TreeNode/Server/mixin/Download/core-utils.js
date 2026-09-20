@@ -17,8 +17,11 @@ import { getBushingChain, downloadBushingChain } from './bushing.js'
 import {
     getTransformerJobChain, getVoltageTransformerJobChain, getCurrentTransformerJobChain,
     getCircuitBreakerJobChain, getDisconnectorJobChain, getSurgeArresterJobChain,
+    getRotatingMachineJobChain,
+    getPowerCableJobChain, getBushingJobChain,
     downloadTransformerJobChain, downloadVoltageTransformerJobChain, downloadCurrentTransformerJobChain,
-    downloadCircuitBreakerJobChain, downloadDisconnectorJobChain, downloadSurgeArresterJobChain
+    downloadCircuitBreakerJobChain, downloadDisconnectorJobChain, downloadSurgeArresterJobChain,
+    downloadRotatingMachineJobChain, downloadPowerCableJobChain, downloadBushingJobChain
 } from './job.js'
 
 // Job phân nhánh theo `job` (nhãn loại THIẾT BỊ), giống hệt cách asset phân nhánh
@@ -30,6 +33,9 @@ const JOB_FETCH_STRATEGIES = {
     'Circuit breaker':     getCircuitBreakerJobChain,
     'Disconnector':        getDisconnectorJobChain,
     'Surge arrester':      getSurgeArresterJobChain,
+    'Rotating machine':    getRotatingMachineJobChain,
+    'Power cable':         getPowerCableJobChain,
+    'Bushing':             getBushingJobChain,
 }
 
 const JOB_DOWNLOAD_STRATEGIES = {
@@ -39,6 +45,9 @@ const JOB_DOWNLOAD_STRATEGIES = {
     'Circuit breaker':     downloadCircuitBreakerJobChain,
     'Disconnector':        downloadDisconnectorJobChain,
     'Surge arrester':      downloadSurgeArresterJobChain,
+    'Rotating machine':    downloadRotatingMachineJobChain,
+    'Power cable':         downloadPowerCableJobChain,
+    'Bushing':             downloadBushingJobChain,
 }
 
 // Cơ chế gọi API an toàn, chống rớt mạng

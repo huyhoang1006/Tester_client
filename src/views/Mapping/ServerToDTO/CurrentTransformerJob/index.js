@@ -289,6 +289,8 @@ export const mapDtoToServer = (dto) => {
         // Khi có API upload file: gửi thêm list file (attachmentData) tương tự.
         // Attachment trong từng test/condition cũng sẽ theo cùng format này.
         attachmentId: dto.attachmentId || null,
+        ctExcitationPoints: dto.ctExcitationPoints || {},
+        ctExcitationKneePoints: dto.ctExcitationKneePoints || {},
     }
 }
 
@@ -394,5 +396,7 @@ export const mapServerToDto = (server) => {
         procedureAsset: server.procedureAsset || [],
         attachmentId:   server.attachmentId || null,
         attachment:     server.attachment || null,
+        ctExcitationPoints: server.ctExcitationPoints || {},
+        ctExcitationKneePoints: server.ctExcitationKneePoints || {},
     }
 }

@@ -10,6 +10,7 @@
       <contextMenu ref="contextSubstation" @show-addSubs="$emit('show-addSubs', $event)"></contextMenu>
     </div> -->
 <contextMenu ref="contextSubstation" @show-addSubs="$emit('show-addSubs', $event)"
+  @show-addConfiguredSubstation="$emit('show-addConfiguredSubstation', $event)"
   @show-addPowerPlant="$emit('show-addPowerPlant', $event)"></contextMenu>
 
     <div class="child-nav" >
@@ -34,6 +35,7 @@
         @export-json-only-node="$emit('export-json-only-node', $event)"
         @export-json-full-tree="$emit('export-json-full-tree', $event)"
         @show-addSubsInTree="$emit('show-addSubsInTree', $event)"
+        @show-addConfiguredSubstation="$emit('show-addConfiguredSubstation', $event)"
         @show-addPowerPlant="$emit('show-addPowerPlant', $event)"
         @show-addOrganisation="$emit('show-addOrganisation', $event)"
         @show-addVoltageLevel="$emit('show-addVoltageLevel', $event)"

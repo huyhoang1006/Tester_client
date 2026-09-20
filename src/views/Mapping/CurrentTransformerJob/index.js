@@ -43,6 +43,9 @@ export const jobDtoToEntity = (dto) => {
     try {
         const entity = new CurrentTransformerJobEntity();
 
+        entity.ctExcitationPoints = dto.ctExcitationPoints || {};
+        entity.ctExcitationKneePoints = dto.ctExcitationKneePoints || {};
+
 
         //job properties
 
@@ -326,6 +329,8 @@ export const jobDtoToEntity = (dto) => {
 
 export const JobEntityToDto = (entity) => {
     const dto = new CurrentTransformerJobDto();
+    dto.ctExcitationPoints = entity.ctExcitationPoints || {};
+    dto.ctExcitationKneePoints = entity.ctExcitationKneePoints || {};
     //job properties
     dto.properties.mrid = entity.oldWork.mrid || '';
     dto.properties.name = entity.oldWork.name || '';

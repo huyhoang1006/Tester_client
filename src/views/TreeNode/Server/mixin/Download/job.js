@@ -43,6 +43,9 @@ import * as circuitBreakerJobAPI from '@/api/demo/CircuitBreakerJob.js'
 import * as surgeArresterJobAPI from '@/api/demo/SurgeArresterJob.js'
 import * as disconnectorJobAPI from '@/api/demo/DisconnectorJob.js'
 import * as transformerJobAPI from '@/api/demo/TransformerJob.js'
+import * as rotatingMachineJobAPI from '@/api/demo/RotatingMachineJob.js'
+import * as powerCableJobAPI from '@/api/demo/PowerCableJob.js'
+import * as bushingJobAPI from '@/api/demo/BushingJob.js'
 
 import * as voltageTransformerJobMapper from '@/views/Mapping/VoltageTransformerJob/index.js'
 import * as currentTransformerJobMapper from '@/views/Mapping/CurrentTransformerJob/index.js'
@@ -50,6 +53,9 @@ import * as circuitBreakerJobMapper from '@/views/Mapping/CircuitBreakerJob/inde
 import * as surgeArresterJobMapper from '@/views/Mapping/SurgerArresterJob/index.js'
 import * as disconnectorJobMapper from '@/views/Mapping/DisconnectorJob/index.js'
 import * as transformerJobMapper from '@/views/Mapping/TransformerJob/index.js'
+import * as rotatingMachineJobMapper from '@/views/Mapping/RotatingMachineJob/index.js'
+import * as powerCableJobMapper from '@/views/Mapping/PowerCableJob/index.js'
+import * as bushingJobMapper from '@/views/Mapping/BushingJob/index.js'
 
 import * as voltageTransformerJobServerMapper from '@/views/Mapping/ServerToDTO/VoltageTransformerJob/index.js'
 import * as currentTransformerJobServerMapper from '@/views/Mapping/ServerToDTO/CurrentTransformerJob/index.js'
@@ -57,6 +63,9 @@ import * as circuitBreakerJobServerMapper from '@/views/Mapping/ServerToDTO/Circ
 import * as surgeArresterJobServerMapper from '@/views/Mapping/ServerToDTO/SurgeArresterJob/index.js'
 import * as disconnectorJobServerMapper from '@/views/Mapping/ServerToDTO/DisconnectorJob/index.js'
 import * as transformerJobServerMapper from '@/views/Mapping/ServerToDTO/TransformerJob/index.js'
+import * as rotatingMachineJobServerMapper from '@/views/Mapping/ServerToDTO/RotatingMachineJob/index.js'
+import * as powerCableJobServerMapper from '@/views/Mapping/ServerToDTO/PowerCableJob/index.js'
+import * as bushingJobServerMapper from '@/views/Mapping/ServerToDTO/BushingJob/index.js'
 
 import { fetchWithRetry } from './core-utils.js'
 import { saveJobSnapshot, getJobSnapshot } from '@/utils/jobSnapshot'
@@ -127,6 +136,33 @@ const REGISTRY = {
         readLocal:    (mrid) => window.electronAPI.getSurgeArresterJobByMrid(mrid),
         write:        (oldE, newE) => window.electronAPI.insertSurgeArresterJob(oldE, newE),
         linkKey:      'surgeArresterTestingEquipmentTestType',
+    },
+    'Rotating machine': {
+        fetch:        (id) => rotatingMachineJobAPI.getRotatingMachineJobById(id),
+        toDto:        rotatingMachineJobServerMapper.mapServerToDto,
+        toEntity:     rotatingMachineJobMapper.jobDtoToEntity,
+        entityToDto:  rotatingMachineJobMapper.JobEntityToDto,
+        readLocal:    (mrid) => window.electronAPI.getRotatingMachineJobByMrid(mrid),
+        write:        (oldE, newE) => window.electronAPI.insertRotatingMachineJob(oldE, newE),
+        linkKey:      'rotatingMachineTestingEquipmentTestType',
+    },
+    'Power cable': {
+        fetch:        (id) => powerCableJobAPI.getPowerCableJobById(id),
+        toDto:        powerCableJobServerMapper.mapServerToDto,
+        toEntity:     powerCableJobMapper.jobDtoToEntity,
+        entityToDto:  powerCableJobMapper.JobEntityToDto,
+        readLocal:    (mrid) => window.electronAPI.getPowerCableJobByMrid(mrid),
+        write:        (oldE, newE) => window.electronAPI.insertPowerCableJob(oldE, newE),
+        linkKey:      'powerCableTestingEquipmentTestType',
+    },
+    'Bushing': {
+        fetch:        (id) => bushingJobAPI.getBushingJobById(id),
+        toDto:        bushingJobServerMapper.mapServerToDto,
+        toEntity:     bushingJobMapper.jobDtoToEntity,
+        entityToDto:  bushingJobMapper.JobEntityToDto,
+        readLocal:    (mrid) => window.electronAPI.getBushingJobByMrid(mrid),
+        write:        (oldE, newE) => window.electronAPI.insertBushingJob(oldE, newE),
+        linkKey:      'bushingTestingEquipmentTestType',
     },
 }
 
@@ -281,6 +317,9 @@ export const getCurrentTransformerJobChain = (id, parentId) => fetchJobChain('Cu
 export const getCircuitBreakerJobChain     = (id, parentId) => fetchJobChain('Circuit breaker', id, parentId)
 export const getDisconnectorJobChain       = (id, parentId) => fetchJobChain('Disconnector', id, parentId)
 export const getSurgeArresterJobChain      = (id, parentId) => fetchJobChain('Surge arrester', id, parentId)
+export const getRotatingMachineJobChain    = (id, parentId) => fetchJobChain('Rotating machine', id, parentId)
+export const getPowerCableJobChain         = (id, parentId) => fetchJobChain('Power cable', id, parentId)
+export const getBushingJobChain            = (id, parentId) => fetchJobChain('Bushing', id, parentId)
 
 export const downloadTransformerJobChain        = (data, ctx) => saveJobChain('Transformer', data, ctx)
 export const downloadVoltageTransformerJobChain = (data, ctx) => saveJobChain('Voltage transformer', data, ctx)
@@ -288,3 +327,6 @@ export const downloadCurrentTransformerJobChain = (data, ctx) => saveJobChain('C
 export const downloadCircuitBreakerJobChain     = (data, ctx) => saveJobChain('Circuit breaker', data, ctx)
 export const downloadDisconnectorJobChain       = (data, ctx) => saveJobChain('Disconnector', data, ctx)
 export const downloadSurgeArresterJobChain      = (data, ctx) => saveJobChain('Surge arrester', data, ctx)
+export const downloadRotatingMachineJobChain    = (data, ctx) => saveJobChain('Rotating machine', data, ctx)
+export const downloadPowerCableJobChain         = (data, ctx) => saveJobChain('Power cable', data, ctx)
+export const downloadBushingJobChain            = (data, ctx) => saveJobChain('Bushing', data, ctx)

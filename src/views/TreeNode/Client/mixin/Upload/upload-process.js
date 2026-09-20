@@ -16,6 +16,9 @@ import * as circuitBreakerJobAPI from '@/api/demo/CircuitBreakerJob.js'
 import * as surgeArresterJobAPI from '@/api/demo/SurgeArresterJob.js'
 import * as disconnectorJobAPI from '@/api/demo/DisconnectorJob.js'
 import * as transformerJobAPI from '@/api/demo/TransformerJob.js'
+import * as rotatingMachineJobAPI from '@/api/demo/RotatingMachineJob.js'
+import * as powerCableJobAPI from '@/api/demo/PowerCableJob.js'
+import * as bushingJobAPI from '@/api/demo/BushingJob.js'
 import * as voltageLevelAPI from '@/api/demo/VoltageLevel.js'
 import * as substationAPI from '@/api/demo/Substation.js'
 import * as bayAPI from '@/api/demo/Bay.js'
@@ -35,6 +38,9 @@ import * as circuitBreakerJobMapping from '@/views/Mapping/CircuitBreakerJob/ind
 import * as surgeArresterJobMapping from '@/views/Mapping/SurgerArresterJob/index.js'
 import * as disconnectorJobMapping from '@/views/Mapping/DisconnectorJob/index.js'
 import * as transformerJobMapping from '@/views/Mapping/TransformerJob/index.js'
+import * as rotatingMachineJobMapping from '@/views/Mapping/RotatingMachineJob/index.js'
+import * as powerCableJobMapping from '@/views/Mapping/PowerCableJob/index.js'
+import * as bushingJobMapping from '@/views/Mapping/BushingJob/index.js'
 
 // ─── DTO → Server mappers ─────────────────────────────────────────────────────
 import * as transformerMappingServer        from '@/views/Mapping/ServerToDTO/Transformer/index.js'
@@ -60,6 +66,9 @@ import * as circuitBreakerJobMappingServer from '@/views/Mapping/ServerToDTO/Cir
 import * as surgeArresterJobMappingServer from '@/views/Mapping/ServerToDTO/SurgeArresterJob/index.js'
 import * as disconnectorJobMappingServer from '@/views/Mapping/ServerToDTO/DisconnectorJob/index.js'
 import * as transformerJobMappingServer from '@/views/Mapping/ServerToDTO/TransformerJob/index.js'
+import * as rotatingMachineJobMappingServer from '@/views/Mapping/ServerToDTO/RotatingMachineJob/index.js'
+import * as powerCableJobMappingServer from '@/views/Mapping/ServerToDTO/PowerCableJob/index.js'
+import * as bushingJobMappingServer from '@/views/Mapping/ServerToDTO/BushingJob/index.js'
 import { getJobBaseVersion, saveJobSnapshot } from '@/utils/jobSnapshot'
 import { normaliseUnitsDeep } from '@/utils/unitNormalise'
 
@@ -532,6 +541,68 @@ export default {
                 return response
             } catch (error) {
                 this._handleUploadError(error, 'Transformer Job')
+            }
+        },
+
+        async processUploadRotatingMachineJob(node) {
+            try {
+                const entityRes = await window.electronAPI.getRotatingMachineJobByMrid(node.mrid)
+                if (!entityRes.success || !entityRes.data) throw new Error('Rotating machine job data not found.')
+                if (!node.parentId) throw new Error('Cannot upload rotating machine job without parent.')
+
+                const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                const ownerType = this._resolveOwnerType(parentNode)
+                const dto = rotatingMachineJobMapping.JobEntityToDto(entityRes.data)
+                const serverPayload = rotatingMachineJobMappingServer.mapDtoToServer(this._normaliseUnits(dto), ownerType)
+                await this.attachJobBaseVersion(node, serverPayload)
+                const response = await rotatingMachineJobAPI.createRotatingMachineJob(serverPayload, node.parentId)
+
+                await this.syncUploadedNodeServerId(node, response)
+                await this.saveJobBaseAfterUpload(node, dto, response)
+                this.$message.success(`Upload Rotating Machine Job "${this.getUploadNodeName(node)}" successfully!`)
+                return response
+            } catch (error) {
+                this._handleUploadError(error, 'Rotating Machine Job')
+            }
+        },
+
+        async processUploadPowerCableJob(node) {
+            return this.processUploadGenericJob(node, {
+                label: 'Power Cable',
+                read: window.electronAPI.getPowerCableJobByMrid,
+                toDto: powerCableJobMapping.JobEntityToDto,
+                toServer: powerCableJobMappingServer.mapDtoToServer,
+                upload: powerCableJobAPI.createPowerCableJob,
+            })
+        },
+
+        async processUploadBushingJob(node) {
+            return this.processUploadGenericJob(node, {
+                label: 'Bushing',
+                read: window.electronAPI.getBushingJobByMrid,
+                toDto: bushingJobMapping.JobEntityToDto,
+                toServer: bushingJobMappingServer.mapDtoToServer,
+                upload: bushingJobAPI.createBushingJob,
+            })
+        },
+
+        async processUploadGenericJob(node, strategy) {
+            try {
+                const entityRes = await strategy.read(node.mrid)
+                if (!entityRes.success || !entityRes.data) throw new Error(`${strategy.label} job data not found.`)
+                if (!node.parentId) throw new Error(`Cannot upload ${strategy.label} job without parent.`)
+                const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                const ownerType = this._resolveOwnerType(parentNode)
+                const dto = strategy.toDto(entityRes.data)
+                const payload = strategy.toServer(this._normaliseUnits(dto), ownerType)
+                await this.attachJobBaseVersion(node, payload)
+                const response = await strategy.upload(payload, node.parentId)
+                await this.syncUploadedNodeServerId(node, response)
+                await this.saveJobBaseAfterUpload(node, dto, response)
+                this.$message.success(`Upload ${strategy.label} Job "${this.getUploadNodeName(node)}" successfully!`)
+                return response
+            } catch (error) {
+                this._handleUploadError(error, `${strategy.label} Job`)
             }
         },
 
@@ -1064,6 +1135,15 @@ export default {
             }
             if (node.job === 'Transformer') {
                 return transformerJobAPI.getTransformerJobById(id)
+            }
+            if (node.job === 'Rotating machine') {
+                return rotatingMachineJobAPI.getRotatingMachineJobById(id)
+            }
+            if (node.job === 'Power cable') {
+                return powerCableJobAPI.getPowerCableJobById(id)
+            }
+            if (node.job === 'Bushing') {
+                return bushingJobAPI.getBushingJobById(id)
             }
             return Promise.reject(new Error('Unsupported job type'))
         },

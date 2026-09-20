@@ -3,6 +3,11 @@ import * as equipmentContainerFunc from '../equipmentContainer/index.js'
 
 let parentSchemaPromise = null
 
+const normaliseParentReference = (value) => {
+    if (value === null || value === undefined) return null
+    return String(value).trim() === '' ? null : value
+}
+
 export const ensureBayParentSchema = (dbsql = db) => {
     if (parentSchemaPromise) return parentSchemaPromise
     parentSchemaPromise = new Promise((resolve, reject) => {
@@ -45,7 +50,16 @@ export const insertBay = async (bay) => {
                             substation = excluded.substation,
                             power_plant = excluded.power_plant,
                             voltage_level = excluded.voltage_level`,
-                        [bay.mrid, bay.bay_energy_meas_flag, bay.bay_power_meas_flag, bay.breaker_configuration, bay.bus_bar_configuration, bay.substation, bay.power_plant, bay.voltage_level],
+                        [
+                            bay.mrid,
+                            bay.bay_energy_meas_flag,
+                            bay.bay_power_meas_flag,
+                            bay.breaker_configuration,
+                            bay.bus_bar_configuration,
+                            normaliseParentReference(bay.substation),
+                            normaliseParentReference(bay.power_plant),
+                            normaliseParentReference(bay.voltage_level)
+                        ],
                         function (err) {
                             if (err) {
                                 db.run('ROLLBACK')
@@ -84,7 +98,16 @@ export const insertBayTransaction = async (bay, dbsql) => {
                         substation = excluded.substation,
                         power_plant = excluded.power_plant,
                         voltage_level = excluded.voltage_level`,
-                    [bay.mrid, bay.bay_energy_meas_flag, bay.bay_power_meas_flag, bay.breaker_configuration, bay.bus_bar_configuration, bay.substation, bay.power_plant, bay.voltage_level],
+                    [
+                        bay.mrid,
+                        bay.bay_energy_meas_flag,
+                        bay.bay_power_meas_flag,
+                        bay.breaker_configuration,
+                        bay.bus_bar_configuration,
+                        normaliseParentReference(bay.substation),
+                        normaliseParentReference(bay.power_plant),
+                        normaliseParentReference(bay.voltage_level)
+                    ],
                     function (err) {
                         if (err) {
                             return reject({ success: false, err, message: 'Insert Bay failed' })
@@ -228,9 +251,9 @@ export const updateBayById = async (mrid, bay) => {
                             bay.bay_power_meas_flag,
                             bay.breaker_configuration,
                             bay.bus_bar_configuration,
-                            bay.voltage_level,
-                            bay.substation,
-                            bay.power_plant,
+                            normaliseParentReference(bay.voltage_level),
+                            normaliseParentReference(bay.substation),
+                            normaliseParentReference(bay.power_plant),
                             mrid             // ✅ Giữ đúng vị trí cuối
                         ],
                         function (err) {
@@ -271,7 +294,16 @@ export const updateBayByIdTransaction = async (mrid, bay, dbsql) => {
                         substation = ?,
                         power_plant = ?
                      WHERE mrid = ?`,
-                    [bay.bay_energy_meas_flag, bay.bay_power_meas_flag, bay.breaker_configuration, bay.bus_bar_configuration, bay.voltage_level, bay.substation, bay.power_plant, mrid],
+                    [
+                        bay.bay_energy_meas_flag,
+                        bay.bay_power_meas_flag,
+                        bay.breaker_configuration,
+                        bay.bus_bar_configuration,
+                        normaliseParentReference(bay.voltage_level),
+                        normaliseParentReference(bay.substation),
+                        normaliseParentReference(bay.power_plant),
+                        mrid
+                    ],
                     function (err) {
                         if (err) {
                             return reject({ success: false, err, message: 'Update Bay failed' })

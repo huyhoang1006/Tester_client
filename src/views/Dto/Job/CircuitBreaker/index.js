@@ -25,6 +25,8 @@ class CircuitBreakerJobDto {
         this.attachment = new Attachment();
         this.circuitBreakerTestingEquipmentTestType = [];    
         this.testStandardId = '';
+        this.cbMotorCurrentPoints = {};
+        this.cbTimingTraces = {};
     }
 }
 

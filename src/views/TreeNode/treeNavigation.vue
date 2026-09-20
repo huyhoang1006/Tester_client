@@ -29,6 +29,7 @@
                 <div class="tree-workspace-body">
             <ClientTreePanel ref="clientPanel" v-show="activeWorkspaceTab === 'tree' && clientSlide" :organisationClientList="organisationClientList"
                 :selectedNodes.sync="selectedNodes" @showLocationRoot="showLocationRoot" @show-addSubs="showAddSubs"
+                @show-addConfiguredSubstation="showConfiguredSubstationWizard"
                 @drop-node="handleDropMoveNode"
                 @double-click-node="doubleClickNode" @fetch-children="fetchChildren"
                 @show-properties="showPropertiesDataClient" @update-selection="updateSelection"
@@ -152,6 +153,15 @@
             :parentOrganization="parentOrganization" :personList="personList" :locationList="locationList"
             :organisationId="organisationId" :isSaving="isSaving" @close="handleSubsCancel" @cancel="handleSubsCancel"
             @confirm="handleSubsConfirm" />
+
+        <PredefinedSubstationDialog
+            ref="predefinedSubstationDialog"
+            :visible="signPredefinedSubstation"
+            :uuid-factory="generateUuid"
+            @update:visible="signPredefinedSubstation = $event"
+            @close="closeConfiguredSubstationWizard"
+            @create="createConfiguredSubstation"
+        />
 
         <SubstationDialog ref="powerPlantDialog" :visible="signPowerPlant"
             @update:visible="signPowerPlant = $event" :dialogTitle="powerPlantDialogTitle"
@@ -412,6 +422,7 @@ import TestingEquipmentList from '@/views/TestingEquipment/components/list.vue'
 // Import Dialog Components
 import {
     SubstationDialog,
+    PredefinedSubstationDialog,
     OrganisationDialog,
     VoltageLevelDialog,
     BayDialog,
@@ -505,6 +516,7 @@ export default {
         TestingEquipmentList,
         // Dialog Components
         SubstationDialog,
+        PredefinedSubstationDialog,
         OrganisationDialog,
         VoltageLevelDialog,
         BayDialog,
@@ -558,6 +570,8 @@ export default {
             testTypeListData: [],
             organisationClientList: [],
             signSubs: false,
+            signPredefinedSubstation: false,
+            configuredSubstationTarget: null,
             signPowerPlant: false,
             selectedPowerPlantType: '',
             signOrg: false,
@@ -935,6 +949,52 @@ export default {
         }
     },
     methods: {
+        showConfiguredSubstationWizard(node) {
+            if (!this.clientSlide) {
+                this.$message.warning('Predefined substation creation is available on Client')
+                return
+            }
+            this.configuredSubstationTarget = node
+            this.signPredefinedSubstation = true
+        },
+        closeConfiguredSubstationWizard() {
+            this.signPredefinedSubstation = false
+            this.configuredSubstationTarget = null
+        },
+        async createConfiguredSubstation({ branch, done, fail }) {
+            const target = this.configuredSubstationTarget
+            if (!target || !target.mrid) {
+                this.$message.error('Cannot resolve the parent organisation')
+                if (fail) fail()
+                return
+            }
+            try {
+                const userId = this.$store && this.$store.state && this.$store.state.user
+                    ? this.$store.state.user.user_id
+                    : null
+                const existing = await window.electronAPI.getSubstationsInOrganisationForUser(target.mrid, userId)
+                const newName = String(branch.data && branch.data.name || '').trim().toLowerCase()
+                const duplicate = existing && Array.isArray(existing.data) && existing.data.some((item) =>
+                    String(item.name || '').trim().toLowerCase() === newName
+                )
+                if (duplicate) {
+                    this.$message.error(`A substation named "${branch.data.name}" already exists in this organisation`)
+                    if (fail) fail()
+                    return
+                }
+                this.importFailures = []
+                await this.importTreeFromJSON({ version: 2, roots: [branch] }, target, null)
+                if (this.importFailures.length > 0) {
+                    if (fail) fail()
+                    return
+                }
+                if (done) done()
+            } catch (error) {
+                console.error('Failed to create predefined substation:', error)
+                this.$message.error(error.message || 'Failed to create substation')
+                if (fail) fail()
+            }
+        },
         async showAddPowerPlant(payload) {
             const parentNode = payload && payload.parentNode ? payload.parentNode : null
             if (!parentNode) return

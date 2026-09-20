@@ -593,8 +593,19 @@ export default {
                         return { success: !!(rs && rs.success), mrid: newMrid, mode: 'voltageLevel', message: rs && (rs.message || (rs.error && rs.error.message)) }
                     },
                     bay: async (dto, parent) => {
-                        if (parent.mode === 'voltageLevel') { dto.voltage_level = parent.mrid; dto.substation = null }
-                        else { dto.substation = parent.mrid; dto.voltage_level = null }
+                        if (parent.mode === 'voltageLevel') {
+                            dto.voltage_level = parent.mrid
+                            dto.substation = null
+                            dto.power_plant = null
+                        } else if (parent.mode === 'powerPlant') {
+                            dto.power_plant = parent.mrid
+                            dto.substation = null
+                            dto.voltage_level = null
+                        } else {
+                            dto.substation = parent.mrid
+                            dto.power_plant = null
+                            dto.voltage_level = null
+                        }
                         console.log('%c[INS bay] DTO (parent=' + parent.mode + ':' + parent.mrid + '):', 'color:#4CAF50', JSON.parse(JSON.stringify(dto)))
                         const rs = await api.insertBayEntity(dto)
                         console.log('[INS bay] insert result:', rs)

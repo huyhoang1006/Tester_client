@@ -1,5 +1,6 @@
 // Export all dialog components for easy importing
 export { default as SubstationDialog } from './SubstationDialog.vue'
+export { default as PredefinedSubstationDialog } from './PredefinedSubstationDialog.vue'
 export { default as OrganisationDialog } from './OrganisationDialog.vue'
 export { default as VoltageLevelDialog } from './VoltageLevelDialog.vue'
 export { default as BayDialog } from './BayDialog.vue'
