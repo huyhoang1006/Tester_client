@@ -43,15 +43,12 @@ export default {
     methods: {
         onChangeAssetType(value) {
             this.transformerDto.winding_configuration = new TransformerDataDto().winding_configuration
-            for (let [index, item] of this.transformerDto.ratings.voltage_ratings.entries()) {
-                if (item.winding === this.$constant.TERT) {
-                    if (value !== this.$constant.THREE_WINDING) {
-                        this.transformerDto.ratings.voltage_ratings.splice(index, 1)
-                    }
-                }
-            }
-            for (let [index, item] of this.transformerDto.ratings.current_ratings.entries()) {
-                if (value !== this.$constant.THREE_WINDING) {
+            const hasTertiaryWinding = value === this.$constant.THREE_WINDING ||
+                value === this.$constant.WITH_TERT
+            if (!hasTertiaryWinding) {
+                this.transformerDto.ratings.voltage_ratings =
+                    this.transformerDto.ratings.voltage_ratings.filter(item => item.winding !== this.$constant.TERT)
+                for (let [index, item] of this.transformerDto.ratings.current_ratings.entries()) {
                     if (item.tert !== undefined) {
                         this.transformerDto.ratings.current_ratings[index].tert.mrid = ''
                         this.transformerDto.ratings.current_ratings[index].tert.data.value = ''
@@ -67,15 +64,15 @@ export default {
 
             if (value === this.$constant.THREE_WINDING || value === this.$constant.TWO_WINDING) {
                 this.transformerDto.impedances.zero_sequence_impedance.zero_percent.prim.mrid = ''
-                this.transformerDto.impedances.zero_sequence_impedance.zero_percent.prim.value = ''
-                this.transformerDto.impedances.zero_sequence_impedance.zero_percent.prim.unit = '%'
+                this.transformerDto.impedances.zero_sequence_impedance.zero_percent.prim.data.value = ''
+                this.transformerDto.impedances.zero_sequence_impedance.zero_percent.prim.data.unit = '%'
                 this.transformerDto.impedances.zero_sequence_impedance.zero_percent.sec.mrid = ''
-                this.transformerDto.impedances.zero_sequence_impedance.zero_percent.sec.value = ''
-                this.transformerDto.impedances.zero_sequence_impedance.zero_percent.sec.unit = '%'
+                this.transformerDto.impedances.zero_sequence_impedance.zero_percent.sec.data.value = ''
+                this.transformerDto.impedances.zero_sequence_impedance.zero_percent.sec.data.unit = '%'
             } else {
                 this.transformerDto.impedances.zero_sequence_impedance.zero_percent.zero.mrid = ''
-                this.transformerDto.impedances.zero_sequence_impedance.zero_percent.zero.value = ''
-                this.transformerDto.impedances.zero_sequence_impedance.zero_percent.zero.unit = '%'
+                this.transformerDto.impedances.zero_sequence_impedance.zero_percent.zero.data.value = ''
+                this.transformerDto.impedances.zero_sequence_impedance.zero_percent.zero.data.unit = '%'
             }
 
             if (value === this.$constant.TWO_WINDING || value === this.$constant.WITHOUT_TERT) {

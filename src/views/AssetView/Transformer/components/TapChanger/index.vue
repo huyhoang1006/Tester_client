@@ -42,7 +42,7 @@
                                     <el-option label="Prim" value="Prim"> </el-option>
                                     <el-option label="Sec" value="Sec"> </el-option>
                                     <el-option label="Tert" value="Tert"
-                                        v-if="properties.type === $constant.THREE_WINDING"> </el-option>
+                                        v-if="hasTertiaryWinding"> </el-option>
                                 </el-select>
                             </el-form-item>
                             <el-form-item label="Tap scheme">
@@ -163,7 +163,7 @@
                                     <el-option label="Prim" value="Prim"> </el-option>
                                     <el-option label="Sec" value="Sec"> </el-option>
                                     <el-option label="Tert" value="Tert"
-                                        v-if="properties.type === $constant.THREE_WINDING">
+                                        v-if="hasTertiaryWinding">
                                     </el-option>
                                 </el-select>
                             </el-form-item>
@@ -320,6 +320,10 @@ export default {
     computed: {
         tapChangersData: function () {
             return this.data
+        },
+        hasTertiaryWinding: function () {
+            return this.properties.type === this.$constant.THREE_WINDING ||
+                this.properties.type === this.$constant.WITH_TERT
         }
     },
     /* eslint-disable */

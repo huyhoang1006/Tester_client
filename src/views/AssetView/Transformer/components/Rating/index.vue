@@ -89,7 +89,7 @@
                                         <el-select size="mini" v-model="item.winding">
                                             <el-option label="Prim" value="Prim"></el-option>
                                             <el-option label="Sec" value="Sec"></el-option>
-                                            <el-option v-if="properties.type === $constant.THREE_WINDING" label="Tert"
+                                            <el-option v-if="hasTertiaryWinding" label="Tert"
                                                 value="Tert"></el-option>
                                         </el-select>
                                     </td>
@@ -179,7 +179,7 @@
                                 <col style="width: 165px" />
                                 <col style="width: 165px" />
                                 <col style="width: 165px" />
-                                <col v-if="properties.type === $constant.THREE_WINDING" style="width: 165px" />
+                                <col v-if="hasTertiaryWinding" style="width: 165px" />
                                 <col style="width: 40px" />
                             </colgroup>
                             <thead>
@@ -189,7 +189,7 @@
                                     <th>Temp. rise wind.</th>
                                     <th>Prim</th>
                                     <th>Sec</th>
-                                    <th v-if="properties.type === $constant.THREE_WINDING">Tert</th>
+                                    <th v-if="hasTertiaryWinding">Tert</th>
                                     <th class="action-col">
                                         <el-button size="mini" type="danger" class="w-100"
                                             @click="removeAllPowerRating">
@@ -259,7 +259,7 @@
                                             </el-select>
                                         </el-input>
                                     </td>
-                                    <td v-if="properties.type === $constant.THREE_WINDING">
+                                    <td v-if="hasTertiaryWinding">
                                         <el-input v-if="ratingsData.current_ratings[index]" size="mini" type="text"
                                             number="positive" v-model="ratingsData.current_ratings[index].tert.data.value">
                                             <el-select size="mini" class="select-in-input"
@@ -378,6 +378,10 @@ export default {
         },
         assetType: function () {
             return this.properties.type
+        },
+        hasTertiaryWinding: function () {
+            return this.assetType === this.$constant.THREE_WINDING ||
+                this.assetType === this.$constant.WITH_TERT
         }
     },
     watch: {
@@ -422,7 +426,7 @@ export default {
         addVoltageRating() {
             this.ratingsData.voltage_ratings.push({
                 mrid: '',
-                winding: this.$constant.PRIM,
+                winding: this.nextVoltageWinding(),
                 voltage_ll: {
                     mrid: '',
                     value: '',
@@ -441,6 +445,13 @@ export default {
                 voltage_regulation: '',
                 insulation_class: ''
             })
+        },
+        nextVoltageWinding() {
+            const windings = this.hasTertiaryWinding
+                ? [this.$constant.PRIM, this.$constant.SEC, this.$constant.TERT]
+                : [this.$constant.PRIM, this.$constant.SEC]
+            const usedWindings = new Set(this.ratingsData.voltage_ratings.map(item => item.winding))
+            return windings.find(winding => !usedWindings.has(winding)) || windings[0]
         },
         deleteVoltageRating(index) {
             this.ratingsData.voltage_ratings.splice(index, 1)

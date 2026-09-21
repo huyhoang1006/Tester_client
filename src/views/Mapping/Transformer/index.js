@@ -1144,9 +1144,7 @@ export const transformerEntityToDto = (entity) => {
                                 mappingDtoUnit(dto.impedances.zero_sequence_impedance.zero_percent.prim.data, percent)
                             }
                         }
-                    }
-                } else if (transformerEndInfo.mrid == zeroSequenceImpedanceTable.transformer_end_id) {
-                    if (transformerEndInfo.end_number == 2) {
+                    } else if (transformerEndInfo.end_number == 2) {
                         dto.impedances.zero_sequence_impedance.zero_percent.sec.mrid = zeroSequenceImpedanceTable.mrid
                         dto.impedances.zero_sequence_impedance.zero_percent.sec.data.mrid = zeroSequenceImpedanceTable.zero || ''
                         for (const percent of entity.percent) {
@@ -1155,6 +1153,7 @@ export const transformerEntityToDto = (entity) => {
                             }
                         }
                     }
+                    break
                 }
             }
         }
