@@ -5,18 +5,15 @@
     .wire { fill: none; stroke: #263648; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
     .terminal-dot { fill: #ffffff; stroke: #263648; stroke-width: 1.8; }
     .neutral-dot { fill: #ffffff; stroke: #263648; stroke-width: 2; }
-    .terminal { fill: #263648; font: 600 10px Arial, sans-serif; }
+    .terminal { fill: #263648; font: 700 12px Arial, sans-serif; }
     .tap { fill: #263648; }
   </style>
   <path d="M 60 62 L 91 62" class="wire"/>
   <path d="M 60 62 L 44.5 88.85" class="wire"/>
   <path d="M 60 62 L 44.5 35.15" class="wire"/>
-  <circle cx="91" cy="62" r="2.4" class="terminal-dot"/>
-  <circle cx="44.5" cy="88.85" r="2.4" class="terminal-dot"/>
-  <circle cx="44.5" cy="35.15" r="2.4" class="terminal-dot"/>
-  <text x="104" y="65" text-anchor="start" class="terminal">a</text>
-  <text x="38" y="108.11" text-anchor="end" class="terminal">b</text>
-  <text x="38" y="23.89" text-anchor="end" class="terminal">c</text>
+  <text x="101" y="65" text-anchor="start" class="terminal">a1</text>
+  <text x="39.5" y="105.51" text-anchor="end" class="terminal">b1</text>
+  <text x="39.5" y="26.49" text-anchor="end" class="terminal">c1</text>
   <circle cx="60" cy="62" r="4" class="neutral-dot"/>
-  <text x="67" y="55" class="terminal">n</text>
+  <text x="67.5" y="82.99" text-anchor="start" class="terminal">n1</text>
 </svg>

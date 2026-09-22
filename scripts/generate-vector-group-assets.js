@@ -38,6 +38,14 @@ const terminalText = (point, text) => {
     return `<text x="${point.x}" y="${round(point.y + baseline)}" text-anchor="${anchor}" class="terminal">${text}</text>`
 }
 
+const terminalLabels = terminalIndex => ['a', 'b', 'c'].map(label => `${label}${terminalIndex}`)
+
+const neutralText = (clock, connection, terminalIndex) => {
+    const rotation = clock * 30
+    const openAngle = connection === 'zigzag' ? rotation : rotation - 30
+    return terminalText(pointFrom(CENTER, openAngle, 15), `n${terminalIndex}`)
+}
+
 const line = (from, to) => `<path d="M ${from.x} ${from.y} L ${to.x} ${to.y}" class="wire"/>`
 
 const circle = (point, radius = 2.4) => `<circle cx="${point.x}" cy="${point.y}" r="${radius}" class="terminal-dot"/>`
@@ -49,7 +57,7 @@ const svgDocument = (name, body) => `<?xml version="1.0" encoding="UTF-8"?>
     .wire { fill: none; stroke: #263648; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
     .terminal-dot { fill: #ffffff; stroke: #263648; stroke-width: 1.8; }
     .neutral-dot { fill: #ffffff; stroke: #263648; stroke-width: 2; }
-    .terminal { fill: #263648; font: 600 10px Arial, sans-serif; }
+    .terminal { fill: #263648; font: 700 12px Arial, sans-serif; }
     .tap { fill: #263648; }
   </style>
   ${body}
@@ -61,65 +69,52 @@ const threePhaseAngles = clock => {
     return [-90, 30, 150].map(angle => angle + rotation)
 }
 
-const threePhaseLabels = isPrimary => isPrimary ? ['A', 'B', 'C'] : ['a', 'b', 'c']
-
-const drawDelta = clock => {
-    const isPrimary = clock == null
+const drawDelta = (clock, terminalIndex) => {
     const points = threePhaseAngles(clock).map(angle => pointAt(angle))
-    const labels = threePhaseLabels(isPrimary)
-    const labelPoints = threePhaseAngles(clock).map(angle => pointAt(angle, RADIUS + 13))
     const polygon = `<path d="M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y} L ${points[2].x} ${points[2].y} Z" class="wire"/>`
-    return [
-        polygon,
-        ...points.map(point => circle(point)),
-        ...labelPoints.map((point, index) => terminalText(point, labels[index]))
-    ].join('\n  ')
+    if (clock == null) return polygon
+
+    const labelPoints = threePhaseAngles(clock).map(angle => pointAt(angle, RADIUS + 10))
+    return [polygon, ...labelPoints.map((point, index) => terminalText(point, terminalLabels(terminalIndex)[index]))]
+        .join('\n  ')
 }
 
-const drawStar = (clock, neutral) => {
-    const isPrimary = clock == null
+const drawStar = (clock, neutral, terminalIndex) => {
     const angles = threePhaseAngles(clock)
     const points = angles.map(angle => pointAt(angle))
-    const labelPoints = angles.map(angle => pointAt(angle, RADIUS + 13))
-    const labels = threePhaseLabels(isPrimary)
-    const neutralLabel = isPrimary ? 'N' : 'n'
-    const elements = [
-        ...points.map(point => line(CENTER, point)),
-        ...points.map(point => circle(point)),
-        ...labelPoints.map((point, index) => terminalText(point, labels[index]))
-    ]
+    const elements = points.map(point => line(CENTER, point))
+
+    if (clock != null) {
+        const labelPoints = angles.map(angle => pointAt(angle, RADIUS + 10))
+        elements.push(...labelPoints.map((point, index) => terminalText(point, terminalLabels(terminalIndex)[index])))
+    }
 
     if (neutral) {
         elements.push(`<circle cx="${CENTER.x}" cy="${CENTER.y}" r="4" class="neutral-dot"/>`)
-        elements.push(`<text x="${CENTER.x + 7}" y="${CENTER.y - 7}" class="terminal">${neutralLabel}</text>`)
-    } else {
-        elements.push(`<circle cx="${CENTER.x}" cy="${CENTER.y}" r="2.4" class="tap"/>`)
+        if (clock != null) elements.push(neutralText(clock, 'star', terminalIndex))
     }
 
     return elements.join('\n  ')
 }
 
-const drawZigzag = (clock, neutral) => {
-    const isPrimary = clock == null
+const drawZigzag = (clock, neutral, terminalIndex) => {
     const angles = threePhaseAngles(clock)
-    const labels = threePhaseLabels(isPrimary)
     const elements = []
 
     angles.forEach((angle, index) => {
         const segmentLength = 20
         const elbow = pointFrom(CENTER, angle + 30, segmentLength)
         const end = pointFrom(elbow, angle - 30, segmentLength)
-        const labelPoint = pointFrom(end, angle, 13)
         elements.push(`<path d="M ${CENTER.x} ${CENTER.y} L ${elbow.x} ${elbow.y} L ${end.x} ${end.y}" class="wire"/>`)
-        elements.push(circle(end))
-        elements.push(terminalText(labelPoint, labels[index]))
+        if (clock != null) {
+            const labelPoint = pointFrom(end, angle, 10)
+            elements.push(terminalText(labelPoint, terminalLabels(terminalIndex)[index]))
+        }
     })
 
     if (neutral) {
         elements.push(`<circle cx="${CENTER.x}" cy="${CENTER.y}" r="4" class="neutral-dot"/>`)
-        elements.push(`<text x="${CENTER.x + 7}" y="${CENTER.y - 7}" class="terminal">${isPrimary ? 'N' : 'n'}</text>`)
-    } else {
-        elements.push(`<circle cx="${CENTER.x}" cy="${CENTER.y}" r="2.4" class="tap"/>`)
+        if (clock != null) elements.push(neutralText(clock, 'zigzag', terminalIndex))
     }
 
     return elements.join('\n  ')
@@ -160,19 +155,19 @@ const drawAutotransformer = () => {
     return elements.join('\n  ')
 }
 
-const drawConnection = (connection, clock) => {
-    if (connection === 'D') return drawDelta(clock)
-    if (connection === 'Y') return drawStar(clock, false)
-    if (connection === 'YN') return drawStar(clock, true)
-    if (connection === 'Z') return drawZigzag(clock, false)
-    if (connection === 'ZN') return drawZigzag(clock, true)
+const drawConnection = (connection, clock, terminalIndex = 1) => {
+    if (connection === 'D') return drawDelta(clock, terminalIndex)
+    if (connection === 'Y') return drawStar(clock, false, terminalIndex)
+    if (connection === 'YN') return drawStar(clock, true, terminalIndex)
+    if (connection === 'Z') return drawZigzag(clock, false, terminalIndex)
+    if (connection === 'ZN') return drawZigzag(clock, true, terminalIndex)
     if (connection === 'I') return drawSinglePhase(clock)
     if (connection === 'YyNa') return drawAutotransformer()
     throw new Error(`Unsupported vector connection: ${connection}`)
 }
 
-const writeSvg = (name, connection, clock = null) => {
-    const svg = svgDocument(name, drawConnection(connection, clock))
+const writeSvg = (name, connection, clock = null, terminalIndex = 1) => {
+    const svg = svgDocument(name, drawConnection(connection, clock, terminalIndex))
     fs.writeFileSync(path.join(OUTPUT_DIRECTORY, `${name}.svg`), svg, 'utf8')
 }
 
@@ -182,12 +177,16 @@ for (const connection of Object.keys(clockPositions)) {
     writeSvg(connection, connection)
     for (const clock of clockPositions[connection]) {
         writeSvg(`${connection}${clock}`, connection, clock)
+        if (connection !== 'I') writeSvg(`${connection}${clock}-tert`, connection, clock, 2)
     }
 }
 
 writeSvg('YyNa', 'YyNa')
 
-const expectedCount = Object.values(clockPositions).reduce((count, clocks) => count + clocks.length + 1, 0) + 1
+const tertiaryCount = Object.entries(clockPositions)
+    .filter(([connection]) => connection !== 'I')
+    .reduce((count, [, clocks]) => count + clocks.length, 0)
+const expectedCount = Object.values(clockPositions).reduce((count, clocks) => count + clocks.length + 1, 0) + tertiaryCount + 1
 const generatedCount = fs.readdirSync(OUTPUT_DIRECTORY).filter(file => file.endsWith('.svg')).length
 
 if (generatedCount !== expectedCount) {

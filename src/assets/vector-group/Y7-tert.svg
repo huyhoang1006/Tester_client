@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" role="img" aria-labelledby="title">
+  <title id="title">Vector group Y7-tert</title>
+  <style>
+    .wire { fill: none; stroke: #263648; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+    .terminal-dot { fill: #ffffff; stroke: #263648; stroke-width: 1.8; }
+    .neutral-dot { fill: #ffffff; stroke: #263648; stroke-width: 2; }
+    .terminal { fill: #263648; font: 700 12px Arial, sans-serif; }
+    .tap { fill: #263648; }
+  </style>
+  <path d="M 60 62 L 44.5 88.85" class="wire"/>
+  <path d="M 60 62 L 44.5 35.15" class="wire"/>
+  <path d="M 60 62 L 91 62" class="wire"/>
+  <text x="39.5" y="105.51" text-anchor="end" class="terminal">a2</text>
+  <text x="39.5" y="26.49" text-anchor="end" class="terminal">b2</text>
+  <text x="101" y="65" text-anchor="start" class="terminal">c2</text>
+</svg>

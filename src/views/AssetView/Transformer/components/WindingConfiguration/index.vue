@@ -225,10 +225,10 @@ export default {
                 items.push(this.createVectorPreviewItem('Prim', vectorGroup.prim))
             }
             if (secondary.i) {
-                items.push(this.createVectorPreviewItem('Sec', secondary.i, secondary.value))
+                items.push(this.createVectorPreviewItem('Sec', secondary.i, secondary.value, 1))
             }
             if (tertiary.i) {
-                items.push(this.createVectorPreviewItem('Tert', tertiary.i, tertiary.value))
+                items.push(this.createVectorPreviewItem('Tert', tertiary.i, tertiary.value, 2))
             }
 
             return items
@@ -262,14 +262,15 @@ export default {
             if (connection === WindingConnection.Zn) return 'ZN'
             return connection
         },
-        createVectorPreviewItem(label, connection, phaseShift) {
+        createVectorPreviewItem(label, connection, phaseShift, terminalIndex) {
             const normalizedConnection = this.normalizeVectorConnection(connection)
             const hasPhaseShift = phaseShift !== undefined && phaseShift !== null && phaseShift !== ''
             const code = `${normalizedConnection}${hasPhaseShift ? phaseShift : ''}`
+            const imageName = `${code}${hasPhaseShift && terminalIndex === 2 ? '-tert' : ''}`
             return {
                 label,
                 code,
-                image: vectorImages[code] || vectorImages[normalizedConnection] || ''
+                image: vectorImages[imageName] || vectorImages[normalizedConnection] || ''
             }
         },
         onChangePhase() {

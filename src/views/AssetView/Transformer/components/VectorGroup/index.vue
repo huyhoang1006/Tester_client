@@ -43,7 +43,7 @@
                                 class="vector-option" :class="{ selected: winding_config.sec.value === item.value }"
                                 :title="`${winding_config.sec.i}${item.label}`" @click="selectSecValue(item.value)">
                                 <span class="option-code">{{ vectorOptionCode(winding_config.sec.i, item.label) }}</span>
-                                <img :src="vectorImage(winding_config.sec.i, item.value)"
+                                <img :src="vectorImage(winding_config.sec.i, item.value, 1)"
                                     :alt="`${winding_config.sec.i}${item.label} phase shift`">
                             </button>
                         </div>
@@ -73,7 +73,7 @@
                                 class="vector-option" :class="{ selected: winding_config.tert.value === item.value }"
                                 :title="`${winding_config.tert.i}${item.label}`" @click="selectTertValue(item.value)">
                                 <span class="option-code">{{ vectorOptionCode(winding_config.tert.i, item.label) }}</span>
-                                <img :src="vectorImage(winding_config.tert.i, item.value)"
+                                <img :src="vectorImage(winding_config.tert.i, item.value, 2)"
                                     :alt="`${winding_config.tert.i}${item.label} phase shift`">
                             </button>
                         </div>
@@ -424,10 +424,11 @@ export default {
             return connection
         },
 
-        vectorImage(connection, phaseShift) {
+        vectorImage(connection, phaseShift, terminalIndex) {
             const normalizedConnection = this.normalizeVectorConnection(connection)
             const hasPhaseShift = phaseShift !== undefined && phaseShift !== null && phaseShift !== ''
-            const imageName = `${normalizedConnection}${hasPhaseShift ? phaseShift : ''}`
+            const terminalSuffix = hasPhaseShift && terminalIndex === 2 ? '-tert' : ''
+            const imageName = `${normalizedConnection}${hasPhaseShift ? phaseShift : ''}${terminalSuffix}`
             return vectorImages[imageName] || ''
         },
 

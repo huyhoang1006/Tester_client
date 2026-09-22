@@ -183,6 +183,7 @@ export const mapServerToDto = (serverData) => {
         dto.properties.kind = properties.kind || 'Current transformer'
         dto.properties.manufacturer_year = properties.manufacturer_year || properties.manufacturing_year || ''
         dto.properties.manufacturing_year = properties.manufacturing_year || properties.manufacturer_year || ''
+        applyServerAssetFields(dto.properties, properties)
         dto.config.phase = properties.phase || ct.config?.phase || ''
         dto.config.number_of_phase = properties.numberOfPhase ?? ct.config?.number_of_phase ?? ''
 

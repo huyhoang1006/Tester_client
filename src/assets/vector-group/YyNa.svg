@@ -5,7 +5,7 @@
     .wire { fill: none; stroke: #263648; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
     .terminal-dot { fill: #ffffff; stroke: #263648; stroke-width: 1.8; }
     .neutral-dot { fill: #ffffff; stroke: #263648; stroke-width: 2; }
-    .terminal { fill: #263648; font: 600 10px Arial, sans-serif; }
+    .terminal { fill: #263648; font: 700 12px Arial, sans-serif; }
     .tap { fill: #263648; }
   </style>
   <path d="M 60 62 L 60 44" class="wire"/>

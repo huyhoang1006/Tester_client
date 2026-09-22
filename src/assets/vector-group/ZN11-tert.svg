@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" role="img" aria-labelledby="title">
+  <title id="title">Vector group ZN11-tert</title>
+  <style>
+    .wire { fill: none; stroke: #263648; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+    .terminal-dot { fill: #ffffff; stroke: #263648; stroke-width: 1.8; }
+    .neutral-dot { fill: #ffffff; stroke: #263648; stroke-width: 2; }
+    .terminal { fill: #263648; font: 700 12px Arial, sans-serif; }
+    .tap { fill: #263648; }
+  </style>
+  <path d="M 60 62 L 60 42 L 42.68 32" class="wire"/>
+  <text x="37.68" y="23.34" text-anchor="end" class="terminal">a2</text>
+  <path d="M 60 62 L 77.32 72 L 94.64 62" class="wire"/>
+  <text x="104.64" y="65" text-anchor="start" class="terminal">b2</text>
+  <path d="M 60 62 L 42.68 72 L 42.68 92" class="wire"/>
+  <text x="37.68" y="108.66" text-anchor="end" class="terminal">c2</text>
+  <circle cx="60" cy="62" r="4" class="neutral-dot"/>
+  <text x="72.99" y="54.5" text-anchor="start" class="terminal">n2</text>
+</svg>
