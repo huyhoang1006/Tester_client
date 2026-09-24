@@ -1,0 +1,4415 @@
+{
+  "name": "Transformer Condition Assessment Tables",
+  "version": "rev1",
+  "sourceFile": "Transformer Condition Assessment Tables rev1 (gui Hoang).xlsx",
+  "sourceSha256": "b37d0492d0d82dd078eeed198f0a6046aa9496a65c2b16dac47d9ce2fb642c1e",
+  "tableFmeca": {
+    "sheet": "Weighting",
+    "range": "A2:H87",
+    "rows": [
+      [
+        "No",
+        "Failure mode",
+        "SoF",
+        "PoF",
+        "Condition indicator",
+        "Test",
+        "SoT",
+        "RPN"
+      ],
+      [
+        1,
+        "Dielectric Condition Assessment",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        1.1,
+        "Core insulation",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        "Core ground",
+        10,
+        1,
+        "DC Resistance",
+        "Insulation resistance",
+        10,
+        {
+          "formula": "=C5*D5*G5",
+          "cached": 100
+        }
+      ],
+      [
+        null,
+        "Arcing",
+        8,
+        1,
+        "Acetylene",
+        "DGA ",
+        8,
+        {
+          "formula": "=C6*D6*G6",
+          "cached": 64
+        }
+      ],
+      [
+        1.2,
+        "Winding insulation",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        "1.2.1",
+        "Insulating Liquid",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        "Arcing",
+        10,
+        1,
+        "Acetylene",
+        "DGA",
+        8,
+        {
+          "formula": "=C9*D9*G9",
+          "cached": 80
+        }
+      ],
+      [
+        null,
+        "Aging, Moisture, contamination",
+        8,
+        2,
+        "Dissipation factor",
+        "PF/DF",
+        6,
+        {
+          "formula": "=C10*D10*G10",
+          "cached": 96
+        }
+      ],
+      [
+        null,
+        null,
+        8,
+        2,
+        "Breakdown voltage",
+        "Oil test",
+        7,
+        {
+          "formula": "=C11*D11*G11",
+          "cached": 112
+        }
+      ],
+      [
+        null,
+        "Partial Discharge",
+        7,
+        1,
+        "Hydrogen",
+        "DGA",
+        7,
+        {
+          "formula": "=C12*D12*G12",
+          "cached": 49
+        }
+      ],
+      [
+        null,
+        null,
+        0,
+        1,
+        null,
+        "PD monitoring/ online",
+        6,
+        {
+          "formula": "=C13*D13*G13",
+          "cached": 0
+        }
+      ],
+      [
+        null,
+        "Moisture Ingress",
+        0,
+        2,
+        "Moisture Content",
+        "Karl Fisher Moisture Content",
+        8,
+        {
+          "formula": "=C14*D14*G14",
+          "cached": 0
+        }
+      ],
+      [
+        "1.2.2",
+        "Solid insulation",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        "Moisture Content in cellulose",
+        6,
+        2,
+        "Moisture Content",
+        "Karl Fisher Moisture Content",
+        8,
+        {
+          "formula": "=C16*D16*G16",
+          "cached": 96
+        }
+      ],
+      [
+        null,
+        null,
+        0,
+        2,
+        "Moisture Content",
+        "DRA",
+        8,
+        {
+          "formula": "=C17*D17*G17",
+          "cached": 0
+        }
+      ],
+      [
+        null,
+        "Insulation flashover",
+        0,
+        2,
+        null,
+        "PD monitoring/ online",
+        5,
+        {
+          "formula": "=C18*D18*G18",
+          "cached": 0
+        }
+      ],
+      [
+        null,
+        null,
+        8,
+        2,
+        null,
+        "DGA",
+        5,
+        {
+          "formula": "=C19*D19*G19",
+          "cached": 80
+        }
+      ],
+      [
+        null,
+        null,
+        8,
+        2,
+        null,
+        "Insualtion resistance",
+        7,
+        {
+          "formula": "=C20*D20*G20",
+          "cached": 112
+        }
+      ],
+      [
+        null,
+        "Partial Discharge",
+        8,
+        2,
+        null,
+        "DGA",
+        6,
+        {
+          "formula": "=C21*D21*G21",
+          "cached": 96
+        }
+      ],
+      [
+        1.3,
+        "Major",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        "Elevated Moisture, aging, contamination",
+        7,
+        2,
+        "CHL, CH, CL of transformer",
+        "PF/DF",
+        8,
+        {
+          "formula": "=C23*D23*G23",
+          "cached": 112
+        }
+      ],
+      [
+        null,
+        "Displaced winding caused by aging",
+        7,
+        3,
+        "CHL, CH, CL of transformer",
+        "Capacitance",
+        6,
+        {
+          "formula": "=C24*D24*G24",
+          "cached": 126
+        }
+      ],
+      [
+        null,
+        "Elevated Moisture, aging, contamination",
+        0,
+        2,
+        "Estimated Moisture",
+        "DRA",
+        7,
+        {
+          "formula": "=C25*D25*G25",
+          "cached": 0
+        }
+      ],
+      [
+        null,
+        "Insulation degradation by moisture/contamination",
+        7,
+        2,
+        "Polarization Index",
+        "Insulation resistance",
+        6,
+        {
+          "formula": "=C26*D26*G26",
+          "cached": 84
+        }
+      ],
+      [
+        2,
+        "Winding Condition Assessment",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        2.1,
+        "Winding turn strand to strand short circuit or open circuit",
+        0,
+        1,
+        "Leakage Reactance vs\nFrequency",
+        "FRSL",
+        7,
+        {
+          "formula": "=C28*D28*G28",
+          "cached": 0
+        }
+      ],
+      [
+        2.2,
+        "Winding turn to turn short circuit",
+        10,
+        1,
+        "Excitation current",
+        "Excitation current",
+        5,
+        {
+          "formula": "=C29*D29*G29",
+          "cached": 50
+        }
+      ],
+      [
+        null,
+        null,
+        10,
+        1,
+        "Ratio test",
+        "TTR",
+        5,
+        {
+          "formula": "=C30*D30*G30",
+          "cached": 50
+        }
+      ],
+      [
+        null,
+        null,
+        0,
+        1,
+        "SFRA trace",
+        "SFRA",
+        9,
+        {
+          "formula": "=C31*D31*G31",
+          "cached": 0
+        }
+      ],
+      [
+        null,
+        null,
+        10,
+        3,
+        "Resistance deviation",
+        "DC winding resistance",
+        5,
+        {
+          "formula": "=C32*D32*G32",
+          "cached": 150
+        }
+      ],
+      [
+        3,
+        "Core/ Clamp",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        2.2,
+        "Core displacement",
+        0,
+        2,
+        "SFRA trace",
+        "SFRA",
+        8,
+        {
+          "formula": "=C34*D34*G34",
+          "cached": 0
+        }
+      ],
+      [
+        null,
+        null,
+        0,
+        2,
+        "Leakage Reactance",
+        "Short circuit impedance/ Leakage reactance",
+        5,
+        {
+          "formula": "=C35*D35*G35",
+          "cached": 0
+        }
+      ],
+      [
+        3,
+        "Bushing Condition Assessment",
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "formula": "=C36*D36*G36",
+          "cached": 0
+        }
+      ],
+      [
+        null,
+        "Oil leakage (OIP)",
+        0,
+        2,
+        null,
+        "Visual inspection",
+        5,
+        {
+          "formula": "=C37*D37*G37",
+          "cached": 0
+        }
+      ],
+      [
+        null,
+        "Colour of oil in sight glass (by Visual Inspection) (OIP)",
+        0,
+        2,
+        null,
+        "Visual inspection",
+        5,
+        {
+          "formula": "=C38*D38*G38",
+          "cached": 0
+        }
+      ],
+      [
+        null,
+        "Colour of oil in sight glass (by lab test) (OIP)",
+        0,
+        2,
+        null,
+        "Visual inspection",
+        5,
+        {
+          "formula": "=C39*D39*G39",
+          "cached": 0
+        }
+      ],
+      [
+        null,
+        "DGA Oil (OIP)",
+        0,
+        2,
+        null,
+        "DGA in Bushing Oil",
+        7,
+        {
+          "formula": "=C40*D40*G40",
+          "cached": 0
+        }
+      ],
+      [
+        null,
+        "Overheating in bushing top (OIP/RIP/\nRIS/RBP)",
+        0,
+        4,
+        null,
+        "Thermal scanning",
+        6,
+        {
+          "formula": "=C41*D41*G41",
+          "cached": 0
+        }
+      ],
+      [
+        null,
+        "PD activities in condenser core (OIP)",
+        0,
+        2,
+        null,
+        "DGA Ratio H2/CH4 (pD)",
+        6,
+        {
+          "formula": "=C42*D42*G42",
+          "cached": 0
+        }
+      ],
+      [
+        null,
+        "Overheating in the condenser core (OIP)",
+        0,
+        2,
+        null,
+        "DGA Ratio C2H4/C2H6 (Thermal fault)",
+        6,
+        {
+          "formula": "=C43*D43*G43",
+          "cached": 0
+        }
+      ],
+      [
+        null,
+        "Overheating in the condenser core (OIP)",
+        0,
+        2,
+        null,
+        "DGA Ratio CO2/CO (Thermal fault in paper)",
+        6,
+        {
+          "formula": "=C44*D44*G44",
+          "cached": 0
+        }
+      ],
+      [
+        null,
+        "Contamination/ layers shorting/excessive moisture ",
+        8,
+        2,
+        "Tan delta increase",
+        "DF/PF",
+        6,
+        {
+          "formula": "=C45*D45*G45",
+          "cached": 96
+        }
+      ],
+      [
+        null,
+        "Contamination/ layers shorting/excessive moisture (RBP)",
+        8,
+        2,
+        "Tan delta increase",
+        "DF/PF",
+        6,
+        {
+          "formula": "=C46*D46*G46",
+          "cached": 96
+        }
+      ],
+      [
+        null,
+        "Contamination/ layers shorting/excessive moisture (OIP/RIP/RIS)",
+        8,
+        4,
+        "Change of Capacitance\n(C1)",
+        "C1 measurement",
+        6,
+        {
+          "formula": "=C47*D47*G47",
+          "cached": 192
+        }
+      ],
+      [
+        null,
+        "Damaged sheds on insulator (OIP/RIP/ RIS/RBP)",
+        0,
+        1,
+        null,
+        "Visual inspection",
+        5,
+        {
+          "formula": "=C48*D48*G48",
+          "cached": 0
+        }
+      ],
+      [
+        null,
+        "Corrosion due to poor installation of test tap cover (OIP/RIP/ RIS/RBP)",
+        0,
+        1,
+        null,
+        "Visual inspection\nvoltage tap",
+        5,
+        {
+          "formula": "=C49*D49*G49",
+          "cached": 0
+        }
+      ],
+      [
+        4,
+        "Cable Box Condition Assessment",
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "formula": "=C50*D50*G50",
+          "cached": 0
+        }
+      ],
+      [
+        4.1,
+        "Oil leakage",
+        0,
+        1,
+        null,
+        "Visual inspection",
+        5,
+        {
+          "formula": "=C51*D51*G51",
+          "cached": 0
+        }
+      ],
+      [
+        4.2,
+        "Condensation",
+        0,
+        1,
+        "Dry / Corrosion",
+        "Visual Inspection",
+        5,
+        {
+          "formula": "=C52*D52*G52",
+          "cached": 0
+        }
+      ],
+      [
+        4.3,
+        "Partial discharge",
+        0,
+        1,
+        "Tracking",
+        "Visual inspection",
+        5,
+        {
+          "formula": "=C53*D53*G53",
+          "cached": 0
+        }
+      ],
+      [
+        4.4,
+        "Overheating",
+        0,
+        2,
+        "Wall Temperature",
+        "Thermal scanning ",
+        6,
+        {
+          "formula": "=C54*D54*G54",
+          "cached": 0
+        }
+      ],
+      [
+        4.5,
+        "Miscellaneous",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        null,
+        0,
+        1,
+        "Shrinkage Cracks",
+        "Visual inspection",
+        5,
+        {
+          "formula": "=C56*D56*G56",
+          "cached": 0
+        }
+      ],
+      [
+        null,
+        null,
+        0,
+        1,
+        "Composition",
+        "Visual inspection",
+        5,
+        {
+          "formula": "=C57*D57*G57",
+          "cached": 0
+        }
+      ],
+      [
+        5,
+        "LTC Condition Assessment",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        5.1,
+        "Thermal: Overheating",
+        0,
+        1,
+        "Temperature differential",
+        "Thermography",
+        5,
+        {
+          "formula": "=C59*D59*G59",
+          "cached": 0
+        }
+      ],
+      [
+        5.2,
+        "Thermal: Coking",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        "Main current carrying contacts (OLTC or DETC)",
+        0,
+        1,
+        "Temperature differential",
+        "Thermography (bolt-on OLTC only)",
+        5,
+        {
+          "formula": "=C61*D61*G61",
+          "cached": 0
+        }
+      ],
+      [
+        null,
+        null,
+        0,
+        1,
+        "Gas Pattern Trending",
+        "DGA",
+        5,
+        {
+          "formula": "=C62*D62*G62",
+          "cached": 0
+        }
+      ],
+      [
+        5.3,
+        "Dielectric: Tracking and Flashover",
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "formula": "=C63*D63*G63",
+          "cached": 0
+        }
+      ],
+      [
+        null,
+        "Insulation parts in Diverter compartment",
+        0,
+        1,
+        "OEM Specs",
+        "Visual inspection",
+        4,
+        {
+          "formula": "=C64*D64*G64",
+          "cached": 0
+        }
+      ],
+      [
+        null,
+        null,
+        0,
+        1,
+        "Water content",
+        "Karl Fischer",
+        5,
+        {
+          "formula": "=C65*D65*G65",
+          "cached": 0
+        }
+      ],
+      [
+        null,
+        "Oil",
+        0,
+        1,
+        "Breakdown Voltage",
+        "Breakdown Voltage",
+        5,
+        {
+          "formula": "=C66*D66*G66",
+          "cached": 0
+        }
+      ],
+      [
+        null,
+        null,
+        0,
+        1,
+        "DGA",
+        "DGA",
+        5,
+        {
+          "formula": "=C67*D67*G67",
+          "cached": 0
+        }
+      ],
+      [
+        5.4,
+        "Mechanical: Incomplete operation ",
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "formula": "=C68*D68*G68",
+          "cached": 0
+        }
+      ],
+      [
+        "5.4.1",
+        "Motor drive and linkage",
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "formula": "=C69*D69*G69",
+          "cached": 0
+        }
+      ],
+      [
+        null,
+        "Motor trip",
+        0,
+        1,
+        "Torque",
+        "Motor current",
+        6,
+        {
+          "formula": "=C70*D70*G70",
+          "cached": 0
+        }
+      ],
+      [
+        "5.4.2",
+        "Tap selector (OLTC or DETC)",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        "Motor trip",
+        0,
+        1,
+        "Torque",
+        "Motor current",
+        6,
+        {
+          "formula": "=C71*D71*G72",
+          "cached": 0
+        }
+      ],
+      [
+        "5.4.3",
+        "Motor drive and linkage",
+        null,
+        null,
+        null,
+        null,
+        null,
+        {
+          "formula": "=C73*D73*G73",
+          "cached": 0
+        }
+      ],
+      [
+        null,
+        "Wear of linkages",
+        0,
+        1,
+        "OEM Specs",
+        "Visual inspection",
+        5,
+        {
+          "formula": "=C74*D74*G74",
+          "cached": 0
+        }
+      ],
+      [
+        5.5,
+        "Contact problems in tap selector and diverter switch",
+        0,
+        2,
+        "DRM ",
+        "OLTC scan",
+        6,
+        {
+          "formula": "=C75*D75*G75",
+          "cached": 0
+        }
+      ],
+      [
+        5.6,
+        "Fault in operating mechanism",
+        0,
+        1,
+        "DRM",
+        "OLTC scan",
+        6,
+        {
+          "formula": "=C76*D76*G76",
+          "cached": 0
+        }
+      ],
+      [
+        5.7,
+        "Faulty transition resistor",
+        0,
+        1,
+        "DRM",
+        "OLTC scan",
+        6,
+        {
+          "formula": "=C77*D77*G77",
+          "cached": 0
+        }
+      ],
+      [
+        6,
+        "Cooler/Radiator Condition Assessment",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        6.1,
+        "Fan or control failure / fan in wrong direction",
+        0,
+        1,
+        "Elevated temperatures",
+        "Visual inspection",
+        5,
+        {
+          "formula": "=C79*D79*G79",
+          "cached": 0
+        }
+      ],
+      [
+        6.2,
+        "Failure of pump / pump in wrong direction / valve closed incorrectly / blockage",
+        0,
+        1,
+        "Elevated temperatures",
+        "Measurement difference of inlet and outlet oil\ntemperature. Compare between coolers",
+        5,
+        {
+          "formula": "=C80*D80*G80",
+          "cached": 0
+        }
+      ],
+      [
+        null,
+        null,
+        0,
+        1,
+        "Oil flow relay, no pump current",
+        "Oil flow indication / measurement",
+        5,
+        {
+          "formula": "=C81*D81*G81",
+          "cached": 0
+        }
+      ],
+      [
+        6.3,
+        "Dirty radiators and cooling fans",
+        0,
+        3,
+        "Blocked cooling ducts",
+        "Visual inspection",
+        6,
+        {
+          "formula": "=C82*D82*G82",
+          "cached": 0
+        }
+      ],
+      [
+        6.4,
+        "Oil leaks",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        "Low oil level (transformer alarm/trip)",
+        0,
+        1,
+        "Oil level gauge/alarm",
+        "Visual inspection",
+        5,
+        {
+          "formula": "=C84*D84*G84",
+          "cached": 0
+        }
+      ],
+      [
+        null,
+        "Moisture and oxygen ingress",
+        0,
+        1,
+        "Elevated levels of moisture and oxygen",
+        "DGA etc.",
+        5,
+        {
+          "formula": "=C85*D85*G85",
+          "cached": 0
+        }
+      ],
+      [
+        6.5,
+        "Elevated ambient air/cooling water inlet temperatures",
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      [
+        null,
+        "Higher oil and winding temperatures\n(elevated oil temperature)",
+        0,
+        1,
+        "Unexpected OTI/WTI alarms",
+        "Visual inspection",
+        5,
+        {
+          "formula": "=C87*D87*G87",
+          "cached": 0
+        }
+      ]
+    ],
+    "formulaCount": 70,
+    "nonemptyCellCount": 487
+  },
+  "tableCalculate": {
+    "weightingFactors": {
+      "sheet": "Weighting",
+      "range": "K2:O22",
+      "rows": [
+        [
+          "No",
+          "Transformer Condition Criteria ",
+          "Total RPN",
+          "RPN Proportion",
+          "Weighting factor"
+        ],
+        [
+          1,
+          "DGA main tank",
+          {
+            "formula": "=H6+H9+H12+H19+H21",
+            "cached": 369
+          },
+          {
+            "formula": "=ROUND(M3/$M$22,4)",
+            "cached": 0.1972
+          },
+          {
+            "formula": "=ROUND(N3*3.33,4)",
+            "cached": 0.6567
+          }
+        ],
+        [
+          2,
+          "Oil test main tank",
+          {
+            "formula": "=H11",
+            "cached": 112
+          },
+          {
+            "formula": "=ROUND(M4/$M$22,4)",
+            "cached": 0.0599
+          },
+          {
+            "formula": "=ROUND(N4*3.33,4)",
+            "cached": 0.1995
+          }
+        ],
+        [
+          3,
+          "Thermal scan",
+          {
+            "formula": "=H41+H59+H61",
+            "cached": 0
+          },
+          {
+            "formula": "=ROUND(M5/$M$22,4)",
+            "cached": 0
+          },
+          {
+            "formula": "=ROUND(N5*3.33,4)",
+            "cached": 0
+          }
+        ],
+        [
+          4,
+          "Insulation resistance",
+          {
+            "formula": "=H5+H26+H20",
+            "cached": 296
+          },
+          {
+            "formula": "=ROUND(M6/$M$22,4)",
+            "cached": 0.1582
+          },
+          {
+            "formula": "=ROUND(N6*3.33,4)",
+            "cached": 0.5268
+          }
+        ],
+        [
+          5,
+          "Ratio test",
+          {
+            "formula": "=H30",
+            "cached": 50
+          },
+          {
+            "formula": "=ROUND(M7/$M$22,4)",
+            "cached": 0.0267
+          },
+          {
+            "formula": "=ROUND(N7*3.33,4)",
+            "cached": 0.0889
+          }
+        ],
+        [
+          6,
+          "DC winding resistance",
+          {
+            "formula": "=H32",
+            "cached": 150
+          },
+          {
+            "formula": "=ROUND(M8/$M$22,4)",
+            "cached": 0.0802
+          },
+          {
+            "formula": "=ROUND(N8*3.33,4)",
+            "cached": 0.2671
+          }
+        ],
+        [
+          7,
+          "Winding PF/DF",
+          {
+            "formula": "=H23+H24+H10",
+            "cached": 334
+          },
+          {
+            "formula": "=ROUND(M9/$M$22,4)",
+            "cached": 0.1785
+          },
+          {
+            "formula": "=ROUND(N9*3.33,4)",
+            "cached": 0.5944
+          }
+        ],
+        [
+          8,
+          "Bushing PF/DF",
+          {
+            "formula": "=H45+H46",
+            "cached": 192
+          },
+          {
+            "formula": "=ROUND(M10/$M$22,4)",
+            "cached": 0.1026
+          },
+          {
+            "formula": "=ROUND(N10*3.33,4)",
+            "cached": 0.3417
+          }
+        ],
+        [
+          9,
+          "Winding capacitance",
+          {
+            "formula": "=H24",
+            "cached": 126
+          },
+          {
+            "formula": "=ROUND(M11/$M$22,4)",
+            "cached": 0.0673
+          },
+          {
+            "formula": "=ROUND(N11*3.33,4)",
+            "cached": 0.2241
+          }
+        ],
+        [
+          10,
+          "Bushing C1 capacitance",
+          {
+            "formula": "=H47",
+            "cached": 192
+          },
+          {
+            "formula": "=ROUND(M12/$M$22,4)",
+            "cached": 0.1026
+          },
+          {
+            "formula": "=ROUND(N12*3.33,4)",
+            "cached": 0.3417
+          }
+        ],
+        [
+          11,
+          "Short circuit impedance/ Leakage reactance",
+          {
+            "formula": "=H35",
+            "cached": 0
+          },
+          {
+            "formula": "=ROUND(M13/$M$22,4)",
+            "cached": 0
+          },
+          {
+            "formula": "=ROUND(N13*3.33,4)",
+            "cached": 0
+          }
+        ],
+        [
+          12,
+          "FRSL",
+          {
+            "formula": "=H28",
+            "cached": 0
+          },
+          {
+            "formula": "=ROUND(M14/$M$22,4)",
+            "cached": 0
+          },
+          {
+            "formula": "=ROUND(N14*3.33,4)",
+            "cached": 0
+          }
+        ],
+        [
+          13,
+          "SFRA",
+          {
+            "formula": "=H34+H31",
+            "cached": 0
+          },
+          {
+            "formula": "=ROUND(M15/$M$22,4)",
+            "cached": 0
+          },
+          {
+            "formula": "=ROUND(N15*3.33,4)",
+            "cached": 0
+          }
+        ],
+        [
+          14,
+          "Moisture content (DRA)",
+          {
+            "formula": "=H17+H25",
+            "cached": 0
+          },
+          {
+            "formula": "=ROUND(M16/$M$22,4)",
+            "cached": 0
+          },
+          {
+            "formula": "=ROUND(N16*3.33,4)",
+            "cached": 0
+          }
+        ],
+        [
+          15,
+          "Excitation current",
+          {
+            "formula": "=H29",
+            "cached": 50
+          },
+          {
+            "formula": "=ROUND(M17/$M$22,4)",
+            "cached": 0.0267
+          },
+          {
+            "formula": "=ROUND(N17*3.33,4)",
+            "cached": 0.0889
+          }
+        ],
+        [
+          16,
+          "OLTC scan",
+          {
+            "formula": "=H75+H76+H77",
+            "cached": 0
+          },
+          {
+            "formula": "=ROUND(M18/$M$22,4)",
+            "cached": 0
+          },
+          {
+            "formula": "=ROUND(N18*3.33,4)",
+            "cached": 0
+          }
+        ],
+        [
+          17,
+          "DGA LTC",
+          {
+            "formula": "=+H67",
+            "cached": 0
+          },
+          {
+            "formula": "=ROUND(M19/$M$22,4)",
+            "cached": 0
+          },
+          {
+            "formula": "=ROUND(N19*3.33,4)",
+            "cached": 0
+          }
+        ],
+        [
+          18,
+          "Oil test LTC",
+          {
+            "formula": "=H66",
+            "cached": 0
+          },
+          {
+            "formula": "=ROUND(M20/$M$22,4)",
+            "cached": 0
+          },
+          {
+            "formula": "=ROUND(N20*3.33,4)",
+            "cached": 0
+          }
+        ],
+        [
+          19,
+          "DGA Bushing",
+          {
+            "formula": "=H40+H42+H43+H44",
+            "cached": 0
+          },
+          {
+            "formula": "=ROUND(M21/$M$22,4)",
+            "cached": 0
+          },
+          {
+            "formula": "=ROUND(N21*3.33,4)",
+            "cached": 0
+          }
+        ],
+        [
+          null,
+          "Total",
+          {
+            "formula": "=SUM(M3:M21)",
+            "cached": 1871
+          },
+          {
+            "formula": "=SUM(N3:N21)",
+            "cached": 0.9999
+          },
+          {
+            "formula": "=ROUND(N22*3.33,2)",
+            "cached": 3.33
+          }
+        ]
+      ],
+      "formulaCount": 60,
+      "nonemptyCellCount": 104
+    },
+    "example": {
+      "sheet": "Example",
+      "range": "A1:P73",
+      "rows": [
+        [
+          "Power transformer T1 (3 phases - 2 windings)",
+          null,
+          "110/ 22 kV",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "Insulation Resistance",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "Oil breakdown voltage",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "Measurement",
+          "IR (MΩ)",
+          "Assessment",
+          "Score",
+          null,
+          null,
+          null,
+          "Test object",
+          "t measure (°C)",
+          "Δt (°C)",
+          "Assessment",
+          "Score",
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "(HV + LV) - GND",
+          {
+            "formula": "=RANDBETWEEN(800,3000)",
+            "cached": 2680
+          },
+          {
+            "formula": "=IF(ABS(B6)>=1000,\"Good\",IF(AND(ABS(B6)<1000,ABS(B6)>=600),\"Fair\", IF(AND(ABS(B6)<600,ABS(B6)>=400), \"Poor\", \"Bad\")))",
+            "cached": "Good"
+          },
+          {
+            "formula": "=IF(C6=\"Good\",3,IF(C6=\"Fair\",2,IF(C6=\"Poor\",1,0)))",
+            "cached": 3
+          },
+          null,
+          null,
+          null,
+          "Bushings",
+          30,
+          {
+            "formula": "=RANDBETWEEN(1,20)",
+            "cached": 14
+          },
+          {
+            "formula": "=IF(ABS(J6)<=5,\"Good\",IF(AND(ABS(J6)>5,ABS(J6)<=10),\"Fair\", IF(AND(ABS(J6)>10,ABS(J6)<=15), \"Poor\", \"Bad\")))",
+            "cached": "Poor"
+          },
+          {
+            "formula": "=IF(K6=\"Good\",3,IF(K6=\"Fair\",2,IF(K6=\"Poor\",1,0)))",
+            "cached": 1
+          },
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "HV - (LV + GND)",
+          {
+            "formula": "=RANDBETWEEN(800,3000)",
+            "cached": 1185
+          },
+          {
+            "formula": "=IF(ABS(B7)>=1000,\"Good\",IF(AND(ABS(B7)<1000,ABS(B7)>=600),\"Fair\", IF(AND(ABS(B7)<600,ABS(B7)>=400), \"Poor\", \"Bad\")))",
+            "cached": "Good"
+          },
+          {
+            "formula": "=IF(C7=\"Good\",3,IF(C7=\"Fair\",2,IF(C7=\"Poor\",1,0)))",
+            "cached": 3
+          },
+          null,
+          null,
+          null,
+          "Tank",
+          26,
+          {
+            "formula": "=RANDBETWEEN(1,20)",
+            "cached": 12
+          },
+          {
+            "formula": "=IF(ABS(J7)<=5,\"Good\",IF(AND(ABS(J7)>5,ABS(J7)<=10),\"Fair\", IF(AND(ABS(J7)>10,ABS(J7)<=15), \"Poor\", \"Bad\")))",
+            "cached": "Poor"
+          },
+          {
+            "formula": "=IF(K7=\"Good\",3,IF(K7=\"Fair\",2,IF(K7=\"Poor\",1,0)))",
+            "cached": 1
+          },
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "LV - (HV + GND)",
+          {
+            "formula": "=RANDBETWEEN(400,3000)",
+            "cached": 2878
+          },
+          {
+            "formula": "=IF(ABS(B8)>=1000,\"Good\",IF(AND(ABS(B8)<1000,ABS(B8)>=600),\"Fair\", IF(AND(ABS(B8)<600,ABS(B8)>=400), \"Poor\", \"Bad\")))",
+            "cached": "Good"
+          },
+          {
+            "formula": "=IF(C8=\"Good\",3,IF(C8=\"Fair\",2,IF(C8=\"Poor\",1,0)))",
+            "cached": 3
+          },
+          null,
+          null,
+          null,
+          "Cable box",
+          25,
+          {
+            "formula": "=RANDBETWEEN(1,20)",
+            "cached": 13
+          },
+          {
+            "formula": "=IF(ABS(J8)<=5,\"Good\",IF(AND(ABS(J8)>5,ABS(J8)<=10),\"Fair\", IF(AND(ABS(J8)>10,ABS(J8)<=15), \"Poor\", \"Bad\")))",
+            "cached": "Poor"
+          },
+          {
+            "formula": "=IF(K8=\"Good\",3,IF(K8=\"Fair\",2,IF(K8=\"Poor\",1,0)))",
+            "cached": 1
+          },
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          "Average score",
+          {
+            "formula": "=ROUND(AVERAGE(D6:D8),2)",
+            "cached": 3
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "Average score",
+          {
+            "formula": "=ROUND(AVERAGE(L6:L8),2)",
+            "cached": 1
+          },
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          "Worst case score",
+          {
+            "formula": "=MIN(D6:D8)",
+            "cached": 3
+          },
+          null,
+          null,
+          null,
+          "DGA",
+          null,
+          null,
+          "Worst case score",
+          {
+            "formula": "=MIN(L6:L8)",
+            "cached": 1
+          },
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "Ratio test",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "Tap",
+          "Nominal ratio",
+          "Test result",
+          "Ratio dev",
+          "Assessment",
+          "Score",
+          null,
+          null,
+          "Key Gases Analysis",
+          "TDCG",
+          "ΔTCG / day",
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "1A",
+          11.9057,
+          {
+            "formula": "=ROUND(RAND()*(11.9057-11.7783)+11.7783,4)",
+            "cached": 11.8277
+          },
+          {
+            "formula": "=ROUND((C13-B13)/MAX(B13,C13)*100,2)",
+            "cached": -0.66
+          },
+          {
+            "formula": "=IF(ABS(D13)<=0.3,\"Good\",IF(AND(ABS(D13)>0.3,ABS(D13)<=0.5),\"Fair\", IF(AND(ABS(D13)>0.5,ABS(D13)<=0.7), \"Poor\", \"Bad\")))",
+            "cached": "Poor"
+          },
+          {
+            "formula": "=IF(E13=\"Good\",3,IF(E13=\"Fair\",2,IF(E13=\"Poor\",1,0)))",
+            "cached": 1
+          },
+          null,
+          "Condition",
+          {
+            "formula": "=RANDBETWEEN(1,4)",
+            "cached": 2
+          },
+          {
+            "formula": "=RANDBETWEEN(1,4)",
+            "cached": 2
+          },
+          {
+            "formula": "=RANDBETWEEN(1,4)",
+            "cached": 3
+          },
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "1B",
+          11.9057,
+          {
+            "formula": "=ROUND(RAND()*(11.9057-11.7783)+11.7783,4)",
+            "cached": 11.9008
+          },
+          {
+            "formula": "=ROUND((C14-B14)/MAX(B14,C14)*100,2)",
+            "cached": -0.04
+          },
+          {
+            "formula": "=IF(ABS(D14)<=0.3,\"Good\",IF(AND(ABS(D14)>0.3,ABS(D14)<=0.5),\"Fair\", IF(AND(ABS(D14)>0.5,ABS(D14)<=0.7), \"Poor\", \"Bad\")))",
+            "cached": "Good"
+          },
+          {
+            "formula": "=IF(E14=\"Good\",3,IF(E14=\"Fair\",2,IF(E14=\"Poor\",1,0)))",
+            "cached": 3
+          },
+          null,
+          "Assessment",
+          {
+            "formula": "=IF(I13=1,\"Good\",IF(I13=2,\"Fair\",IF(I13=3,\"Poor\",\"Bad\")))",
+            "cached": "Fair"
+          },
+          {
+            "formula": "=IF(J13=1,\"Good\",IF(J13=2,\"Fair\",IF(J13=3,\"Poor\",\"Bad\")))",
+            "cached": "Fair"
+          },
+          {
+            "formula": "=IF(K13=1,\"Good\",IF(K13=2,\"Fair\",IF(K13=3,\"Poor\",\"Bad\")))",
+            "cached": "Poor"
+          },
+          "Average score",
+          "Worst case score",
+          null,
+          null,
+          null
+        ],
+        [
+          "1C",
+          11.9057,
+          {
+            "formula": "=ROUND(RAND()*(11.9057-11.7783)+11.7783,4)",
+            "cached": 11.8329
+          },
+          {
+            "formula": "=ROUND((C15-B15)/MAX(B15,C15)*100,2)",
+            "cached": -0.61
+          },
+          {
+            "formula": "=IF(ABS(D15)<=0.3,\"Good\",IF(AND(ABS(D15)>0.3,ABS(D15)<=0.5),\"Fair\", IF(AND(ABS(D15)>0.5,ABS(D15)<=0.7), \"Poor\", \"Bad\")))",
+            "cached": "Poor"
+          },
+          {
+            "formula": "=IF(E15=\"Good\",3,IF(E15=\"Fair\",2,IF(E15=\"Poor\",1,0)))",
+            "cached": 1
+          },
+          null,
+          "Score",
+          {
+            "formula": "=IF(I14=\"Good\",3,IF(I14=\"Fair\",2,IF(I14=\"Poor\",1,0)))",
+            "cached": 2
+          },
+          {
+            "formula": "=IF(J14=\"Good\",3,IF(J14=\"Fair\",2,IF(J14=\"Poor\",1,0)))",
+            "cached": 2
+          },
+          {
+            "formula": "=IF(K14=\"Good\",3,IF(K14=\"Fair\",2,IF(K14=\"Poor\",1,0)))",
+            "cached": 1
+          },
+          {
+            "formula": "=ROUND(AVERAGE(I15:K15),2)",
+            "cached": 1.67
+          },
+          {
+            "formula": "=MIN(I15:K15)",
+            "cached": 1
+          },
+          null,
+          null,
+          null
+        ],
+        [
+          "2A",
+          11.7783,
+          {
+            "formula": "=ROUND(RAND()*(11.7783-11.6509)+11.6509,4)",
+            "cached": 11.7067
+          },
+          {
+            "formula": "=ROUND((C16-B16)/MAX(B16,C16)*100,2)",
+            "cached": -0.61
+          },
+          {
+            "formula": "=IF(ABS(D16)<=0.3,\"Good\",IF(AND(ABS(D16)>0.3,ABS(D16)<=0.5),\"Fair\", IF(AND(ABS(D16)>0.5,ABS(D16)<=0.7), \"Poor\", \"Bad\")))",
+            "cached": "Poor"
+          },
+          {
+            "formula": "=IF(E16=\"Good\",3,IF(E16=\"Fair\",2,IF(E16=\"Poor\",1,0)))",
+            "cached": 1
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "2B",
+          11.7783,
+          {
+            "formula": "=ROUND(RAND()*(11.7783-11.6509)+11.6509,4)",
+            "cached": 11.7083
+          },
+          {
+            "formula": "=ROUND((C17-B17)/MAX(B17,C17)*100,2)",
+            "cached": -0.59
+          },
+          {
+            "formula": "=IF(ABS(D17)<=0.3,\"Good\",IF(AND(ABS(D17)>0.3,ABS(D17)<=0.5),\"Fair\", IF(AND(ABS(D17)>0.5,ABS(D17)<=0.7), \"Poor\", \"Bad\")))",
+            "cached": "Poor"
+          },
+          {
+            "formula": "=IF(E17=\"Good\",3,IF(E17=\"Fair\",2,IF(E17=\"Poor\",1,0)))",
+            "cached": 1
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "2C",
+          11.7783,
+          {
+            "formula": "=ROUND(RAND()*(11.7783-11.6509)+11.6509,4)",
+            "cached": 11.7722
+          },
+          {
+            "formula": "=ROUND((C18-B18)/MAX(B18,C18)*100,2)",
+            "cached": -0.05
+          },
+          {
+            "formula": "=IF(ABS(D18)<=0.3,\"Good\",IF(AND(ABS(D18)>0.3,ABS(D18)<=0.5),\"Fair\", IF(AND(ABS(D18)>0.5,ABS(D18)<=0.7), \"Poor\", \"Bad\")))",
+            "cached": "Good"
+          },
+          {
+            "formula": "=IF(E18=\"Good\",3,IF(E18=\"Fair\",2,IF(E18=\"Poor\",1,0)))",
+            "cached": 3
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "3A",
+          11.6509,
+          {
+            "formula": "=ROUND(RAND()*(11.6509-11.5236)+11.5236,4)",
+            "cached": 11.5573
+          },
+          {
+            "formula": "=ROUND((C19-B19)/MAX(B19,C19)*100,2)",
+            "cached": -0.8
+          },
+          {
+            "formula": "=IF(ABS(D19)<=0.3,\"Good\",IF(AND(ABS(D19)>0.3,ABS(D19)<=0.5),\"Fair\", IF(AND(ABS(D19)>0.5,ABS(D19)<=0.7), \"Poor\", \"Bad\")))",
+            "cached": "Bad"
+          },
+          {
+            "formula": "=IF(E19=\"Good\",3,IF(E19=\"Fair\",2,IF(E19=\"Poor\",1,0)))",
+            "cached": 0
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "3B",
+          11.6509,
+          {
+            "formula": "=ROUND(RAND()*(11.6509-11.5236)+11.5236,4)",
+            "cached": 11.5668
+          },
+          {
+            "formula": "=ROUND((C20-B20)/MAX(B20,C20)*100,2)",
+            "cached": -0.72
+          },
+          {
+            "formula": "=IF(ABS(D20)<=0.3,\"Good\",IF(AND(ABS(D20)>0.3,ABS(D20)<=0.5),\"Fair\", IF(AND(ABS(D20)>0.5,ABS(D20)<=0.7), \"Poor\", \"Bad\")))",
+            "cached": "Bad"
+          },
+          {
+            "formula": "=IF(E20=\"Good\",3,IF(E20=\"Fair\",2,IF(E20=\"Poor\",1,0)))",
+            "cached": 0
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "3C",
+          11.6509,
+          {
+            "formula": "=ROUND(RAND()*(11.6509-11.5236)+11.5236,4)",
+            "cached": 11.5456
+          },
+          {
+            "formula": "=ROUND((C21-B21)/MAX(B21,C21)*100,2)",
+            "cached": -0.9
+          },
+          {
+            "formula": "=IF(ABS(D21)<=0.3,\"Good\",IF(AND(ABS(D21)>0.3,ABS(D21)<=0.5),\"Fair\", IF(AND(ABS(D21)>0.5,ABS(D21)<=0.7), \"Poor\", \"Bad\")))",
+            "cached": "Bad"
+          },
+          {
+            "formula": "=IF(E21=\"Good\",3,IF(E21=\"Fair\",2,IF(E21=\"Poor\",1,0)))",
+            "cached": 0
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "4A",
+          11.5236,
+          {
+            "formula": "=ROUND(RAND()*(11.5236-11.3962)+11.3962,4)",
+            "cached": 11.519
+          },
+          {
+            "formula": "=ROUND((C22-B22)/MAX(B22,C22)*100,2)",
+            "cached": -0.04
+          },
+          {
+            "formula": "=IF(ABS(D22)<=0.3,\"Good\",IF(AND(ABS(D22)>0.3,ABS(D22)<=0.5),\"Fair\", IF(AND(ABS(D22)>0.5,ABS(D22)<=0.7), \"Poor\", \"Bad\")))",
+            "cached": "Good"
+          },
+          {
+            "formula": "=IF(E22=\"Good\",3,IF(E22=\"Fair\",2,IF(E22=\"Poor\",1,0)))",
+            "cached": 3
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "4B",
+          11.5236,
+          {
+            "formula": "=ROUND(RAND()*(11.5236-11.3962)+11.3962,4)",
+            "cached": 11.5207
+          },
+          {
+            "formula": "=ROUND((C23-B23)/MAX(B23,C23)*100,2)",
+            "cached": -0.03
+          },
+          {
+            "formula": "=IF(ABS(D23)<=0.3,\"Good\",IF(AND(ABS(D23)>0.3,ABS(D23)<=0.5),\"Fair\", IF(AND(ABS(D23)>0.5,ABS(D23)<=0.7), \"Poor\", \"Bad\")))",
+            "cached": "Good"
+          },
+          {
+            "formula": "=IF(E23=\"Good\",3,IF(E23=\"Fair\",2,IF(E23=\"Poor\",1,0)))",
+            "cached": 3
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "4C",
+          11.5236,
+          {
+            "formula": "=ROUND(RAND()*(11.5236-11.3962)+11.3962,4)",
+            "cached": 11.5131
+          },
+          {
+            "formula": "=ROUND((C24-B24)/MAX(B24,C24)*100,2)",
+            "cached": -0.09
+          },
+          {
+            "formula": "=IF(ABS(D24)<=0.3,\"Good\",IF(AND(ABS(D24)>0.3,ABS(D24)<=0.5),\"Fair\", IF(AND(ABS(D24)>0.5,ABS(D24)<=0.7), \"Poor\", \"Bad\")))",
+            "cached": "Good"
+          },
+          {
+            "formula": "=IF(E24=\"Good\",3,IF(E24=\"Fair\",2,IF(E24=\"Poor\",1,0)))",
+            "cached": 3
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "5A",
+          11.3962,
+          {
+            "formula": "=ROUND(RAND()*(11.3962-11.3)+11.3,4)",
+            "cached": 11.3057
+          },
+          {
+            "formula": "=ROUND((C25-B25)/MAX(B25,C25)*100,2)",
+            "cached": -0.79
+          },
+          {
+            "formula": "=IF(ABS(D25)<=0.3,\"Good\",IF(AND(ABS(D25)>0.3,ABS(D25)<=0.5),\"Fair\", IF(AND(ABS(D25)>0.5,ABS(D25)<=0.7), \"Poor\", \"Bad\")))",
+            "cached": "Bad"
+          },
+          {
+            "formula": "=IF(E25=\"Good\",3,IF(E25=\"Fair\",2,IF(E25=\"Poor\",1,0)))",
+            "cached": 0
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "5B",
+          11.3962,
+          {
+            "formula": "=ROUND(RAND()*(11.3962-11.3)+11.3,4)",
+            "cached": 11.3199
+          },
+          {
+            "formula": "=ROUND((C26-B26)/MAX(B26,C26)*100,2)",
+            "cached": -0.67
+          },
+          {
+            "formula": "=IF(ABS(D26)<=0.3,\"Good\",IF(AND(ABS(D26)>0.3,ABS(D26)<=0.5),\"Fair\", IF(AND(ABS(D26)>0.5,ABS(D26)<=0.7), \"Poor\", \"Bad\")))",
+            "cached": "Poor"
+          },
+          {
+            "formula": "=IF(E26=\"Good\",3,IF(E26=\"Fair\",2,IF(E26=\"Poor\",1,0)))",
+            "cached": 1
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "5C",
+          11.3962,
+          {
+            "formula": "=ROUND(RAND()*(11.3962-11.3)+11.3,4)",
+            "cached": 11.3333
+          },
+          {
+            "formula": "=ROUND((C27-B27)/MAX(B27,C27)*100,2)",
+            "cached": -0.55
+          },
+          {
+            "formula": "=IF(ABS(D27)<=0.3,\"Good\",IF(AND(ABS(D27)>0.3,ABS(D27)<=0.5),\"Fair\", IF(AND(ABS(D27)>0.5,ABS(D27)<=0.7), \"Poor\", \"Bad\")))",
+            "cached": "Poor"
+          },
+          {
+            "formula": "=IF(E27=\"Good\",3,IF(E27=\"Fair\",2,IF(E27=\"Poor\",1,0)))",
+            "cached": 1
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          "Average score",
+          {
+            "formula": "=ROUND(AVERAGE(F13:F27),2)",
+            "cached": 1.4
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          "Worst case score",
+          {
+            "formula": "=MIN(F13:F27)",
+            "cached": 0
+          },
+          null,
+          "Winding Capacitance",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "Winding DF",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "Measurement",
+          "DF (%)",
+          "Assessment",
+          "Score",
+          null,
+          null,
+          null,
+          "Measurement",
+          "Capacitance (pF)",
+          "Δ Capacitance (%)",
+          "Assessment",
+          "Score",
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "CH+CHL",
+          {
+            "formula": "=ROUND(RAND()*(1.5-0.1)+0.1,2)",
+            "cached": 0.98
+          },
+          {
+            "formula": "=IF(ABS(B32)<=0.5,\"Good\",IF(AND(ABS(B32)>0.5,ABS(B32)<=1),\"Fair\", IF(AND(ABS(B32)>1,ABS(B32)<=1.5), \"Poor\", \"Bad\")))",
+            "cached": "Fair"
+          },
+          {
+            "formula": "=IF(C32=\"Good\",3,IF(C32=\"Fair\",2,IF(C32=\"Poor\",1,0)))",
+            "cached": 2
+          },
+          null,
+          null,
+          null,
+          "CH+CHL",
+          8685,
+          {
+            "formula": "=ROUND(RAND()*(10-0.1)+0.1,2)",
+            "cached": 6.33
+          },
+          {
+            "formula": "=IF(ABS(J32)<=5,\"Good\",IF(AND(ABS(J32)>5,ABS(J32)<=7),\"Fair\", IF(AND(ABS(J32)>7,ABS(J32)<=10), \"Poor\", \"Bad\")))",
+            "cached": "Fair"
+          },
+          {
+            "formula": "=IF(K32=\"Good\",3,IF(K32=\"Fair\",2,IF(K32=\"Poor\",1,0)))",
+            "cached": 2
+          },
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "CH",
+          {
+            "formula": "=ROUND(RAND()*(1.5-0.1)+0.1,2)",
+            "cached": 0.56
+          },
+          {
+            "formula": "=IF(ABS(B33)<=0.5,\"Good\",IF(AND(ABS(B33)>0.5,ABS(B33)<=1),\"Fair\", IF(AND(ABS(B33)>1,ABS(B33)<=1.5), \"Poor\", \"Bad\")))",
+            "cached": "Fair"
+          },
+          {
+            "formula": "=IF(C33=\"Good\",3,IF(C33=\"Fair\",2,IF(C33=\"Poor\",1,0)))",
+            "cached": 2
+          },
+          null,
+          null,
+          null,
+          "CH",
+          3418,
+          {
+            "formula": "=ROUND(RAND()*(10-0.1)+0.1,2)",
+            "cached": 9.62
+          },
+          {
+            "formula": "=IF(ABS(J33)<=5,\"Good\",IF(AND(ABS(J33)>5,ABS(J33)<=7),\"Fair\", IF(AND(ABS(J33)>7,ABS(J33)<=10), \"Poor\", \"Bad\")))",
+            "cached": "Poor"
+          },
+          {
+            "formula": "=IF(K33=\"Good\",3,IF(K33=\"Fair\",2,IF(K33=\"Poor\",1,0)))",
+            "cached": 1
+          },
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "CHL",
+          {
+            "formula": "=ROUND(RAND()*(1.5-0.1)+0.1,2)",
+            "cached": 1.39
+          },
+          {
+            "formula": "=IF(ABS(B34)<=0.5,\"Good\",IF(AND(ABS(B34)>0.5,ABS(B34)<=1),\"Fair\", IF(AND(ABS(B34)>1,ABS(B34)<=1.5), \"Poor\", \"Bad\")))",
+            "cached": "Poor"
+          },
+          {
+            "formula": "=IF(C34=\"Good\",3,IF(C34=\"Fair\",2,IF(C34=\"Poor\",1,0)))",
+            "cached": 1
+          },
+          null,
+          null,
+          null,
+          "CHL",
+          5267,
+          {
+            "formula": "=ROUND(RAND()*(10-0.1)+0.1,2)",
+            "cached": 5.19
+          },
+          {
+            "formula": "=IF(ABS(J34)<=5,\"Good\",IF(AND(ABS(J34)>5,ABS(J34)<=7),\"Fair\", IF(AND(ABS(J34)>7,ABS(J34)<=10), \"Poor\", \"Bad\")))",
+            "cached": "Fair"
+          },
+          {
+            "formula": "=IF(K34=\"Good\",3,IF(K34=\"Fair\",2,IF(K34=\"Poor\",1,0)))",
+            "cached": 2
+          },
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "CL",
+          {
+            "formula": "=ROUND(RAND()*(1.5-0.1)+0.1,2)",
+            "cached": 0.48
+          },
+          {
+            "formula": "=IF(ABS(B35)<=0.5,\"Good\",IF(AND(ABS(B35)>0.5,ABS(B35)<=1),\"Fair\", IF(AND(ABS(B35)>1,ABS(B35)<=1.5), \"Poor\", \"Bad\")))",
+            "cached": "Good"
+          },
+          {
+            "formula": "=IF(C35=\"Good\",3,IF(C35=\"Fair\",2,IF(C35=\"Poor\",1,0)))",
+            "cached": 3
+          },
+          null,
+          null,
+          null,
+          "CL",
+          9457,
+          {
+            "formula": "=ROUND(RAND()*(10-0.1)+0.1,2)",
+            "cached": 6.99
+          },
+          {
+            "formula": "=IF(ABS(J35)<=5,\"Good\",IF(AND(ABS(J35)>5,ABS(J35)<=7),\"Fair\", IF(AND(ABS(J35)>7,ABS(J35)<=10), \"Poor\", \"Bad\")))",
+            "cached": "Fair"
+          },
+          {
+            "formula": "=IF(K35=\"Good\",3,IF(K35=\"Fair\",2,IF(K35=\"Poor\",1,0)))",
+            "cached": 2
+          },
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          "Average score",
+          {
+            "formula": "=ROUND(AVERAGE(D32:D35),2)",
+            "cached": 2
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "Average score",
+          {
+            "formula": "=ROUND(AVERAGE(L32:L35),2)",
+            "cached": 1.75
+          },
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          "Worst case score",
+          {
+            "formula": "=MIN(D32:D35)",
+            "cached": 1
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "Worst case score",
+          {
+            "formula": "=MIN(L32:L35)",
+            "cached": 1
+          },
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "DC winding resistance Prim",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "DRA",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "Tap",
+          "Rmeasure (Ω)",
+          "Rdev (%)",
+          "Assessment",
+          "Score",
+          null,
+          null,
+          "Measurement",
+          "Moiture in paper (%)",
+          "Assessment",
+          "Average score",
+          "Worst case score",
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "1A",
+          2.089,
+          {
+            "formula": "=ROUND(RAND()*(3-0.1)+0.1,2)",
+            "cached": 2.56
+          },
+          {
+            "formula": "=IF(ABS(C40)<=1,\"Good\",IF(AND(ABS(C40)>1,ABS(C40)<=2),\"Fair\", IF(AND(ABS(C40)>2,ABS(C40)<=3), \"Poor\", \"Bad\")))",
+            "cached": "Poor"
+          },
+          {
+            "formula": "=IF(D40=\"Good\",3,IF(D40=\"Fair\",2,IF(D40=\"Poor\",1,0)))",
+            "cached": 1
+          },
+          null,
+          null,
+          "CHL",
+          {
+            "formula": "=RANDBETWEEN(1,4)",
+            "cached": 2
+          },
+          {
+            "formula": "=IF(ABS(I40)<=1,\"Good\",IF(AND(ABS(I40)>1,ABS(I40)<=2),\"Fair\", IF(AND(ABS(I40)>2,ABS(I40)<=3), \"Poor\", \"Bad\")))",
+            "cached": "Fair"
+          },
+          {
+            "formula": "=IF(J40=\"Good\",3,IF(J40=\"Fair\",2,IF(J40=\"Poor\",1,0)))",
+            "cached": 2
+          },
+          {
+            "formula": "=MIN(K40)",
+            "cached": 2
+          },
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "1B",
+          2.093,
+          {
+            "formula": "=ROUND(RAND()*(3-0.1)+0.1,2)",
+            "cached": 2.28
+          },
+          {
+            "formula": "=IF(ABS(C41)<=1,\"Good\",IF(AND(ABS(C41)>1,ABS(C41)<=2),\"Fair\", IF(AND(ABS(C41)>2,ABS(C41)<=3), \"Poor\", \"Bad\")))",
+            "cached": "Poor"
+          },
+          {
+            "formula": "=IF(D41=\"Good\",3,IF(D41=\"Fair\",2,IF(D41=\"Poor\",1,0)))",
+            "cached": 1
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "1C",
+          2.089,
+          {
+            "formula": "=ROUND(RAND()*(3-0.1)+0.1,2)",
+            "cached": 2.14
+          },
+          {
+            "formula": "=IF(ABS(C42)<=1,\"Good\",IF(AND(ABS(C42)>1,ABS(C42)<=2),\"Fair\", IF(AND(ABS(C42)>2,ABS(C42)<=3), \"Poor\", \"Bad\")))",
+            "cached": "Poor"
+          },
+          {
+            "formula": "=IF(D42=\"Good\",3,IF(D42=\"Fair\",2,IF(D42=\"Poor\",1,0)))",
+            "cached": 1
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "2A",
+          2.063,
+          {
+            "formula": "=ROUND(RAND()*(3-0.1)+0.1,2)",
+            "cached": 2.15
+          },
+          {
+            "formula": "=IF(ABS(C43)<=1,\"Good\",IF(AND(ABS(C43)>1,ABS(C43)<=2),\"Fair\", IF(AND(ABS(C43)>2,ABS(C43)<=3), \"Poor\", \"Bad\")))",
+            "cached": "Poor"
+          },
+          {
+            "formula": "=IF(D43=\"Good\",3,IF(D43=\"Fair\",2,IF(D43=\"Poor\",1,0)))",
+            "cached": 1
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "2B",
+          2.067,
+          {
+            "formula": "=ROUND(RAND()*(3-0.1)+0.1,2)",
+            "cached": 2.96
+          },
+          {
+            "formula": "=IF(ABS(C44)<=1,\"Good\",IF(AND(ABS(C44)>1,ABS(C44)<=2),\"Fair\", IF(AND(ABS(C44)>2,ABS(C44)<=3), \"Poor\", \"Bad\")))",
+            "cached": "Poor"
+          },
+          {
+            "formula": "=IF(D44=\"Good\",3,IF(D44=\"Fair\",2,IF(D44=\"Poor\",1,0)))",
+            "cached": 1
+          },
+          null,
+          null,
+          "Bushing DF",
+          null,
+          null,
+          null,
+          null,
+          "Bushing Cap",
+          null,
+          null,
+          null
+        ],
+        [
+          "2C",
+          2.064,
+          {
+            "formula": "=ROUND(RAND()*(3-0.1)+0.1,2)",
+            "cached": 0.21
+          },
+          {
+            "formula": "=IF(ABS(C45)<=1,\"Good\",IF(AND(ABS(C45)>1,ABS(C45)<=2),\"Fair\", IF(AND(ABS(C45)>2,ABS(C45)<=3), \"Poor\", \"Bad\")))",
+            "cached": "Good"
+          },
+          {
+            "formula": "=IF(D45=\"Good\",3,IF(D45=\"Fair\",2,IF(D45=\"Poor\",1,0)))",
+            "cached": 3
+          },
+          null,
+          null,
+          "Measurement",
+          "Tan delta increase",
+          "Assessment",
+          "Score",
+          null,
+          "Measurement",
+          "Tan delta increase",
+          "Assessment",
+          "Score"
+        ],
+        [
+          "3A",
+          2.036,
+          {
+            "formula": "=ROUND(RAND()*(3-0.1)+0.1,2)",
+            "cached": 0.3
+          },
+          {
+            "formula": "=IF(ABS(C46)<=1,\"Good\",IF(AND(ABS(C46)>1,ABS(C46)<=2),\"Fair\", IF(AND(ABS(C46)>2,ABS(C46)<=3), \"Poor\", \"Bad\")))",
+            "cached": "Good"
+          },
+          {
+            "formula": "=IF(D46=\"Good\",3,IF(D46=\"Fair\",2,IF(D46=\"Poor\",1,0)))",
+            "cached": 3
+          },
+          null,
+          null,
+          "Phase A",
+          {
+            "formula": "=ROUND(RAND()*(1-0.1)+0.1,2)",
+            "cached": 0.91
+          },
+          {
+            "formula": "=IF(ABS(I46)<=0.4,\"Good\",IF(AND(ABS(I46)>0.4,ABS(I46)<=0.7),\"Fair\", IF(AND(ABS(I46)>0.7,ABS(I46)<=1), \"Poor\", \"Bad\")))",
+            "cached": "Poor"
+          },
+          {
+            "formula": "=IF(J46=\"Good\",3,IF(J46=\"Fair\",2,IF(J46=\"Poor\",1,0)))",
+            "cached": 1
+          },
+          null,
+          "Phase A",
+          {
+            "formula": "=ROUND(RAND()*(1-0.1)+0.1,2)",
+            "cached": 0.51
+          },
+          {
+            "formula": "=IF(ABS(N46)<=0.4,\"Good\",IF(AND(ABS(N46)>0.4,ABS(N46)<=0.7),\"Fair\", IF(AND(ABS(N46)>0.7,ABS(N46)<=1), \"Poor\", \"Bad\")))",
+            "cached": "Fair"
+          },
+          {
+            "formula": "=IF(O46=\"Good\",3,IF(O46=\"Fair\",2,IF(O46=\"Poor\",1,0)))",
+            "cached": 2
+          }
+        ],
+        [
+          "3B",
+          2.04,
+          {
+            "formula": "=ROUND(RAND()*(3-0.1)+0.1,2)",
+            "cached": 2.18
+          },
+          {
+            "formula": "=IF(ABS(C47)<=1,\"Good\",IF(AND(ABS(C47)>1,ABS(C47)<=2),\"Fair\", IF(AND(ABS(C47)>2,ABS(C47)<=3), \"Poor\", \"Bad\")))",
+            "cached": "Poor"
+          },
+          {
+            "formula": "=IF(D47=\"Good\",3,IF(D47=\"Fair\",2,IF(D47=\"Poor\",1,0)))",
+            "cached": 1
+          },
+          null,
+          null,
+          "Phase B",
+          {
+            "formula": "=ROUND(RAND()*(1-0.1)+0.1,2)",
+            "cached": 0.9
+          },
+          {
+            "formula": "=IF(ABS(I47)<=0.4,\"Good\",IF(AND(ABS(I47)>0.4,ABS(I47)<=0.7),\"Fair\", IF(AND(ABS(I47)>0.7,ABS(I47)<=1), \"Poor\", \"Bad\")))",
+            "cached": "Poor"
+          },
+          {
+            "formula": "=IF(J47=\"Good\",3,IF(J47=\"Fair\",2,IF(J47=\"Poor\",1,0)))",
+            "cached": 1
+          },
+          null,
+          "Phase B",
+          {
+            "formula": "=ROUND(RAND()*(1-0.1)+0.1,2)",
+            "cached": 0.7
+          },
+          {
+            "formula": "=IF(ABS(N47)<=0.4,\"Good\",IF(AND(ABS(N47)>0.4,ABS(N47)<=0.7),\"Fair\", IF(AND(ABS(N47)>0.7,ABS(N47)<=1), \"Poor\", \"Bad\")))",
+            "cached": "Fair"
+          },
+          {
+            "formula": "=IF(O47=\"Good\",3,IF(O47=\"Fair\",2,IF(O47=\"Poor\",1,0)))",
+            "cached": 2
+          }
+        ],
+        [
+          "3C",
+          2.037,
+          {
+            "formula": "=ROUND(RAND()*(3-0.1)+0.1,2)",
+            "cached": 1.61
+          },
+          {
+            "formula": "=IF(ABS(C48)<=1,\"Good\",IF(AND(ABS(C48)>1,ABS(C48)<=2),\"Fair\", IF(AND(ABS(C48)>2,ABS(C48)<=3), \"Poor\", \"Bad\")))",
+            "cached": "Fair"
+          },
+          {
+            "formula": "=IF(D48=\"Good\",3,IF(D48=\"Fair\",2,IF(D48=\"Poor\",1,0)))",
+            "cached": 2
+          },
+          null,
+          null,
+          "Phase C",
+          {
+            "formula": "=ROUND(RAND()*(1-0.1)+0.1,2)",
+            "cached": 0.44
+          },
+          {
+            "formula": "=IF(ABS(I48)<=0.4,\"Good\",IF(AND(ABS(I48)>0.4,ABS(I48)<=0.7),\"Fair\", IF(AND(ABS(I48)>0.7,ABS(I48)<=1), \"Poor\", \"Bad\")))",
+            "cached": "Fair"
+          },
+          {
+            "formula": "=IF(J48=\"Good\",3,IF(J48=\"Fair\",2,IF(J48=\"Poor\",1,0)))",
+            "cached": 2
+          },
+          null,
+          "Phase C",
+          {
+            "formula": "=ROUND(RAND()*(1-0.1)+0.1,2)",
+            "cached": 0.5
+          },
+          {
+            "formula": "=IF(ABS(N48)<=0.4,\"Good\",IF(AND(ABS(N48)>0.4,ABS(N48)<=0.7),\"Fair\", IF(AND(ABS(N48)>0.7,ABS(N48)<=1), \"Poor\", \"Bad\")))",
+            "cached": "Fair"
+          },
+          {
+            "formula": "=IF(O48=\"Good\",3,IF(O48=\"Fair\",2,IF(O48=\"Poor\",1,0)))",
+            "cached": 2
+          }
+        ],
+        [
+          "4A",
+          2.01,
+          {
+            "formula": "=ROUND(RAND()*(3-0.1)+0.1,2)",
+            "cached": 0.76
+          },
+          {
+            "formula": "=IF(ABS(C49)<=1,\"Good\",IF(AND(ABS(C49)>1,ABS(C49)<=2),\"Fair\", IF(AND(ABS(C49)>2,ABS(C49)<=3), \"Poor\", \"Bad\")))",
+            "cached": "Good"
+          },
+          {
+            "formula": "=IF(D49=\"Good\",3,IF(D49=\"Fair\",2,IF(D49=\"Poor\",1,0)))",
+            "cached": 3
+          },
+          null,
+          null,
+          "Phase N",
+          {
+            "formula": "=ROUND(RAND()*(1-0.1)+0.1,2)",
+            "cached": 0.75
+          },
+          {
+            "formula": "=IF(ABS(I49)<=0.4,\"Good\",IF(AND(ABS(I49)>0.4,ABS(I49)<=0.7),\"Fair\", IF(AND(ABS(I49)>0.7,ABS(I49)<=1), \"Poor\", \"Bad\")))",
+            "cached": "Poor"
+          },
+          {
+            "formula": "=IF(J49=\"Good\",3,IF(J49=\"Fair\",2,IF(J49=\"Poor\",1,0)))",
+            "cached": 1
+          },
+          null,
+          "Phase N",
+          {
+            "formula": "=ROUND(RAND()*(1-0.1)+0.1,2)",
+            "cached": 0.97
+          },
+          {
+            "formula": "=IF(ABS(N49)<=0.4,\"Good\",IF(AND(ABS(N49)>0.4,ABS(N49)<=0.7),\"Fair\", IF(AND(ABS(N49)>0.7,ABS(N49)<=1), \"Poor\", \"Bad\")))",
+            "cached": "Poor"
+          },
+          {
+            "formula": "=IF(O49=\"Good\",3,IF(O49=\"Fair\",2,IF(O49=\"Poor\",1,0)))",
+            "cached": 1
+          }
+        ],
+        [
+          "4B",
+          2.014,
+          {
+            "formula": "=ROUND(RAND()*(3-0.1)+0.1,2)",
+            "cached": 1.58
+          },
+          {
+            "formula": "=IF(ABS(C50)<=1,\"Good\",IF(AND(ABS(C50)>1,ABS(C50)<=2),\"Fair\", IF(AND(ABS(C50)>2,ABS(C50)<=3), \"Poor\", \"Bad\")))",
+            "cached": "Fair"
+          },
+          {
+            "formula": "=IF(D50=\"Good\",3,IF(D50=\"Fair\",2,IF(D50=\"Poor\",1,0)))",
+            "cached": 2
+          },
+          null,
+          null,
+          null,
+          null,
+          "Average score",
+          {
+            "formula": "=ROUND(AVERAGE(K46:K49),2)",
+            "cached": 1.25
+          },
+          null,
+          null,
+          null,
+          "Average score",
+          {
+            "formula": "=ROUND(AVERAGE(P46:P49),2)",
+            "cached": 1.75
+          }
+        ],
+        [
+          "4C",
+          2.011,
+          {
+            "formula": "=ROUND(RAND()*(3-0.1)+0.1,2)",
+            "cached": 2.74
+          },
+          {
+            "formula": "=IF(ABS(C51)<=1,\"Good\",IF(AND(ABS(C51)>1,ABS(C51)<=2),\"Fair\", IF(AND(ABS(C51)>2,ABS(C51)<=3), \"Poor\", \"Bad\")))",
+            "cached": "Poor"
+          },
+          {
+            "formula": "=IF(D51=\"Good\",3,IF(D51=\"Fair\",2,IF(D51=\"Poor\",1,0)))",
+            "cached": 1
+          },
+          null,
+          null,
+          null,
+          null,
+          "Worst case score",
+          {
+            "formula": "=MIN(K46:K49)",
+            "cached": 1
+          },
+          null,
+          null,
+          null,
+          "Worst case score",
+          {
+            "formula": "=MIN(P46:P49)",
+            "cached": 1
+          }
+        ],
+        [
+          "5A",
+          1.983,
+          {
+            "formula": "=ROUND(RAND()*(3-0.1)+0.1,2)",
+            "cached": 2.12
+          },
+          {
+            "formula": "=IF(ABS(C52)<=1,\"Good\",IF(AND(ABS(C52)>1,ABS(C52)<=2),\"Fair\", IF(AND(ABS(C52)>2,ABS(C52)<=3), \"Poor\", \"Bad\")))",
+            "cached": "Poor"
+          },
+          {
+            "formula": "=IF(D52=\"Good\",3,IF(D52=\"Fair\",2,IF(D52=\"Poor\",1,0)))",
+            "cached": 1
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "5B",
+          1.987,
+          {
+            "formula": "=ROUND(RAND()*(3-0.1)+0.1,2)",
+            "cached": 1.09
+          },
+          {
+            "formula": "=IF(ABS(C53)<=1,\"Good\",IF(AND(ABS(C53)>1,ABS(C53)<=2),\"Fair\", IF(AND(ABS(C53)>2,ABS(C53)<=3), \"Poor\", \"Bad\")))",
+            "cached": "Fair"
+          },
+          {
+            "formula": "=IF(D53=\"Good\",3,IF(D53=\"Fair\",2,IF(D53=\"Poor\",1,0)))",
+            "cached": 2
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "5C",
+          1.984,
+          {
+            "formula": "=ROUND(RAND()*(3-0.1)+0.1,2)",
+            "cached": 1.61
+          },
+          {
+            "formula": "=IF(ABS(C54)<=1,\"Good\",IF(AND(ABS(C54)>1,ABS(C54)<=2),\"Fair\", IF(AND(ABS(C54)>2,ABS(C54)<=3), \"Poor\", \"Bad\")))",
+            "cached": "Fair"
+          },
+          {
+            "formula": "=IF(D54=\"Good\",3,IF(D54=\"Fair\",2,IF(D54=\"Poor\",1,0)))",
+            "cached": 2
+          },
+          null,
+          null,
+          "Exciting current",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          "Average score",
+          {
+            "formula": "=ROUND(AVERAGE(E40:E54),2)",
+            "cached": 1.67
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          "Worst case score",
+          {
+            "formula": "=MIN(E40:E54)",
+            "cached": 1
+          },
+          null,
+          null,
+          "Tap",
+          "I (mA)",
+          " I Dev% (compare with reference)",
+          "Assessment",
+          "Score",
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "DC winding resistance Sec",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "1A",
+          23.905,
+          {
+            "formula": "=ROUND(RAND()*(10-0.1)+0.1,2)",
+            "cached": 5.77
+          },
+          {
+            "formula": "=IF(ABS(J57)<=10,\"Good\",IF(AND(ABS(J57)>10,ABS(J57)<=15),\"Fair\", IF(AND(ABS(J57)>15,ABS(J57)<=20), \"Poor\", \"Bad\")))",
+            "cached": "Good"
+          },
+          {
+            "formula": "=IF(K57=\"Good\",3,IF(K57=\"Fair\",2,IF(K57=\"Poor\",1,0)))",
+            "cached": 3
+          },
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "Phase A",
+          "Rmeasure (Ω)",
+          "Rdev (%)",
+          "Assessment",
+          "Score",
+          null,
+          null,
+          "1B",
+          18.012,
+          {
+            "formula": "=ROUND(RAND()*(15-0.1)+0.1,2)",
+            "cached": 3.34
+          },
+          {
+            "formula": "=IF(ABS(J58)<=10,\"Good\",IF(AND(ABS(J58)>10,ABS(J58)<=15),\"Fair\", IF(AND(ABS(J58)>15,ABS(J58)<=20), \"Poor\", \"Bad\")))",
+            "cached": "Good"
+          },
+          {
+            "formula": "=IF(K58=\"Good\",3,IF(K58=\"Fair\",2,IF(K58=\"Poor\",1,0)))",
+            "cached": 3
+          },
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "Phase B",
+          31.463,
+          {
+            "formula": "=ROUND(RAND()*(3-0.1)+0.1,2)",
+            "cached": 1.31
+          },
+          {
+            "formula": "=IF(ABS(C59)<=1,\"Good\",IF(AND(ABS(C59)>1,ABS(C59)<=2),\"Fair\", IF(AND(ABS(C59)>2,ABS(C59)<=3), \"Poor\", \"Bad\")))",
+            "cached": "Fair"
+          },
+          {
+            "formula": "=IF(D59=\"Good\",3,IF(D59=\"Fair\",2,IF(D59=\"Poor\",1,0)))",
+            "cached": 2
+          },
+          null,
+          null,
+          "1C",
+          23.902,
+          {
+            "formula": "=ROUND(RAND()*(15-0.1)+0.1,2)",
+            "cached": 11.81
+          },
+          {
+            "formula": "=IF(ABS(J59)<=10,\"Good\",IF(AND(ABS(J59)>10,ABS(J59)<=15),\"Fair\", IF(AND(ABS(J59)>15,ABS(J59)<=20), \"Poor\", \"Bad\")))",
+            "cached": "Fair"
+          },
+          {
+            "formula": "=IF(K59=\"Good\",3,IF(K59=\"Fair\",2,IF(K59=\"Poor\",1,0)))",
+            "cached": 2
+          },
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "Phase C",
+          31.419,
+          {
+            "formula": "=ROUND(RAND()*(3-0.1)+0.1,2)",
+            "cached": 0.38
+          },
+          {
+            "formula": "=IF(ABS(C60)<=1,\"Good\",IF(AND(ABS(C60)>1,ABS(C60)<=2),\"Fair\", IF(AND(ABS(C60)>2,ABS(C60)<=3), \"Poor\", \"Bad\")))",
+            "cached": "Good"
+          },
+          {
+            "formula": "=IF(D60=\"Good\",3,IF(D60=\"Fair\",2,IF(D60=\"Poor\",1,0)))",
+            "cached": 3
+          },
+          null,
+          null,
+          "2A",
+          24.423,
+          {
+            "formula": "=ROUND(RAND()*(15-0.1)+0.1,2)",
+            "cached": 6.1
+          },
+          {
+            "formula": "=IF(ABS(J60)<=10,\"Good\",IF(AND(ABS(J60)>10,ABS(J60)<=15),\"Fair\", IF(AND(ABS(J60)>15,ABS(J60)<=20), \"Poor\", \"Bad\")))",
+            "cached": "Good"
+          },
+          {
+            "formula": "=IF(K60=\"Good\",3,IF(K60=\"Fair\",2,IF(K60=\"Poor\",1,0)))",
+            "cached": 3
+          },
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          31.56,
+          {
+            "formula": "=ROUND(RAND()*(3-0.1)+0.1,2)",
+            "cached": 1.29
+          },
+          {
+            "formula": "=IF(ABS(C61)<=1,\"Good\",IF(AND(ABS(C61)>1,ABS(C61)<=2),\"Fair\", IF(AND(ABS(C61)>2,ABS(C61)<=3), \"Poor\", \"Bad\")))",
+            "cached": "Fair"
+          },
+          {
+            "formula": "=IF(D61=\"Good\",3,IF(D61=\"Fair\",2,IF(D61=\"Poor\",1,0)))",
+            "cached": 2
+          },
+          null,
+          null,
+          "2B",
+          18.408,
+          {
+            "formula": "=ROUND(RAND()*(15-0.1)+0.1,2)",
+            "cached": 6.27
+          },
+          {
+            "formula": "=IF(ABS(J61)<=10,\"Good\",IF(AND(ABS(J61)>10,ABS(J61)<=15),\"Fair\", IF(AND(ABS(J61)>15,ABS(J61)<=20), \"Poor\", \"Bad\")))",
+            "cached": "Good"
+          },
+          {
+            "formula": "=IF(K61=\"Good\",3,IF(K61=\"Fair\",2,IF(K61=\"Poor\",1,0)))",
+            "cached": 3
+          },
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          "Average score",
+          {
+            "formula": "=ROUND(AVERAGE(E59:E61),2)",
+            "cached": 2.33
+          },
+          null,
+          null,
+          "2C",
+          24.401,
+          {
+            "formula": "=ROUND(RAND()*(15-0.1)+0.1,2)",
+            "cached": 4.84
+          },
+          {
+            "formula": "=IF(ABS(J62)<=10,\"Good\",IF(AND(ABS(J62)>10,ABS(J62)<=15),\"Fair\", IF(AND(ABS(J62)>15,ABS(J62)<=20), \"Poor\", \"Bad\")))",
+            "cached": "Good"
+          },
+          {
+            "formula": "=IF(K62=\"Good\",3,IF(K62=\"Fair\",2,IF(K62=\"Poor\",1,0)))",
+            "cached": 3
+          },
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          "Worst case score",
+          {
+            "formula": "=MIN(E59:E61)",
+            "cached": 2
+          },
+          null,
+          null,
+          "3A",
+          24.933,
+          {
+            "formula": "=ROUND(RAND()*(15-0.1)+0.1,2)",
+            "cached": 5.59
+          },
+          {
+            "formula": "=IF(ABS(J63)<=10,\"Good\",IF(AND(ABS(J63)>10,ABS(J63)<=15),\"Fair\", IF(AND(ABS(J63)>15,ABS(J63)<=20), \"Poor\", \"Bad\")))",
+            "cached": "Good"
+          },
+          {
+            "formula": "=IF(K63=\"Good\",3,IF(K63=\"Fair\",2,IF(K63=\"Poor\",1,0)))",
+            "cached": 3
+          },
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "3B",
+          18.807,
+          {
+            "formula": "=ROUND(RAND()*(15-0.1)+0.1,2)",
+            "cached": 1.67
+          },
+          {
+            "formula": "=IF(ABS(J64)<=10,\"Good\",IF(AND(ABS(J64)>10,ABS(J64)<=15),\"Fair\", IF(AND(ABS(J64)>15,ABS(J64)<=20), \"Poor\", \"Bad\")))",
+            "cached": "Good"
+          },
+          {
+            "formula": "=IF(K64=\"Good\",3,IF(K64=\"Fair\",2,IF(K64=\"Poor\",1,0)))",
+            "cached": 3
+          },
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "3C",
+          24.91,
+          {
+            "formula": "=ROUND(RAND()*(15-0.1)+0.1,2)",
+            "cached": 12.73
+          },
+          {
+            "formula": "=IF(ABS(J65)<=10,\"Good\",IF(AND(ABS(J65)>10,ABS(J65)<=15),\"Fair\", IF(AND(ABS(J65)>15,ABS(J65)<=20), \"Poor\", \"Bad\")))",
+            "cached": "Fair"
+          },
+          {
+            "formula": "=IF(K65=\"Good\",3,IF(K65=\"Fair\",2,IF(K65=\"Poor\",1,0)))",
+            "cached": 2
+          },
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "4A",
+          25.461,
+          {
+            "formula": "=ROUND(RAND()*(15-0.1)+0.1,2)",
+            "cached": 11.37
+          },
+          {
+            "formula": "=IF(ABS(J66)<=10,\"Good\",IF(AND(ABS(J66)>10,ABS(J66)<=15),\"Fair\", IF(AND(ABS(J66)>15,ABS(J66)<=20), \"Poor\", \"Bad\")))",
+            "cached": "Fair"
+          },
+          {
+            "formula": "=IF(K66=\"Good\",3,IF(K66=\"Fair\",2,IF(K66=\"Poor\",1,0)))",
+            "cached": 2
+          },
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "4B",
+          19.216,
+          {
+            "formula": "=ROUND(RAND()*(15-0.1)+0.1,2)",
+            "cached": 6.33
+          },
+          {
+            "formula": "=IF(ABS(J67)<=10,\"Good\",IF(AND(ABS(J67)>10,ABS(J67)<=15),\"Fair\", IF(AND(ABS(J67)>15,ABS(J67)<=20), \"Poor\", \"Bad\")))",
+            "cached": "Good"
+          },
+          {
+            "formula": "=IF(K67=\"Good\",3,IF(K67=\"Fair\",2,IF(K67=\"Poor\",1,0)))",
+            "cached": 3
+          },
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "4C",
+          25.431,
+          {
+            "formula": "=ROUND(RAND()*(15-0.1)+0.1,2)",
+            "cached": 3.09
+          },
+          {
+            "formula": "=IF(ABS(J68)<=10,\"Good\",IF(AND(ABS(J68)>10,ABS(J68)<=15),\"Fair\", IF(AND(ABS(J68)>15,ABS(J68)<=20), \"Poor\", \"Bad\")))",
+            "cached": "Good"
+          },
+          {
+            "formula": "=IF(K68=\"Good\",3,IF(K68=\"Fair\",2,IF(K68=\"Poor\",1,0)))",
+            "cached": 3
+          },
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "5A",
+          25.933,
+          {
+            "formula": "=ROUND(RAND()*(15-0.1)+0.1,2)",
+            "cached": 4.67
+          },
+          {
+            "formula": "=IF(ABS(J69)<=10,\"Good\",IF(AND(ABS(J69)>10,ABS(J69)<=15),\"Fair\", IF(AND(ABS(J69)>15,ABS(J69)<=20), \"Poor\", \"Bad\")))",
+            "cached": "Good"
+          },
+          {
+            "formula": "=IF(K69=\"Good\",3,IF(K69=\"Fair\",2,IF(K69=\"Poor\",1,0)))",
+            "cached": 3
+          },
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "5B",
+          19.634,
+          {
+            "formula": "=ROUND(RAND()*(15-0.1)+0.1,2)",
+            "cached": 2.94
+          },
+          {
+            "formula": "=IF(ABS(J70)<=10,\"Good\",IF(AND(ABS(J70)>10,ABS(J70)<=15),\"Fair\", IF(AND(ABS(J70)>15,ABS(J70)<=20), \"Poor\", \"Bad\")))",
+            "cached": "Good"
+          },
+          {
+            "formula": "=IF(K70=\"Good\",3,IF(K70=\"Fair\",2,IF(K70=\"Poor\",1,0)))",
+            "cached": 3
+          },
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "5C",
+          25.79,
+          {
+            "formula": "=ROUND(RAND()*(15-0.1)+0.1,2)",
+            "cached": 0.56
+          },
+          {
+            "formula": "=IF(ABS(J71)<=10,\"Good\",IF(AND(ABS(J71)>10,ABS(J71)<=15),\"Fair\", IF(AND(ABS(J71)>15,ABS(J71)<=20), \"Poor\", \"Bad\")))",
+            "cached": "Good"
+          },
+          {
+            "formula": "=IF(K71=\"Good\",3,IF(K71=\"Fair\",2,IF(K71=\"Poor\",1,0)))",
+            "cached": 3
+          },
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "Average score",
+          {
+            "formula": "=ROUND(AVERAGE(L57:L71),2)",
+            "cached": 2.8
+          },
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "Worst case score",
+          {
+            "formula": "=MIN(L57:L71)",
+            "cached": 2
+          },
+          null,
+          null,
+          null,
+          null
+        ]
+      ],
+      "formulaCount": 260,
+      "nonemptyCellCount": 479
+    },
+    "healthIndex": {
+      "sheet": "Health Index",
+      "range": "A1:N37",
+      "rows": [
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "No.",
+          "Condition indicator ",
+          "Score (Average)",
+          "Weighting factor",
+          "Total score",
+          null,
+          "Health Index (Average)",
+          {
+            "formula": "=SUM(E3:E12)",
+            "cached": 6.789414
+          },
+          null,
+          "No",
+          "Transformer Condition Criteria ",
+          "Total RPN",
+          "RPN Proportion",
+          "Weighting factor"
+        ],
+        [
+          1,
+          "Oil breakdown voltage",
+          3,
+          {
+            "formula": "=N3",
+            "cached": 0.1993
+          },
+          {
+            "formula": "=C3*D3",
+            "cached": 0.5979
+          },
+          null,
+          "Assessment",
+          {
+            "formula": "=IF(AND(ABS(H2)>=8,ABS(H2)<=10),\"Good\",IF(AND(ABS(H2)>=6,ABS(H2)<8),\"Fair\", IF(AND(ABS(H2)>=4,ABS(H2)<6),\"Poor\",IF(AND(ABS(H2)>=2,ABS(H2)<4),\"Bad\",\"Unacceptable\"))))",
+            "cached": "Fair"
+          },
+          null,
+          1,
+          "Oil breakdown voltage",
+          {
+            "formula": "=Weighting!M4",
+            "cached": 112
+          },
+          {
+            "formula": "=L3/$L$13",
+            "cached": 0.05986103687867451
+          },
+          {
+            "formula": "=ROUND(M3*3.33,4)",
+            "cached": 0.1993
+          }
+        ],
+        [
+          2,
+          "DGA",
+          {
+            "formula": "=Example!L15",
+            "cached": 1.67
+          },
+          {
+            "formula": "=N4",
+            "cached": 0.6567
+          },
+          {
+            "formula": "=C4*D4",
+            "cached": 1.0966889999999998
+          },
+          null,
+          null,
+          null,
+          null,
+          2,
+          "DGA",
+          {
+            "formula": "=Weighting!M3",
+            "cached": 369
+          },
+          {
+            "formula": "=L4/$L$13",
+            "cached": 0.19722073757349012
+          },
+          {
+            "formula": "=ROUND(M4*3.33,4)",
+            "cached": 0.6567
+          }
+        ],
+        [
+          3,
+          "Insulation resistance",
+          {
+            "formula": "=Example!D9",
+            "cached": 3
+          },
+          {
+            "formula": "=N5",
+            "cached": 0.5268
+          },
+          {
+            "formula": "=C5*D5",
+            "cached": 1.5804
+          },
+          null,
+          null,
+          null,
+          null,
+          3,
+          "Insulation resistance",
+          {
+            "formula": "=Weighting!M6",
+            "cached": 296
+          },
+          {
+            "formula": "=L5/$L$13",
+            "cached": 0.15820416889363975
+          },
+          {
+            "formula": "=ROUND(M5*3.33,4)",
+            "cached": 0.5268
+          }
+        ],
+        [
+          4,
+          "Ratio test",
+          {
+            "formula": "=Example!F28",
+            "cached": 1.4
+          },
+          {
+            "formula": "=N6",
+            "cached": 0.089
+          },
+          {
+            "formula": "=C6*D6",
+            "cached": 0.12459999999999999
+          },
+          null,
+          null,
+          null,
+          null,
+          4,
+          "Ratio test",
+          {
+            "formula": "=Weighting!M7",
+            "cached": 50
+          },
+          {
+            "formula": "=L6/$L$13",
+            "cached": 0.02672367717797969
+          },
+          {
+            "formula": "=ROUND(M6*3.33,4)",
+            "cached": 0.089
+          }
+        ],
+        [
+          5,
+          "Winding DF",
+          {
+            "formula": "=Example!D36",
+            "cached": 2
+          },
+          {
+            "formula": "=N7",
+            "cached": 0.5945
+          },
+          {
+            "formula": "=C7*D7",
+            "cached": 1.189
+          },
+          null,
+          null,
+          null,
+          null,
+          5,
+          "Winding DF",
+          {
+            "formula": "=Weighting!M9",
+            "cached": 334
+          },
+          {
+            "formula": "=L7/$L$13",
+            "cached": 0.17851416354890434
+          },
+          {
+            "formula": "=ROUND(M7*3.33,4)",
+            "cached": 0.5945
+          }
+        ],
+        [
+          6,
+          "Winding Capacitance",
+          {
+            "formula": "=Example!L36",
+            "cached": 1.75
+          },
+          {
+            "formula": "=N8",
+            "cached": 0.2243
+          },
+          {
+            "formula": "=C8*D8",
+            "cached": 0.392525
+          },
+          null,
+          null,
+          null,
+          null,
+          6,
+          "Winding Capacitance",
+          {
+            "formula": "=Weighting!M11",
+            "cached": 126
+          },
+          {
+            "formula": "=L8/$L$13",
+            "cached": 0.06734366648850881
+          },
+          {
+            "formula": "=ROUND(M8*3.33,4)",
+            "cached": 0.2243
+          }
+        ],
+        [
+          7,
+          "DC winding resistance",
+          {
+            "formula": "=0.5*SUM(C14:C15)",
+            "cached": 2
+          },
+          {
+            "formula": "=N9",
+            "cached": 0.267
+          },
+          {
+            "formula": "=C9*D9",
+            "cached": 0.534
+          },
+          null,
+          null,
+          null,
+          null,
+          7,
+          "DC winding resistance ",
+          {
+            "formula": "=Weighting!M8",
+            "cached": 150
+          },
+          {
+            "formula": "=L9/$L$13",
+            "cached": 0.08017103153393906
+          },
+          {
+            "formula": "=ROUND(M9*3.33,4)",
+            "cached": 0.267
+          }
+        ],
+        [
+          8,
+          "Bushing DF C1",
+          {
+            "formula": "=Example!K50",
+            "cached": 1.25
+          },
+          {
+            "formula": "=N10",
+            "cached": 0.3417
+          },
+          {
+            "formula": "=C10*D10",
+            "cached": 0.427125
+          },
+          null,
+          null,
+          null,
+          null,
+          8,
+          "Bushing DF C1",
+          {
+            "formula": "=Weighting!M10",
+            "cached": 192
+          },
+          {
+            "formula": "=L10/$L$13",
+            "cached": 0.10261892036344201
+          },
+          {
+            "formula": "=ROUND(M10*3.33,4)",
+            "cached": 0.3417
+          }
+        ],
+        [
+          9,
+          "Exciting current",
+          {
+            "formula": "=Example!L72",
+            "cached": 2.8
+          },
+          {
+            "formula": "=N11",
+            "cached": 0.089
+          },
+          {
+            "formula": "=C11*D11",
+            "cached": 0.24919999999999998
+          },
+          null,
+          null,
+          null,
+          null,
+          9,
+          "Exciting current",
+          {
+            "formula": "=Weighting!M17",
+            "cached": 50
+          },
+          {
+            "formula": "=L11/$L$13",
+            "cached": 0.02672367717797969
+          },
+          {
+            "formula": "=ROUND(M11*3.33,4)",
+            "cached": 0.089
+          }
+        ],
+        [
+          10,
+          "Bushing CAP C1",
+          {
+            "formula": "=Example!P50",
+            "cached": 1.75
+          },
+          {
+            "formula": "=N12",
+            "cached": 0.3417
+          },
+          {
+            "formula": "=C12*D12",
+            "cached": 0.597975
+          },
+          null,
+          null,
+          null,
+          null,
+          10,
+          "Bushing CAP C1",
+          {
+            "formula": "=Weighting!M12",
+            "cached": 192
+          },
+          {
+            "formula": "=L12/$L$13",
+            "cached": 0.10261892036344201
+          },
+          {
+            "formula": "=ROUND(M12*3.33,4)",
+            "cached": 0.3417
+          }
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          "Total",
+          {
+            "formula": "=SUM(L3:L12)",
+            "cached": 1871
+          },
+          {
+            "formula": "=ROUND(SUM(M3:M12),4)",
+            "cached": 1
+          },
+          {
+            "formula": "=ROUND(SUM(N3:N12),4)",
+            "cached": 3.33
+          }
+        ],
+        [
+          null,
+          "DC winding resistance Prim",
+          {
+            "formula": "=Example!E55",
+            "cached": 1.67
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          "DC winding resistance Sec",
+          {
+            "formula": "=Example!E62",
+            "cached": 2.33
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "No.",
+          "Condition indicator ",
+          "Score (Worst case)",
+          "Weighting factor",
+          "Total score",
+          null,
+          "Health Index (Worst case)",
+          {
+            "formula": "=SUM(E22:E31)",
+            "cached": 5.3162
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          1,
+          "Oil breakdown voltage",
+          3,
+          {
+            "formula": "=N3",
+            "cached": 0.1993
+          },
+          {
+            "formula": "=C22*D22",
+            "cached": 0.5979
+          },
+          null,
+          "Assessment",
+          {
+            "formula": "=IF(AND(ABS(H21)>=8,ABS(H21)<=10),\"Good\",IF(AND(ABS(H21)>=6,ABS(H21)<8),\"Fair\", IF(AND(ABS(H21)>=4,ABS(H21)<6),\"Poor\",IF(AND(ABS(H21)>=2,ABS(H21)<4),\"Bad\",\"Unacceptable\"))))",
+            "cached": "Poor"
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          2,
+          "DGA",
+          {
+            "formula": "=Example!M15",
+            "cached": 1
+          },
+          {
+            "formula": "=N4",
+            "cached": 0.6567
+          },
+          {
+            "formula": "=C23*D23",
+            "cached": 0.6567
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          3,
+          "Insulation resistance",
+          {
+            "formula": "=Example!D10",
+            "cached": 3
+          },
+          {
+            "formula": "=N5",
+            "cached": 0.5268
+          },
+          {
+            "formula": "=C24*D24",
+            "cached": 1.5804
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          4,
+          "Ratio test",
+          {
+            "formula": "=Example!F29",
+            "cached": 0
+          },
+          {
+            "formula": "=N6",
+            "cached": 0.089
+          },
+          {
+            "formula": "=C25*D25",
+            "cached": 0
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          5,
+          "Winding DF",
+          {
+            "formula": "=Example!D37",
+            "cached": 1
+          },
+          {
+            "formula": "=N7",
+            "cached": 0.5945
+          },
+          {
+            "formula": "=C26*D26",
+            "cached": 0.5945
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          6,
+          "Winding Capacitance",
+          {
+            "formula": "=Example!L37",
+            "cached": 1
+          },
+          {
+            "formula": "=N8",
+            "cached": 0.2243
+          },
+          {
+            "formula": "=C27*D27",
+            "cached": 0.2243
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          7,
+          "DC winding resistance ",
+          {
+            "formula": "=0.5*SUM(C33:C34)",
+            "cached": 3
+          },
+          {
+            "formula": "=N9",
+            "cached": 0.267
+          },
+          {
+            "formula": "=C28*D28",
+            "cached": 0.801
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          8,
+          "Bushing DF C1",
+          {
+            "formula": "=Example!K51",
+            "cached": 1
+          },
+          {
+            "formula": "=N10",
+            "cached": 0.3417
+          },
+          {
+            "formula": "=C29*D29",
+            "cached": 0.3417
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          9,
+          "Exciting current",
+          {
+            "formula": "=Example!L73",
+            "cached": 2
+          },
+          {
+            "formula": "=N11",
+            "cached": 0.089
+          },
+          {
+            "formula": "=C30*D30",
+            "cached": 0.178
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          10,
+          "Bushing CAP C1",
+          {
+            "formula": "=Example!P51",
+            "cached": 1
+          },
+          {
+            "formula": "=N12",
+            "cached": 0.3417
+          },
+          {
+            "formula": "=C31*D31",
+            "cached": 0.3417
+          },
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          "DC winding resistance Prim",
+          3,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          "DC winding resistance Sec",
+          3,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          "Điểm số của DC winding resitance bằng trung bình cộng của các DC widning resistance (Prim, Sec hoặc Tert nếu có)",
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      ],
+      "formulaCount": 97,
+      "nonemptyCellCount": 186
+    }
+  },
+  "total": null
+}

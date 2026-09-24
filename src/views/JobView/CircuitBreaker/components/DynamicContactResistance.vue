@@ -62,7 +62,7 @@
                         </td>
                         <td>
                             <el-select size="mini" :class="conditionClass(row.condition_indicator.value)"
-                                v-model="row.condition_indicator.value" placeholder="Select">
+                                disabled v-model="row.condition_indicator.value" placeholder="Select">
                                 <el-option label="Good" value="Good" />
                                 <el-option label="Fair" value="Fair" />
                                 <el-option label="Poor" value="Poor" />

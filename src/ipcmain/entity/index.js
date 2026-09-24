@@ -30,6 +30,7 @@ import * as ipcCompareTest from './compareTest/index.js'
 import * as ipcTreeSearch from './treeSearch/index.js'
 import * as ipcUserIdentifiedObject from './userIdentifiedObject/index.js'
 import * as ipcPowerPlant from './powerPlant/index.js'
+import * as ipcFmeca from './fmeca/index.js'
 
 
 export const active = () => {
@@ -65,4 +66,5 @@ export const active = () => {
     ipcUserIdentifiedObject.active()
     ipcTreeSearch.active()
     ipcPowerPlant.active()
+    ipcFmeca.active()
 }

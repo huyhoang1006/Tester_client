@@ -1,8 +1,14 @@
 'use strict'
 import { ipcMain, dialog } from 'electron'
+import path from 'path'
 import { readPtmArchive } from '@/function/ptm/readPtmArchive'
 import { readCpxpertArchive } from '@/function/cpxpert/readCpxpertArchive'
 import { findDuplicateAsset } from '@/function/ptm/findDuplicateAsset'
+import { readSfraArchive } from '@/function/sfra/readSfraArchive'
+
+const readPtmOrSfraFile = filePath => path.extname(filePath).toLowerCase() === '.ptm'
+    ? readPtmArchive(filePath)
+    : readSfraArchive(filePath)
 
 /**
  * IPC đọc file .ptm của OMICRON.
@@ -18,9 +24,9 @@ export const importPtm = () => {
     ipcMain.handle('importPtm', async () => {
         try {
             const result = await dialog.showOpenDialog({
-                title: 'Select PTM file to import',
+                title: 'Select PTM or SFRA file to import',
                 buttonLabel: 'Read file',
-                filters: [{ name: 'OMICRON PTM Files', extensions: ['ptm'] }],
+                filters: [{ name: 'OMICRON PTM / SFRA Files', extensions: ['ptm', 'zip', 'xml', 'xfra'] }],
                 properties: ['openFile'],
             })
 
@@ -29,7 +35,7 @@ export const importPtm = () => {
             }
 
             const filePath = result.filePaths[0]
-            const data = readPtmArchive(filePath)
+            const data = readPtmOrSfraFile(filePath)
 
             return {
                 success: true,
@@ -58,7 +64,7 @@ export const readPtmFile = () => {
     ipcMain.handle('readPtmFile', async (event, filePath) => {
         try {
             if (!filePath) return { success: false, message: 'No file path given' }
-            const data = readPtmArchive(filePath)
+            const data = readPtmOrSfraFile(filePath)
             return { success: true, message: 'PTM file read successfully', data: { ...data, filePath } }
         } catch (error) {
             console.error('[ptm] doc file that bai:', error)

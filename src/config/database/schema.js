@@ -1020,6 +1020,40 @@ CREATE TABLE IF NOT EXISTS "cb_timing_trace_point" (
 );
 CREATE INDEX IF NOT EXISTS "idx_cb_timing_trace_point_trace"
 	ON "cb_timing_trace_point"("trace_id","sequence_number");
+-- One SFRA trace belongs to one result row (procedure_dataset). Metadata is kept
+-- with the trace; the potentially large ordered point list lives in its child table.
+CREATE TABLE IF NOT EXISTS "sfra_trace" (
+	"mrid"	TEXT NOT NULL,
+	"procedure_dataset_id"	TEXT NOT NULL UNIQUE,
+	"trace_name"	TEXT,
+	"group_name"	TEXT,
+	"source_standard"	TEXT,
+	"reference_terminal"	TEXT,
+	"response_terminal"	TEXT,
+	"measured_date"	TEXT,
+	"tap_position"	TEXT,
+	"shorted_terminals"	TEXT,
+	"grounded_terminals"	TEXT,
+	"output_voltage"	TEXT,
+	"trace_color"	TEXT,
+	"source_file"	TEXT,
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("procedure_dataset_id") REFERENCES "procedure_dataset"("mrid") ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS "idx_sfra_trace_dataset"
+	ON "sfra_trace"("procedure_dataset_id");
+CREATE TABLE IF NOT EXISTS "sfra_trace_point" (
+	"mrid"	TEXT NOT NULL,
+	"trace_id"	TEXT NOT NULL,
+	"sequence_number"	INTEGER NOT NULL,
+	"frequency"	TEXT,
+	"magnitude"	TEXT,
+	"phase"	TEXT,
+	PRIMARY KEY("mrid"),
+	FOREIGN KEY("trace_id") REFERENCES "sfra_trace"("mrid") ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS "idx_sfra_trace_point_trace"
+	ON "sfra_trace_point"("trace_id","sequence_number");
 CREATE TABLE IF NOT EXISTS "equipment" (
 	"mrid"	TEXT NOT NULL,
 	"aggregate"	TEXT,
@@ -1048,12 +1082,16 @@ CREATE TABLE IF NOT EXISTS "equipment_container" (
 	FOREIGN KEY("mrid") REFERENCES "connectivity_node_container"("mrid") ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS "fmeca" (
-	"id"	TEXT NOT NULL,
+	"id"	TEXT NOT NULL PRIMARY KEY,
 	"table_fmeca"	TEXT,
 	"table_calculate"	TEXT,
 	"total"	TEXT,
 	"name"	TEXT,
-	PRIMARY KEY("id")
+	"updated_at"	TEXT,
+	"server_id"	TEXT,
+	"user_id"	TEXT REFERENCES "user"("user_id"),
+	"version"	TEXT,
+	"scope"	TEXT NOT NULL DEFAULT 'user' CHECK("scope" IN ('user', 'demo'))
 );
 CREATE TABLE IF NOT EXISTS "frequency" (
 	"mrid"	TEXT NOT NULL,

@@ -4,7 +4,11 @@ export default {
             if (!dto) return
 
             // Xóa IDs của entity chính (cần tạo mới)
-            if (dto.properties) dto.properties.mrid = null
+            if (dto.properties) {
+                dto.properties.mrid = null
+                dto.properties.status_id = null
+                dto.properties.operating_date_id = null
+            }
             dto.mrid = null
             dto.id = null
             dto.assetInfoId = null

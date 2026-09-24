@@ -83,7 +83,9 @@ const buildRow = (emptyRow, measurement, config) => {
     Object.keys(config.plainColumns || {}).forEach(code => {
         if (!row[code]) return
         const spec = config.plainColumns[code]
-        row[code].value = code === 'test_mode'
+        row[code].value = spec.serialize === 'json'
+            ? JSON.stringify(measurement[spec.from] || [])
+            : code === 'test_mode'
             ? normalizeTanDeltaTestMode(measurement[spec.from])
             : str(measurement[spec.from])
     })
@@ -218,6 +220,14 @@ export const ptmToTransformerJobDto = (ptm, assetMrid) => {
     dto.properties.asset_id = assetMrid || ''
 
     ;(ptm.tests || []).forEach(ptmTest => {
+        if (ptmTest.type === 'FRATest' && !(ptmTest.measurements || []).some(item => (item.points || []).length)) {
+            skipped.push({
+                name: ptmTest.name || ptmTest.type,
+                type: ptmTest.type,
+                reason: 'This SFRA test contains no curve data',
+            })
+            return
+        }
         const found = findTestConfig('Transformer', ptmTest.type, ptmTest.name)
         if (!found || !TransformerTestMap[found.testCode]) {
             skipped.push({

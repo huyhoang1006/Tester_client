@@ -27,22 +27,21 @@ export default {
                 // Helper: sinh tên duplicate tiếp theo trong cùng parent
                 const cleanKey = (value) => String(value || '').trim()
 
-                const getAssetTypeField = (properties) => {
-                    if (properties && Object.prototype.hasOwnProperty.call(properties, 'asset_type')) return 'asset_type'
-                    return 'type'
-                }
-
-                const getAssetTypeValue = (properties) => {
-                    if (!properties) return ''
-                    return cleanKey(properties[getAssetTypeField(properties)])
-                }
-
                 const setAssetDuplicateKeys = (dtoData, values) => {
                     if (!dtoData.properties) dtoData.properties = {}
                     const properties = dtoData.properties
-                    properties.serial_no = cleanKey(values.serialNumber)
+                    properties.serial_no = values.unknownSerial
+                        ? `UNKNOWN_${this.generateUuid()}`
+                        : cleanKey(values.serialNumber)
                     properties.manufacturer = cleanKey(values.manufacturer)
-                    properties[getAssetTypeField(properties)] = cleanKey(values.assetType)
+                    properties.apparatus_id = cleanKey(values.assetId)
+                    properties.operating_date = cleanKey(values.operatingDate)
+                    properties.status = cleanKey(values.status)
+                    properties.status_date_time = properties.status ? new Date().toISOString() : ''
+
+                    if (values.phaseBinding) {
+                        values.phaseBinding.owner.phase = cleanKey(values.phase)
+                    }
                 }
 
                 const getManufacturerOptions = () => {
@@ -60,51 +59,20 @@ export default {
                     return Array.from(new Set(list.filter(Boolean)))
                 }
 
-                const getAssetTypeOptions = () => {
-                    const optionMap = {
-                        Transformer: [
-                            { label: 'Two-winding', value: 'Two-winding' },
-                            { label: 'Three-winding', value: 'Three-winding' },
-                            { label: 'Auto w/ tert', value: 'Auto w/ tert' },
-                            { label: 'Auto w/o tert', value: 'Auto w/o tert' }
-                        ],
-                        Bushing: [
-                            { label: 'With potential tap', value: 'With potential tap' },
-                            { label: 'With test tap', value: 'With test tap' },
-                            { label: 'Without tap', value: 'Without tap' }
-                        ],
-                        'Rotating machine': [
-                            { label: 'With potential tap', value: 'With potential tap' },
-                            { label: 'With test tap', value: 'With test tap' },
-                            { label: 'Without tap', value: 'Without tap' }
-                        ],
-                        'Voltage transformer': [
-                            { label: 'IVT', value: 'IVT' },
-                            { label: 'CVT / CCVT', value: 'CVTCCTV' }
-                        ],
-                        'Current transformer': [
-                            { label: 'Inductive', value: 'inductive' }
-                        ],
-                        Disconnector: [
-                            { label: 'Center-break disconnector', value: 'centerBreak' },
-                            { label: 'Double-break disconnector', value: 'doubleBreak' },
-                            { label: 'Horizontal knee disconnector', value: 'horizontalKnee' },
-                            { label: 'Pantograph disconnector', value: 'pantograph' },
-                            { label: 'Vertical-break disconnector', value: 'verticalBreak' }
-                        ],
-                        'Circuit breaker': [
-                            { label: 'Live tank SF6 breaker', value: 'LiveSF6' },
-                            { label: 'Minium oil breaker', value: 'MiniOil' },
-                            { label: 'Air-blast breaker', value: 'AirBlast' },
-                            { label: 'Dead tank SF6 breaker', value: 'DeadTankSF6' },
-                            { label: 'Dead tank oil breaker (OCB)', value: 'DeadTankOCB' },
-                            { label: 'Vacuum breaker', value: 'Vacuum' },
-                            { label: 'Generator circuit breaker (GCB)', value: 'GenCirGCB' },
-                            { label: 'Gas insulated switchgear (GIS)', value: 'GasInsuGIS' },
-                            { label: 'Miscellaneous', value: 'Miscell' }
-                        ]
-                    }
-                    return optionMap[node.asset] || []
+                const getPhaseBinding = (dtoData) => {
+                    const candidates = [
+                        { owner: dtoData.winding_configuration, countField: 'phases' },
+                        { owner: dtoData.circuitBreaker, countField: 'numberOfPhases' },
+                        { owner: dtoData.configuration, countField: 'number_of_phase' },
+                        { owner: dtoData.config, countField: 'number_of_phase' },
+                        { owner: dtoData.configsData, countField: 'number_of_phase' }
+                    ]
+                    const binding = candidates.find((item) => item.owner &&
+                        Object.prototype.hasOwnProperty.call(item.owner, item.countField))
+                    if (!binding) return null
+
+                    const phaseCount = cleanKey(binding.owner[binding.countField]).toUpperCase()
+                    return phaseCount === '1' || phaseCount === 'ONE' ? binding : null
                 }
 
                 const renderDuplicateFieldRow = (h, label, control) => h('div', {
@@ -182,25 +150,108 @@ export default {
                     }
                 }))))
 
-                const renderAssetTypeControl = (h, value, options, onInput) => {
-                    if (options.length > 0) {
-                        return renderDuplicateSelect(h, 'Asset type', value, options, onInput)
+                const renderSerialField = (h, draft) => renderDuplicateFieldRow(h, 'Serial number', h('div', [
+                    h('el-input', {
+                        props: {
+                            value: draft.serialNumber,
+                            size: 'small',
+                            clearable: !draft.unknownSerial,
+                            disabled: draft.unknownSerial,
+                            placeholder: draft.unknownSerial ? 'Generated automatically' : 'Serial number'
+                        },
+                        style: { width: '100%' },
+                        on: {
+                            input: (value) => { draft.serialNumber = value }
+                        }
+                    }),
+                    h('el-checkbox', {
+                        class: 'duplicate-unknown-serial',
+                        props: { value: draft.unknownSerial },
+                        on: {
+                            input: (value) => { draft.unknownSerial = value }
+                        }
+                    }, 'Unknown serial number')
+                ]))
+
+                const padDatePart = (value) => String(value).padStart(2, '0')
+                const datePartOptions = {
+                    day: Array.from({ length: 31 }, (_, index) => padDatePart(index + 1)),
+                    month: Array.from({ length: 12 }, (_, index) => padDatePart(index + 1)),
+                    year: Array.from({ length: 151 }, (_, index) => String(new Date().getFullYear() + 20 - index))
+                }
+                const splitOperatingDate = (value) => {
+                    const match = cleanKey(value).match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)
+                    return match
+                        ? { year: match[1], month: padDatePart(match[2]), day: padDatePart(match[3]) }
+                        : { year: '', month: '', day: '' }
+                }
+                const syncOperatingDate = (draft) => {
+                    if (!draft.operatingDay && !draft.operatingMonth && !draft.operatingYear) {
+                        draft.operatingDate = ''
+                        return
                     }
-                    return renderDuplicateInput(h, 'Asset type', value, onInput)
+                    if (!draft.operatingDay || !draft.operatingMonth || !draft.operatingYear) return
+
+                    const year = Number(draft.operatingYear)
+                    const month = Number(draft.operatingMonth)
+                    const day = Number(draft.operatingDay)
+                    const maxDay = new Date(year, month, 0).getDate()
+                    if (!Number.isInteger(year) || year < 1 || month < 1 || month > 12 || day < 1 || day > maxDay) return
+                    draft.operatingDate = `${String(year).padStart(4, '0')}-${padDatePart(month)}-${padDatePart(day)}`
+                }
+                const renderOperatingDate = (h, draft) => {
+                    const renderPart = (part, placeholder) => h('el-select', {
+                        props: {
+                            value: draft[part],
+                            size: 'small',
+                            filterable: true,
+                            allowCreate: true,
+                            reserveKeyword: false,
+                            placeholder
+                        },
+                        class: 'duplicate-date-part',
+                        on: {
+                            input: (value) => {
+                                draft[part] = value || ''
+                                syncOperatingDate(draft)
+                            }
+                        }
+                    }, datePartOptions[placeholder.toLowerCase()].map((value) => h('el-option', {
+                        key: value,
+                        props: { label: value, value }
+                    })))
+                    return renderDuplicateFieldRow(h, 'Operating Date', h('div', {
+                        class: 'duplicate-operating-date'
+                    }, [
+                        renderPart('operatingDay', 'Day'),
+                        renderPart('operatingMonth', 'Month'),
+                        renderPart('operatingYear', 'Year')
+                    ]))
                 }
 
-                const requestDuplicateAssetKeys = async (dtoData) => {
+                const requestDuplicateAssetKeys = async (dtoData, suggestedAssetId) => {
                     if (!dtoData || !dtoData.properties) return true
                     const h = this.$createElement
                     const properties = dtoData.properties
                     const oldSerial = cleanKey(properties.serial_no)
+                    const phaseBinding = getPhaseBinding(dtoData)
+                    const operatingDate = splitOperatingDate(properties.operating_date)
                     const draft = Vue.observable({
                         serialNumber: oldSerial ? `${oldSerial} - copy` : '',
+                        unknownSerial: false,
                         manufacturer: cleanKey(properties.manufacturer),
-                        assetType: getAssetTypeValue(properties)
+                        assetId: cleanKey(suggestedAssetId || properties.apparatus_id),
+                        operatingDate: cleanKey(properties.operating_date),
+                        operatingDay: operatingDate.day,
+                        operatingMonth: operatingDate.month,
+                        operatingYear: operatingDate.year,
+                        status: cleanKey(properties.status),
+                        phase: phaseBinding ? cleanKey(phaseBinding.owner.phase) : '',
+                        phaseBinding
                     })
                     const manufacturerOptions = getManufacturerOptions()
-                    const assetTypeOptions = getAssetTypeOptions()
+                    const statusOptions = ['In operation', 'Spare', 'Repair', 'Out of operation', 'Scrap']
+                    const phaseOptions = ['A', 'B', 'C'].map((value) => ({ label: value, value }))
                     if (draft.manufacturer && !manufacturerOptions.includes(draft.manufacturer)) {
                         manufacturerOptions.unshift(draft.manufacturer)
                     }
@@ -209,7 +260,7 @@ export default {
                             return { draft }
                         },
                         render(h) {
-                            return h('div', { style: { width: '430px', maxWidth: '100%' } }, [
+                            const fields = [
                                 h('div', {
                                     style: {
                                         margin: '0 0 14px',
@@ -222,10 +273,16 @@ export default {
                                         lineHeight: '20px'
                                     }
                                 }, 'Please review the duplicated asset keys before saving.'),
-                                renderDuplicateInput(h, 'Serial number', this.draft.serialNumber, (value) => { this.draft.serialNumber = value }),
+                                renderSerialField(h, this.draft),
                                 renderManufacturerSelect(h, this.draft.manufacturer, manufacturerOptions, (value) => { this.draft.manufacturer = value }),
-                                renderAssetTypeControl(h, this.draft.assetType, assetTypeOptions, (value) => { this.draft.assetType = value })
-                            ])
+                                renderDuplicateInput(h, 'Asset ID', this.draft.assetId, (value) => { this.draft.assetId = value }),
+                                renderOperatingDate(h, this.draft),
+                                renderDuplicateSelect(h, 'Status', this.draft.status, statusOptions.map((value) => ({ label: value, value })), (value) => { this.draft.status = value })
+                            ]
+                            if (this.draft.phaseBinding) {
+                                fields.push(renderDuplicateSelect(h, 'Phase', this.draft.phase, phaseOptions, (value) => { this.draft.phase = value }))
+                            }
+                            return h('div', { style: { width: '430px', maxWidth: '100%' } }, fields)
                         }
                     }
 
@@ -244,8 +301,12 @@ export default {
                                     done()
                                     return
                                 }
-                                if (!cleanKey(draft.serialNumber)) {
+                                if (!draft.unknownSerial && !cleanKey(draft.serialNumber)) {
                                     this.$message.error('Serial number is required.')
+                                    return
+                                }
+                                if (!cleanKey(draft.assetId)) {
+                                    this.$message.error('Asset ID is required.')
                                     return
                                 }
                                 done()
@@ -348,7 +409,7 @@ export default {
                 // 3. Map sang DTO & Clean dữ liệu (Xóa ID cũ)
                 const dto = mappingFunction(entityRes.data)
                 if (node.mode === 'asset') {
-                    const accepted = await requestDuplicateAssetKeys(dto)
+                    const accepted = await requestDuplicateAssetKeys(dto, getNextDuplicateLabel(node, parentNode))
                     if (!accepted) {
                         return {
                             success: false,
@@ -726,10 +787,9 @@ export default {
                 const nextLabel = getNextDuplicateLabel(node, parentNode)
 
                 if (isAssetNode) {
-                    // Asset: dùng apparatus_id làm label chính trên cây, giữ serial_no nguyên
+                    // Asset ID entered in the duplicate form is the tree label.
                     if (!dto.properties) dto.properties = {}
-                    dto.properties.apparatus_id = nextLabel
-                    // serial_no giữ nguyên từ bản gốc, không thay đổi
+                    dto.properties.apparatus_id = cleanKey(dto.properties.apparatus_id) || nextLabel
                 } else if (node.mode === 'job') {
                     // Job: tên nằm ở properties.name
                     if (!dto.properties) dto.properties = {}

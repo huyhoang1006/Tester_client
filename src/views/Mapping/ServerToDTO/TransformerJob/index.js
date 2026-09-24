@@ -1,6 +1,7 @@
 /* eslint-disable */
 import transformerTestMap from '@/config/test-definitions/Transformer'
 import transformerConditionMap from '@/config/testing-condition/Transformer'
+import { applySfraTracesToTests, buildSfraTraceMap } from '@/utils/sfraTrace'
 
 // Map measurement_id → { alias: value } cho cột discrete (từ config options).
 // Dùng để convert discrete value chữ (UI: "Pass"/"Good") → số (server: 1/3),
@@ -94,7 +95,7 @@ const isCell = (v) =>
     v && typeof v === 'object' && !Array.isArray(v) &&
     ('measurement_id' in v || 'type' in v || 'value' in v)
 
-const mapDataTable = (data) => {
+const mapDataTable = (data, includeCells = true) => {
     const out = {}
     const tables = (data && data.table) || {}
     for (const tableName of Object.keys(tables)) {
@@ -106,7 +107,7 @@ const mapDataTable = (data) => {
             for (const fieldKey of Object.keys(row)) {
                 if (fieldKey === 'mrid') continue
                 const cell = row[fieldKey]
-                if (isCell(cell)) mapped[fieldKey] = mapCell(cell)
+                if (includeCells && isCell(cell)) mapped[fieldKey] = mapCell(cell)
             }
             return mapped
         })
@@ -273,7 +274,7 @@ export const mapDtoToServer = (dto) => {
                 // y hệt attachmentId/attachmentData top-level của job.
             } : null,
 
-            data: mapDataTable(t.data),
+            data: mapDataTable(t.data, t.testTypeCode !== 'SFRA'),
 
             assessment: mapAssessment(t.testAssessment),
         })),
@@ -287,6 +288,8 @@ export const mapDtoToServer = (dto) => {
             // mảng work_task mrid mà thiết bị này được dùng để đo
             workTaskIds:     e.work_task_ids || [],
         })),
+
+        sfraTraces: buildSfraTraceMap(dto.testList),
 
         // attachment job-level: hiện chỉ gửi id tham chiếu.
         // Khi có API upload file: gửi thêm list file (attachmentData) tương tự.
@@ -351,7 +354,7 @@ const unmapConditionD = (condition) => {
 export const mapServerToDto = (server) => {
     if (!server) return null
     const p = server.properties || server.job || {}
-    return {
+    const dto = {
         properties: {
             mrid:           p.mrid || p.mRID || null,
             name:           p.name || null,
@@ -398,4 +401,6 @@ export const mapServerToDto = (server) => {
         attachmentId:   server.attachmentId || null,
         attachment:     server.attachment || null,
     }
+    applySfraTracesToTests(dto.testList, server.sfraTraces || {})
+    return dto
 }

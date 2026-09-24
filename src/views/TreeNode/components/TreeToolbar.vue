@@ -9,7 +9,7 @@
                 <i class="fa-solid fa-screwdriver-wrench"></i>
             </button>
 
-            <button v-if="showFmeca" type="button" class="rail-tab" :class="{ active: activeTab === 'fmeca' }" title="FMECA" @click="handleFmeca">
+            <button type="button" class="rail-tab" :class="{ active: activeTab === 'fmeca' }" title="FMECA" @click="handleFmeca">
                 <i class="fa-solid fa-table"></i>
             </button>
 
@@ -143,7 +143,6 @@ export default {
         return {
             activeTab: 'explorer',
             collapsed: localStorage.getItem(getCollapseKey()) === '1',
-            showFmeca: false,
             searchOpen: false
         }
     },

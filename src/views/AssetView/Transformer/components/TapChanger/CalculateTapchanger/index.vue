@@ -24,7 +24,7 @@
                     </el-col>
                     <el-col :xs="24" :sm="12">
                         <label class="field-label">Tap step</label>
-                        <el-input size="mini" type="text" number="positive" v-model.number="tapStepPercent">
+                        <el-input size="mini" type="text" inputmode="decimal" v-model.trim="tapStepPercent">
                             <template slot="prepend">&plusmn;</template>
                             <template slot="append">%</template>
                         </el-input>
@@ -149,6 +149,11 @@ export default {
         }
     },
     methods: {
+        parseDecimal(value) {
+            const normalizedValue = String(value ?? '').trim().replace(',', '.')
+            if (!/^(?:\d+(?:\.\d*)?|\.\d+)$/.test(normalizedValue)) return NaN
+            return Number(normalizedValue)
+        },
         async handleCancel() {
             this.$emit('cancel-dialog')
         },
@@ -156,7 +161,7 @@ export default {
         async handleCalculate() {
             if (this.activeName == 'principal') {
                 const principalVoltage = Number(this.principalTapVoltage)
-                const tapStep = Math.abs(Number(this.tapStepPercent))
+                const tapStep = Math.abs(this.parseDecimal(this.tapStepPercent))
 
                 if (!Number.isFinite(principalVoltage) || principalVoltage <= 0) {
                     this.$message.error('Principal tap voltage must be greater than 0')

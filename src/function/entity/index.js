@@ -34,6 +34,7 @@ import * as accessoryTestingEquipmentFunc from "./accessoryTestingEquipment/inde
 import * as treeSearchFunc from './treeSearch/index'
 import * as syncStateFunc from "./syncState/index"
 import * as powerPlantEntityFunc from './powerPlant/index'
+import * as fmecaFunc from './fmeca/index'
 
 
 export {
@@ -45,6 +46,6 @@ export {
     voltageTransformerEntityFunc, bushingEntityFunc, disconnectorEntityFunc, rotatingMachineEntityFunc,
     currentTransformerEntityFunc, reactorEntityFunc, assetPsrFunc, notificationEntityFunc, templateFunc,
     testingEquipmentEntityFunc, accessoryTestingEquipmentFunc, syncStateFunc, treeSearchFunc,
-    powerPlantEntityFunc
+    powerPlantEntityFunc, fmecaFunc
 
 }

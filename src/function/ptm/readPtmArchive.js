@@ -248,6 +248,57 @@ const readJob = (node) => ({
     conditions: readConditions(child(node, 'Conditions')),
 })
 
+const firstTextOf = (node, names) => {
+    for (const name of names) {
+        const value = cleanValue(textOf(node, name))
+        if (value) return value
+    }
+    return ''
+}
+
+const readSubstation = node => ({
+    exportId: node.attrs.ExportId || '',
+    globalId: cleanValue(textOf(node, 'GlobalLocationId')),
+    name: cleanValue(textOf(node, 'Name')),
+    region: cleanValue(textOf(node, 'Region')),
+    plant: cleanValue(textOf(node, 'Plant')),
+    street: cleanValue(textOf(node, 'Street')),
+    city: cleanValue(textOf(node, 'City')),
+    stateOrProvince: firstTextOf(node, ['StateOrProvince', 'State']),
+    postalCode: cleanValue(textOf(node, 'PostalCode')),
+    country: cleanValue(textOf(node, 'Country')),
+    contactPerson: cleanValue(textOf(node, 'ContactPerson')),
+    phoneNumber: firstTextOf(node, ['PhoneNumber1', 'PhoneNumber']),
+    email: cleanValue(textOf(node, 'Email')),
+    comment: cleanValue(textOf(node, 'Comment')),
+    latitude: cleanValue(textOf(child(node, 'GeoCoordinates'), 'Latitude')),
+    longitude: cleanValue(textOf(child(node, 'GeoCoordinates'), 'Longitude')),
+    isRealWorldLocation: cleanValue(textOf(node, 'IsRealWorldLocation')) === 'true',
+})
+
+// PTM versions do not all use the same container tags for these two levels.
+// Keep the normalized fields intentionally small; they are enough to recreate
+// the hierarchy and do not make the parser depend on one PTM release.
+const readVoltageLevel = node => ({
+    exportId: node.attrs.ExportId || '',
+    name: cleanValue(textOf(node, 'Name')),
+    comment: cleanValue(textOf(node, 'Comment')),
+    substationId: firstTextOf(node, ['SubstationId', 'LocationId', 'ParentLocationId']),
+    baseVoltage: measure(node, 'BaseVoltage'),
+    highVoltageLimit: measure(node, 'HighVoltageLimit'),
+    lowVoltageLimit: measure(node, 'LowVoltageLimit'),
+})
+
+const readBay = node => ({
+    exportId: node.attrs.ExportId || '',
+    name: cleanValue(textOf(node, 'Name')),
+    aliasName: cleanValue(textOf(node, 'AliasName')),
+    substationId: firstTextOf(node, ['SubstationId', 'LocationId', 'ParentLocationId']),
+    voltageLevelId: firstTextOf(node, ['VoltageLevelId', 'EquipmentContainerId']),
+    breakerConfiguration: cleanValue(textOf(node, 'BreakerConfiguration')),
+    busBarConfiguration: cleanValue(textOf(node, 'BusBarConfiguration')),
+})
+
 const readConditions = (node) => {
     if (!node) return {}
     return {
@@ -408,6 +459,46 @@ const readTestCommon = (node, type) => ({
     resultState: cleanValue(textOf(node, 'ResultState')),
     testIndex: cleanValue(textOf(node, 'TestIndex')),
 })
+
+const readFraTest = (node, type) => {
+    const base = readTestCommon(node, type)
+    const measurementsNode = child(node, 'Measurements')
+    const outputVoltage = measure(node, 'OutputLevel')
+    base.measurements = childrenNamed(measurementsNode || { children: [] }, 'FRAMeasurement')
+        .filter(measurement => cleanValue(textOf(measurement, 'MeasurementType')) === 'Trace')
+        .map(measurement => {
+            const sweepPoints = child(measurement, 'SweepPoints')
+            const measurementName = cleanValue(textOf(measurement, 'Name'))
+            const terminalTokens = measurementName
+                .replace(/^\d+\s*:\s*/, '')
+                .split(/\s+/)
+                .filter(Boolean)
+            const referenceChannel = cleanValue(textOf(measurement, 'Channel1'))
+            const responseChannel = cleanValue(textOf(measurement, 'Channel2'))
+            return {
+                name: measurementName,
+                groupName: base.name,
+                sourceStandard: 'PTM',
+                sourceFile: '',
+                referenceTerminal: terminalTokens[0] || referenceChannel,
+                responseTerminal: terminalTokens[1] || responseChannel,
+                shortedTerminals: cleanValue(textOf(measurement, 'ShortedTerminals')).replace(/^None$/, ''),
+                groundedTerminals: cleanValue(textOf(measurement, 'GroundedTerminals')).replace(/^None$/, ''),
+                tapPosition: cleanValue(textOf(measurement, 'TapPositionName')) || cleanValue(textOf(measurement, 'TapPosition')),
+                measuredDate: cleanValue(textOf(measurement, 'MeasuredDate')),
+                outputVoltage: outputVoltage.value,
+                color: cleanValue(textOf(measurement, 'TraceColor')),
+                enabled: cleanValue(textOf(measurement, 'IsEnabled')) !== 'false',
+                points: childrenNamed(sweepPoints || { children: [] }, 'FRASweepPoint').map(point => ({
+                    frequency: cleanValue(textOf(point, 'Frequency')),
+                    magnitude: cleanValue(textOf(point, 'Magnitude')),
+                    phase: cleanValue(textOf(point, 'Phase')),
+                })),
+            }
+        })
+        .filter(measurement => measurement.points.length > 0)
+    return base
+}
 
 /**
  * Bài CT Excitation.
@@ -1302,6 +1393,7 @@ const TEST_READERS = {
     ExcitingCurrentTest: readExcitingCurrentTest,
     LeakageReactanceTest: readLeakageReactanceTest,
     TransformerWindingResistanceTest: readTransformerWindingResistanceTest,
+    FRATest: readFraTest,
 }
 
 // ─── Điểm vào ────────────────────────────────────────────────────────────────
@@ -1310,7 +1402,7 @@ const TEST_READERS = {
  * Đọc một file .ptm thành cấu trúc đã chuẩn hoá.
  *
  * @param {string} filePath
- * @returns {{ meta, job, assets, substations, tests, unsupportedTests }}
+ * @returns {{ meta, job, assets, substations, voltageLevels, bays, tests, unsupportedTests }}
  */
 export const readPtmArchive = (filePath) => {
     const buffer = fs.readFileSync(filePath)
@@ -1331,6 +1423,8 @@ export const readPtmArchive = (filePath) => {
 
     const assets = []
     const substations = []
+    const voltageLevels = []
+    const bays = []
     const tests = []
     const unsupportedTests = []
     let job = null
@@ -1343,17 +1437,17 @@ export const readPtmArchive = (filePath) => {
         }
         if (entry.type === 'Substation') {
             const node = parseEntry(zip, entry.target)
-            if (node) {
-                substations.push({
-                    exportId: node.attrs.ExportId || '',
-                    name: cleanValue(textOf(node, 'Name')),
-                    address: cleanValue(textOf(node, 'Address')),
-                    city: cleanValue(textOf(node, 'City')),
-                    stateOrProvince: cleanValue(textOf(node, 'StateOrProvince')),
-                    postalCode: cleanValue(textOf(node, 'PostalCode')),
-                    country: cleanValue(textOf(node, 'Country')),
-                })
-            }
+            if (node) substations.push(readSubstation(node))
+            continue
+        }
+        if (entry.type === 'VoltageLevel') {
+            const node = parseEntry(zip, entry.target)
+            if (node) voltageLevels.push(readVoltageLevel(node))
+            continue
+        }
+        if (entry.type === 'Bay') {
+            const node = parseEntry(zip, entry.target)
+            if (node) bays.push(readBay(node))
             continue
         }
         if (entry.target.indexOf('Assets/') === 0) {
@@ -1403,7 +1497,7 @@ export const readPtmArchive = (filePath) => {
 
     if (!job) throw new Error('Not a valid PTM file: no Job found')
 
-    return { meta, job, assets, substations, tests, unsupportedTests }
+    return { meta, job, assets, substations, voltageLevels, bays, tests, unsupportedTests }
 }
 
 export default { readPtmArchive }

@@ -3,7 +3,7 @@ export default {
         async handleShowEquipment() {
             this.activeWorkspaceTab = 'testingEquipment'
             this.clientWorkspaceTab = 'testingEquipment'
-            this.signFmeca = false
+            if (this.$refs.treeToolBar) this.$refs.treeToolBar.activeTab = 'testingEquipment'
             this.openImportDialog = false
             this.openExportDialog = false
             this.$nextTick(() => {

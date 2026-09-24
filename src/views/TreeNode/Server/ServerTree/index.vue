@@ -23,7 +23,6 @@
                 @download-node="$emit('download-node', $event)"
                 @download-node-only="$emit('download-node-only', $event)"
                 @download-full-tree="$emit('download-full-tree', $event)"
-                @fmeca-node="$emit('fmeca-node', $event)"
                 @delete-data="$emit('delete-data', $event)"
                 @show-addSubsInTree="$emit('show-addSubsInTree', $event)"
                 @show-addPowerPlant="$emit('show-addPowerPlant', $event)"

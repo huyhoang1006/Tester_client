@@ -32,6 +32,9 @@
                 <div class="ptm-row"><span class="k">Manufacturer</span><span class="v">{{ asset.manufacturer || '—' }}</span></div>
                 <div class="ptm-row"><span class="k">Manufacturer type</span><span class="v">{{ asset.manufacturerType || '—' }}</span></div>
                 <div class="ptm-row"><span class="k">Import into</span><span class="v">{{ targetLabel }}</span></div>
+                <div v-if="preview.hierarchyPath" class="ptm-row">
+                    <span class="k">File hierarchy</span><span class="v">{{ preview.hierarchyPath }}</span>
+                </div>
             </div>
 
             <!--
@@ -78,20 +81,6 @@
                         {{ m.name || m.serial_number }} <em>({{ m.kind || 'asset' }})</em>
                     </li>
                 </ul>
-            </el-alert>
-
-            <!--
-              Chỉ hỏi về THIẾT BỊ khi người dùng KHÔNG đứng ở chính thiết bị đó. Đứng ở
-              thiết bị nào là đã chọn nó rồi — hỏi thêm "ghi đè hay giữ nguyên" là bắt trả
-              lời một câu mà câu trả lời đã nằm trong hành động chọn node.
-            -->
-            <el-alert v-else-if="askAboutAsset" type="warning" :closable="false" show-icon
-                      title="This asset already exists here" class="ptm-alert">
-                <div>Matched on {{ dup.matchedOn.join(' + ') }}. Choose what to do:</div>
-                <el-radio-group v-model="assetAction" class="ptm-radio">
-                    <el-radio label="overwrite">Overwrite the existing asset, attach the job to it</el-radio>
-                    <el-radio label="skip">Leave the asset as it is, attach the job to it</el-radio>
-                </el-radio-group>
             </el-alert>
 
             <!-- ─── Job trùng tên dưới đúng thiết bị đích ─────────────────── -->
@@ -204,12 +193,11 @@
  * Xem trước trước khi import file .ptm.
  *
  * Hộp thoại này tồn tại để người dùng thấy TRƯỚC cái gì sẽ vào, cái gì không, và trùng ở
- * đâu — thay vì bấm import rồi mới đọc một bảng lỗi. Ba tình huống trùng cho ra ba hành
- * vi khác nhau, đúng luật đã chốt:
+ * đâu — thay vì bấm import rồi mới đọc một bảng lỗi. Thiết bị hoặc node hierarchy đã có
+ * buộc người dùng chọn chính node đó trên cây trước khi mở lại file:
  *
- *   trùng ở nhánh khác   -> CHẶN, phải xử lý trước
- *   trùng ngay tại đây   -> cho chọn ghi đè / bỏ qua
- *   không trùng          -> import thẳng
+ *   trùng node/thiết bị  -> CHẶN, chọn đúng node rồi import lại
+ *   không trùng          -> tạo hierarchy còn thiếu và import
  */
 export default {
     name: 'PtmImportDialog',
@@ -222,17 +210,12 @@ export default {
         /** Job trùng TÊN dưới thiết bị đích: [{ mrid, name, executionDate, testedBy }] */
         jobDup:    { type: Array, default: () => [] },
         jobDupError: { type: String, default: '' },
-        /** true khi người dùng đang đứng ở chính thiết bị đích. */
-        onAssetNode: { type: Boolean, default: false },
         targetLabel: { type: String, default: '' },
         fileName:  { type: String, default: '' },
         importing: { type: Boolean, default: false },
     },
     data() {
         return {
-            // Thiết bị: mặc định 'overwrite' — nếu đã hỏi tới thì ý định gần như chắc chắn
-            // là cập nhật thông số từ file vừa đo.
-            assetAction: 'overwrite',
             // Merge là mặc định an toàn: test mới được thêm, test trùng mặc định giữ bản cũ.
             // Ghi đè toàn job vẫn còn nhưng người dùng phải chủ động chọn.
             jobAction: 'merge',
@@ -342,18 +325,6 @@ export default {
             return true
         },
 
-        /**
-         * Có hỏi về thiết bị không.
-         *
-         * KHÔNG hỏi khi người dùng đứng ở chính thiết bị đó: chọn node đã là câu trả lời.
-         * Vẫn hỏi khi đứng ở bay/trạm mà tìm thấy thiết bị trùng trong nhánh đó — ở đó
-         * thiết bị chưa được chọn tường minh, nên câu hỏi mới có nghĩa.
-         */
-        askAboutAsset() {
-            if (this.onAssetNode) return false
-            return !!(this.dup && this.dup.inTarget && this.dup.inTarget.length > 0)
-        },
-
         /** Nút phải nói đúng việc nó sắp làm — 'Import' khi sắp ghi đè là nói thiếu. */
         importLabel() {
             if (this.jobDup.length > 0) {
@@ -393,7 +364,6 @@ export default {
             if (!open) return
             // Đặt lại mỗi lần mở: lần import trước chọn 'overwrite' thì lần này không được
             // mang theo lựa chọn đó, vì file và node đã khác.
-            this.assetAction = 'overwrite'
             this.jobAction = 'merge'
             this.targetJobMrid = (this.jobDup[0] && this.jobDup[0].mrid) || ''
             this.resetTestDecisions()
@@ -428,7 +398,6 @@ export default {
                 targetMrid: this.testDecisions[key].targetMrid,
             }))
             this.$emit('confirm', {
-                assetAction: this.assetAction,
                 jobAction: this.jobAction,
                 targetJobMrid: this.targetJobMrid,
                 testDecisions,

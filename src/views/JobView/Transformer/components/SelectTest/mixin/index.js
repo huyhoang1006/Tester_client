@@ -125,6 +125,9 @@ export default {
                 case 'GasChromatography':
                     data = await this.initGasChromatography(testTypeCode)
                     break
+                case 'SFRA':
+                    data = await this.initSfra(testTypeCode)
+                    break
             }
             common.markInitialTestValues(data && data.table)
             return data
@@ -177,6 +180,15 @@ export default {
                 table: {
                     table1: table1
                 }
+            }
+        },
+        async initSfra(testTypeCode) {
+            const rowDataExampleCondition = common.buildEmptyTestCondition(transformerConditionMap[testTypeCode].columns)
+            const rowDataAssessment = common.buildEmptyTestAssessment((transformerAssessmentMap[testTypeCode] ? transformerAssessmentMap[testTypeCode].testStandard : null) || [])
+            return {
+                rowDataExampleCondition,
+                rowDataAssessment,
+                table: { table1: [] }
             }
         },
         async initInsulationResistance(testTypeCode, assetData) {

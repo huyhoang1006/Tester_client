@@ -414,9 +414,11 @@ export const mapServerToDto = (serverData) => {
         dto.tap_changers.tap_scheme = TAP_SCHEME_MAP[tapChanger.tabScheme] || tapChanger.tabScheme || ''
         dto.tap_changers.no_of_taps = String(tapChanger.noTaps || 0)
 
-        dto.tap_changers.voltage_table = tapChangerVoltage.map((tv) => ({
+        const descendingTapScheme = dto.tap_changers.tap_scheme === '33...1' ||
+            dto.tap_changers.tap_scheme === 'N...1'
+        dto.tap_changers.voltage_table = tapChangerVoltage.map((tv, index) => ({
             id: String(tv.id),
-            tap: tv.tap,
+            tap: descendingTapScheme ? tapChangerVoltage.length - index : index + 1,
             voltage: {
                 mrid: uuid.newUuid(),
                 value: tv.voltage !== null && tv.voltage !== undefined ? String(tv.voltage) : '0',

@@ -30,7 +30,6 @@
         @upload-node="$emit('upload-node', $event)"
         @upload-full-tree="$emit('upload-full-tree', $event)"
         @upload-path-node="$emit('upload-path-node', $event)"
-        @fmeca-node="$emit('fmeca-node', $event)"
         @show-equipment="$emit('show-equipment')"
         @export-json-only-node="$emit('export-json-only-node', $event)"
         @export-json-full-tree="$emit('export-json-full-tree', $event)"

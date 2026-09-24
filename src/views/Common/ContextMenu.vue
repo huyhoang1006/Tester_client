@@ -101,9 +101,6 @@
                 <li v-if="isClient" @click="duplicate">
                     <i class="fa-solid fa-copy"></i> Duplicate
                 </li>
-                <li @click="fmeca">
-                    <i class="fa-solid fa-table"></i> FMECA
-                </li>
                 <li v-if="isClient" @click="showEquipment">
                     <i class="fa-solid fa-screwdriver-wrench"></i> Show equipment
                 </li>
@@ -414,10 +411,6 @@ export default {
         },
         downloadFullTree() {
             this.$emit("download-full-tree", this.selectedNode)
-            this.closeContextMenu()
-        },
-        fmeca() {
-            this.$emit("fmeca-node", this.selectedNode)
             this.closeContextMenu()
         },
         showEquipment() {

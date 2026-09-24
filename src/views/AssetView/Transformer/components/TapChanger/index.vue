@@ -103,8 +103,8 @@
                                 </thead>
                                 <tbody>
                                     <tr v-for="(item, index) in tapChangersData.voltage_table" :key="index">
-                                        <td>
-                                            <el-input size="mini" type="text" number="positive" v-model="item.tap"></el-input>
+                                        <td class="tap-position">
+                                            {{ tapPositionForIndex(index) }}
                                         </td>
                                         <td>
                                             <el-input size="mini" type="text" number="positive" v-model="item.voltage.value">
@@ -225,8 +225,8 @@
                                 </thead>
                                 <tbody>
                                     <tr v-for="(item, index) in tapChangersData.voltage_table" :key="index">
-                                        <td>
-                                            <el-input size="mini" type="text" number="positive" v-model="item.tap"></el-input>
+                                        <td class="tap-position">
+                                            {{ tapPositionForIndex(index) }}
                                         </td>
                                         <td>
                                             <el-input size="mini" type="text" number="positive" v-model="item.voltage.value">
@@ -336,11 +336,36 @@ export default {
                     this.onEnterNoTap()
                 }
             }
+        },
+        'tapChangersData.voltage_table': {
+            immediate: true,
+            handler: function () {
+                this.normalizeTapPositions()
+            }
         }
     },
     async beforeMount() { },
     mounted() { },
     methods: {
+        isDescendingTapScheme() {
+            return this.tapChangersData.tap_scheme === '33...1' ||
+                this.tapChangersData.tap_scheme === 'N...1'
+        },
+        tapPositionForIndex(index) {
+            const count = this.tapChangersData.voltage_table.length
+            return this.isDescendingTapScheme() ? count - index : index + 1
+        },
+        normalizeTapPositions() {
+            const voltageTable = this.tapChangersData.voltage_table
+            if (!Array.isArray(voltageTable)) return
+
+            voltageTable.forEach((item, index) => {
+                const tapPosition = this.tapPositionForIndex(index)
+                if (item.tap !== tapPosition) {
+                    this.$set(item, 'tap', tapPosition)
+                }
+            })
+        },
         onChangeWinding() {
             this.tapChangersData.tap_scheme = ''
             this.tapChangersData.no_of_taps = '0'
@@ -413,6 +438,7 @@ export default {
                     }
                 }
             }
+            this.normalizeTapPositions()
         },
         onEnterNoTapReset() {
             this.tapChangersData.voltage_table = []
@@ -443,6 +469,7 @@ export default {
                     })
                 }
             }
+            this.normalizeTapPositions()
         },
         onChangeTapChanger() {
             this.tapChangersData.serial_no = ''
@@ -466,6 +493,7 @@ export default {
                 }
             })
             this.tapChangersData.no_of_taps++
+            this.normalizeTapPositions()
         },
         removeAllVoltageTable() {
             this.tapChangersData.voltage_table = []
@@ -474,6 +502,7 @@ export default {
         deleteVoltageTable(index) {
             this.tapChangersData.voltage_table.splice(index, 1)
             this.tapChangersData.no_of_taps--
+            this.normalizeTapPositions()
         },
         addVoltage(index) {
             const id = this.$uuid.newUuid()
@@ -488,6 +517,7 @@ export default {
             }
             this.tapChangersData.voltage_table.splice(index + 1, 0, row)
             this.tapChangersData.no_of_taps++
+            this.normalizeTapPositions()
         },
         onCancelDialog() {
             this.openDialog = false
@@ -560,6 +590,12 @@ export default {
 
 ::v-deep(.col-tap) {
     min-width: 75px;
+}
+
+.tap-position {
+    text-align: center;
+    font-weight: 600;
+    color: #303133;
 }
 
 ::v-deep(.col-voltage) {

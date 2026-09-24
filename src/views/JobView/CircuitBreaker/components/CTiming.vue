@@ -84,7 +84,7 @@
                             </td>
                             <td>
                                 <el-select :class="nameColor(item.condition_indicator.value)" size="mini"
-                                    v-model="item.condition_indicator.value">
+                                    disabled v-model="item.condition_indicator.value">
                                     <el-option value="Good">Good</el-option>
                                     <el-option value="Fair">Fair</el-option>
                                     <el-option value="Poor">Poor</el-option>
@@ -154,7 +154,7 @@
                             </td>
                             <td>
                                 <el-select :class="nameColor(item.condition_indicator.value)" size="mini"
-                                    v-model="item.condition_indicator.value">
+                                    disabled v-model="item.condition_indicator.value">
                                     <el-option value="Good">Good</el-option>
                                     <el-option value="Fair">Fair</el-option>
                                     <el-option value="Poor">Poor</el-option>

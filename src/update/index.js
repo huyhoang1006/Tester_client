@@ -6,6 +6,7 @@ import UpdateSchedulerService from '@/function/entity/update/UpdateSchedulerServ
 import { entityFunc } from '@/function'
 import db from '@/function/datacontext/index'
 import { app } from 'electron'
+import { migrateLegacySfraTraces } from '@/function/cim/sfraTrace'
 
 const schedulerService = new UpdateSchedulerService()
 const { checkForUpdates } = entityFunc.updateEntityFunc
@@ -95,8 +96,18 @@ export const updateDatabase = async () => {
         await databaseInitFunc.syncSchemaTables(db)
         await databaseInitFunc.ensureTransformerVectorGroupColumns(db)
         await databaseInitFunc.ensureSubstationOperatingDateColumn(db)
+        const sfraMigration = await migrateLegacySfraTraces(db)
+        if (sfraMigration.migrated > 0) {
+            console.log(`[DB] Migrated ${sfraMigration.migrated} legacy SFRA trace(s)`)
+        }
     } catch (schemaError) {
         console.error('[DB] Sync schema failed, tinh nang dung bang moi se loi:', schemaError)
+    }
+
+    try {
+        await entityFunc.fmecaFunc.ensureFmecaSchema(db)
+    } catch (fmecaError) {
+        console.error('[DB] FMECA schema/demo sync failed:', fmecaError)
     }
 
     if (oldVersion) {

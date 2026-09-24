@@ -168,6 +168,12 @@
       "code": "TestingInstruments",
       "name": "Testing instruments",
       "kind": "test"
+    },
+    {
+      "mrid": "d7a7456c-f4fe-4f8b-8ba4-cf0caa0f5101",
+      "code": "SFRA",
+      "name": "Sweep Frequency Response Analysis",
+      "kind": "test"
     }
   ]
 }

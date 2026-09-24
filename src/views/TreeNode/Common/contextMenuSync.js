@@ -14,10 +14,6 @@ export default {
             this.selectedNodes = [node]
             this.handleUploadPathNode()
         },
-        handleFmecaFromContext(node) {
-            this.selectedNodes = [node]
-            this.handleClickFmeca()
-        },
         handleDownloadFromContext(node) {
             this.selectedNodes = [node]
             this.handleDownloadPathTree()

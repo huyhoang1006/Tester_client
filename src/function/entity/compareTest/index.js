@@ -1,4 +1,6 @@
 import db from '../../datacontext/index'
+import { getSfraTracesByDatasetIds } from '@/function/cim/sfraTrace'
+import { sfraTraceToSnapshotCells } from '@/utils/sfraTrace'
 
 /**
  * So sánh kết quả test với lần test trước — tầng đọc dữ liệu (main process).
@@ -142,6 +144,8 @@ export const getTestSnapshot = async (workTaskMrid) => {
              WHERE pd.work_task = ?`,
             [workTaskMrid]
         )
+        const sfraResult = await getSfraTracesByDatasetIds(datasets.map(dataset => dataset.mrid))
+        const sfraTraces = sfraResult.success ? sfraResult.data : {}
 
         const tablesByTitle = {}
         const conditions = {}
@@ -182,6 +186,9 @@ export const getTestSnapshot = async (workTaskMrid) => {
                         ? cell.displayValue
                         : cell.value
                 }
+            }
+            if (sfraTraces[dataset.mrid]) {
+                Object.assign(row.cells, sfraTraceToSnapshotCells(sfraTraces[dataset.mrid]))
             }
 
             // Nhãn dòng: ô string đầu tiên. Renderer sẽ tinh chỉnh lại theo định nghĩa cột.

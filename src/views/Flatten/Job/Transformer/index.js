@@ -19,6 +19,7 @@ class TransformerJobEntity {
         this.assessment_group = []
         this.assessment_rule = []
         this.standardCustomized = []
+        this.sfraTraces = {}
     }
 }
 

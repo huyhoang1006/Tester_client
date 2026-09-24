@@ -4,6 +4,9 @@
         <div class="test-toolbar">
             <div class="test-toolbar-group">
                 <el-button size="mini" type="primary" @click="calculator"> <i class="fas fa-circle-play"></i> Assess results </el-button>
+                <el-button size="mini" type="success" @click="calculateConditionIndicator">
+                    <i class="fa-solid fa-calculator"></i> Calculate CI
+                </el-button>
                 <el-button size="mini" @click="clear"> <i class="fas fa-xmark"></i> Clear all</el-button>
             </div>
             <div class="test-toolbar-group">
@@ -92,7 +95,7 @@
                     </td>
                     <td>
                         <el-select :class="nameColor(item.condition_indicator_df.value)" id="condition" type="text"
-                            size="mini" v-model="item.condition_indicator_df.value">
+                            size="mini" disabled v-model="item.condition_indicator_df.value">
                             <el-option value="Good">Good</el-option>
                             <el-option value="Fair">Fair</el-option>
                             <el-option value="Poor">Poor</el-option>
@@ -101,7 +104,7 @@
                     </td>
                     <td>
                         <el-select :class="nameColor(item.condition_indicator_c.value)" id="condition" type="text"
-                            size="mini" v-model="item.condition_indicator_c.value">
+                            size="mini" disabled v-model="item.condition_indicator_c.value">
                             <el-option value="Good">Good</el-option>
                             <el-option value="Fair">Fair</el-option>
                             <el-option value="Poor">Poor</el-option>
@@ -156,6 +159,7 @@
         <!-- Condition indicator settings -->
         <el-dialog append-to-body title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog"
             width="min(860px, 92vw)">
+            <TransformerConditionIndicatorSettings :test-code="$options.name" />
         </el-dialog>
     </div>
 </template>
@@ -166,9 +170,11 @@ import transformerTestMap from '@/config/test-definitions/Transformer'
 import * as common from '../../../Common/index.js'
 import GroupNode from '../../../Common/GroupNode.vue'
 import { changeTestStandard } from '../../../Common'
+import conditionIndicatorMixin from '../MixinCommon/MixinConditionIndicator'
 import WindingDfCapCharts from '../WindingDfCap/WindingDfCapCharts.vue'
 
 export default {
+    mixins: [conditionIndicatorMixin],
     name: "BushingSecC1",
     components: { GroupNode, WindingDfCapCharts },
     data() {

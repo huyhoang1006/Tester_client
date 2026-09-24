@@ -55,10 +55,23 @@
                                     :testAssessment="item.testAssessment"
                                     :compare-open="!!compareOpen[item.testTypeCode + index]"
                                     :comparison-snapshot="compareReference[item.testTypeCode + index] || null"
+                                    :asset-mrid="transformerJobDto.properties.asset_id"
+                                    :work-mrid="transformerJobDto.properties.mrid"
+                                    :work-task-mrid="item.mrid"
                                     @toggle-compare="toggleCompare(item.testTypeCode + index)">
                                 </component>
                             </el-tab-pane>
                         </el-tabs>
+                    </div>
+                </el-tab-pane>
+
+                <el-tab-pane>
+                    <span slot="label"><i class="fa-solid fa-heart-pulse"></i> Health index</span>
+                    <div id="job__health-index">
+                        <health-index
+                            :data="transformerJobDto.testList"
+                            :properties="transformerJobDto.properties">
+                        </health-index>
                     </div>
                 </el-tab-pane>
             </el-tabs>
@@ -103,6 +116,7 @@ import ShortCircuitImpedanceSec from './components/ShortCircuitImpedanceSec/inde
 import ShortCircuitImpedanceTert from './components/ShortCircuitImpedanceTert'
 import GasChromatography from './components/GasChromatography/index.vue'
 import Dga from './components/Dga'
+import SFRA from './components/SFRA'
 
 
 import TestSummary from './components/TestSummary/index.vue'
@@ -144,6 +158,7 @@ export default {
         BushingTertC1,
         BushingTertC2,
         Dga,
+        SFRA,
         GasChromatography,
         InsulationResistanceYokeCore,
         ShortCircuitImpedancePrim,
@@ -225,11 +240,17 @@ export default {
   font-size: 12px !important;
 }
 
-#tests,
-#job__health-index {
+#tests {
     width: calc(100vw - 145px);
     overflow-y: auto;
     overflow-x: hidden;
+}
+
+#job__health-index {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .el-tabs--border-card {

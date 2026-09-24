@@ -1,0 +1,27 @@
+{
+  "testId": "d7a7456c-f4fe-4f8b-8ba4-cf0caa0f5101",
+  "testCode": "SFRA",
+  "testName": "Sweep Frequency Response Analysis",
+  "columns": [
+    {
+      "mrid": "9602495b-98a4-42cd-8b2b-decba1c76578",
+      "code": "ambient_temp",
+      "name": "Ambient temperature",
+      "type": "analog",
+      "unit": "°C"
+    },
+    {
+      "mrid": "28b61109-05a9-41f5-9da2-429d52aa4890",
+      "code": "humidity",
+      "name": "Humidity",
+      "type": "analog",
+      "unit": "%"
+    },
+    {
+      "mrid": "7133ae02-84c1-44e4-bc66-30826abbcf80",
+      "code": "weather",
+      "name": "Weather",
+      "type": "string"
+    }
+  ]
+}

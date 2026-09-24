@@ -4,6 +4,26 @@
     "Calculated/reference fields are not sourced from CPXpert unless the client already stores them as test results.",
     "Explicit PTM Pass/Fail results are preserved; unassessed or indeterminate results remain blank."
   ],
+  "SFRA": {
+    "ptmType": "FRATest",
+    "columns": {
+      "output_voltage": { "from": "outputVoltage", "factor": 1 }
+    },
+    "plainColumns": {
+      "trace_name": { "from": "name" },
+      "group_name": { "from": "groupName" },
+      "source_standard": { "from": "sourceStandard" },
+      "reference_terminal": { "from": "referenceTerminal" },
+      "response_terminal": { "from": "responseTerminal" },
+      "measured_date": { "from": "measuredDate" },
+      "tap_position": { "from": "tapPosition" },
+      "shorted_terminals": { "from": "shortedTerminals" },
+      "grounded_terminals": { "from": "groundedTerminals" },
+      "trace_color": { "from": "color" },
+      "source_file": { "from": "sourceFile" },
+      "points_json": { "from": "points", "serialize": "json" }
+    }
+  },
   "RatioPrimSec": {
     "ptmType": "TransformerRatioTest",
     "columns": {

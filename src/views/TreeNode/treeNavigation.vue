@@ -50,7 +50,6 @@
                 @upload-node="handleUploadFromContext"
                 @upload-full-tree="handleUploadFullTreeFromContext"
                 @upload-path-node="handleUploadPathNodeFromContext"
-                @fmeca-node="handleFmecaFromContext"
                 @show-equipment="handleShowEquipment"
                 @import-excel="handleImportExcelFromContext" @import-word="handleImportWordFromContext"
                 @import-ptm="handleImportPtmFromContext"
@@ -71,7 +70,6 @@
                 @download-node="handleDownloadFromContext"
                 @download-node-only="handleDownloadOnlyFromContext"
                 @download-full-tree="handleDownloadFullTreeFromContext"
-                @fmeca-node="handleFmecaFromContext"
                 @delete-data="handleDeleteFromContextMenu"
                 @show-addSubsInTree="showAddSubsInTree" @show-addPowerPlant="showAddPowerPlant"
                 @show-addOrganisation="showAddOrganisation"
@@ -145,6 +143,10 @@
                         :equipmentMrid="selectedEquipmentMrid"
                         @saved="handleTestingEquipmentSaved" />
                 </div>
+            </div>
+
+            <div v-show="activeWorkspaceTab === 'fmeca'" class="fmeca-workspace">
+                <Fmeca ref="fmecaWorkspace" />
             </div>
         </div>
 
@@ -251,9 +253,6 @@
         <ImportDialog :visible="openImportDialog" @update:visible="openImportDialog = $event" :importType="importType"
             @cancel="handleCancelImport" @imported="handleImportedRefresh" />
 
-        <FmecaDialog :visible="signFmeca" @update:visible="signFmeca = $event" @close="handleFmecaCancel"
-            @cancel="handleFmecaCancel" @confirm="handleFmecaConfirm" />
-
         <MoveDialog :visible="moveDialogVisible" @update:visible="moveDialogVisible = $event"
             :moveTreeData="moveTreeData" :selectedTargetNodes="selectedTargetNodes"
             :selectedTargetNode="selectedTargetNode" :nodeToMove="nodeToMove" :moveDisplayText="moveDisplayText"
@@ -294,7 +293,6 @@
             :dup="ptmDup"
             :job-dup="ptmJobDup || []"
             :job-dup-error="ptmJobDupError"
-            :on-asset-node="!!(ptmTargetNode && ptmTargetNode.mode === 'asset')"
             :file-name="ptmFileName"
             :target-label="ptmTargetNode ? (ptmTargetNode.apparatus_id || ptmTargetNode.aliasName || ptmTargetNode.name || '') : ''"
             :importing="ptmImporting"
@@ -440,7 +438,6 @@ import {
     JobDialog,
     ExportDialog,
     ImportDialog,
-    FmecaDialog,
     MoveDialog,
     DownloadDialog,
     ZeroDiagramDialog,
@@ -534,7 +531,6 @@ export default {
         JobDialog,
         ExportDialog,
         ImportDialog,
-        FmecaDialog,
         MoveDialog,
         DownloadDialog,
         ZeroDiagramDialog,
@@ -557,7 +553,6 @@ export default {
             importType: null,
             openExportDialog: false,
             openImportDialog: false,
-            signFmeca: false,
             parentOrganization: null,
             logDataServer: [],
             logDataClient: [],
@@ -895,7 +890,7 @@ export default {
             if (value) {
                 this.activeWorkspaceTab = this.clientWorkspaceTab || 'tree'
                 this.$nextTick(() => {
-                    if (this.$refs.treeToolBar) this.$refs.treeToolBar.activeTab = this.activeWorkspaceTab === 'testingEquipment' ? 'testingEquipment' : 'explorer'
+                    if (this.$refs.treeToolBar) this.$refs.treeToolBar.activeTab = this.activeWorkspaceTab
                 })
             } else {
                 this.activeWorkspaceTab = 'tree'
@@ -1112,7 +1107,7 @@ export default {
         handleExplorerTab() {
             this.activeWorkspaceTab = 'tree'
             if (this.clientSlide) this.clientWorkspaceTab = 'tree'
-            this.signFmeca = false
+            if (this.$refs.treeToolBar) this.$refs.treeToolBar.activeTab = 'explorer'
             this.openImportDialog = false
             this.openExportDialog = false
         },
@@ -1886,6 +1881,16 @@ export default {
     overflow: hidden;
 }
 
+.fmeca-workspace {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 20px 24px;
+    box-sizing: border-box;
+    background: #fff;
+    overflow: auto;
+}
+
 .testing-equipment-list-shell,
 .testing-equipment-detail-shell {
     height: 100%;
@@ -2263,6 +2268,9 @@ body.duplicating-mode>.v-modal {
 .duplicate-asset-message-box {
     width: 500px;
     max-width: calc(100vw - 32px);
+    max-height: calc(100vh - 32px);
+    display: flex;
+    flex-direction: column;
     border-radius: 8px;
 }
 
@@ -2278,6 +2286,7 @@ body.duplicating-mode>.v-modal {
 
 .duplicate-asset-message-box .el-message-box__content {
     padding: 8px 20px 14px;
+    overflow-y: auto;
 }
 
 .duplicate-asset-message-box .el-message-box__message {
@@ -2294,6 +2303,22 @@ body.duplicating-mode>.v-modal {
 
 .duplicate-asset-message-box .el-input__inner:focus {
     border-color: #0033a0;
+}
+
+.duplicate-asset-message-box .duplicate-unknown-serial {
+    margin-top: 8px;
+    color: #4b5563;
+}
+
+.duplicate-asset-message-box .duplicate-operating-date {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.duplicate-asset-message-box .duplicate-date-part {
+    flex: 1 1 100px;
+    min-width: 0;
 }
 
 .duplicate-asset-message-box .el-message-box__btns {

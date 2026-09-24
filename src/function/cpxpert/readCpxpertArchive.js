@@ -402,6 +402,8 @@ export const readCpxpertArchive = filePath => {
         },
         assets: [asset],
         substations: [],
+        voltageLevels: [],
+        bays: [],
         tests,
         unsupportedTests,
         ctConfigurationSource: buildCtConfigurationSource(rawAsset),

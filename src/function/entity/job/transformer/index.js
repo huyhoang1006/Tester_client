@@ -21,6 +21,11 @@ import { insertAssessmentGroupTransaction, deleteAssessmentGroupByIdTransaction,
 import { insertAssessmentRuleTransaction, deleteAssessmentRuleByIdTransaction, getAssessmentRuleByStandardId } from '@/function/cim/assessmentRule/index.js'
 import transformerAssessmentMap from '@/config/testing-assessment/Transformer/index.js'
 import { rollbackQuietly } from '@/function/datacontext/rollback'
+import {
+    deleteSfraTraceByDatasetIdTransaction,
+    getSfraTracesByDatasetIds,
+    replaceSfraTraceTransaction,
+} from '@/function/cim/sfraTrace'
 
 
 export const insertTransformerJobEntity = async (old_entity,entity) => {
@@ -249,6 +254,19 @@ export const insertTransformerJobEntity = async (old_entity,entity) => {
                 await insertTestDataSetTransaction(testData, db);
             }
 
+            // SFRA is stored outside the generic measurement-value tables. Replace
+            // complete traces so a shorter re-import cannot leave stale tail points.
+            const newSfraTraces = entity.sfraTraces || {}
+            const oldSfraTraces = old_entity.sfraTraces || {}
+            for (const datasetId of Object.keys(oldSfraTraces)) {
+                if (!newSfraTraces[datasetId]) {
+                    await deleteSfraTraceByDatasetIdTransaction(datasetId, db)
+                }
+            }
+            for (const datasetId of Object.keys(newSfraTraces)) {
+                await replaceSfraTraceTransaction(datasetId, newSfraTraces[datasetId], db)
+            }
+
             //analog value
             const newIdsAnalogValue = entity.analogValues.map(v => v && v.mrid).filter(id => id); // bỏ null/empty
             const oldIdsAnalogValue = old_entity.analogValues.map(v => v && v.mrid).filter(id => id);
@@ -462,6 +480,11 @@ export const getTransformerJobEntity = async (id) => {
                 const discreteValue = await getDiscreteValueByTestDataSetMrids(mrids);
                 if(discreteValue.success) {
                     entity.discreteValues = discreteValue.data;
+                }
+
+                const sfraTraces = await getSfraTracesByDatasetIds(mrids)
+                if (sfraTraces.success) {
+                    entity.sfraTraces = sfraTraces.data
                 }
 
                 return {

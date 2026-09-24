@@ -1,0 +1,86 @@
+{
+  "testId": "d7a7456c-f4fe-4f8b-8ba4-cf0caa0f5101",
+  "testCode": "SFRA",
+  "testName": "Sweep Frequency Response Analysis",
+  "columns": [
+    {
+      "mrid": "d7a7456c-f4fe-4f8b-8ba4-cf0caa0f5102",
+      "code": "trace_name",
+      "name": "Trace name",
+      "type": "string"
+    },
+    {
+      "mrid": "d7a7456c-f4fe-4f8b-8ba4-cf0caa0f5103",
+      "code": "group_name",
+      "name": "Group name",
+      "type": "string"
+    },
+    {
+      "mrid": "d7a7456c-f4fe-4f8b-8ba4-cf0caa0f5104",
+      "code": "source_standard",
+      "name": "Source standard",
+      "type": "string"
+    },
+    {
+      "mrid": "d7a7456c-f4fe-4f8b-8ba4-cf0caa0f5105",
+      "code": "reference_terminal",
+      "name": "Reference terminal",
+      "type": "string"
+    },
+    {
+      "mrid": "d7a7456c-f4fe-4f8b-8ba4-cf0caa0f5106",
+      "code": "response_terminal",
+      "name": "Response terminal",
+      "type": "string"
+    },
+    {
+      "mrid": "d7a7456c-f4fe-4f8b-8ba4-cf0caa0f5107",
+      "code": "measured_date",
+      "name": "Measured date",
+      "type": "string"
+    },
+    {
+      "mrid": "d7a7456c-f4fe-4f8b-8ba4-cf0caa0f5108",
+      "code": "tap_position",
+      "name": "Tap position",
+      "type": "string"
+    },
+    {
+      "mrid": "d7a7456c-f4fe-4f8b-8ba4-cf0caa0f5109",
+      "code": "shorted_terminals",
+      "name": "Shorted terminals",
+      "type": "string"
+    },
+    {
+      "mrid": "d7a7456c-f4fe-4f8b-8ba4-cf0caa0f5110",
+      "code": "grounded_terminals",
+      "name": "Grounded terminals",
+      "type": "string"
+    },
+    {
+      "mrid": "d7a7456c-f4fe-4f8b-8ba4-cf0caa0f5111",
+      "code": "output_voltage",
+      "name": "Output voltage",
+      "type": "analog",
+      "unit": "V"
+    },
+    {
+      "mrid": "d7a7456c-f4fe-4f8b-8ba4-cf0caa0f5112",
+      "code": "trace_color",
+      "name": "Trace color",
+      "type": "string"
+    },
+    {
+      "mrid": "d7a7456c-f4fe-4f8b-8ba4-cf0caa0f5113",
+      "code": "source_file",
+      "name": "Source file",
+      "type": "string"
+    },
+    {
+      "mrid": "d7a7456c-f4fe-4f8b-8ba4-cf0caa0f5114",
+      "code": "points_json",
+      "name": "SFRA points",
+      "type": "string"
+    }
+  ]
+}

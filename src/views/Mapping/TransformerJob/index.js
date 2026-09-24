@@ -16,6 +16,7 @@ import transformerConditionMap from '@/config/testing-condition/Transformer'
 import transformerTestMap from '@/config/test-definitions/Transformer'
 import * as commonFunc from '@/views/JobView/Common/index.js'
 import transformerAssessmentMap from "@/config/testing-assessment/Transformer";
+import { applySfraTraceToRow, buildSfraTraceMap } from '@/utils/sfraTrace'
 
 // Map measurement_id -> unit (gộp test-definitions + testing-condition của Transformer)
 const TF_UNIT_BY_MEASUREMENT = (() => {
@@ -37,6 +38,7 @@ import TestStandard from "@/views/Cim/TestStandard";
 
 export const jobDtoToEntity = (dto) => {
     const entity = new TransformerJobEntity()
+    entity.sfraTraces = buildSfraTraceMap(dto.testList)
 
     //job properties
     entity.oldWork.mrid = dto.properties.mrid || null
@@ -116,6 +118,9 @@ export const jobDtoToEntity = (dto) => {
                 entity.testDataSet.push(testData)
 
                 for (const [key, value] of Object.entries(data)) {
+                    // SFRA metadata and points have dedicated normalized tables. The
+                    // cells remain in the DTO only as the rendering contract.
+                    if (item.testTypeCode === 'SFRA') continue
                     if (typeof value === 'object') {
                         if (value.type === 'analog') {
                             const analogValue = new AnalogValue()
@@ -498,6 +503,10 @@ export const JobEntityToDto = (entity) => {
                             measurement_id: dv.discrete || ''
                         }
                     }
+                }
+
+                if (item.type === 'SFRA' && entity.sfraTraces && entity.sfraTraces[test.mrid]) {
+                    applySfraTraceToRow(rowData, entity.sfraTraces[test.mrid])
                 }
 
                 testTemplate.data.table[key].push(rowData)

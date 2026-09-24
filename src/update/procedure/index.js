@@ -43,6 +43,7 @@ const TRANSFORMER_PTM_IMPORT_CODES = [
     'ShortCircuitImpedanceTert',
     'DCWindingPrim',
     'DCWindingSec',
+    'SFRA',
 ]
 
 const pickConfigEntries = (source, codes) => {
