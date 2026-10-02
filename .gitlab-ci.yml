@@ -1,0 +1,115 @@
+stages:
+  - build
+  - release
+
+workflow:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "product"'
+    - when: never
+
+build_electron:
+  stage: build
+  tags:
+    - electron
+  script:
+    - |
+      if (Test-Path -LiteralPath 'dist_electron') {
+        Remove-Item -LiteralPath 'dist_electron' -Recurse -Force
+      }
+    - npm install
+    - |
+      if ($LASTEXITCODE -ne 0) {
+        throw "npm install failed with exit code $LASTEXITCODE."
+      }
+    - npm run electron:build
+    - |
+      if ($LASTEXITCODE -ne 0) {
+        throw "Electron build failed with exit code $LASTEXITCODE."
+      }
+    - |
+      Write-Host 'Contents of dist_electron:'
+      Get-ChildItem -LiteralPath 'dist_electron' -Recurse | Format-Table -AutoSize
+
+      $version = node -p "require('./package.json').version"
+      if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($version)) {
+        throw 'Could not read a valid version from package.json.'
+      }
+      $version = $version.Trim()
+
+      $exeFiles = @(Get-ChildItem -LiteralPath 'dist_electron' -File -Filter '*.exe')
+      if ($exeFiles.Count -eq 0) {
+        throw 'No .exe installer was produced in dist_electron.'
+      }
+
+      $expectedInstaller = "AT Digital Tester Setup $version.exe"
+      $matchingInstaller = @($exeFiles | Where-Object { $_.Name -ceq $expectedInstaller })
+      if ($matchingInstaller.Count -ne 1) {
+        $actualNames = ($exeFiles.Name -join ', ')
+        throw "Expected exactly one installer named '$expectedInstaller'. Found: $actualNames"
+      }
+
+      Write-Host "Validated installer: $expectedInstaller"
+  artifacts:
+    name: "ATDigitalTester-$CI_COMMIT_SHORT_SHA"
+    paths:
+      - dist_electron/*.exe
+    expire_in: 7 days
+
+release:
+  stage: release
+  tags:
+    - electron
+  needs:
+    - job: build_electron
+      artifacts: true
+  script:
+    - |
+      $version = node -p "require('./package.json').version"
+      if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($version)) {
+        throw 'Could not read a valid version from package.json.'
+      }
+      $version = $version.Trim()
+
+      Write-Host "Preparing GitLab release for version $version."
+
+      git ls-remote --exit-code --tags origin "refs/tags/$version" *> $null
+      $tagCheckExitCode = $LASTEXITCODE
+      if ($tagCheckExitCode -eq 0) {
+        throw "Git tag '$version' already exists. Refusing to overwrite an existing release."
+      }
+      if ($tagCheckExitCode -ne 2) {
+        throw "Could not check whether Git tag '$version' exists (git exit code $tagCheckExitCode)."
+      }
+
+      if ([string]::IsNullOrWhiteSpace($env:CI_JOB_TOKEN)) {
+        throw 'CI_JOB_TOKEN is not available to create the GitLab release.'
+      }
+
+      $releaseName = "ATDigital Tester v$version"
+      # TODO: Replace the artifact-only handoff after a real binary publishing destination is approved.
+      $releaseDescription = @"
+      Automated release from the product branch at commit $env:CI_COMMIT_SHA.
+
+      The Windows installer is retained as a GitLab CI job artifact for 7 days.
+
+      TODO: Publish the .exe to a durable binary store (for example, the GitLab Generic Package Registry or the existing update server) and add a real downloadable asset link to this release.
+      "@
+      $payload = @{
+        name        = $releaseName
+        tag_name    = $version
+        ref         = $env:CI_COMMIT_SHA
+        description = $releaseDescription
+      } | ConvertTo-Json
+
+      $headers = @{ 'JOB-TOKEN' = $env:CI_JOB_TOKEN }
+      $releaseUri = "$env:CI_API_V4_URL/projects/$env:CI_PROJECT_ID/releases"
+
+      try {
+        Invoke-RestMethod -Method Post -Uri $releaseUri -Headers $headers -ContentType 'application/json' -Body $payload | Out-Null
+      }
+      catch {
+        $statusCode = $_.Exception.Response.StatusCode.value__
+        throw "GitLab Release API failed (HTTP $statusCode). No existing release was overwritten."
+      }
+
+      Write-Host "Created Git tag '$version' and release '$releaseName'."
