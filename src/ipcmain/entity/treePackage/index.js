@@ -13,7 +13,10 @@ const ATTACHMENT_DIR_NAME = 'attachments'
 
 const safeArchiveFileName = (value) => {
     const cleaned = String(value || 'file')
-        .replace(/[<>:"/\\|?*\u0000-\u001f]/g, '_')
+        .replace(/[<>:"/\\|?*]/g, '_')
+        .split('')
+        .map(character => character.charCodeAt(0) < 32 ? '_' : character)
+        .join('')
         .trim()
     return cleaned || 'file'
 }
@@ -140,9 +143,10 @@ const createTreePackage = async (targetPath, payload) => {
         output.on('close', resolve)
         output.on('error', reject)
         archive.on('error', reject)
-        archive.on('warning', warning => {
-            if (warning && warning.code !== 'ENOENT') reject(warning)
-        })
+        // A file can disappear after the initial scan. Failing the export is
+        // safer than producing a package whose tree.json references a missing
+        // archive entry.
+        archive.on('warning', reject)
     })
 
     archive.pipe(output)

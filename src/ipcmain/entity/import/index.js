@@ -36,7 +36,7 @@ const cleanupExpiredStaging = async () => {
 }
 
 const handleImportJSON = () => {
-    ipcMain.handle('importJSON', async (event) => {
+    ipcMain.handle('importJSON', async () => {
         try {
             const result = await dialog.showOpenDialog({
                 title: 'Select JSON file to import',
