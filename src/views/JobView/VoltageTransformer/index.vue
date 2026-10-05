@@ -118,7 +118,7 @@ export default {
     },
     methods: {
         updateAttachmentOverView(attachment) {
-            this.attachmentData = attachment
+            this.voltageTransformerJobDto.attachmentData = attachment
         },
         loadMapForView() {
         },
@@ -166,4 +166,3 @@ export default {
     border: none;
 }
 </style>
-

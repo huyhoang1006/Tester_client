@@ -3,9 +3,15 @@ import store from '@/store'
 import route from '@/router'
 import { afterLogout } from './helper'
 import { markRestoreAfterLogin } from '@/utils/workspaceRestore'
-import qs from 'qs'
 import { Loading, Message } from 'element-ui'
 import { stripServerIdsDeep } from '@/utils/serverId'
+import {
+    getSsoApiBase,
+    getStoredAccessToken,
+    getStoredRefreshToken,
+    SSO_TOKEN_HEADER,
+    storeSsoTokens
+} from '@/utils/sso'
 
 const REFRESH_TIMEOUT_MS = 15000
 
@@ -36,50 +42,96 @@ const logoutExpiredSession = () => {
 
 // --- HÀM REFRESH TOKEN ---
 const refreshToken = () => {
-    const refreshTokenValue = localStorage.getItem('refresh_token')
+    const refreshTokenValue = getStoredRefreshToken()
     if (!refreshTokenValue) {
         return Promise.reject(new Error('No refresh token available'))
     }
 
-    const domain = localStorage.getItem('LOGIN_ADDR') || ''
-    const refreshUrl = domain ? `${domain.replace(/\/$/, '')}/oauth/token` : '/oauth/token'
-    const basicAuth = 'Basic ' + btoa('tester-client:tester-client')
+    const apiBase = getSsoApiBase()
+    if (!apiBase) return Promise.reject(new Error('Service address is not configured'))
 
-    return axios.post(refreshUrl, qs.stringify({
-        refresh_token: refreshTokenValue,
-        grant_type: 'refresh_token'
-    }), {
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Authorization': basicAuth
-        },
+    return axios.get(`${apiBase}/auth/sso/refresh-token`, {
+        params: {refreshToken: refreshTokenValue},
         timeout: REFRESH_TIMEOUT_MS
     }).then(response => {
-        const { access_token, refresh_token } = response.data
-        
-        // Cập nhật token mới vào localStorage
-        localStorage.setItem('token', access_token)
-        localStorage.setItem('refresh_token', refresh_token)
-        
-        // Cập nhật store
-        store.dispatch('setToken', access_token)
-        
-        return access_token
+        const body = response.data || {}
+        if (body.code !== 1 || !body.data || !body.data.accessToken) {
+            throw new Error(body.message || 'Unable to refresh SSO session')
+        }
+
+        storeSsoTokens(body.data)
+        store.dispatch('setToken', body.data.accessToken)
+        return body.data.accessToken
     })
+}
+
+const retryRequestWithFreshToken = (originalRequest, sourceError) => {
+    if (!originalRequest || originalRequest._retry) {
+        logoutExpiredSession()
+        return Promise.reject(sourceError || new Error('Session expired'))
+    }
+
+    originalRequest._retry = true
+
+    if (isRefreshing) {
+        return new Promise((resolve, reject) => failedQueue.push({resolve, reject}))
+            .then(token => {
+                originalRequest.headers = originalRequest.headers || {}
+                originalRequest.headers.Authorization = `Bearer ${token}`
+                originalRequest.headers[SSO_TOKEN_HEADER] = token
+                return client(originalRequest)
+            })
+    }
+
+    isRefreshing = true
+    let refreshLoading = null
+    try {
+        refreshLoading = Loading.service({
+            fullscreen: true,
+            lock: true,
+            text: 'Session expired — renewing sign-in...',
+            background: 'rgba(255, 255, 255, 0.75)'
+        })
+    } catch (error) { /* Loading is optional during session renewal. */ }
+
+    return refreshToken()
+        .then(token => {
+            originalRequest.headers = originalRequest.headers || {}
+            originalRequest.headers.Authorization = `Bearer ${token}`
+            originalRequest.headers[SSO_TOKEN_HEADER] = token
+            processQueue(null, token)
+            Message.success('Session renewed')
+            return client(originalRequest)
+        })
+        .catch(error => {
+            processQueue(error, null)
+            const isTimeout = error && (error.code === 'ECONNABORTED' || /timeout/i.test(error.message || ''))
+            Message.error(isTimeout
+                ? 'Session renewal timed out. Please sign in again.'
+                : 'Session expired. Please sign in again.')
+            logoutExpiredSession()
+            return Promise.reject(error)
+        })
+        .finally(() => {
+            isRefreshing = false
+            if (refreshLoading) refreshLoading.close()
+        })
 }
 
 // --- 1. REQUEST INTERCEPTOR (Gửi đi) ---
 client.interceptors.request.use(
     function (config) {
         // Logic cũ: Kiểm tra server address (giữ nguyên nếu bạn cần)
-        if (!store.state.serviceAddr && !config.url.startsWith('http')) {
+        if (!store.state.serviceAddr && !(config.url || '').startsWith('http')) {
             return Promise.reject(new Error('Server address not configured'))
         }
 
         // --- ĐOẠN MỚI THÊM VÀO: Tự động gắn Token ---
-        const token = localStorage.getItem('token')
+        const token = getStoredAccessToken()
         if (token) {
+            config.headers = config.headers || {}
             config.headers.Authorization = `Bearer ${token}`
+            config.headers[SSO_TOKEN_HEADER] = token
         }
         // -------------------------------------------
 
@@ -105,6 +157,19 @@ client.interceptors.response.use(
         // Tôi sửa lại logic: Nếu có data.data thì trả về data.data, không thì trả về toàn bộ body.
         
         const res = response.data
+
+        if (res && res.code === 10) {
+            logoutExpiredSession()
+            return Promise.reject(new Error(res.message || 'Not logged in'))
+        }
+
+        if (res && res.code === 15) {
+            return retryRequestWithFreshToken(response.config, new Error(res.message || 'Token expired'))
+        }
+
+        if (res && res.code === 20) {
+            return Promise.reject(new Error(res.message || 'No permission'))
+        }
         
         // Nếu cấu trúc cũ: { success: true, data: [...] }
         if (res && res.success === true) {
@@ -142,73 +207,7 @@ client.interceptors.response.use(
             // Token hết hạn hoặc không hợp lệ (401)
             if (error.response.status === 401) {
                 const originalRequest = error.config
-
-                // Nếu request đã là refresh token, không thể refresh tiếp -> logout
-                if (originalRequest.url.includes('/oauth/token')) {
-                    logoutExpiredSession()
-                    return Promise.reject(error)
-                }
-
-                // Nếu chưa có originalRequest._retry, đánh dấu để tránh infinite loop
-                if (!originalRequest._retry) {
-                    originalRequest._retry = true
-
-                    // Nếu đang refresh token, đưa request vào queue
-                    if (isRefreshing) {
-                        return new Promise((resolve, reject) => {
-                            failedQueue.push({ resolve, reject })
-                        })
-                        .then(token => {
-                            originalRequest.headers.Authorization = `Bearer ${token}`
-                            return client(originalRequest)
-                        })
-                        .catch(err => {
-                            return Promise.reject(err)
-                        })
-                    }
-
-                    // Bắt đầu refresh token — hiện loading toàn màn hình + timeout 15s
-                    isRefreshing = true
-                    let refreshLoading = null
-                    try {
-                        refreshLoading = Loading.service({
-                            fullscreen: true,
-                            lock: true,
-                            text: 'Session expired — renewing sign-in...',
-                            background: 'rgba(255, 255, 255, 0.75)'
-                        })
-                    } catch (e) { /* Loading không khả dụng thì bỏ qua, không chặn refresh */ }
-
-                    return refreshToken()
-                        .then(token => {
-                            // Cập nhật header cho request gốc
-                            originalRequest.headers.Authorization = `Bearer ${token}`
-
-                            // Giải quyết tất cả request trong queue
-                            processQueue(null, token)
-                            Message.success('Session renewed')
-
-                            // Thực hiện lại request gốc
-                            return client(originalRequest)
-                        })
-                        .catch(err => {
-                            // Refresh token thất bại -> Xóa queue và logout
-                            processQueue(err, null)
-                            const isTimeout = err && (err.code === 'ECONNABORTED' || /timeout/i.test(err.message || ''))
-                            Message.error(isTimeout
-                                ? 'Session renewal timed out. Please sign in again.'
-                                : 'Session expired. Please sign in again.')
-                            logoutExpiredSession()
-                            return Promise.reject(err)
-                        })
-                        .finally(() => {
-                            isRefreshing = false
-                            if (refreshLoading) refreshLoading.close()
-                        })
-                } else {
-                    // Đã retry rồi mà vẫn lỗi -> logout
-                    logoutExpiredSession()
-                }
+                return retryRequestWithFreshToken(originalRequest, error)
             }
 
             // Lỗi code backend (có message)

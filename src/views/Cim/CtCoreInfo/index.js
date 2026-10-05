@@ -8,6 +8,9 @@
     "alf"	TEXT,
     "winding_resistance"	TEXT,
     "ts"	TEXT,
+    "t1"	TEXT,
+    "tal1"	TEXT,
+    "tpts"	TEXT,
     "ek"	TEXT,
     "e1"	TEXT,
     "ie"	TEXT,
@@ -47,6 +50,9 @@ class CtCoreInfo {
         this.alf = null;
         this.winding_resistance = null;
         this.ts = null;
+        this.t1 = null;
+        this.tal1 = null;
+        this.tpts = null;
         this.ek = null;
         this.e1 = null;
         this.ie = null;

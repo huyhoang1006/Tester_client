@@ -3,11 +3,17 @@ import { ipcMain, dialog } from 'electron'
 import * as Path from 'path'
 import os from 'os'
 import fs from 'fs/promises'
+const { createTreePackage } = require('../treePackage')
 
 // Helper function to save JSON file
 const ensureJsonExtension = (filePath) => {
     if (!filePath) return filePath
     return filePath.toLowerCase().endsWith('.json') ? filePath : `${filePath}.json`
+}
+
+const ensureZipExtension = (filePath) => {
+    if (!filePath) return filePath
+    return filePath.toLowerCase().endsWith('.zip') ? filePath : `${filePath}.zip`
 }
 
 const isRootDirectory = (dirPath) => {
@@ -112,7 +118,52 @@ const handleExportJSON = () => {
     })
 }
 
+const handleExportTreePackage = () => {
+    ipcMain.handle('exportTreePackage', async (event, payload = {}, options = {}) => {
+        try {
+            let defaultFileName = options.defaultFileName || 'tree-export.zip'
+            if (!defaultFileName.toLowerCase().endsWith('.zip')) defaultFileName = `${defaultFileName}.zip`
+
+            let targetPath
+            if (options.directory) {
+                targetPath = Path.join(options.directory, defaultFileName)
+            } else {
+                const defaultPath = options.defaultPath
+                    ? (Path.extname(options.defaultPath) ? options.defaultPath : Path.join(options.defaultPath, defaultFileName))
+                    : Path.join(os.homedir(), defaultFileName)
+                const result = await dialog.showSaveDialog({
+                    title: options.title || 'Save tree package',
+                    buttonLabel: options.buttonLabel || 'Save',
+                    defaultPath,
+                    filters: [{ name: 'Tree package', extensions: ['zip'] }],
+                    properties: [],
+                })
+                if (result.canceled || !result.filePath) {
+                    return { success: false, message: options.cancelMessage || 'Export cancelled' }
+                }
+                targetPath = result.filePath
+            }
+
+            const packaged = await createTreePackage(ensureZipExtension(targetPath), payload)
+            return {
+                success: true,
+                filePath: packaged.filePath,
+                attachmentCount: packaged.attachmentCount,
+                missingFiles: packaged.missingFiles,
+                message: options.successMessage || `Tree package exported with ${packaged.attachmentCount} file(s)`,
+            }
+        } catch (error) {
+            return {
+                success: false,
+                message: error.message || 'Export tree package failed',
+                err: error,
+            }
+        }
+    })
+}
+
 export const active = () => {
     handleExportJSON()
+    handleExportTreePackage()
 }
 

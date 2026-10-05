@@ -502,6 +502,16 @@ const OPERATING_TYPES_WITHOUT_PRESSURE = ['<Select asset type>', 'Spring', 'Moto
 const hasOperatingPressure = (type) =>
     !!type && !OPERATING_TYPES_WITHOUT_PRESSURE.includes(type)
 
+const supportsNozzleLength = (assetType, interruptingMedium) => {
+    const serverType = ASSET_TYPE_TO_SERVER[assetType] || assetType || null
+    if (serverType === 'Live tank SF6 breaker' || serverType === 'Dead tank SF6 breaker') return true
+    if (serverType === 'Generator circuit breaker (GCB)') {
+        return interruptingMedium !== 'Oil' && interruptingMedium !== 'Air'
+    }
+    if (serverType === 'Gas insulated switchgear (GIS)') return interruptingMedium !== 'Oil'
+    return false
+}
+
 // số: '' / null → null, còn lại parseFloat
 const numU = (val) => (val !== null && val !== undefined && val !== '') ? parseFloat(val) : null
 // string: '' → null
@@ -679,6 +689,9 @@ export const mapDtoToServer = (dto) => {
     // Tính một lần, dùng hai lần (kiểm có gửi hay không, rồi gửi).
     const pirLeaf       = gatedLeafToServer(cb.hasPIR, cb.pirValue)
     const capacitorLeaf = gatedLeafToServer(cb.hasGradingCapacitors, cb.capacitorValue)
+    const nozzleLeaf = supportsNozzleLength(p.type, cb.interruptingMedium)
+        ? leafToServer(cs.nozzle_length)
+        : undefined
 
     return {
         // ─── Khung CIM (server có) ───────────────────────────────────────────
@@ -795,7 +808,7 @@ export const mapDtoToServer = (dto) => {
         contactSystem: {
             nominalTotalTravel: leafToServer(cs.nominal_total_travel),
             dampingTime:        leafToServer(cs.damping_time),
-            nozzleLength:       leafToServer(cs.nozzle_length),
+            ...(nozzleLeaf !== undefined ? { nozzleLength: nozzleLeaf } : {}),
         },
 
         others: {

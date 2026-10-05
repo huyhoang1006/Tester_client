@@ -6,6 +6,8 @@ import CircuitBreakerDto from '@/views/Dto/CircuitBreaker'
 import CurrentTransformerDto from '@/views/Dto/CurrentTransformer'
 import VoltageTransformerDto from '@/views/Dto/VoltageTransformer'
 import CapacitorDto from '@/views/Dto/Capacitor'
+import SurgeArresterDto from '@/views/Dto/SurgeAsset'
+import DisconnectorDto from '@/views/Dto/Disconnector'
 import CoreDto from '@/views/Dto/CurrentTransformer/CTConfiguration/CoreDto'
 
 const phaseNames = ['A', 'B', 'C']
@@ -146,6 +148,36 @@ const buildVoltageTransformer = (name, phase, preset, newUuid) => {
     return node('voltageTransformer', dto, [], 'Voltage transformer')
 }
 
+const buildSurgeArrester = (name, phase, newUuid) => {
+    const dto = new SurgeArresterDto()
+    setCommonAssetIds(dto, newUuid)
+    setAssetProperties(dto, { name, status: 'In operation' }, newUuid)
+    dto.config.number_of_phase = '1'
+    dto.config.phase = phase
+    dto.ratings.unitStack = '3'
+    dto.ratings.tableRating = []
+    assignNestedMrids(dto, newUuid)
+    return node('surgeArrester', dto, [], 'Surge arrester')
+}
+
+const buildDisconnector = (name, voltage, newUuid) => {
+    const dto = new DisconnectorDto()
+    setCommonAssetIds(dto, newUuid)
+    setAssetProperties(dto, { name, status: 'In operation' }, newUuid)
+    dto.properties.type = 'horizontalKnee'
+    dto.config.number_of_phase = '3'
+    dto.config.phase = ''
+    dto.ratings.rated_voltage.value = String(voltage)
+    dto.ratings.rated_frequency.value = '50'
+    dto.ratings.rated_current.value = '1250'
+    dto.ratings.short_time_withstand_current.value = '31.5'
+    dto.ratings.rated_duration_of_short_circuit.value = '1'
+    dto.ratings.power_freq_withstand_voltage_earth_poles.value = '550'
+    dto.ratings.power_freq_withstand_voltage_isolating_distance.value = '530'
+    assignNestedMrids(dto, newUuid)
+    return node('disconnector', dto, [], 'Disconnector')
+}
+
 const buildTransformer = (config, index, newUuid) => {
     const dto = new TransformerDto()
     setCommonAssetIds(dto, newUuid)
@@ -184,12 +216,13 @@ const buildTransformer = (config, index, newUuid) => {
         temp_rise_wind: { mrid: '', value: '', unit: 'degC' }
     }]
     dto.ratings.current_ratings = []
-    dto.tap_changers.mode = config.tapChangerType || 'OLTC'
+    dto.tap_changers.mode = String(config.tapChangerType || 'oltc').toLowerCase()
     dto.tap_changers.mrid = newUuid()
+    dto.tap_changers.serial_no = unknownSerial(newUuid)
     dto.tap_changers.assetInfoId = newUuid()
     dto.tap_changers.productAssetModelId = newUuid()
     dto.tap_changers.winding = 'Prim'
-    dto.tap_changers.tap_scheme = '1...N'
+    dto.tap_changers.tap_scheme = dto.tap_changers.mode === 'oltc' ? '1...33' : '1...N'
     dto.tap_changers.no_of_taps = String(config.numberOfTaps || 19)
     const count = Number(config.numberOfTaps || 19)
     const middle = Math.ceil(count / 2)
@@ -199,7 +232,7 @@ const buildTransformer = (config, index, newUuid) => {
         voltage: {
             mrid: '',
             value: Math.round(Number(config.principalTapVoltage || 115000) *
-                (1 + ((tapIndex + 1) - middle) * Number(config.tapStep || 1.78) / 100)),
+                (1 + (middle - (tapIndex + 1)) * Number(config.tapStep || 1.78) / 100)),
             unit: 'V'
         }
     }))
@@ -278,8 +311,16 @@ const vtAssets = (baseName, preset, newUuid) => phaseNames.map((phase) =>
     buildVoltageTransformer(`${baseName}-${phase}`, phase, preset, newUuid)
 )
 
+const surgeArresterAssets = (baseName, newUuid) => phaseNames.map((phase) =>
+    buildSurgeArrester(`${baseName}-${phase}`, phase, newUuid)
+)
+
 const buildLineBay = (bayName, voltage, presets, options, newUuid) => {
     const children = []
+    if (voltage === 110) {
+        children.push(buildDisconnector(`${bayName}-1`, voltage, newUuid))
+        children.push(buildDisconnector(`${bayName}-7`, voltage, newUuid))
+    }
     if (options.cb) children.push(buildCircuitBreaker(`CB${bayName}`, voltage === 110 ? presets.cb110 : presets.cb22, newUuid))
     if (options.ct) children.push(...ctAssets(`TI${bayName}`, voltage === 110 ? presets.ct110Line : presets.ct22, newUuid))
     if (options.vt && voltage === 110) children.push(...vtAssets(`TU${bayName}`, presets.vt110, newUuid))
@@ -287,21 +328,34 @@ const buildLineBay = (bayName, voltage, presets, options, newUuid) => {
 }
 
 const buildHVCoupler = (presets, options, newUuid) => {
-    const children = []
+    const children = [
+        buildDisconnector('112-1', 110, newUuid),
+        buildDisconnector('112-2', 110, newUuid)
+    ]
     if (options.cb) children.push(buildCircuitBreaker('CB112', presets.cb110, newUuid))
     if (options.ct) children.push(...ctAssets('TI112', presets.ct110Transformer, newUuid))
     return buildBay('112', children, newUuid)
 }
 
-const buildTransformerBay = (transformer, index, presets, options, newUuid) => {
+const buildTransformerSwitchingBay = (index, presets, options, newUuid) => {
     const number = 131 + index
-    const children = [buildTransformer(transformer, index, newUuid)]
+    const children = [
+        ...surgeArresterAssets(`SA${number}`, newUuid),
+        buildDisconnector(`${number}-1`, 110, newUuid)
+    ]
     if (options.cb) children.push(buildCircuitBreaker(`CB${number}`, presets.cb110, newUuid))
-    if (options.ct) {
-        children.push(...ctAssets(`TI${number}`, presets.ct110Transformer, newUuid))
-        children.push(...ctAssets(`TIT${index + 1}`, presets.ct110Transformer, newUuid))
-    }
+    if (options.ct) children.push(...ctAssets(`TI${number}`, presets.ct110Transformer, newUuid))
     return buildBay(String(number), children, newUuid)
+}
+
+const buildTransformerUnitBay = (transformer, index, presets, options, newUuid) => {
+    const transformerName = `T${index + 1}`
+    const children = [
+        buildTransformer(transformer, index, newUuid),
+        ...surgeArresterAssets(`SA${transformerName}`, newUuid)
+    ]
+    if (options.ct) children.push(...ctAssets(`TI${transformerName}`, presets.ct110Transformer, newUuid))
+    return buildBay(transformerName, children, newUuid)
 }
 
 const buildMediumVoltageLevel = (level, transformerIndexes, bayConfig, presets, options, sequences, newUuid) => {
@@ -313,6 +367,7 @@ const buildMediumVoltageLevel = (level, transformerIndexes, bayConfig, presets, 
         const incomerChildren = []
         if (options.cb) incomerChildren.push(buildCircuitBreaker(`CB${incomerName}`, presets.cb22, newUuid))
         if (options.ct) incomerChildren.push(...ctAssets(`TI${incomerName}`, presets.ct22, newUuid))
+        if (options.vt) incomerChildren.push(...vtAssets(`TU${incomerName}`, presets.vt22, newUuid))
         bays.push(buildBay(incomerName, incomerChildren, newUuid))
     })
 
@@ -335,7 +390,10 @@ const buildMediumVoltageLevel = (level, transformerIndexes, bayConfig, presets, 
     for (let i = 0; i < Number(bayConfig.capacitorBays || 0); i += 1) {
         const base = String(400 + levelNumber)
         const bayName = i ? `${base}-${i + 1}` : base
-        bays.push(buildBay(bayName, [buildCapacitor(bayName, newUuid)], newUuid))
+        const capacitorChildren = [buildCapacitor(`C1${bayName}`, newUuid)]
+        if (options.cb) capacitorChildren.push(buildCircuitBreaker(`CB${bayName}`, presets.cb22, newUuid))
+        if (options.ct) capacitorChildren.push(...ctAssets(`TI${bayName}`, presets.ct22, newUuid))
+        bays.push(buildBay(bayName, capacitorChildren, newUuid))
     }
     return buildVoltageLevel(level, 22, bays, newUuid)
 }
@@ -360,9 +418,10 @@ export const buildSubstationBranch = (config, newUuid) => {
     }
 
     config.transformers.forEach((transformer, index) => {
-        const bay = buildTransformerBay(transformer, index, config.presets, options, newUuid)
-        if (config.scheme === 'h' && transformer.busbar === 'C12') c12Bays.push(bay)
-        else c11Bays.push(bay)
+        const switchingBay = buildTransformerSwitchingBay(index, config.presets, options, newUuid)
+        const transformerBay = buildTransformerUnitBay(transformer, index, config.presets, options, newUuid)
+        const target = config.scheme === 'h' && index % 2 === 1 ? c12Bays : c11Bays
+        target.push(switchingBay, transformerBay)
     })
 
     const children = [buildVoltageLevel('C11', 110, c11Bays, newUuid)]

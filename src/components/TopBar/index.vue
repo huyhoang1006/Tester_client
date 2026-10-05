@@ -268,6 +268,7 @@
 /* eslint-disable */
 import { mapState } from 'vuex'
 import * as userApi from '@/api/user'
+import { createSsoRedirectUri } from '@/utils/sso'
 
 export default {
     name: 'TopBar',
@@ -438,11 +439,28 @@ export default {
         maximizeApp() {
             window.electronAPI.maximizeApp()
         },
-        handleCommand(command) {
+        async handleCommand(command) {
             switch (command) {
                 case 'log_out':
-                    this.$helper.afterLogout()
-                    this.$router.push({ path: '/login' })
+                    {
+                        const redirectUri = createSsoRedirectUri()
+                        const ssoLogout = userApi.getSsoLogoutUrl(redirectUri)
+                            .then(response => {
+                                const logoutUrl = response && response.code === 1 ? response.data : null
+                                if (logoutUrl && window.electronAPI && window.electronAPI.openSsoLogout) {
+                                    return window.electronAPI.openSsoLogout(logoutUrl, redirectUri)
+                                }
+                                return null
+                            })
+                            .catch(error => console.warn('SSO logout failed:', error))
+
+                        this.$helper.afterLogout()
+                        await this.$router.push({ path: '/login' })
+                        if (window.electronAPI && window.electronAPI.focusApp) {
+                            await window.electronAPI.focusApp()
+                        }
+                        void ssoLogout
+                    }
                     break
                 case 'update_password':
                     this.dialogChangePw = true

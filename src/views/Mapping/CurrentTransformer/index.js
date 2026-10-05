@@ -198,6 +198,9 @@ export const mapDtoToEntity = (dto) => {
 
 
         coreInfo.ts = fullTapClassRating.ts;
+        coreInfo.t1 = fullTapClassRating.t1;
+        coreInfo.tal1 = fullTapClassRating.tal1;
+        coreInfo.tpts = fullTapClassRating.tpts;
         coreInfo.ek = fullTapClassRating.ek;
         coreInfo.ie = fullTapClassRating.le;
         coreInfo.e1 = fullTapClassRating.e1;
@@ -440,6 +443,9 @@ export const mapEntityToDto = (entity) => {
                 core.fullTap.classRating.ktd = coreInfo.ktd;
                 core.fullTap.classRating.duty = coreInfo.duty;
                 core.fullTap.classRating.ts = coreInfo.ts;
+                core.fullTap.classRating.t1 = coreInfo.t1;
+                core.fullTap.classRating.tal1 = coreInfo.tal1;
+                core.fullTap.classRating.tpts = coreInfo.tpts;
                 core.fullTap.classRating.ek = coreInfo.ek;
                 core.fullTap.classRating.le = coreInfo.ie;
                 core.fullTap.classRating.e1 = coreInfo.e1;

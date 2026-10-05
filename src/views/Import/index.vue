@@ -165,7 +165,7 @@
           <span style="font-weight:normal;color:#909399;margin-left:4px;">(optional — selects where to start inserting)</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
-          <el-button size="small" plain icon="el-icon-location" @click="importNodePickerVisible = true">
+          <el-button size="small" plain icon="el-icon-location" @click="openImportNodePicker">
             {{ importSelectedNode ? importSelectedNode.label.split(' / ').pop() : 'Insert from root (no parent)' }}
           </el-button>
           <el-button v-if="importSelectedNode" size="mini" type="danger" plain circle icon="el-icon-close" @click="importSelectedNode = null" />
@@ -366,8 +366,13 @@
 
   <!-- Import node picker -->
   <el-dialog title="Select Parent Node" :visible.sync="importNodePickerVisible" width="500px" append-to-body>
-    <div style="margin-bottom:6px;font-size:11px;color:#909399;">
-      Select the parent node to insert into. Leave empty to import from Organisation level.
+    <div style="margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <span style="font-size:11px;color:#909399;">
+        Select the parent node to insert into. Leave empty to import from Organisation level.
+      </span>
+      <el-button size="mini" icon="el-icon-refresh" @click="refreshImportPickerTree" style="padding:4px 8px;flex:none;">
+        Refresh
+      </el-button>
     </div>
     <el-tree
       :key="'imp-' + pickerTreeKey"
@@ -648,6 +653,16 @@ export default {
       }
       this.importNodePickerVisible = false
       this.importPickerTemp = null
+    },
+
+    openImportNodePicker() {
+      this.refreshImportPickerTree()
+      this.importNodePickerVisible = true
+    },
+
+    refreshImportPickerTree() {
+      this.importPickerTemp = null
+      this.pickerTreeKey++
     },
 
     // Step 1 → Step 2: đọc file + build preview

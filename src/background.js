@@ -1,6 +1,7 @@
 'use strict'
 
-import {app, protocol, BrowserWindow, ipcMain, screen} from 'electron'
+import {app, protocol, BrowserWindow, ipcMain, screen, shell} from 'electron'
+import {createBrowserSso} from './utils/ssoBrowser'
 import {createProtocol} from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, {VUEJS_DEVTOOLS} from 'electron-devtools-installer'
 import sqlite3 from '@journeyapps/sqlcipher'
@@ -16,6 +17,7 @@ import * as updateStart from '@/update/index'
 import {ipcCim, ipcEntity, ipcAppOption, ipcPtm} from '@/ipcmain'
 let win
 let importerProcess = null
+let ssoWindow = null
 
 const pendingRequests = new Map()
 const nameDB = 'database.db'
@@ -88,6 +90,123 @@ async function createWindow() {
         win.loadURL('app://./index.html')
     }
 }
+
+const openSsoWindow = (targetUrl, redirectUri, expectCode, visible = true, sessionPartition = null) => {
+    return new Promise((resolve) => {
+        if (!/^https?:\/\//i.test(targetUrl || '') || !redirectUri) {
+            resolve({success: false, message: 'Invalid SSO URL'})
+            return
+        }
+
+        if (ssoWindow && !ssoWindow.isDestroyed()) ssoWindow.destroy()
+
+        let settled = false
+        let timeoutId = null
+        const finish = (result) => {
+            if (settled) return
+            settled = true
+            if (timeoutId) clearTimeout(timeoutId)
+            resolve(result)
+            if (!popup.isDestroyed()) popup.close()
+            if (ssoWindow === popup) ssoWindow = null
+        }
+
+        const webPreferences = {
+            nodeIntegration: false,
+            contextIsolation: true,
+            sandbox: true,
+            webSecurity: true
+        }
+        if (sessionPartition) webPreferences.partition = sessionPartition
+
+        const popup = new BrowserWindow({
+            parent: visible ? win : undefined,
+            modal: visible,
+            show: false,
+            skipTaskbar: !visible,
+            width: 460,
+            height: 680,
+            minWidth: 420,
+            minHeight: 560,
+            autoHideMenuBar: true,
+            webPreferences
+        })
+
+        ssoWindow = popup
+
+        const handleCallback = (event, url) => {
+            if (!url) return
+            const expected = new URL(redirectUri)
+            const actual = new URL(url)
+            if (actual.origin !== expected.origin || actual.pathname !== expected.pathname
+                || actual.searchParams.get('attempt') !== expected.searchParams.get('attempt')) return
+            const state = new URL(targetUrl).searchParams.get('state')
+            if (state && actual.searchParams.get('state') !== state) return
+            if (event && event.preventDefault) event.preventDefault()
+
+            try {
+                const callbackUrl = new URL(url)
+                const error = callbackUrl.searchParams.get('error')
+                const errorDescription = callbackUrl.searchParams.get('error_description')
+                const code = callbackUrl.searchParams.get('code')
+
+                if (error) {
+                    finish({success: false, message: errorDescription || error})
+                } else if (expectCode && !code) {
+                    finish({success: false, message: 'SSO callback did not contain an authorization code'})
+                } else {
+                    finish({success: true, code: code || null})
+                }
+            } catch (error) {
+                finish({success: false, message: error.message})
+            }
+        }
+
+        popup.webContents.on('will-redirect', handleCallback)
+        popup.webContents.on('will-navigate', handleCallback)
+        popup.webContents.on('did-navigate', (_event, url) => handleCallback(null, url))
+        if (visible) {
+            popup.once('ready-to-show', () => !popup.isDestroyed() && popup.show())
+        }
+        popup.once('closed', () => {
+            if (ssoWindow === popup) ssoWindow = null
+            if (!settled) {
+                settled = true
+                if (timeoutId) clearTimeout(timeoutId)
+                resolve({success: false, canceled: true, message: 'SSO window was closed'})
+            }
+        })
+        timeoutId = setTimeout(() => {
+            finish({success: false, message: 'SSO sign-in timed out'})
+        }, 5 * 60 * 1000)
+
+        const popupUrl = new URL(targetUrl)
+        popupUrl.searchParams.set('popup', 'true')
+        popup.loadURL(popupUrl.toString()).catch((error) => finish({success: false, message: error.message}))
+    })
+}
+
+const focusMainWindow = () => {
+    if (!win || win.isDestroyed()) return
+    if (win.isMinimized()) win.restore()
+    win.show()
+    win.setAlwaysOnTop(true)
+    win.focus()
+    if (typeof win.moveTop === 'function') win.moveTop()
+    setTimeout(() => {
+        if (win && !win.isDestroyed()) win.setAlwaysOnTop(false)
+    }, 250)
+}
+
+const browserSso = createBrowserSso({
+    openExternal: url => shell.openExternal(url),
+    openPopup: openSsoWindow,
+    closePopup: () => {
+        if (ssoWindow && !ssoWindow.isDestroyed()) ssoWindow.close()
+    },
+    focusApp: focusMainWindow
+})
+app.on('before-quit', () => browserSso.cancel())
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
@@ -254,6 +373,25 @@ app.on('ready', async () => {
 
     process.on('unhandledRejection', (reason, p) => {
         console.error('🔥 UNHANDLED PROMISE:', reason)
+    })
+
+    ipcMain.handle('openSsoLogin', (_event, targetUrl, redirectUri) => (
+        browserSso.open(targetUrl, redirectUri, true)
+    ))
+    ipcMain.handle('openSsoLoginFresh', (_event, targetUrl, redirectUri) => (
+        openSsoWindow(targetUrl, redirectUri, true, true, `sso-reauth-${newUuid()}`)
+    ))
+    ipcMain.handle('openSsoLogout', (_event, targetUrl, redirectUri) => (
+        openSsoWindow(targetUrl, redirectUri, false, false)
+    ))
+    ipcMain.handle('cancelSsoWindow', () => {
+        browserSso.cancel()
+        if (ssoWindow && !ssoWindow.isDestroyed()) ssoWindow.close()
+        return {success: true}
+    })
+    ipcMain.handle('focusApp', () => {
+        focusMainWindow()
+        return {success: true}
     })
 
     ipcMain.handle('uploadAttachment', async function (event, id_foreign, type, info) {

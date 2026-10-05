@@ -94,6 +94,84 @@ const CONDITION_INDICATOR_SCORES = {
     bad: 0
 }
 
+const HEALTH_CRITERIA = [
+    {
+        key: 'oil-breakdown-voltage',
+        name: 'Oil breakdown voltage',
+        testTypeCodes: ['MeasurementOfOil'],
+        indicatorKey: 'condition_indicator',
+        weightingCriterion: 'Oil test main tank'
+    },
+    {
+        key: 'dga-main-tank',
+        name: 'DGA',
+        testTypeCodes: ['Dga'],
+        indicatorKey: 'condition_indicator',
+        weightingCriterion: 'DGA main tank'
+    },
+    {
+        key: 'insulation-resistance',
+        name: 'Insulation resistance',
+        testTypeCodes: ['InsulationResistance'],
+        indicatorKey: 'condition_indicator',
+        weightingCriterion: 'Insulation resistance'
+    },
+    {
+        key: 'ratio-test',
+        name: 'Ratio test',
+        testTypeCodes: ['RatioPrimSec'],
+        indicatorKey: 'condition_indicator',
+        weightingCriterion: 'Ratio test'
+    },
+    {
+        key: 'winding-df',
+        name: 'Winding DF',
+        testTypeCodes: ['WindingDfCap'],
+        indicatorKey: 'condition_indicator_df',
+        weightingCriterion: 'Winding PF/DF',
+        legacyScoreSuffix: '_df'
+    },
+    {
+        key: 'winding-capacitance',
+        name: 'Winding capacitance',
+        testTypeCodes: ['WindingDfCap'],
+        indicatorKey: 'condition_indicator_c',
+        weightingCriterion: 'Winding capacitance',
+        legacyScoreSuffix: '_c'
+    },
+    {
+        key: 'dc-winding-resistance',
+        name: 'DC winding resistance',
+        testTypeCodes: ['DCWindingPrim', 'DCWindingSec', 'DCWindingTert'],
+        indicatorKey: 'condition_indicator',
+        weightingCriterion: 'DC winding resistance',
+        averagePerTest: true
+    },
+    {
+        key: 'bushing-df-c1',
+        name: 'Bushing DF C1',
+        testTypeCodes: ['BushingPrimC1', 'BushingSecC1', 'BushingTertC1'],
+        indicatorKey: 'condition_indicator_df',
+        weightingCriterion: 'Bushing PF/DF',
+        legacyScoreSuffix: '_df'
+    },
+    {
+        key: 'exciting-current',
+        name: 'Exciting current',
+        testTypeCodes: ['ExcitingCurrent'],
+        indicatorKey: 'condition_indicator',
+        weightingCriterion: 'Excitation current'
+    },
+    {
+        key: 'bushing-capacitance-c1',
+        name: 'Bushing capacitance C1',
+        testTypeCodes: ['BushingPrimC1', 'BushingSecC1', 'BushingTertC1'],
+        indicatorKey: 'condition_indicator_c',
+        weightingCriterion: 'Bushing C1 capacitance',
+        legacyScoreSuffix: '_c'
+    }
+]
+
 const cellValue = cell => {
     if (cell && typeof cell === 'object' && Object.prototype.hasOwnProperty.call(cell, 'cached')) {
         return cell.cached
@@ -112,8 +190,6 @@ const demoWeightingFactor = criterion => {
     ))
     return row ? cellValue(row[4]) : null
 }
-
-const DGA_WEIGHTING_FACTOR = demoWeightingFactor('DGA main tank')
 
 const indicatorScore = field => {
     const value = field && typeof field === 'object' ? field.value : field
@@ -152,7 +228,8 @@ export default {
 
     computed: {
         data_() {
-            return Object.values(this.data).map(item => this.withCalculatedScores(item))
+            const tests = Object.values(this.data || {})
+            return HEALTH_CRITERIA.map(criterion => this.buildContribution(criterion, tests))
         },
         averageHealthIndex() {
             return this.resolveHealthIndex('average', this.properties.average_health_index)
@@ -175,32 +252,75 @@ export default {
     },
 
     methods: {
-        withCalculatedScores(item) {
-            if (!item || item.testTypeCode !== 'Dga') return item
-            const scores = testRows(item.data)
-                .map(row => indicatorScore(row && row.condition_indicator))
+        average(values) {
+            return values.length
+                ? values.reduce((sum, value) => sum + value, 0) / values.length
+                : null
+        },
+        legacyScore(item, criterion, mode) {
+            const suffix = criterion.legacyScoreSuffix || ''
+            const value = item && item[`${mode}_score${suffix}`]
+            return this.isNumber(value) ? Number(value) : null
+        },
+        summarizeTest(item, criterion) {
+            const scores = testRows(item && item.data)
+                .map(row => indicatorScore(row && row[criterion.indicatorKey]))
                 .filter(score => Number.isFinite(score))
-            if (!scores.length) return item
+            if (scores.length) {
+                return {
+                    scores,
+                    average: this.average(scores),
+                    worst: Math.min.apply(null, scores)
+                }
+            }
+            const average = this.legacyScore(item, criterion, 'average')
+            const worst = this.legacyScore(item, criterion, 'worst')
             return {
-                ...item,
-                average_score: scores.reduce((sum, score) => sum + score, 0) / scores.length,
-                worst_score: Math.min.apply(null, scores),
-                weighting_factor: DGA_WEIGHTING_FACTOR
+                scores: [],
+                average,
+                worst
+            }
+        },
+        buildContribution(criterion, tests) {
+            const matchingTests = tests.filter(item => (
+                item && criterion.testTypeCodes.includes(item.testTypeCode)
+            ))
+            const summaries = matchingTests.map(item => this.summarizeTest(item, criterion))
+            let averageScore = null
+            let worstScore = null
+
+            if (criterion.averagePerTest) {
+                const averageScores = summaries.map(summary => summary.average).filter(this.isNumber)
+                const worstScores = summaries.map(summary => summary.worst).filter(this.isNumber)
+                averageScore = this.average(averageScores.map(Number))
+                // The FMECA workbook averages each winding's worst score before
+                // applying the single DC winding resistance weighting factor.
+                worstScore = this.average(worstScores.map(Number))
+            } else {
+                const rowScores = summaries.reduce((scores, summary) => scores.concat(summary.scores), [])
+                if (rowScores.length) {
+                    averageScore = this.average(rowScores)
+                    worstScore = Math.min.apply(null, rowScores)
+                } else {
+                    const averageScores = summaries.map(summary => summary.average).filter(this.isNumber)
+                    const worstScores = summaries.map(summary => summary.worst).filter(this.isNumber)
+                    averageScore = this.average(averageScores.map(Number))
+                    worstScore = worstScores.length ? Math.min.apply(null, worstScores.map(Number)) : null
+                }
+            }
+
+            return {
+                mrid: criterion.key,
+                name: criterion.name,
+                average_score: averageScore,
+                worst_score: worstScore,
+                weighting_factor: demoWeightingFactor(criterion.weightingCriterion)
             }
         },
         itemScore(item, mode) {
-            const prefix = mode === 'average' ? 'average_score' : 'worst_score'
-            if (['BushingPrimC1', 'BushingPrimC2', 'WindingDfCap'].includes(item.testTypeCode)) {
-                if (item.name.includes('(DF)')) return item[`${prefix}_df`]
-                if (item.name.includes('(C)')) return item[`${prefix}_c`]
-            }
-            return item[prefix]
+            return item[mode === 'average' ? 'average_score' : 'worst_score']
         },
         itemWeightingFactor(item) {
-            if (['BushingPrimC1', 'BushingPrimC2', 'WindingDfCap'].includes(item.testTypeCode)) {
-                if (item.name.includes('(DF)')) return item.weighting_factor_df
-                if (item.name.includes('(C)')) return item.weighting_factor_c
-            }
             return item.weighting_factor
         },
         itemTotal(item, mode) {

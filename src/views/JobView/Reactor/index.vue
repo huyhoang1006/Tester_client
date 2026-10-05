@@ -119,7 +119,7 @@ export default {
             this.$set(this.compareOpen, key, !this.compareOpen[key])
         },
         updateAttachmentOverView(attachment) {
-            this.attachmentData = attachment
+            this.reactorJobDto.attachmentData = attachment
         },
         loadMapForView() {
         },

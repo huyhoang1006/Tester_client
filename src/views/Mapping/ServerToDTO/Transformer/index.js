@@ -200,6 +200,11 @@ export const mapServerToDto = (serverData) => {
     dto.winding_configuration.phases = PHASES_MAP[tr.phases] || str(tr.numberOfPhase || assetInfo.numberOfPhase)
     dto.winding_configuration.phase = tr.phase || assetInfo.phase || ''
 
+    const vectorGroupCustom = str(tr.vectorGroupCustom || tr.vector_group_custom)
+    const unsupportedVectorGroup = str(tr.unsupportedVectorGroup || tr.unsupported_vector_group)
+    dto.winding_configuration.vector_group_custom = vectorGroupCustom
+    dto.winding_configuration.unsupported_vector_group = unsupportedVectorGroup
+
     // Prefer split fields. Older server records may only contain the composite value.
     const hasSplitVG = tr.vectorGroupPrim || tr.vectorGroupSec || tr.vectorGroupTertiary
     if (hasSplitVG) {
@@ -210,7 +215,7 @@ export const mapServerToDto = (serverData) => {
         dto.winding_configuration.vector_group.tert.value = str(tr.vectorGroupTertiaryVal)
         dto.winding_configuration.vector_group.tert.accessible = fromServerAccessibility(tr.vectorGroupTertiaryAccessibility)
         dto.winding_configuration.vector_group_data = buildClientVectorGroupText(dto.winding_configuration.vector_group)
-    } else if (tr.vectorGroup) {
+    } else if (tr.vectorGroup && !vectorGroupCustom && !unsupportedVectorGroup) {
         const parsed = parseServerVectorGroup(
             tr.vectorGroup,
             dto.winding_configuration.phases,
@@ -635,6 +640,8 @@ export const mapDtoToServer = (dto, ownerType) => {
 
         // vector group: ưu tiên data parsed, fallback custom/unsupported
         vectorGroup: vectorGroupText,
+        vectorGroupCustom: textT(wc.vector_group_custom),
+        unsupportedVectorGroup: textT(wc.unsupported_vector_group),
         vectorGroupPrim: toServerPrimary(vg.prim),
         vectorGroupSec: toServerConnection(vg.sec?.i),
         vectorGroupSecVal: intT(vg.sec?.value),

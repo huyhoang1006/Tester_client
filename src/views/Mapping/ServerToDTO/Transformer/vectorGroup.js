@@ -184,9 +184,19 @@ export const buildClientVectorGroupText = (vectorGroup) => {
 export const buildServerVectorGroup = (windingConfiguration) => {
     const wc = windingConfiguration || {}
     const vg = wc.vector_group || {}
+
+    // Keep free-text values authoritative. Besides matching the local persistence
+    // rule, this also preserves them when uploading to an older server that only
+    // understands the legacy vectorGroup field.
+    const unsupported = text(wc.unsupported_vector_group)
+    if (unsupported) return unsupported
+
+    const custom = text(wc.vector_group_custom)
+    if (custom) return custom
+
     const hasComponents = Boolean(text(vg.prim) || text(vg.sec?.i) || text(vg.tert?.i))
     if (!hasComponents) {
-        return text(wc.vector_group_custom) || text(wc.unsupported_vector_group) || text(wc.vector_group_data) || null
+        return text(wc.vector_group_data) || null
     }
 
     return [

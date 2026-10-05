@@ -32,32 +32,21 @@
                     <h1>{{ greeting.title }}</h1>
                     <p class="login-desc">{{ greeting.desc }}</p>
                 </div>
-                <el-form :model="model" :rules="loginRules" ref="form" @submit.native.prevent="login">
-                    <div class="form-group">
-                        <label class="form-label no-select">Username</label>
-                        <el-form-item prop="username">
-                            <el-input v-model="model.username" placeholder="Username"
-                                prefix-icon="fas fa-user"></el-input>
-                        </el-form-item>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label no-select">Password</label>
-                        <el-form-item prop="password">
-                            <el-input prefix-icon="fas fa-lock" placeholder="Password" type="password"
-                                v-model="model.password" show-password></el-input>
-                        </el-form-item>
-                    </div>
-                    <div class="checkbox-row">
-                        <el-checkbox v-model="remember" class="remember-checkbox">Remember</el-checkbox>
-                    </div>
+                <div class="sso-login-panel">
+                    <div class="sso-icon"><i class="fas fa-shield-alt"></i></div>
+                    <p>Use your organisation account to continue.</p>
                     <el-button class="submit-btn" :class="{ 'is-pending': loadingLogin }" type="primary"
-                        native-type="submit">
+                        @click="loginWithSso(false)">
                         <template v-if="loadingLogin">
-                            <i class="el-icon-loading"></i> Signing in... (click to cancel)
+                            <i class="el-icon-loading"></i> {{ ssoStatus }} (click to cancel)
                         </template>
-                        <template v-else>Login</template>
+                        <template v-else><i class="fas fa-sign-in-alt"></i> Login with SSO</template>
                     </el-button>
-                </el-form>
+                    <el-button class="switch-account-btn" type="text" :disabled="loadingLogin"
+                        @click="loginWithSso(true)">
+                        <i class="fas fa-user-circle"></i> Use another account
+                    </el-button>
+                </div>
             </div>
             <div class="mobile-footer no-select">
                 Standard by IEC 61968
@@ -67,38 +56,16 @@
 </template>
 
 <script>
-/* eslint-disable */
-import axios from 'axios'
 import * as userApi from '@/api/user'
+import { createSsoRedirectUri, requireSsoReauthentication } from '@/utils/sso'
 
 export default {
     name: 'LoginView',
     data() {
         return {
-            model: {
-                // Tài khoản test mặc định
-                username: 'EVN_HCM',
-                password: 'evn_admin'
-            },
-            remember: true,
             loadingLogin: false,
-            loginAbort: null,
-            loginRules: {
-                username: [
-                    {
-                        required: true,
-                        message: 'Username is required',
-                        trigger: 'blur'
-                    }
-                ],
-                password: [
-                    {
-                        required: true,
-                        message: 'Password is required',
-                        trigger: 'blur'
-                    }
-                ]
-            },
+            ssoAttempt: 0,
+            ssoStatus: '',
             redirect: undefined,
             otherQuery: {}
         }
@@ -116,74 +83,76 @@ export default {
         }
     },
     methods: {
-        async login() {
-            // Đang chờ đăng nhập -> bấm lần nữa = HỦY
+        async loginWithSso(forceLogin = false) {
             if (this.loadingLogin) {
-                if (this.loginAbort) this.loginAbort.abort()
+                this.ssoAttempt++
+                if (window.electronAPI && window.electronAPI.cancelSsoWindow) {
+                    await window.electronAPI.cancelSsoWindow()
+                }
+                this.loadingLogin = false
                 return
             }
 
-            let valid = false
-            try {
-                valid = await this.$refs.form.validate()
-            } catch (e) {
-                return
-            }
-            if (!valid) {
-                return
-            }
             this.loadingLogin = true
-            this.loginAbort = new AbortController()
+            this.ssoStatus = 'Connecting to login server...'
+            const attempt = ++this.ssoAttempt
+            let stage = 'login_url'
+            try {
+                if (!window.electronAPI || !window.electronAPI.openSsoLogin) {
+                    throw new Error('SSO login is only available in the desktop application')
+                }
+                const redirectUri = createSsoRedirectUri()
+                const loginResponse = await userApi.getSsoLoginUrl(redirectUri, { forceLogin })
+                if (attempt !== this.ssoAttempt) return
+                if (!loginResponse || loginResponse.code !== 1 || !loginResponse.data) {
+                    throw new Error((loginResponse && loginResponse.message) || 'Unable to get SSO login URL')
+                }
 
-            // Gọi API login (có timeout 20s + có thể hủy)
-            userApi
-                .login(this.model, { signal: this.loginAbort.signal })
-                .then((response) => {
-                    // Xử lý response từ OAuth2
-                    // console.log("Login Success:", response) 
+                stage = 'browser'
+                this.ssoStatus = 'Waiting for sign-in...'
+                const loginUrl = forceLogin
+                    ? requireSsoReauthentication(loginResponse.data)
+                    : loginResponse.data
+                const openLogin = forceLogin && window.electronAPI.openSsoLoginFresh
+                    ? window.electronAPI.openSsoLoginFresh
+                    : window.electronAPI.openSsoLogin
+                const callback = await openLogin(loginUrl, redirectUri)
+                if (attempt !== this.ssoAttempt) return
+                if (!callback || callback.canceled) return
+                if (!callback.success || !callback.code) {
+                    throw new Error((callback && callback.message) || 'SSO login failed')
+                }
 
-                    // Gán username vào response để tiện hiển thị (vì OAuth response không trả về username)
-                    response.name = this.model.username
+                stage = 'access-token'
+                this.ssoStatus = 'Completing sign-in with login server...'
+                const tokenResponse = await userApi.exchangeSsoCode(callback.code)
+                if (attempt !== this.ssoAttempt) return
+                if (!tokenResponse || tokenResponse.code !== 1 || !tokenResponse.data) {
+                    throw new Error((tokenResponse && tokenResponse.message) || 'Unable to exchange SSO code')
+                }
 
-                    this.$message.success('Login successfully')
-
-                    // Lưu thông tin token vào localStorage
-                    localStorage.setItem('authInfo', JSON.stringify(response))
-
-                    // Gọi helper xử lý state (store/vuex)
-                    // Đảm bảo this.$helper.afterLogin của bạn xử lý được object chứa access_token
-                    if (this.$helper && this.$helper.afterLogin) {
-                        this.$helper.afterLogin(this.remember, response)
-                    }
-
-                    this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
-                })
-                .catch((error) => {
-                    console.log("Login Error:", error)
-
-                    // User chủ động hủy
-                    if (axios.isCancel(error) || error.code === 'ERR_CANCELED') {
-                        this.$message.info('Login cancelled')
-                        return
-                    }
-                    // Timeout
-                    if (error.code === 'ECONNABORTED' || /timeout/i.test(error.message || '')) {
-                        this.$message.error('Login timed out. Please check server address and network connection.')
-                        return
-                    }
-
-                    // Xử lý hiển thị lỗi chi tiết từ OAuth server
-                    let msg = 'Login failed'
-                    if (error.response && error.response.data) {
-                        // Ưu tiên hiển thị 'error_description' nếu có
-                        msg = error.response.data.error_description || error.response.data.message || msg
-                    }
-                    this.$message.error(msg)
-                })
-                .finally(async () => {
-                    this.loadingLogin = false
-                    this.loginAbort = null
-                })
+                this.$helper.afterSsoLogin(tokenResponse.data)
+                this.$message.success('Login successfully')
+                await this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
+                if (window.electronAPI && window.electronAPI.focusApp) {
+                    await window.electronAPI.focusApp()
+                }
+            } catch (error) {
+                if (attempt !== this.ssoAttempt) return
+                const responseData = error && error.response && error.response.data
+                const timedOut = error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT'
+                const timeoutMessage = timedOut && stage === 'access-token'
+                    ? 'Browser authorization was received, but the login server did not return a session within 20 seconds (access-token). Please check the login server and try signing in again.'
+                    : timedOut && stage === 'login_url'
+                        ? 'The login server did not return the sign-in URL within 20 seconds. Please check the login server connection.'
+                        : null
+                const message = timeoutMessage || (responseData && (responseData.message || responseData.error_description))
+                    || error.message
+                    || 'Login failed'
+                this.$message.error(message)
+            } finally {
+                if (attempt === this.ssoAttempt) this.loadingLogin = false
+            }
         },
         getOtherQuery(query) {
             return Object.keys(query).reduce((acc, cur) => {
@@ -395,6 +364,31 @@ export default {
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.75);
 }
 
+.sso-login-panel {
+    text-align: center;
+}
+
+.sso-login-panel p {
+    margin: 0 0 24px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 14px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.55);
+}
+
+.sso-icon {
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    color: #fff;
+    font-size: 22px;
+}
+
 .form-group {
     margin-bottom: 24px;
 }
@@ -508,6 +502,25 @@ export default {
 .submit-btn.el-button:active {
     transform: translateY(0);
     box-shadow: 0 2px 10px rgba(30, 91, 184, 0.4);
+}
+
+.switch-account-btn.el-button {
+    margin: 0;
+    padding: 8px 12px;
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 14px;
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.55);
+}
+
+.switch-account-btn.el-button:hover,
+.switch-account-btn.el-button:focus {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+.switch-account-btn.el-button.is-disabled {
+    color: rgba(255, 255, 255, 0.45);
 }
 
 .mobile-header {

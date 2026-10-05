@@ -142,9 +142,26 @@ export const ensureSubstationOperatingDateColumn = async (dbsql) => {
     }
 }
 
+export const ensureCtCoreInfoClassRatingColumns = async (dbsql) => {
+    const table = 'ct_core_info'
+    const columns = await getTableColumns(dbsql, table)
+    const additions = [
+        ['t1', 'TEXT'],
+        ['tal1', 'TEXT'],
+        ['tpts', 'TEXT']
+    ]
+
+    for (const [name, type] of additions) {
+        if (!columns.has(name)) {
+            await run(dbsql, `ALTER TABLE "${table}" ADD COLUMN "${name}" ${type}`)
+        }
+    }
+}
+
 export const updateDatabaseFromSQL = async (dbsql, oldVersion, newVersion) => {
     console.log(`Sync schema for database upgrade ${oldVersion} -> ${newVersion}`)
     await syncSchemaTables(dbsql)
     await ensureTransformerVectorGroupColumns(dbsql)
     await ensureSubstationOperatingDateColumn(dbsql)
+    await ensureCtCoreInfoClassRatingColumns(dbsql)
 }

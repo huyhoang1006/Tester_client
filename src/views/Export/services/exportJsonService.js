@@ -288,7 +288,7 @@ const buildBranch = async (node, deps, withChildren = true, counter = { done: 0 
 }
 
 // ===========================================================================
-// 5. ENTRY: export node gốc ra file JSON
+// 5. ENTRY: export node gốc ra ZIP (tree.json + attachment/nameplate files)
 //    options.mode: 'fullTree' (mặc định) = node + con cháu
 //                  'onlyNode'            = chỉ node được chọn
 // ===========================================================================
@@ -340,23 +340,28 @@ export const exportBranchToJSON = async (nodes, deps, options = {}) => {
         const first = nodesArray[0]
         const baseName = first?.name || first?.serial_number || first?.asset || 'tree-export'
         const suffix = withChildren ? 'full-tree' : 'node'
-        const fileName = `${sanitizeFileName(baseName)}-${suffix}.json`
+        const fileName = `${sanitizeFileName(baseName)}-${suffix}.zip`
 
         // Đóng overlay TRƯỚC khi mở hộp thoại chọn chỗ lưu — hộp thoại của hệ điều hành
         // chờ người dùng, mà overlay thì đếm nhịp tim; để chung sẽ bị coi là treo.
         if (reporter) await reporter.close()
 
-        const result = await electronAPI.exportJSON(payload, {
+        const result = await electronAPI.exportTreePackage(payload, {
             defaultFileName: fileName,
-            title: 'Save JSON file',
+            title: 'Save tree package',
             buttonLabel: 'Save',
         })
 
         if (result && result.success) {
+            if (result.missingFiles && result.missingFiles.length > 0) {
+                messageHandler && messageHandler.warning(
+                    `${result.missingFiles.length} attachment file(s) were already missing and could not be included.`
+                )
+            }
             messageHandler && messageHandler.success(result.message ||
                 (withChildren ? 'Branch exported successfully' : 'Node exported successfully'))
         } else if (result && result.message !== 'Export cancelled') {
-            messageHandler && messageHandler.error(result.message || 'Export JSON failed')
+            messageHandler && messageHandler.error(result.message || 'Export tree package failed')
         }
         return
     } catch (err) {
@@ -366,7 +371,7 @@ export const exportBranchToJSON = async (nodes, deps, options = {}) => {
             return
         }
         console.error('[exportJson] Export error:', err)
-        messageHandler && messageHandler.error('An error occurred while exporting JSON')
+        messageHandler && messageHandler.error('An error occurred while exporting the tree package')
         throw err
     } finally {
         // Đóng lần nữa là vô hại (RESET không phụ thuộc trạng thái) và cần thiết cho mọi

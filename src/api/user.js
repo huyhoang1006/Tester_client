@@ -1,8 +1,12 @@
 /* eslint-disable */
 import axios from 'axios'
 import client from "@/utils/client"
-import qs from 'qs'
 import store from '@/store'
+import {
+    getSsoApiBase,
+    getStoredAccessToken,
+    SSO_TOKEN_HEADER
+} from '@/utils/sso'
 
 // Logic cũ: Set base URL cho client (Dùng cho các hàm getAll, signup...)
 const loginAddr = localStorage.getItem('LOGIN_ADDR')
@@ -11,51 +15,44 @@ if (loginAddr) {
     client.defaults.baseURL = loginAddr
 }
 
-const CLIENT_ID = 'tester-client'
-const CLIENT_SECRET = 'tester-client'
-
 const API_PREFIX = 'api/v1'
 const RESOURCE = 'users'
 
 // Timeout mặc định cho login (ms)
 export const LOGIN_TIMEOUT_MS = 20000
 
-// --- HÀM LOGIN (ĐÃ SỬA) ---
-// options: { signal } — AbortController.signal để hủy khi user bấm lần nữa
-export const login = (data, options = {}) => {
-    // 1. Lấy Server Address trực tiếp tại thời điểm Login
-    let domain = localStorage.getItem('LOGIN_ADDR') || ''
+const requireSsoApiBase = () => {
+    const baseUrl = getSsoApiBase()
+    if (!baseUrl) throw new Error('Login address is not configured')
+    return baseUrl
+}
 
-    // Xử lý bỏ dấu gạch chéo cuối nếu có (để tránh thành //oauth)
-    if (domain.endsWith('/')) {
-        domain = domain.slice(0, -1)
+export const getSsoLoginUrl = (redirectUri, options = {}) => {
+    const params = {redirectUri}
+    if (options.forceLogin) {
+        params.prompt = 'login'
+        params.maxAge = 0
     }
+    return axios.get(`${requireSsoApiBase()}/auth/sso/login_url`, {
+        params,
+        timeout: options.timeout || LOGIN_TIMEOUT_MS
+    }).then(response => response.data)
+}
 
-    // 2. Tạo URL đầy đủ
-    // Nếu có domain -> http://103.../oauth/token
-    // Nếu không có -> /oauth/token (chạy qua Proxy localhost)
-    const loginUrl = domain ? `${domain}/oauth/token` : '/oauth/token'
+export const exchangeSsoCode = (code, options = {}) => {
+    return axios.get(`${requireSsoApiBase()}/auth/sso/access-token`, {
+        params: {code},
+        timeout: options.timeout || LOGIN_TIMEOUT_MS
+    }).then(response => response.data)
+}
 
-    // 3. Tạo Basic Auth
-    const basicAuth = 'Basic ' + btoa(`${CLIENT_ID}:${CLIENT_SECRET}`)
-
-    const formData = {
-        username: data.username,
-        password: data.password,
-        grant_type: 'password'
-    }
-
-    // Sử dụng axios gốc (để tránh interceptor của client)
-    return axios.post(loginUrl, qs.stringify(formData), {
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Authorization': basicAuth
-        },
-        timeout: options.timeout || LOGIN_TIMEOUT_MS,
-        signal: options.signal
-    }).then(response => {
-        return response.data
-    })
+export const getSsoLogoutUrl = (redirectUri, options = {}) => {
+    const accessToken = getStoredAccessToken()
+    return axios.get(`${requireSsoApiBase()}/auth/sso/logout_url`, {
+        params: {redirectUri},
+        headers: accessToken ? {[SSO_TOKEN_HEADER]: accessToken} : {},
+        timeout: options.timeout || LOGIN_TIMEOUT_MS
+    }).then(response => response.data)
 }
 
 // --- CÁC HÀM KHÁC DÙNG CLIENT (Đã tự nhận baseURL ở trên) ---

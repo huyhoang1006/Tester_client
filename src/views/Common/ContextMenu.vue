@@ -107,8 +107,8 @@
                 <li v-if="isClient" class="has-submenu submenu-up">
                     <i class="fa-solid fa-file-export"></i> Export
                     <ul class="submenu">
-                        <li @click="exportJSONOnlyNode"><i class="fa-solid fa-file-code"></i> Export JSON only node</li>
-                        <li @click="exportJSONFullTree"><i class="fa-solid fa-file-code"></i> Export JSON full tree</li>
+                        <li @click="exportJSONOnlyNode"><i class="fa-solid fa-file-zipper"></i> Export package only node</li>
+                        <li @click="exportJSONFullTree"><i class="fa-solid fa-file-zipper"></i> Export package full tree</li>
                         <li @click="exportExcel"><i class="fa-solid fa-file-excel"></i> Export to Excel</li>
                         <li @click="exportWord"><i class="fa-solid fa-file-word"></i> Export to Word</li>
                     </ul>
@@ -116,7 +116,7 @@
                 <li v-if="isClient" class="has-submenu submenu-up">
                     <i class="fa-solid fa-file-import"></i> Import
                     <ul class="submenu">
-                        <li @click="importJSON"><i class="fa-solid fa-file-code"></i> Import from JSON</li>
+                        <li @click="importJSON"><i class="fa-solid fa-file-zipper"></i> Import tree package</li>
                         <li @click="importExcel"><i class="fa-solid fa-file-excel"></i> Import from Excel</li>
                         <li @click="importWord"><i class="fa-solid fa-file-word"></i> Import from Word</li>
                         <li @click="importPtm"><i class="fa-solid fa-wave-square"></i> Import from PTM (OMICRON)</li>

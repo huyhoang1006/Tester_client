@@ -9,6 +9,9 @@
 	"alf"	TEXT,
 	"winding_resistance"	TEXT,
 	"ts"	TEXT,
+	"t1"	TEXT,
+	"tal1"	TEXT,
+	"tpts"	TEXT,
 	"ek"	TEXT,
 	"e1"	TEXT,
 	"ie"	TEXT,
@@ -50,10 +53,10 @@ export const insertCtCoreInfoTransaction = (info, dbsql) => {
         const sql = `
             INSERT INTO ct_core_info (
                 mrid, tap_count, common_tap, core_application, core_class, fs, alf, 
-                winding_resistance, ts, ek, e1, ie, ie1, kssc, val, tp, iai, k, ktd, 
+                winding_resistance, ts, t1, tal1, tpts, ek, e1, ie, ie1, kssc, val, tp, iai, k, ktd,
                 duty, kx, current_transformer_info_id, ex, vb, vk, vk1, ik, ik1, ratio_error, core_index
             ) VALUES (
-                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
             )
             ON CONFLICT(mrid) DO UPDATE SET
                 tap_count = excluded.tap_count,
@@ -64,6 +67,9 @@ export const insertCtCoreInfoTransaction = (info, dbsql) => {
                 alf = excluded.alf,
                 winding_resistance = excluded.winding_resistance,
                 ts = excluded.ts,
+                t1 = excluded.t1,
+                tal1 = excluded.tal1,
+                tpts = excluded.tpts,
                 ek = excluded.ek,
                 e1 = excluded.e1,
                 ie = excluded.ie,
@@ -97,6 +103,9 @@ export const insertCtCoreInfoTransaction = (info, dbsql) => {
             info.alf,
             emptyToNull(info.winding_resistance),
             info.ts,
+            info.t1,
+            info.tal1,
+            info.tpts,
             info.ek,
             info.e1,
             info.ie,

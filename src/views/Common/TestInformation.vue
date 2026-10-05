@@ -149,7 +149,10 @@ export default {
             require: true,
             default: () => ({})
         },
-        attachment: [],
+        attachment: {
+            type: Array,
+            default: () => []
+        },
         assetData: {
             type: Object,
             default: () => ({})
@@ -178,7 +181,10 @@ export default {
     },
     methods: {
         getDataAttachment(arr) {
-            this.attachment_ = arr
+            const attachmentData = Array.isArray(arr) ? arr : []
+            this.attachment_ = attachmentData
+            this.$set(this.data, 'attachmentData', attachmentData)
+            this.$emit('update:attachment', attachmentData)
         }
     },
     computed: {

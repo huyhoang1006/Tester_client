@@ -19,8 +19,8 @@
                 </button>
                 <el-dropdown-menu slot="dropdown">
                     <el-dropdown-item command="importJSON">
-                        <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon>
-                        Import from JSON
+                        <i class="fa-solid fa-file-zipper" style="font-size:12px"></i>
+                        Import tree package
                     </el-dropdown-item>
                     <el-dropdown-item command="importPTM">
                         <i class="fa-solid fa-file-zipper" style="font-size:12px"></i>
@@ -47,12 +47,12 @@
                 </button>
                 <el-dropdown-menu slot="dropdown">
                     <el-dropdown-item command="exportJSONOnlyNode">
-                        <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon>
-                        Export JSON only node
+                        <i class="fa-solid fa-file-zipper" style="font-size:12px"></i>
+                        Export package only node
                     </el-dropdown-item>
                     <el-dropdown-item command="exportJSONFullTree">
-                        <icon size="12px" fileTypeDetail="json" folderType="fileType" badgeColor="146EBE"></icon>
-                        Export JSON full tree
+                        <i class="fa-solid fa-file-zipper" style="font-size:12px"></i>
+                        Export package full tree
                     </el-dropdown-item>
                     <el-dropdown-item command="exportExcel">
                         <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon>

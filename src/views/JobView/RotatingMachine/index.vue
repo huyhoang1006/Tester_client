@@ -134,7 +134,7 @@ export default {
                 : 'Winding temperature'
         },
         updateAttachmentOverView(attachment) {
-            this.attachmentData = attachment
+            this.rotatingMachineJobDto.attachmentData = attachment
         },
         loadMapForView() {
         },

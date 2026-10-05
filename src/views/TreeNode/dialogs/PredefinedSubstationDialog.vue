@@ -32,14 +32,7 @@
                     >
                         <span class="scheme-title">H Scheme</span>
                         <span class="scheme-note">Two 110 kV busbars with coupler 112</span>
-                        <span class="sld h-sld" aria-label="H scheme preview">
-                            <span class="bus bus-left"></span>
-                            <span class="bus bus-right"></span>
-                            <span class="coupler"></span>
-                            <span class="sld-label label-left">C11</span>
-                            <span class="sld-label label-right">C12</span>
-                            <span class="sld-label label-coupler">112</span>
-                        </span>
+                        <img class="scheme-preview" :src="schemeImages.h" alt="H scheme single-line diagram">
                     </button>
                     <button
                         type="button"
@@ -49,11 +42,7 @@
                     >
                         <span class="scheme-title">Single Busbar</span>
                         <span class="scheme-note">One 110 kV busbar without coupler</span>
-                        <span class="sld single-sld" aria-label="Single busbar preview">
-                            <span class="single-bus"></span>
-                            <span v-for="n in 4" :key="n" class="single-feeder" :style="{ left: `${18 + (n - 1) * 21}%` }"></span>
-                            <span class="sld-label single-label">C11</span>
-                        </span>
+                        <img class="scheme-preview" :src="schemeImages.single" alt="Single busbar single-line diagram">
                     </button>
                 </div>
             </section>
@@ -64,6 +53,7 @@
                         <h3>Configure {{ schemeLabel(config.scheme) }}</h3>
                         <span class="configure-note">Changes are kept while this wizard is open.</span>
                     </div>
+                    <img class="configure-scheme-preview" :src="selectedSchemeImage" :alt="`${schemeLabel(config.scheme)} preview`">
                 </div>
 
                 <section class="form-section">
@@ -79,9 +69,7 @@
                         </label>
                         <label class="field">
                             <span>Naming policy</span>
-                            <el-select v-model="config.substation.namingPolicy" size="mini" disabled>
-                                <el-option label="TCVN 8215:2021" value="TCVN 8215:2021"></el-option>
-                            </el-select>
+                            <el-input v-model.trim="config.substation.namingPolicy" size="mini" placeholder="Enter naming policy"></el-input>
                         </label>
                         <label class="field">
                             <span>HV system voltage</span>
@@ -91,26 +79,29 @@
                             <span>MV system voltage</span>
                             <el-input v-model="config.substation.mvVoltage" size="mini" disabled><template slot="append">kV</template></el-input>
                         </label>
-                        <label class="field">
-                            <span>110 kV line bays</span>
-                            <el-input-number v-model="config.lineBayCount" :min="0" :max="30" size="mini" controls-position="right"></el-input-number>
-                        </label>
-                        <label class="field">
-                            <span>Power transformers</span>
-                            <el-input-number
-                                v-model="config.transformerCount"
-                                :min="config.scheme === 'h' ? 2 : 1"
-                                :max="4"
-                                size="mini"
-                                controls-position="right"
-                                @change="syncTransformers"
-                            ></el-input-number>
-                        </label>
                     </div>
                 </section>
 
-                <section class="form-section">
-                    <h4>Power transformers</h4>
+                <section class="form-section voltage-block">
+                    <div class="voltage-block-heading">
+                        <div><strong>110 kV:</strong><span>Primary system</span></div>
+                        <div class="quantity-grid">
+                            <label class="field">
+                                <span>Number of line bays</span>
+                                <el-select v-model="config.lineBayCount" size="mini">
+                                    <el-option v-for="count in lineBayOptions" :key="count" :label="count" :value="count"></el-option>
+                                </el-select>
+                            </label>
+                            <label class="field">
+                                <span>Number of transformers</span>
+                                <el-select v-model="config.transformerCount" size="mini" @change="syncTransformers">
+                                    <el-option v-for="count in transformerCountOptions" :key="count" :label="count" :value="count"></el-option>
+                                </el-select>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="block-section">
+                        <h4>Power transformers</h4>
                     <el-collapse v-model="openTransformers">
                         <el-collapse-item v-for="(transformer, index) in config.transformers" :key="index" :name="index">
                             <template slot="title">
@@ -121,30 +112,33 @@
                                 <el-button size="mini" icon="fa-solid fa-copy" @click.stop="copyTransformerOne(index)">Same configuration as T1</el-button>
                             </div>
                             <div class="form-grid four-columns">
-                                <label class="field"><span>Transformer type</span><el-select v-model="transformer.type" size="mini"><el-option label="Three-winding" value="Three-winding"></el-option></el-select></label>
-                                <label class="field"><span>Busbar</span><el-select v-model="transformer.busbar" size="mini"><el-option label="C11" value="C11"></el-option><el-option v-if="config.scheme === 'h'" label="C12" value="C12"></el-option></el-select></label>
+                                <label class="field"><span>Transformer type</span><el-select v-model="transformer.type" size="mini"><el-option v-for="type in transformerTypes" :key="type" :label="type" :value="type"></el-option></el-select></label>
+                                <label class="field"><span>Busbar</span><el-input :value="assignedBusbar(index)" size="mini" disabled></el-input></label>
                                 <label class="field"><span>22 kV voltage level</span><el-select v-model="transformer.mvLevel" size="mini"><el-option v-for="level in availableMvLevels" :key="level" :label="level" :value="level"></el-option></el-select></label>
-                                <label class="field"><span>Status</span><el-select v-model="transformer.status" size="mini"><el-option label="In operation" value="In operation"></el-option><el-option label="Spare" value="Spare"></el-option></el-select></label>
-                                <label class="field"><span>Manufacturer</span><el-input v-model="transformer.manufacturer" size="mini"></el-input></label>
-                                <label class="field"><span>Manufacturing year</span><el-input v-model="transformer.manufacturingYear" size="mini"></el-input></label>
-                                <label class="field"><span>Country of origin</span><el-input v-model="transformer.country" size="mini"></el-input></label>
+                                <label class="field"><span>Status</span><el-select v-model="transformer.status" size="mini"><el-option v-for="status in statusOptions" :key="status" :label="status" :value="status"></el-option></el-select></label>
+                                <label class="field"><span>Manufacturer</span><el-select v-model="transformer.manufacturer" size="mini" filterable clearable><el-option v-for="manufacturer in manufacturerOptions" :key="manufacturer" :label="manufacturer" :value="manufacturer"></el-option></el-select></label>
+                                <label class="field"><span>Manufacturing year</span><el-input :value="transformer.manufacturingYear" size="mini" maxlength="4" @input="updateNumeric(transformer, 'manufacturingYear', $event, true)"></el-input></label>
+                                <label class="field"><span>Country of origin</span><el-select v-model="transformer.country" size="mini" filterable clearable><el-option v-for="countryName in countryOptions" :key="countryName" :label="countryName" :value="countryName"></el-option></el-select></label>
                                 <label class="field"><span>Number of phase</span><el-input value="3" size="mini" disabled></el-input></label>
-                                <label class="field"><span>Rated power</span><el-input v-model="transformer.ratedPower" size="mini"><template slot="append">MVA</template></el-input></label>
+                                <label class="field"><span>Rated power</span><el-input :value="transformer.ratedPower" size="mini" @input="updateNumeric(transformer, 'ratedPower', $event)"><template slot="append">MVA</template></el-input></label>
                                 <label class="field"><span>Vector group</span><el-input v-model="transformer.vectorGroup" size="mini"></el-input></label>
-                                <label class="field"><span>Prim rated voltage</span><el-input v-model="transformer.primVoltage" size="mini"><template slot="append">kV</template></el-input></label>
-                                <label class="field"><span>Sec rated voltage</span><el-input v-model="transformer.secVoltage" size="mini"><template slot="append">kV</template></el-input></label>
-                                <label class="field"><span>Tert rated voltage</span><el-input v-model="transformer.tertVoltage" size="mini"><template slot="append">kV</template></el-input></label>
-                                <label class="field"><span>Tap changer type</span><el-select v-model="transformer.tapChangerType" size="mini"><el-option label="OLTC" value="OLTC"></el-option><el-option label="DETC" value="DETC"></el-option></el-select></label>
+                                <label class="field"><span>Prim rated voltage</span><el-input :value="transformer.primVoltage" size="mini" @input="updateNumeric(transformer, 'primVoltage', $event)"><template slot="append">kV</template></el-input></label>
+                                <label class="field"><span>Sec rated voltage</span><el-input :value="transformer.secVoltage" size="mini" @input="updateNumeric(transformer, 'secVoltage', $event)"><template slot="append">kV</template></el-input></label>
+                                <label class="field"><span>Tert rated voltage</span><el-input :value="transformer.tertVoltage" size="mini" @input="updateNumeric(transformer, 'tertVoltage', $event)"><template slot="append">kV</template></el-input></label>
+                                <label class="field"><span>Tap changer type</span><el-select v-model="transformer.tapChangerType" size="mini"><el-option label="OLTC" value="oltc"></el-option><el-option label="DETC" value="detc"></el-option></el-select></label>
                                 <label class="field"><span>Number of taps</span><el-input-number v-model="transformer.numberOfTaps" :min="1" :max="99" size="mini" controls-position="right"></el-input-number></label>
-                                <label class="field"><span>Principal tap voltage</span><el-input v-model="transformer.principalTapVoltage" size="mini"><template slot="append">V</template></el-input></label>
-                                <label class="field"><span>Tap step</span><el-input v-model="transformer.tapStep" size="mini"><template slot="append">%</template></el-input></label>
+                                <label class="field"><span>Principal tap voltage</span><el-input :value="transformer.principalTapVoltage" size="mini" @input="updateNumeric(transformer, 'principalTapVoltage', $event)"><template slot="append">V</template></el-input></label>
+                                <label class="field"><span>Tap step</span><el-input :value="transformer.tapStep" size="mini" @input="updateNumeric(transformer, 'tapStep', $event)"><template slot="append">%</template></el-input></label>
                             </div>
                         </el-collapse-item>
                     </el-collapse>
+                    </div>
                 </section>
 
-                <section class="form-section">
-                    <h4>22 kV voltage levels</h4>
+                <section class="form-section voltage-block">
+                    <div class="voltage-block-heading"><div><strong>22 kV:</strong><span>Distribution system</span></div></div>
+                    <div class="block-section">
+                    <h4>Voltage levels and bay quantities</h4>
                     <el-table :data="mvLevelRows" size="mini" border>
                         <el-table-column prop="name" label="Voltage level" width="140"></el-table-column>
                         <el-table-column label="Line bays"><template slot-scope="scope"><el-input-number v-model="scope.row.value.lineBays" :min="0" :max="40" size="mini" controls-position="right"></el-input-number></template></el-table-column>
@@ -152,10 +146,11 @@
                         <el-table-column label="Aux (TD) bays"><template slot-scope="scope"><el-input-number v-model="scope.row.value.auxBays" :min="0" :max="5" size="mini" controls-position="right"></el-input-number></template></el-table-column>
                         <el-table-column label="Capacitor bays"><template slot-scope="scope"><el-input-number v-model="scope.row.value.capacitorBays" :min="0" :max="5" size="mini" controls-position="right"></el-input-number></template></el-table-column>
                     </el-table>
+                    </div>
                 </section>
 
                 <section class="form-section presets-section">
-                    <h4>Optional equipment presets</h4>
+                    <h4>Equipment presets</h4>
                     <div class="equipment-switches">
                         <el-checkbox v-model="config.equipment.cb">Create CB</el-checkbox>
                         <el-checkbox v-model="config.equipment.ct">Create CT</el-checkbox>
@@ -275,6 +270,10 @@ import { buildSubstationBranch, countGeneratedNodes, validateGeneratedBranch } f
 import PresetCbForm from '@/views/SubstationWizard/components/PresetCbForm.vue'
 import PresetCtForm from '@/views/SubstationWizard/components/PresetCtForm.vue'
 import PresetVtForm from '@/views/SubstationWizard/components/PresetVtForm.vue'
+import MANUFACTURER_MAP from '@/views/ConstantAsset/manufacturer'
+import { country } from '@/views/ConstantAsset'
+import hSchemeImage from '@/assets/SubstationWizard/h-scheme.png'
+import singleBusbarImage from '@/assets/SubstationWizard/single-busbar.png'
 
 const defaultTransformer = (index, scheme) => ({
     type: 'Three-winding',
@@ -288,7 +287,7 @@ const defaultTransformer = (index, scheme) => ({
     primVoltage: '115',
     secVoltage: '22',
     tertVoltage: '35',
-    tapChangerType: 'OLTC',
+    tapChangerType: 'oltc',
     numberOfTaps: 19,
     principalTapVoltage: '115000',
     tapStep: '1.78',
@@ -323,7 +322,7 @@ const defaultCtPreset = (cores, taps, values = {}) => ({
 const defaultConfig = () => ({
     scheme: 'h',
     substation: { name: '', frequency: '50', hvVoltage: '110', mvVoltage: '22', namingPolicy: 'TCVN 8215:2021' },
-    lineBayCount: 4,
+    lineBayCount: 2,
     transformerCount: 2,
     transformers: [defaultTransformer(0, 'h'), defaultTransformer(1, 'h')],
     mvLevels: {
@@ -353,6 +352,11 @@ export default {
         return {
             activeStep: 0,
             config: defaultConfig(),
+            schemeImages: { h: hSchemeImage, single: singleBusbarImage },
+            manufacturerOptions: MANUFACTURER_MAP.TransformerDataDto || [],
+            countryOptions: country.default || [],
+            transformerTypes: ['Two-winding', 'Three-winding', 'Auto w/ tert', 'Auto w/o tert'],
+            statusOptions: ['In operation', 'Spare', 'Repair', 'Out of operation', 'Scrap'],
             openTransformers: [0, 1],
             generatedBranch: null,
             creating: false,
@@ -360,6 +364,17 @@ export default {
         }
     },
     computed: {
+        selectedSchemeImage() {
+            return this.schemeImages[this.config.scheme]
+        },
+        lineBayOptions() {
+            const min = this.config.scheme === 'h' ? 2 : 1
+            return Array.from({ length: 7 - min }, (_, index) => min + index)
+        },
+        transformerCountOptions() {
+            const min = this.config.scheme === 'h' ? 2 : 1
+            return Array.from({ length: 5 - min }, (_, index) => min + index)
+        },
         availableMvLevels() {
             return Array.from({ length: this.config.transformerCount }, (_, index) => `C4${index + 1}`)
         },
@@ -370,14 +385,33 @@ export default {
         },
         validationErrors() {
             const errors = []
+            const isPositiveNumber = (value) => value !== '' && value !== null && Number.isFinite(Number(value)) && Number(value) >= 0
             if (!this.config.substation.name.trim()) errors.push('Substation name is required.')
-            const min = this.config.scheme === 'h' ? 2 : 1
-            if (this.config.transformerCount < min || this.config.transformerCount > 4) errors.push(`Transformer quantity must be between ${min} and 4.`)
-            if (this.config.transformers.some((item) => !item.busbar || !item.mvLevel)) errors.push('Every transformer must have a 110 kV busbar and a 22 kV voltage level.')
+            if (!this.config.substation.namingPolicy.trim()) errors.push('Naming policy is required.')
+            const minTransformer = this.config.scheme === 'h' ? 2 : 1
+            const minLineBay = this.config.scheme === 'h' ? 2 : 1
+            if (this.config.transformerCount < minTransformer || this.config.transformerCount > 4) errors.push(`Transformer quantity must be between ${minTransformer} and 4.`)
+            if (this.config.lineBayCount < minLineBay || this.config.lineBayCount > 6) errors.push(`110 kV line bay quantity must be between ${minLineBay} and 6.`)
+            if (this.config.transformers.some((item) => !item.mvLevel)) errors.push('Every transformer must have a 22 kV voltage level.')
+            this.config.transformers.forEach((item, index) => {
+                const transformerName = `T${index + 1}`
+                const numericFields = [
+                    ['Rated power', item.ratedPower],
+                    ['Primary rated voltage', item.primVoltage],
+                    ['Secondary rated voltage', item.secVoltage],
+                    ['Tertiary rated voltage', item.tertVoltage],
+                    ['Principal tap voltage', item.principalTapVoltage],
+                    ['Tap step', item.tapStep]
+                ]
+                numericFields.forEach(([label, value]) => {
+                    if (!isPositiveNumber(value)) errors.push(`${transformerName}: ${label} must be a valid number.`)
+                })
+                if (item.manufacturingYear && !/^\d{4}$/.test(String(item.manufacturingYear))) errors.push(`${transformerName}: Manufacturing year must contain 4 digits.`)
+            })
             return errors
         },
         transformerReview() {
-            return this.config.transformers.map((item, index) => ({ name: `T${index + 1}`, busbar: item.busbar, bay: 131 + index, mvLevel: item.mvLevel, vectorGroup: item.vectorGroup }))
+            return this.config.transformers.map((item, index) => ({ name: `T${index + 1}`, busbar: this.assignedBusbar(index), bay: `${131 + index} / T${index + 1}`, mvLevel: item.mvLevel, vectorGroup: item.vectorGroup }))
         },
         cbReview() {
             return [
@@ -423,10 +457,14 @@ export default {
     },
     methods: {
         schemeLabel(scheme) { return scheme === 'h' ? 'H Scheme' : 'Single Busbar' },
+        assignedBusbar(index) {
+            return this.config.scheme === 'h' && index % 2 === 1 ? 'C12' : 'C11'
+        },
         selectScheme(scheme) {
             if (this.config.scheme === scheme) return
             this.config.scheme = scheme
             if (scheme === 'h' && this.config.transformerCount < 2) this.config.transformerCount = 2
+            if (scheme === 'h' && this.config.lineBayCount < 2) this.config.lineBayCount = 2
             this.syncTransformers(this.config.transformerCount)
         },
         syncTransformers(value) {
@@ -434,11 +472,21 @@ export default {
             while (this.config.transformers.length < count) this.config.transformers.push(defaultTransformer(this.config.transformers.length, this.config.scheme))
             this.config.transformers.splice(count)
             this.config.transformers.forEach((transformer, index) => {
-                if (this.config.scheme === 'single') transformer.busbar = 'C11'
+                transformer.busbar = this.assignedBusbar(index)
                 if (!transformer.mvLevel) transformer.mvLevel = `C4${index + 1}`
                 if (!this.config.mvLevels[transformer.mvLevel]) this.$set(this.config.mvLevels, transformer.mvLevel, { lineBays: 4, vtBays: 1, auxBays: 1, capacitorBays: 1 })
             })
             this.openTransformers = this.config.transformers.map((_, index) => index)
+        },
+        updateNumeric(target, key, value, integer = false) {
+            const source = String(value == null ? '' : value).replace(',', '.')
+            let sanitized = source.replace(integer ? /[^0-9]/g : /[^0-9.]/g, '')
+            if (!integer) {
+                const decimalIndex = sanitized.indexOf('.')
+                if (decimalIndex >= 0) sanitized = sanitized.slice(0, decimalIndex + 1) + sanitized.slice(decimalIndex + 1).replace(/\./g, '')
+                if (sanitized.startsWith('.')) sanitized = `0${sanitized}`
+            }
+            this.$set(target, key, sanitized)
         },
         copyTransformerOne(index) {
             const placement = { busbar: this.config.transformers[index].busbar, mvLevel: this.config.transformers[index].mvLevel }
@@ -505,27 +553,26 @@ export default {
 .section-heading p, .review-header p, .result-page p { margin: 0; color: #7a8492; }
 .section-heading.compact { margin-bottom: 10px; }
 .scheme-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 18px 0 24px; }
-.scheme-option { position: relative; min-height: 230px; padding: 18px; text-align: left; background: #fff; border: 1px solid #cfd7e3; border-radius: 6px; cursor: pointer; color: #273142; }
+.scheme-option { position: relative; min-height: 300px; padding: 18px; text-align: left; background: #fff; border: 1px solid #cfd7e3; border-radius: 6px; cursor: pointer; color: #273142; }
 .scheme-option.selected { border: 2px solid #0b43b8; padding: 17px; box-shadow: 0 0 0 2px rgba(11, 67, 184, .08); }
 .scheme-title { display: block; font-size: 17px; font-weight: 700; }
 .scheme-note { display: block; margin-top: 4px; color: #77808d; }
-.sld { position: relative; display: block; height: 140px; margin-top: 14px; background: #f7f9fc; border: 1px solid #e2e7ef; }
-.bus { position: absolute; top: 22px; bottom: 28px; width: 4px; background: #173f77; }
-.bus-left { left: 31%; }.bus-right { right: 31%; }
-.coupler { position: absolute; top: 67px; left: 31%; right: 31%; height: 3px; background: #df001b; }
-.coupler::before, .coupler::after { content: ''; position: absolute; top: -5px; width: 10px; height: 10px; background: #fff; border: 2px solid #173f77; border-radius: 50%; }
-.coupler::before { left: -5px; }.coupler::after { right: -5px; }
-.sld-label { position: absolute; font-size: 12px; font-weight: 700; }.label-left { left: 25%; bottom: 8px; }.label-right { right: 25%; bottom: 8px; }.label-coupler { top: 48px; left: calc(50% - 11px); color: #c80019; }
-.single-bus { position: absolute; top: 55px; left: 10%; right: 10%; height: 4px; background: #173f77; }
-.single-feeder { position: absolute; top: 55px; width: 3px; height: 58px; background: #173f77; }
-.single-label { left: 47%; top: 25px; }
+.scheme-preview { display: block; width: min(100%, 520px); height: 210px; margin: 14px auto 0; object-fit: contain; background: #fff; border: 1px solid #e2e7ef; }
 .form-section { border-top: 1px solid #dfe4ec; padding-top: 16px; margin-top: 16px; }
 .configure-toolbar { position: sticky; top: 0; z-index: 3; padding: 8px 0 12px; background: #fff; border-bottom: 1px solid #dfe4ec; }
+.configure-scheme-preview { width: 120px; height: 72px; object-fit: contain; border: 1px solid #dfe4ec; background: #fff; }
 .configure-note { color: #7a8492; font-size: 12px; }
 .form-section h4, .review-panel h4 { margin: 0 0 12px; font-size: 14px; color: #2d3748; }
 .form-grid { display: grid; gap: 12px 16px; }.four-columns { grid-template-columns: repeat(4, minmax(0, 1fr)); }.span-two { grid-column: span 2; }
 .field { display: flex; min-width: 0; flex-direction: column; gap: 5px; color: #555f6d; font-size: 12px; }.field > span b { color: #d9001b; }
 .field .el-select, .field .el-input-number { width: 100%; }
+.voltage-block { overflow: hidden; padding-top: 0; border: 1px solid #d8e0eb; border-radius: 6px; }
+.voltage-block-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 12px 16px; background: #f2f6fc; border-bottom: 1px solid #d8e0eb; }
+.voltage-block-heading > div:first-child { display: flex; flex-direction: column; gap: 2px; }
+.voltage-block-heading strong { color: #123f8c; font-size: 17px; }
+.voltage-block-heading span { color: #77808d; font-size: 11px; }
+.quantity-grid { display: grid; grid-template-columns: repeat(2, 190px); gap: 12px; }
+.block-section { padding: 14px 16px 16px; }
 .collapse-summary { margin-left: 14px; color: #7a8492; font-weight: 400; }
 .inline-actions { display: flex; justify-content: flex-end; margin-bottom: 10px; }
 .equipment-switches { display: flex; gap: 24px; margin-bottom: 14px; }
@@ -546,5 +593,6 @@ export default {
 .tree-preview { border-left: 1px solid #dfe4ec; padding-left: 16px; }.tree-root, .tree-level > div { display: flex; align-items: center; gap: 8px; padding: 8px; }.tree-root { background: #edf3fd; }.tree-level { margin-left: 18px; border-left: 1px solid #aeb9c8; }.tree-level > div span { margin-left: auto; color: #7a8492; font-size: 12px; }.tree-level p { margin: 0 8px 8px 31px; color: #5d6775; font-size: 12px; line-height: 1.6; }
 .wizard-footer { display: flex; justify-content: flex-end; gap: 8px; }
 .result-page { text-align: center; padding-top: 54px; }.result-mark { color: #3a9134; font-size: 58px; }.result-actions { display: flex; justify-content: center; gap: 8px; margin-top: 24px; }.json-preview { max-height: 430px; margin-top: 22px; padding: 14px; overflow: auto; text-align: left; color: #dce8f5; background: #1d2735; border-radius: 4px; font-size: 11px; }
-@media (max-width: 1050px) { .four-columns { grid-template-columns: repeat(2, minmax(0, 1fr)); }.review-layout, .review-detail-grid { grid-template-columns: 1fr; }.preset-identity-grid { grid-template-columns: 1fr; }.tree-preview { border-left: 0; padding-left: 0; }.review-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 1050px) { .four-columns { grid-template-columns: repeat(2, minmax(0, 1fr)); }.review-layout, .review-detail-grid { grid-template-columns: 1fr; }.preset-identity-grid { grid-template-columns: 1fr; }.tree-preview { border-left: 0; padding-left: 0; }.review-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }.quantity-grid { grid-template-columns: repeat(2, minmax(140px, 1fr)); } }
+@media (max-width: 720px) { .scheme-grid { grid-template-columns: 1fr; }.configure-scheme-preview { display: none; }.voltage-block-heading { align-items: stretch; flex-direction: column; }.quantity-grid { grid-template-columns: 1fr; } }
 </style>

@@ -215,7 +215,7 @@ export default {
             this.$set(this.compareReference, key, snapshot)
         },
         updateAttachmentOverView(attachment) {
-            this.attachmentData = attachment
+            this.transformerJobDto.attachmentData = attachment
         },
         loadMapForView() {
         }

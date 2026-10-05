@@ -101,7 +101,7 @@ export default {
                         // Liên kết ownership thuộc bản export cũ; bản import sẽ tạo lại
                         // cho tài khoản hiện tại sau khi node được insert thành công.
                         item[key] = ''
-                    } else if (typeof current === 'string' && hasUserSuffix(current) && getUserSuffix(current) !== String(userId)) {
+                    } else if (isLocalMrid(current) && hasUserSuffix(current) && getUserSuffix(current) !== String(userId)) {
                         item[key] = replaceUserSuffix(current, userId)
                     } else if (isLocalMrid(current) && !hasUserSuffix(current)) {
                         // mrid CÓ hậu tố loại nhưng CHƯA có hậu tố người dùng — file export
@@ -170,11 +170,13 @@ export default {
         },
 
         async _pickFileAndImport(targetNode) {
+            let stagingId = null
             try {
                 console.log('%c[IMPORT] ===== START =====', 'color:#2196F3;font-weight:bold')
                 console.log('[IMPORT] targetNode:', JSON.stringify({ mode: targetNode && targetNode.mode, mrid: targetNode && targetNode.mrid, name: targetNode && targetNode.name }))
 
-                const fileResult = await window.electronAPI.importJSON()
+                const fileResult = await window.electronAPI.importTreePackage()
+                stagingId = fileResult && fileResult.stagingId
                 console.log('[IMPORT] fileResult.success:', fileResult && fileResult.success, '| message:', fileResult && fileResult.message)
                 console.log('[IMPORT] typeof fileResult.data:', typeof (fileResult && fileResult.data), '| isArray:', Array.isArray(fileResult && fileResult.data))
 
@@ -187,7 +189,12 @@ export default {
                 let content = fileResult.data
                 if (typeof content === 'string') {
                     try { content = JSON.parse(content) }
-                    catch (e) { console.error('[IMPORT] JSON.parse failed:', e); this.$message.error('Invalid JSON file'); return }
+                    catch (e) {
+                        console.error('[IMPORT] JSON.parse failed:', e)
+                        this.$message.error('Invalid tree package')
+                        await this._cleanupTreeImport(stagingId)
+                        return
+                    }
                 }
                 console.log('[IMPORT] content top keys:', content && Object.keys(content))
 
@@ -202,11 +209,15 @@ export default {
                     console.log('[IMPORT] roots[0].type:', roots[0].type, '| roots[0] keys:', Object.keys(roots[0]))
                 }
                 if (!roots || roots.length === 0) {
-                    this.$message.warning('JSON file is empty')
+                    this.$message.warning('Tree package is empty')
+                    await this._cleanupTreeImport(stagingId)
                     return
                 }
                 // Kiểm chính sách id TRƯỚC khi đổi hậu tố — không hiểu file thì không sửa nó.
-                if (!this._checkImportIdPolicy(content)) return
+                if (!this._checkImportIdPolicy(content)) {
+                    await this._cleanupTreeImport(stagingId)
+                    return
+                }
 
                 content = this._retargetImportedJsonOwnership(content, this.$store.state.user.user_id)
 
@@ -215,21 +226,32 @@ export default {
                 const graftInfo = this._computeGraftInfo(roots, targetNode)
                 if (graftInfo && graftInfo.needConfirm) {
                     console.log('[IMPORT] cần ghép cấp → mở graft dialog', graftInfo)
-                    this.pendingImportContext = { fileContent: content, targetNode }
+                    this.pendingImportContext = { fileContent: content, targetNode, stagingId }
                     this.graftInfo = graftInfo
                     this.graftDialogVisible = true
                     return   // chờ người dùng confirm → _proceedAfterGraft
                 }
                 if (graftInfo && graftInfo.noMatch) {
                     this.$message.warning('No matching nodes to import into the selected target.')
+                    await this._cleanupTreeImport(stagingId)
                     return
                 }
 
                 // Cấp khớp sẵn → tiếp tục scan conflict + import
-                await this._proceedImport(content, targetNode, roots)
+                await this._proceedImport(content, targetNode, roots, stagingId)
             } catch (err) {
                 console.error('[IMPORT] Error opening/reading file:', err)
-                this.$message.error('An error occurred while importing JSON')
+                await this._cleanupTreeImport(stagingId)
+                this.$message.error('An error occurred while importing the tree package')
+            }
+        },
+
+        async _cleanupTreeImport(stagingId) {
+            if (!stagingId) return
+            try {
+                await window.electronAPI.cleanupTreeImport(stagingId)
+            } catch (error) {
+                console.warn('[IMPORT] Could not clean staging directory:', error)
             }
         },
 
@@ -259,18 +281,21 @@ export default {
             this.graftDialogVisible = false
             const ctx = this.pendingImportContext
             if (!ctx) return
+            this.pendingImportContext = null
             const roots = Array.isArray(ctx.fileContent) ? ctx.fileContent : (ctx.fileContent && ctx.fileContent.roots)
-            await this._proceedImport(ctx.fileContent, ctx.targetNode, roots)
+            await this._proceedImport(ctx.fileContent, ctx.targetNode, roots, ctx.stagingId)
         },
 
-        handleGraftCancel() {
+        async handleGraftCancel() {
             this.graftDialogVisible = false
+            const ctx = this.pendingImportContext
             this.pendingImportContext = null
             this.graftInfo = null
+            await this._cleanupTreeImport(ctx && ctx.stagingId)
         },
 
         // Scan conflict mrid → dialog conflict hoặc import thẳng.
-        async _proceedImport(content, targetNode, roots) {
+        async _proceedImport(content, targetNode, roots, stagingId = null) {
             try {
                 // Chỉ scan trùng trên các nhánh THỰC SỰ sẽ import (đã ghép cấp),
                 // bỏ qua org/sub cấp cao đã loại — nếu không Resolve mRID Conflicts
@@ -313,18 +338,27 @@ export default {
                     console.log('[IMPORT] CÓ trùng cùng nhánh → mở dialog', askConflicts.length)
                     this.pendingConflicts = askConflicts
                     this.pendingAutoDecisions = autoDecisions
-                    this.pendingImportContext = { fileContent: content, targetNode }
+                    this.pendingImportContext = { fileContent: content, targetNode, stagingId }
                     this.conflictDialogVisible = true
                 } else if (Object.keys(autoDecisions).length > 0) {
                     console.log('[IMPORT] tất cả trùng đều khác nhánh → import thẳng với auto create-new')
-                    await this.importTreeFromJSON(content, targetNode, autoDecisions)
+                    try {
+                        await this.importTreeFromJSON(content, targetNode, autoDecisions)
+                    } finally {
+                        await this._cleanupTreeImport(stagingId)
+                    }
                 } else {
                     console.log('[IMPORT] KHÔNG trùng → import thẳng')
-                    await this.importTreeFromJSON(content, targetNode, null)
+                    try {
+                        await this.importTreeFromJSON(content, targetNode, null)
+                    } finally {
+                        await this._cleanupTreeImport(stagingId)
+                    }
                 }
             } catch (err) {
                 console.error('[IMPORT] _proceedImport error:', err)
-                this.$message.error('An error occurred while importing JSON')
+                await this._cleanupTreeImport(stagingId)
+                this.$message.error('An error occurred while importing the tree package')
             }
         },
 
@@ -338,15 +372,21 @@ export default {
             this.pendingAutoDecisions = null
             this.pendingImportContext = null
             if (!ctx) return
-            await this.importTreeFromJSON(ctx.fileContent, ctx.targetNode, merged)
+            try {
+                await this.importTreeFromJSON(ctx.fileContent, ctx.targetNode, merged)
+            } finally {
+                await this._cleanupTreeImport(ctx.stagingId)
+            }
         },
 
         // Dialog xung dot: user Cancel -> huy
-        handleConflictCancel() {
+        async handleConflictCancel() {
             this.conflictDialogVisible = false
+            const ctx = this.pendingImportContext
             this.pendingConflicts = []
             this.pendingAutoDecisions = null
             this.pendingImportContext = null
+            await this._cleanupTreeImport(ctx && ctx.stagingId)
         },
 
         // Import nguyen cay vao targetNode (nhan content da parse + decisions)
@@ -379,12 +419,11 @@ export default {
                     let entity, oldEntity, rs
                     try {
                         entity = def.map(dto)
-                        // CRITICAL: asset CRUD gọi JSON.parse(entity.attachment.path) rồi
-                        // syncFilesWithDeletion(srcList) để đồng bộ FILE đính kèm. Khi import
-                        // sang nhánh/máy mới, file cũ KHÔNG tồn tại → sync fail → insert trả
-                        // success:false ("fail"). Tạo mới không kèm file → ÉP path='[]'.
+                        // Tree package import rewrites attachment/nameplate paths to files
+                        // in its staging directory. Asset CRUD copies those files into the
+                        // destination owner's attachment directory and persists new paths.
                         if (!entity.attachment) entity.attachment = {}
-                        entity.attachment.path = '[]'
+                        if (!entity.attachment.path) entity.attachment.path = '[]'
                         // Đảm bảo mọi object con (sẽ insert vào identified_object) có mrid.
                         // Một số sub-object trong entity (voltage/baseVoltage/winding...) có
                         // mrid=null → insert vi phạm NOT NULL: identified_object.mrid. Sinh mrid

@@ -187,6 +187,16 @@ export const mapDtoToServer = (dto) => {
     console.log('Mapping DTO to Server format:', dto)
     if (!dto) return null
 
+    const configuredRows = Array.isArray(dto.vt_Configuration?.dataVT)
+        ? dto.vt_Configuration.dataVT
+        : []
+    const sourceRows = configuredRows.length ? configuredRows : [{}]
+    const configuredWindings = Number(dto.vt_Configuration?.windings)
+    const inferredWindings = Number.isInteger(configuredWindings) && configuredWindings > 0
+        ? configuredWindings
+        : sourceRows.length
+    const windings = Math.min(5, Math.max(sourceRows.length, inferredWindings, 1))
+
     return {
         VoltageTransformer: {
             mrid: dto.properties?.mrid || null,
@@ -273,8 +283,8 @@ export const mapDtoToServer = (dto) => {
             attachmentId:        dto.attachmentId        || null,
 
             vt_Configuration: {
-                windings: dto.vt_Configuration?.windings || 0,
-                dataVT: (dto.vt_Configuration?.dataVT || []).map((vt, index) => {
+                windings,
+                dataVT: sourceRows.map((vt, index) => {
                     const usrVoltage = splitMultiplierUnit(vt.usr_rated_voltage)
                     const burden = splitMultiplierUnit(vt.rated_burden)
 

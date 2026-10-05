@@ -96,6 +96,7 @@ export const updateDatabase = async () => {
         await databaseInitFunc.syncSchemaTables(db)
         await databaseInitFunc.ensureTransformerVectorGroupColumns(db)
         await databaseInitFunc.ensureSubstationOperatingDateColumn(db)
+        await databaseInitFunc.ensureCtCoreInfoClassRatingColumns(db)
         const sfraMigration = await migrateLegacySfraTraces(db)
         if (sfraMigration.migrated > 0) {
             console.log(`[DB] Migrated ${sfraMigration.migrated} legacy SFRA trace(s)`)

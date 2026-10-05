@@ -23,7 +23,7 @@
                 <div class="table-scroll"><table v-if="tableData && Array.isArray(tableData)" class="table-strip-input-data test-table"
                     style="width: 100%; font-size: 12px;">
                     <thead>
-                        <th>Phase</th>
+                        <th class="phase-col">Phase</th>
                         <th>Trip coil</th>
                         <th>Interrupter</th>
                         <th>Opening time (ms)</th>
@@ -34,7 +34,7 @@
                     </thead>
                     <tbody>
                         <tr v-for="(item, index) in tableData" :key="index">
-                            <td>
+                            <td class="phase-col">
                                 <div class="phase-select-cell">
                                     <el-select size="mini" v-model="item.phase.value" placeholder="Phase"><el-option label="A" value="A"></el-option><el-option label="B" value="B"></el-option><el-option label="C" value="C"></el-option></el-select>
                                     <div

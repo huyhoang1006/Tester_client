@@ -171,7 +171,10 @@ export const mapDtoToServer = (dto, ownerType) => {
         },
 
         core: {
-            assetType: ASSET_TYPE_TO_SERVER[p.type] || p.type || null,
+            // Legacy/imported disconnectors may not have stored a type. The
+            // server requires one, and horizontal-knee is the wizard/default
+            // topology used by this client.
+            assetType: ASSET_TYPE_TO_SERVER[p.type] || p.type || 'HORIZONTAL_KNEE',
 
             ratedVoltage: numD(r.rated_voltage?.value),
             ratedVoltageUnit: joinUnit(r.rated_voltage?.unit),

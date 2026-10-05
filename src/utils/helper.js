@@ -1,6 +1,11 @@
 /* eslint-disable */
 import store from '@/store'
 import client from './client'
+import {
+    clearSsoTokens,
+    getStoredAccessToken,
+    storeSsoTokens
+} from '@/utils/sso'
 
 let interceptorAuthenticate = null
 
@@ -18,11 +23,12 @@ export const initApp = () => {
 
     // 2. Khôi phục thông tin User & Token từ LocalStorage
     const userStr = localStorage.getItem('user')
-    const token = localStorage.getItem('token')
+    const token = getStoredAccessToken()
     const role = localStorage.getItem('role')
     // const refreshToken = localStorage.getItem('refresh_token') // Nếu sau này cần dùng refresh token
 
     if (userStr && token) {
+        storeSsoTokens({accessToken: token})
         // Parse thông tin user
         const userData = JSON.parse(userStr)
 
@@ -40,76 +46,54 @@ export const initApp = () => {
     }
 }
 
-export const afterLogin = (remember, response) => {
-    // response chính là cục JSON bạn cung cấp
+export const afterSsoLogin = (ssoToken) => {
+    const accessToken = ssoToken && ssoToken.accessToken
+    const refreshToken = ssoToken && ssoToken.refreshToken
+    const tokenUser = (ssoToken && ssoToken.tokenUser) || {}
 
-    // 1. Trích xuất dữ liệu từ Response mới
-    const accessToken = response.access_token
-    const refreshToken = response.refresh_token
+    if (!accessToken) throw new Error('SSO response does not contain an access token')
 
-    // Thông tin user nằm trong object 'actionUser'
-    const userInfo = response.actionUser
-
-    // Role nằm trong mảng 'usersGroups'. Lấy role đầu tiên hoặc xử lý theo logic dự án
-    let roleCode = ''
-    if (userInfo && userInfo.usersGroups && userInfo.usersGroups.length > 0) {
-        roleCode = userInfo.usersGroups[0].coded // Ví dụ: "ROLE_TESTER"
+    const username = tokenUser.username || tokenUser.name || tokenUser.sub || 'sso-user'
+    const roles = (Array.isArray(tokenUser.roles) ? tokenUser.roles : [])
+        .map(role => typeof role === 'string' ? role : (role.coded || role.code || role.name || ''))
+        .filter(Boolean)
+    const authorities = roles.map(role => role.toUpperCase())
+    const roleCode = roles[0] || null
+    const userId = tokenUser.id ?? tokenUser.userId ?? tokenUser.user_id ?? username
+    const user = {
+        user_id: userId,
+        name: username,
+        username,
+        email: tokenUser.email || '',
+        roles,
+        authorities,
+        role: roleCode,
+        token_type: 'Bearer',
+        access_token: accessToken,
+        refresh_token: refreshToken || null,
+        exp: ssoToken.expiresIn || ssoToken.expires_in || null
     }
 
-    // 2. Lưu vào LocalStorage (Nếu user chọn Remember hoặc mặc định lưu để F5 không mất session)
-    // Lưu ý: Token luôn cần lưu để F5 không bị logout, biến 'remember' thường chỉ dùng để quyết định thời gian lưu cookie,
-    // nhưng với localStorage thì ta cứ lưu, logout thì xóa.
+    storeSsoTokens({accessToken, refreshToken})
+    localStorage.setItem('user', JSON.stringify(user))
+    localStorage.setItem('role', roleCode || '')
+    localStorage.setItem('authInfo', JSON.stringify(ssoToken))
 
-    /**
-     * {"createdAt":1759506292729,"is_active":1,"usersGroups":[{"id":4,"named":"Role Tester","coded":"ROLE_TESTER"
-     * ,"namedDescription":"Role For Tester Client","isActive":1,"created_at":"03-10-2025 03:44:52"}],
-     * "id":5,"is_verified":1,"email":"evn@mail.com","username":"EVN_HCM"}
-     */
-
-    localStorage.setItem('token', accessToken)
-    localStorage.setItem('refresh_token', refreshToken) // Lưu cái này để làm tính năng refresh token sau này
-    localStorage.setItem(
-        'user',
-        JSON.stringify({
-            user_id: userInfo.id,
-            name: userInfo.username,
-            email: userInfo.email,
-            role: roleCode,
-            token_type: response.token_type,
-            refresh_token: refreshToken,
-            access_token: accessToken,
-            exp: response.expires_in,
-            name: userInfo.username
-        })
-    ) // Chỉ lưu phần info user, không lưu cả cục response to
-    localStorage.setItem('role', roleCode)
-
-    // 3. Cập nhật vào Store (Vuex)
-    store.dispatch('setUser', {
-        user_id: userInfo.id,
-        name: userInfo.username,
-        email: userInfo.email,
-        role: roleCode,
-        token_type: response.token_type,
-        refresh_token: refreshToken,
-        access_token: accessToken,
-        exp: response.expires_in,
-        name: userInfo.username
-    })
+    store.dispatch('setUser', user)
     store.dispatch('setToken', accessToken)
     store.dispatch('setRole', roleCode)
     store.dispatch('setIsAuthenticated', true)
-
-    // 4. Thiết lập Interceptor cho axios client
     setupInterceptor(accessToken)
+
+    return user
 }
 
 export const afterLogout = () => {
     // Xóa sạch LocalStorage
     localStorage.removeItem('user')
-    localStorage.removeItem('token')
-    localStorage.removeItem('refresh_token')
+    clearSsoTokens()
     localStorage.removeItem('role')
+    localStorage.removeItem('authInfo')
 
     // Reset Store
     store.dispatch('setUser', null)
@@ -132,7 +116,7 @@ export const setServerAddr = ({loginDomain, serviceDomain}) => {
     client.defaults.baseURL = serviceDomain
 }
 
-// Hàm phụ để cài đặt Interceptor (tránh lặp code giữa initApp và afterLogin)
+// Hàm phụ để cài đặt Interceptor (tránh lặp code giữa initApp và afterSsoLogin)
 function setupInterceptor(token) {
     // Xóa interceptor cũ nếu tồn tại để tránh bị duplicate header
     if (interceptorAuthenticate !== null) {

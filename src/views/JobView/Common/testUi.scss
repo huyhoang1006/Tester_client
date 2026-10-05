@@ -166,6 +166,15 @@
     width: 44px;
 }
 
+/* Keep the phase label, select arrow and colour marker readable. On narrow
+   layouts the table scrolls horizontally instead of collapsing this column. */
+.test-table th.phase-col,
+.test-table td.phase-col {
+    width: 108px;
+    min-width: 108px;
+    box-sizing: border-box;
+}
+
 /* Nút +/xóa trên header */
 .th-btn {
     cursor: pointer;
