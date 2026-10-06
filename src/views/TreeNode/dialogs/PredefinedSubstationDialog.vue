@@ -69,7 +69,9 @@
                         </label>
                         <label class="field">
                             <span>Naming policy</span>
-                            <el-input v-model.trim="config.substation.namingPolicy" size="mini" placeholder="Enter naming policy"></el-input>
+                            <el-select v-model="config.substation.namingPolicy" size="mini" placeholder="Select naming policy">
+                                <el-option v-for="policy in namingPolicyOptions" :key="policy" :label="policy" :value="policy"></el-option>
+                            </el-select>
                         </label>
                         <label class="field">
                             <span>HV system voltage</span>
@@ -112,7 +114,7 @@
                                 <el-button size="mini" icon="fa-solid fa-copy" @click.stop="copyTransformerOne(index)">Same configuration as T1</el-button>
                             </div>
                             <div class="form-grid four-columns">
-                                <label class="field"><span>Transformer type</span><el-select v-model="transformer.type" size="mini"><el-option v-for="type in transformerTypes" :key="type" :label="type" :value="type"></el-option></el-select></label>
+                                <label class="field"><span>Transformer type</span><el-select v-model="transformer.type" size="mini" @change="handleTransformerTypeChange(transformer)"><el-option v-for="type in transformerTypes" :key="type" :label="type" :value="type"></el-option></el-select></label>
                                 <label class="field"><span>Busbar</span><el-input :value="assignedBusbar(index)" size="mini" disabled></el-input></label>
                                 <label class="field"><span>22 kV voltage level</span><el-select v-model="transformer.mvLevel" size="mini"><el-option v-for="level in availableMvLevels" :key="level" :label="level" :value="level"></el-option></el-select></label>
                                 <label class="field"><span>Status</span><el-select v-model="transformer.status" size="mini"><el-option v-for="status in statusOptions" :key="status" :label="status" :value="status"></el-option></el-select></label>
@@ -121,10 +123,10 @@
                                 <label class="field"><span>Country of origin</span><el-select v-model="transformer.country" size="mini" filterable clearable><el-option v-for="countryName in countryOptions" :key="countryName" :label="countryName" :value="countryName"></el-option></el-select></label>
                                 <label class="field"><span>Number of phase</span><el-input value="3" size="mini" disabled></el-input></label>
                                 <label class="field"><span>Rated power</span><el-input :value="transformer.ratedPower" size="mini" @input="updateNumeric(transformer, 'ratedPower', $event)"><template slot="append">MVA</template></el-input></label>
-                                <label class="field"><span>Vector group</span><el-input v-model="transformer.vectorGroup" size="mini"></el-input></label>
+                                <label class="field"><span>Vector group</span><el-input :value="transformer.vectorGroup" size="mini" readonly placeholder="Select vector group" @focus="openVectorGroup(index)"><el-button slot="append" icon="fa-solid fa-diagram-project" @click="openVectorGroup(index)">Select</el-button></el-input></label>
                                 <label class="field"><span>Prim rated voltage</span><el-input :value="transformer.primVoltage" size="mini" @input="updateNumeric(transformer, 'primVoltage', $event)"><template slot="append">kV</template></el-input></label>
                                 <label class="field"><span>Sec rated voltage</span><el-input :value="transformer.secVoltage" size="mini" @input="updateNumeric(transformer, 'secVoltage', $event)"><template slot="append">kV</template></el-input></label>
-                                <label class="field"><span>Tert rated voltage</span><el-input :value="transformer.tertVoltage" size="mini" @input="updateNumeric(transformer, 'tertVoltage', $event)"><template slot="append">kV</template></el-input></label>
+                                <label v-if="hasTertiaryWinding(transformer.type)" class="field"><span>Tert rated voltage</span><el-input :value="transformer.tertVoltage" size="mini" @input="updateNumeric(transformer, 'tertVoltage', $event)"><template slot="append">kV</template></el-input></label>
                                 <label class="field"><span>Tap changer type</span><el-select v-model="transformer.tapChangerType" size="mini"><el-option label="OLTC" value="oltc"></el-option><el-option label="DETC" value="detc"></el-option></el-select></label>
                                 <label class="field"><span>Number of taps</span><el-input-number v-model="transformer.numberOfTaps" :min="1" :max="99" size="mini" controls-position="right"></el-input-number></label>
                                 <label class="field"><span>Principal tap voltage</span><el-input :value="transformer.principalTapVoltage" size="mini" @input="updateNumeric(transformer, 'principalTapVoltage', $event)"><template slot="append">V</template></el-input></label>
@@ -256,6 +258,17 @@
             </section>
         </div>
 
+        <vector-group
+            v-if="activeVectorTransformer"
+            ref="vectorGroup"
+            :open-dialog="vectorGroupDialogVisible"
+            :asset_type="activeVectorTransformer.type"
+            asset_phase="3"
+            :asset_winding_config="activeVectorTransformer.vectorGroupConfig"
+            @close-dialog="confirmVectorGroup"
+            @cancel-dialog="closeVectorGroup"
+        ></vector-group>
+
         <span v-if="activeStep < 3" slot="footer" class="wizard-footer">
             <el-button size="mini" @click="activeStep === 0 ? closeDialog() : previousStep()">{{ activeStep === 0 ? 'Cancel' : 'Back' }}</el-button>
             <el-button v-if="activeStep === 0" size="mini" type="primary" @click="activeStep = 1">Next</el-button>
@@ -270,30 +283,42 @@ import { buildSubstationBranch, countGeneratedNodes, validateGeneratedBranch } f
 import PresetCbForm from '@/views/SubstationWizard/components/PresetCbForm.vue'
 import PresetCtForm from '@/views/SubstationWizard/components/PresetCtForm.vue'
 import PresetVtForm from '@/views/SubstationWizard/components/PresetVtForm.vue'
+import VectorGroup from '@/views/AssetView/Transformer/components/VectorGroup/index.vue'
+import {
+    copyVectorGroup,
+    createDefaultVectorGroup,
+    formatVectorGroup,
+    transformerHasTertiary
+} from '@/views/SubstationWizard/services/transformerConfiguration'
 import MANUFACTURER_MAP from '@/views/ConstantAsset/manufacturer'
 import { country } from '@/views/ConstantAsset'
 import hSchemeImage from '@/assets/SubstationWizard/h-scheme.png'
 import singleBusbarImage from '@/assets/SubstationWizard/single-busbar.png'
 
-const defaultTransformer = (index, scheme) => ({
-    type: 'Three-winding',
-    manufacturer: '',
-    model: '',
-    manufacturingYear: '',
-    country: '',
-    status: 'In operation',
-    ratedPower: '63',
-    vectorGroup: 'YnYn0D11',
-    primVoltage: '115',
-    secVoltage: '22',
-    tertVoltage: '35',
-    tapChangerType: 'oltc',
-    numberOfTaps: 19,
-    principalTapVoltage: '115000',
-    tapStep: '1.78',
-    busbar: scheme === 'h' && index % 2 === 1 ? 'C12' : 'C11',
-    mvLevel: `C4${index + 1}`
-})
+const defaultTransformer = (index, scheme) => {
+    const type = 'Three-winding'
+    const vectorGroupConfig = createDefaultVectorGroup(type)
+    return {
+        type,
+        manufacturer: '',
+        model: '',
+        manufacturingYear: '',
+        country: '',
+        status: 'In operation',
+        ratedPower: '63',
+        vectorGroup: formatVectorGroup(vectorGroupConfig),
+        vectorGroupConfig,
+        primVoltage: '115',
+        secVoltage: '22',
+        tertVoltage: '35',
+        tapChangerType: 'oltc',
+        numberOfTaps: 19,
+        principalTapVoltage: '115000',
+        tapStep: '1.78',
+        busbar: scheme === 'h' && index % 2 === 1 ? 'C12' : 'C11',
+        mvLevel: `C4${index + 1}`
+    }
+}
 
 const defaultCoreProfile = (taps, fullIpn = '', fullIsn = '', mainTaps = []) => ({
     taps,
@@ -343,7 +368,7 @@ const defaultConfig = () => ({
 
 export default {
     name: 'PredefinedSubstationDialog',
-    components: { PresetCbForm, PresetCtForm, PresetVtForm },
+    components: { PresetCbForm, PresetCtForm, PresetVtForm, VectorGroup },
     props: {
         visible: { type: Boolean, default: false },
         uuidFactory: { type: Function, required: true }
@@ -355,12 +380,15 @@ export default {
             schemeImages: { h: hSchemeImage, single: singleBusbarImage },
             manufacturerOptions: MANUFACTURER_MAP.TransformerDataDto || [],
             countryOptions: country.default || [],
+            namingPolicyOptions: ['TCVN 8215:2021'],
             transformerTypes: ['Two-winding', 'Three-winding', 'Auto w/ tert', 'Auto w/o tert'],
             statusOptions: ['In operation', 'Spare', 'Repair', 'Out of operation', 'Scrap'],
             openTransformers: [0, 1],
             generatedBranch: null,
             creating: false,
-            showJson: false
+            showJson: false,
+            vectorGroupDialogVisible: false,
+            vectorGroupTransformerIndex: null
         }
     },
     computed: {
@@ -377,6 +405,10 @@ export default {
         },
         availableMvLevels() {
             return Array.from({ length: this.config.transformerCount }, (_, index) => `C4${index + 1}`)
+        },
+        activeVectorTransformer() {
+            if (this.vectorGroupTransformerIndex === null) return null
+            return this.config.transformers[this.vectorGroupTransformerIndex] || null
         },
         mvLevelRows() {
             return Object.keys(this.config.mvLevels)
@@ -399,10 +431,10 @@ export default {
                     ['Rated power', item.ratedPower],
                     ['Primary rated voltage', item.primVoltage],
                     ['Secondary rated voltage', item.secVoltage],
-                    ['Tertiary rated voltage', item.tertVoltage],
                     ['Principal tap voltage', item.principalTapVoltage],
                     ['Tap step', item.tapStep]
                 ]
+                if (this.hasTertiaryWinding(item.type)) numericFields.push(['Tertiary rated voltage', item.tertVoltage])
                 numericFields.forEach(([label, value]) => {
                     if (!isPositiveNumber(value)) errors.push(`${transformerName}: ${label} must be a valid number.`)
                 })
@@ -459,6 +491,39 @@ export default {
         schemeLabel(scheme) { return scheme === 'h' ? 'H Scheme' : 'Single Busbar' },
         assignedBusbar(index) {
             return this.config.scheme === 'h' && index % 2 === 1 ? 'C12' : 'C11'
+        },
+        hasTertiaryWinding(type) {
+            return transformerHasTertiary(type)
+        },
+        handleTransformerTypeChange(transformer) {
+            const vectorGroupConfig = createDefaultVectorGroup(transformer.type)
+            this.$set(transformer, 'vectorGroupConfig', vectorGroupConfig)
+            this.$set(transformer, 'vectorGroup', formatVectorGroup(vectorGroupConfig))
+            if (this.hasTertiaryWinding(transformer.type)) {
+                if (!transformer.tertVoltage) this.$set(transformer, 'tertVoltage', '35')
+            } else {
+                this.$set(transformer, 'tertVoltage', '')
+            }
+        },
+        openVectorGroup(index) {
+            this.vectorGroupTransformerIndex = index
+            this.vectorGroupDialogVisible = true
+            this.$nextTick(() => {
+                if (this.$refs.vectorGroup) this.$refs.vectorGroup.loadData()
+            })
+        },
+        confirmVectorGroup(vectorGroupConfig) {
+            const transformer = this.activeVectorTransformer
+            if (transformer) {
+                const copiedConfig = copyVectorGroup(vectorGroupConfig)
+                this.$set(transformer, 'vectorGroupConfig', copiedConfig)
+                this.$set(transformer, 'vectorGroup', formatVectorGroup(copiedConfig))
+            }
+            this.closeVectorGroup()
+        },
+        closeVectorGroup() {
+            this.vectorGroupDialogVisible = false
+            this.vectorGroupTransformerIndex = null
         },
         selectScheme(scheme) {
             if (this.config.scheme === scheme) return
@@ -524,9 +589,11 @@ export default {
             this.showJson = false
             this.creating = false
             this.openTransformers = [0, 1]
+            this.closeVectorGroup()
         },
         createAnother() { this.resetWizard() },
         closeDialog() {
+            this.closeVectorGroup()
             this.$emit('update:visible', false)
             this.$emit('close')
         }

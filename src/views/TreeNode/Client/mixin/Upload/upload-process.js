@@ -22,6 +22,7 @@ import * as bushingJobAPI from '@/api/demo/BushingJob.js'
 import * as voltageLevelAPI from '@/api/demo/VoltageLevel.js'
 import * as substationAPI from '@/api/demo/Substation.js'
 import * as bayAPI from '@/api/demo/Bay.js'
+import { isAuthExpiredError } from '@/utils/authError'
 
 // ─── Entity ↔ DTO mappers ─────────────────────────────────────────────────────
 import * as voltageTransformerMapping from '@/views/Mapping/VoltageTransformer/index.js'
@@ -994,6 +995,10 @@ export default {
         _handleUploadError(error, assetName = '') {
             const prefix = assetName ? `[Upload ${assetName}]` : '[Upload]'
             console.error(`${prefix} Error:`, error)
+
+            // The shared API interceptor owns expired-session feedback. A bulk upload
+            // can reject many requests at once, but the user should only see it once.
+            if (isAuthExpiredError(error)) return
 
             // XUNG ĐỘT PHIÊN BẢN — tách riêng vì đây KHÔNG phải lỗi của người dùng.
             //

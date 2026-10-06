@@ -9,6 +9,12 @@ import CapacitorDto from '@/views/Dto/Capacitor'
 import SurgeArresterDto from '@/views/Dto/SurgeAsset'
 import DisconnectorDto from '@/views/Dto/Disconnector'
 import CoreDto from '@/views/Dto/CurrentTransformer/CTConfiguration/CoreDto'
+import {
+    copyVectorGroup,
+    createDefaultVectorGroup,
+    formatVectorGroup,
+    transformerHasTertiary
+} from './transformerConfiguration'
 
 const phaseNames = ['A', 'B', 'C']
 
@@ -187,13 +193,12 @@ const buildTransformer = (config, index, newUuid) => {
     dto.properties.type = config.type || 'Three-winding'
     dto.winding_configuration.phases = '3'
     dto.winding_configuration.phase = ''
-    dto.winding_configuration.vector_group.prim = 'Yn'
-    dto.winding_configuration.vector_group.sec.i = 'Yn'
-    dto.winding_configuration.vector_group.sec.value = '0'
-    dto.winding_configuration.vector_group.tert.i = 'D'
-    dto.winding_configuration.vector_group.tert.value = '11'
-    dto.winding_configuration.vector_group_data = config.vectorGroup || 'YnYn0D11'
-    dto.oldTransformerEndInfo = [1, 2, 3].map((endNumber) => ({
+    const hasTertiary = transformerHasTertiary(dto.properties.type)
+    const vectorGroup = copyVectorGroup(config.vectorGroupConfig || createDefaultVectorGroup(dto.properties.type))
+    if (!hasTertiary) vectorGroup.tert = { i: '', value: '', accessible: '' }
+    dto.winding_configuration.vector_group = vectorGroup
+    dto.winding_configuration.vector_group_data = formatVectorGroup(vectorGroup)
+    dto.oldTransformerEndInfo = (hasTertiary ? [1, 2, 3] : [1, 2]).map((endNumber) => ({
         mrid: newUuid(),
         end_number: endNumber,
         power_transformer_info_id: dto.oldPowerTransformerInfoId,
@@ -206,9 +211,9 @@ const buildTransformer = (config, index, newUuid) => {
     }))
     dto.ratings.voltage_ratings = [
         voltageRating('Prim', config.primVoltage),
-        voltageRating('Sec', config.secVoltage),
-        voltageRating('Tert', config.tertVoltage)
+        voltageRating('Sec', config.secVoltage)
     ]
+    if (hasTertiary) dto.ratings.voltage_ratings.push(voltageRating('Tert', config.tertVoltage))
     dto.ratings.power_ratings = [{
         mrid: '',
         rated_power: { mrid: '', value: String(config.ratedPower || ''), unit: 'M|VA' },

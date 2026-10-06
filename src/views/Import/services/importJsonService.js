@@ -50,6 +50,48 @@ const CONFLICT_ACTION = {
 // remap standard→rule→group(+parent_id)→assessment.
 // Gắn asset_id = newAssetId (mrid asset cha mới).
 // ---------------------------------------------------------------------------
+const remapPointSeries = (series, parentIdMap, parentField, uuid) => {
+    const remapped = {}
+    for (const [oldParentId, points] of Object.entries(series || {})) {
+        const newParentId = parentIdMap[oldParentId]
+        if (!newParentId) {
+            console.warn(`[importJson] Ignoring orphan ${parentField} series:`, oldParentId)
+            continue
+        }
+        remapped[newParentId] = (Array.isArray(points) ? points : []).map(point => ({
+            ...point,
+            mrid: uuid.newUuid(),
+            [parentField]: newParentId,
+        }))
+    }
+    return remapped
+}
+
+const remapTimingTraces = (series, testIdMap, uuid) => {
+    const remapped = {}
+    for (const [oldTestId, traces] of Object.entries(series || {})) {
+        const newTestId = testIdMap[oldTestId]
+        if (!newTestId) {
+            console.warn('[importJson] Ignoring orphan CB timing trace:', oldTestId)
+            continue
+        }
+        remapped[newTestId] = (Array.isArray(traces) ? traces : []).map(trace => {
+            const newTraceId = uuid.newUuid()
+            return {
+                ...trace,
+                mrid: newTraceId,
+                work_task_id: newTestId,
+                points: (Array.isArray(trace.points) ? trace.points : []).map(point => ({
+                    ...point,
+                    mrid: uuid.newUuid(),
+                    trace_id: newTraceId,
+                })),
+            }
+        })
+    }
+    return remapped
+}
+
 const regenJobDtoIds = (jobDto, newAssetId, uuid) => {
     const dto = JSON.parse(JSON.stringify(jobDto)) // clone, không đụng bản gốc
 
@@ -57,6 +99,12 @@ const regenJobDtoIds = (jobDto, newAssetId, uuid) => {
     if (!dto.properties) dto.properties = {}
     dto.properties.mrid = uuid.newUuid()
     dto.properties.asset_id = newAssetId
+
+    if (dto.attachment && typeof dto.attachment === 'object') {
+        if (dto.attachment.id) dto.attachment.id = uuid.newUuid()
+        dto.attachment.id_foreign = dto.properties.mrid
+        dto.attachmentId = dto.attachment.id || ''
+    }
 
     // 2. testing equipment — sinh mrid mới + map id cũ → mới
     const equipMap = {}
@@ -76,7 +124,7 @@ const regenJobDtoIds = (jobDto, newAssetId, uuid) => {
                 if (link.testing_equipment_id && equipMap[link.testing_equipment_id]) {
                     link.testing_equipment_id = equipMap[link.testing_equipment_id]
                 }
-                // work_task_id KHÔNG giữ nguyên — là id job-local, regen theo map
+                // work_task_id được remap sau khi đã tạo đủ testIdMap bên dưới.
             }
         }
     }
@@ -90,18 +138,31 @@ const regenJobDtoIds = (jobDto, newAssetId, uuid) => {
         }
     }
 
-    // 3. từng test trong testList
+    // 3. từng test trong testList. Giữ hai map riêng vì dữ liệu curve có hai cấp cha:
+    // CB timing trỏ work_task, còn CT excitation/CB motor current trỏ procedure_dataset.
+    const testIdMap = {}
+    const datasetIdMap = {}
     for (const test of (dto.testList || [])) {
         // 3.0 mrid của CHÍNH test (work_task) — BẮT BUỘC regen, nếu không link tới
         // work_task cũ → không xóa được job mới (dùng chung record với job gốc).
+        const oldTestId = test.mrid
         test.mrid = uuid.newUuid()
+        if (oldTestId) testIdMap[oldTestId] = test.mrid
         // testTypeId GIỮ NGUYÊN (= procedure định nghĩa, dùng chung)
 
         // 3a. testCondition
         if (test.testCondition) {
+            const oldConditionId = test.testCondition.mrid
             test.testCondition.mrid = uuid.newUuid()
+            if (oldConditionId) datasetIdMap[oldConditionId] = test.testCondition.mrid
             // work_task của testCondition trỏ test mới
             if (test.testCondition.work_task_id !== undefined) test.testCondition.work_task_id = test.mrid
+            if (test.testCondition.attachment && typeof test.testCondition.attachment === 'object') {
+                if (test.testCondition.attachment.id) {
+                    test.testCondition.attachment.id = uuid.newUuid()
+                }
+                test.testCondition.attachment.id_foreign = test.mrid
+            }
             const cond = test.testCondition.condition || {}
             for (const k of Object.keys(cond)) {
                 if (cond[k] && typeof cond[k] === 'object') cond[k].mrid = uuid.newUuid()
@@ -113,7 +174,11 @@ const regenJobDtoIds = (jobDto, newAssetId, uuid) => {
             const rows = table[tableKey]
             if (!Array.isArray(rows)) continue
             for (const row of rows) {
-                if (row.mrid !== undefined) row.mrid = uuid.newUuid()
+                const oldRowId = row.mrid
+                if (row.mrid !== undefined) {
+                    row.mrid = uuid.newUuid()
+                    if (oldRowId) datasetIdMap[oldRowId] = row.mrid
+                }
                 for (const colKey of Object.keys(row)) {
                     const cell = row[colKey]
                     if (cell && typeof cell === 'object' && cell.mrid !== undefined) {
@@ -126,6 +191,38 @@ const regenJobDtoIds = (jobDto, newAssetId, uuid) => {
         // 3c. testAssessment / standardCustomized — regen cây rule/group/assessment
         regenTestAssessment(test, uuid)
     }
+
+    // Các bảng nối thiết bị ↔ test được duyệt trước testList, nên chỉ đến đây mới
+    // có đủ map để sửa work_task_id/work_task_ids mà không tạo FK mồ côi.
+    for (const key of Object.keys(dto)) {
+        if (!/TestingEquipmentTestType$/i.test(key) || !Array.isArray(dto[key])) continue
+        dto[key] = dto[key]
+            .map(link => ({
+                ...link,
+                work_task_id: testIdMap[link.work_task_id] || null,
+            }))
+            .filter(link => link.testing_equipment_id && link.work_task_id)
+    }
+    for (const equipment of (dto.testingEquipmentData || [])) {
+        if (Array.isArray(equipment.work_task_ids)) {
+            equipment.work_task_ids = equipment.work_task_ids
+                .map(id => testIdMap[id])
+                .filter(Boolean)
+        }
+    }
+
+    // Các object này dùng ID cha làm KEY. Đổi mrid nằm trong value thôi là chưa đủ:
+    // hàm ghi DB lấy chính key để điền FK, nên key cũ làm toàn bộ job rollback.
+    dto.ctExcitationPoints = remapPointSeries(
+        dto.ctExcitationPoints, datasetIdMap, 'procedure_dataset_id', uuid
+    )
+    dto.ctExcitationKneePoints = remapPointSeries(
+        dto.ctExcitationKneePoints, datasetIdMap, 'procedure_dataset_id', uuid
+    )
+    dto.cbMotorCurrentPoints = remapPointSeries(
+        dto.cbMotorCurrentPoints, datasetIdMap, 'procedure_dataset_id', uuid
+    )
+    dto.cbTimingTraces = remapTimingTraces(dto.cbTimingTraces, testIdMap, uuid)
 
     // 4. standardCustomized ở cấp job (nếu mapper để ngoài testList)
     if (Array.isArray(dto.standardCustomized)) {
@@ -550,7 +647,10 @@ const importBranch = async (branch, parentNode, deps, decisions, forceNew = fals
 
     } else {
         if (action === CONFLICT_ACTION.NEW) {
-            regenBranchIds(branch, parentNode, deps.uuid)
+            // Job có bộ regen riêng vì phải remap cả object key của curve/trace.
+            // Chạy regenIdsDeep trước rồi regenJobDtoIds lần nữa sẽ đổi ID hai lần,
+            // trong khi key của object không đổi, tạo FK trỏ vào bản ghi không tồn tại.
+            if (branch.type !== 'job') regenBranchIds(branch, parentNode, deps.uuid)
             childForceNew = true   // cha mrid mới → con cháu buộc phải new
         }
         if (branch.type === 'job') {

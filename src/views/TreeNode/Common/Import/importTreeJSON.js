@@ -220,6 +220,7 @@ export default {
                 }
 
                 content = this._retargetImportedJsonOwnership(content, this.$store.state.user.user_id)
+                content = this._normalizeImportedAttachments(content)
 
                 // ── BƯỚC 1: kiểm tra GHÉP ĐÚNG CẤP (Cách A) ─────────────────────
                 // Nếu cây file bắt đầu cao hơn node đích → cần bỏ cấp → hỏi xác nhận.
@@ -253,6 +254,52 @@ export default {
             } catch (error) {
                 console.warn('[IMPORT] Could not clean staging directory:', error)
             }
+        },
+
+        _normalizeImportedAttachments(value) {
+            const emptyAttachment = () => ({
+                id: null,
+                path: '[]',
+                name: null,
+                type: null,
+                id_foreign: null,
+            })
+            const normalizePath = (rawPath) => {
+                if (Array.isArray(rawPath)) return JSON.stringify(rawPath)
+                if (typeof rawPath !== 'string' || !rawPath.trim()) return '[]'
+                try {
+                    const parsed = JSON.parse(rawPath)
+                    return JSON.stringify(Array.isArray(parsed) ? parsed : [])
+                } catch (error) {
+                    console.warn('[IMPORT] Invalid attachment path JSON; using an empty list', error)
+                    return '[]'
+                }
+            }
+            const walk = (item) => {
+                if (Array.isArray(item)) {
+                    item.forEach(walk)
+                    return
+                }
+                if (!item || typeof item !== 'object') return
+                for (const key of Object.keys(item)) {
+                    const current = item[key]
+                    if (key === 'attachment') {
+                        if (!current || typeof current !== 'object' || Array.isArray(current)) {
+                            item[key] = emptyAttachment()
+                        } else {
+                            current.path = normalizePath(current.path)
+                            walk(current)
+                        }
+                    } else if (key === 'attachmentData') {
+                        if (!Array.isArray(current)) item[key] = []
+                        else walk(current)
+                    } else if (current && typeof current === 'object') {
+                        walk(current)
+                    }
+                }
+            }
+            walk(value)
+            return value
         },
 
         // Tính thông tin ghép cấp để hiển thị dialog (dùng helper từ service).
@@ -423,7 +470,9 @@ export default {
                         // in its staging directory. Asset CRUD copies those files into the
                         // destination owner's attachment directory and persists new paths.
                         if (!entity.attachment) entity.attachment = {}
-                        if (!entity.attachment.path) entity.attachment.path = '[]'
+                        entity.attachment.path = self._normalizeImportedAttachments({
+                            attachment: entity.attachment,
+                        }).attachment.path
                         // Đảm bảo mọi object con (sẽ insert vào identified_object) có mrid.
                         // Một số sub-object trong entity (voltage/baseVoltage/winding...) có
                         // mrid=null → insert vi phạm NOT NULL: identified_object.mrid. Sinh mrid

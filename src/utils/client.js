@@ -5,6 +5,7 @@ import { afterLogout } from './helper'
 import { markRestoreAfterLogin } from '@/utils/workspaceRestore'
 import { Loading, Message } from 'element-ui'
 import { stripServerIdsDeep } from '@/utils/serverId'
+import { markAuthExpiredError } from '@/utils/authError'
 import {
     getSsoApiBase,
     getStoredAccessToken,
@@ -22,6 +23,8 @@ const client = axios.create({
 // --- BIẾN TOÀN CỤC ĐỂ QUẢN LÝ REFRESH TOKEN ---
 let isRefreshing = false
 let failedQueue = []
+let expiredSessionHandled = false
+let expiredSessionToken = null
 
 const processQueue = (error, token = null) => {
     failedQueue.forEach(prom => {
@@ -34,10 +37,29 @@ const processQueue = (error, token = null) => {
     failedQueue = []
 }
 
-const logoutExpiredSession = () => {
+const resetExpiredSessionGuard = token => {
+    if (token && token !== expiredSessionToken) {
+        expiredSessionHandled = false
+        expiredSessionToken = null
+    }
+}
+
+const logoutExpiredSession = (message = 'Session expired. Please sign in again.') => {
+    if (expiredSessionHandled) return false
+
+    expiredSessionHandled = true
+    expiredSessionToken = getStoredAccessToken()
+    Message.error({
+        message,
+        showClose: true,
+        duration: 5000
+    })
     markRestoreAfterLogin()
     afterLogout()
-    route.push({ name: 'login' }).catch(() => {})
+    if (route.currentRoute.name !== 'login') {
+        route.push({ name: 'login' }).catch(() => {})
+    }
+    return true
 }
 
 // --- HÀM REFRESH TOKEN ---
@@ -67,8 +89,9 @@ const refreshToken = () => {
 
 const retryRequestWithFreshToken = (originalRequest, sourceError) => {
     if (!originalRequest || originalRequest._retry) {
+        const authError = markAuthExpiredError(sourceError)
         logoutExpiredSession()
-        return Promise.reject(sourceError || new Error('Session expired'))
+        return Promise.reject(authError)
     }
 
     originalRequest._retry = true
@@ -96,6 +119,7 @@ const retryRequestWithFreshToken = (originalRequest, sourceError) => {
 
     return refreshToken()
         .then(token => {
+            resetExpiredSessionGuard(token)
             originalRequest.headers = originalRequest.headers || {}
             originalRequest.headers.Authorization = `Bearer ${token}`
             originalRequest.headers[SSO_TOKEN_HEADER] = token
@@ -104,13 +128,13 @@ const retryRequestWithFreshToken = (originalRequest, sourceError) => {
             return client(originalRequest)
         })
         .catch(error => {
-            processQueue(error, null)
+            const authError = markAuthExpiredError(error)
+            processQueue(authError, null)
             const isTimeout = error && (error.code === 'ECONNABORTED' || /timeout/i.test(error.message || ''))
-            Message.error(isTimeout
+            logoutExpiredSession(isTimeout
                 ? 'Session renewal timed out. Please sign in again.'
                 : 'Session expired. Please sign in again.')
-            logoutExpiredSession()
-            return Promise.reject(error)
+            return Promise.reject(authError)
         })
         .finally(() => {
             isRefreshing = false
@@ -129,6 +153,7 @@ client.interceptors.request.use(
         // --- ĐOẠN MỚI THÊM VÀO: Tự động gắn Token ---
         const token = getStoredAccessToken()
         if (token) {
+            resetExpiredSessionGuard(token)
             config.headers = config.headers || {}
             config.headers.Authorization = `Bearer ${token}`
             config.headers[SSO_TOKEN_HEADER] = token
@@ -159,8 +184,9 @@ client.interceptors.response.use(
         const res = response.data
 
         if (res && res.code === 10) {
-            logoutExpiredSession()
-            return Promise.reject(new Error(res.message || 'Not logged in'))
+            const authError = markAuthExpiredError(new Error(res.message || 'Session expired. Please sign in again.'))
+            logoutExpiredSession(authError.message)
+            return Promise.reject(authError)
         }
 
         if (res && res.code === 15) {
@@ -189,12 +215,12 @@ client.interceptors.response.use(
             console.error(errorMsg)
             // Nếu là lỗi token (invalid hoặc expired)
             if (res.error === 'invalid_token' || res.error === 'token_expired') {
-                return Promise.reject({ 
-                    response: { 
-                        status: 401, 
-                        data: { message: errorMsg }
-                    } 
-                })
+                const authError = new Error(errorMsg)
+                authError.response = {
+                    status: 401,
+                    data: { message: errorMsg }
+                }
+                return retryRequestWithFreshToken(response.config, authError)
             }
             return Promise.reject(new Error(errorMsg))
         }
