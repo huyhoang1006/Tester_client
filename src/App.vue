@@ -2,16 +2,19 @@
     <div id="app">
         <router-view />
         <GlobalLoading />
+        <MandatoryUpdateDialog />
     </div>
 </template>
 
 <script>
 import GlobalLoading from '@/components/GlobalLoading.vue';
+import MandatoryUpdateDialog from '@/components/MandatoryUpdateDialog.vue';
 
 export default {
     name: 'App',
     components: {
-        GlobalLoading
+        GlobalLoading,
+        MandatoryUpdateDialog
     }
 };
 </script>

@@ -101,10 +101,6 @@
                             </div>
                             <el-dropdown-menu slot="dropdown" class="dropdown-menu">
                                 <template v-if="user">
-                                    <el-dropdown-item command="check_update">
-                                        <i class="fas fa-sync-alt"></i>
-                                        Check for update
-                                    </el-dropdown-item>
                                     <el-dropdown-item command="config">
                                         <i class="fas fa-wrench"></i>
                                         Config server address
@@ -125,10 +121,6 @@
                                     </el-dropdown-item>
                                 </template>
                                 <template v-else>
-                                    <el-dropdown-item command="check_update">
-                                        <i class="fas fa-sync-alt"></i>
-                                        Check for update
-                                    </el-dropdown-item>
                                     <el-dropdown-item command="config">
                                         <i class="fas fa-wrench"></i>
                                         Config server address
@@ -177,49 +169,6 @@
             <span slot="footer" class="dialog-footer custom-footer">
                 <el-button class="footer-btn" size="small" @click="dialogConfig = false">Cancel</el-button>
                 <el-button class="footer-btn" size="small" type="primary" @click="setServerAddr">Save</el-button>
-            </span>
-        </el-dialog>
-
-        <!-- Update Dialog -->
-        <el-dialog custom-class="app-dialog" title="New Version Available" :visible.sync="dialogUpdate" :modal="true"
-            append-to-body :close-on-click-modal="!updateInfo.isDownloading" :show-close="!updateInfo.isDownloading">
-            <div class="update-wrapper">
-                <div class="update-top-section">
-                    <div class="version-info">
-                        <div class="current-version">Current: {{ updateInfo.currentVersion }}</div>
-                        <div class="new-version-label">New version: </div>
-                        <div class="version-number">v{{ updateInfo.version }}</div>
-                        <div v-if="updateInfo.updateType" class="update-type-badge">
-                            {{ updateInfo.updateType.toUpperCase() }} UPDATE
-                        </div>
-                        <div v-if="updateInfo.releasedAt" class="release-date">
-                            Released: {{ formatReleaseDate(updateInfo.releasedAt) }}
-                        </div>
-                    </div>
-                    <div class="app-logo-mini">
-                        <img src="@/assets/images/atenergy_key_light.png" alt="" />
-                    </div>
-                </div>
-                <div class="changelog">
-                    <div class="changelog-title">What's new:</div>
-                    <div class="changelog-body" v-html="formatReleaseNotes(updateInfo.releaseNotes)">
-                    </div>
-                </div>
-                <div v-if="updateInfo.isDownloading" class="download-progress">
-                    <el-progress :percentage="updateInfo.downloadProgress"
-                        :status="updateInfo.downloadProgress === 100 ? 'success' : undefined"></el-progress>
-                    <div class="progress-text">Downloading update... {{ updateInfo.downloadProgress }}%</div>
-                </div>
-            </div>
-            <span slot="footer" class="dialog-footer custom-footer">
-                <el-button class="footer-btn" size="small" @click="dismissUpdate" :disabled="updateInfo.isDownloading">
-                    Not now
-                </el-button>
-                <el-button class="footer-btn" size="small" type="primary" @click="handleUpdate"
-                    :loading="updateInfo.isDownloading" :disabled="updateInfo.isDownloading">
-                    <i v-if="!updateInfo.isDownloading" class="fas fa-download"></i>
-                    {{ updateInfo.isDownloading ? 'Downloading...' : 'Update Now' }}
-                </el-button>
             </span>
         </el-dialog>
 
@@ -306,16 +255,6 @@ export default {
             },
             isSearchCollapsed: false,
             isMaximized: false,
-            dialogUpdate: false,
-            updateInfo: {
-                currentVersion: '',
-                version: '',
-                releaseNotes: '',
-                releasedAt: null,
-                updateType: null,
-                isDownloading: false,
-                downloadProgress: 0
-            },
             notificationLimit: 10,
             currentPage: 1,
             itemsPerPage: 10,
@@ -332,55 +271,6 @@ export default {
         if (window.electronAPI && window.electronAPI.onWindowStateChange) {
             window.electronAPI.onWindowStateChange((isMax) => {
                 this.isMaximized = isMax;
-            })
-        }
-
-        // Listen for auto-updater events
-        if (window.electronAPI) {
-            window.electronAPI.onUpdateAvailable(async (info) => {
-                console.log('[Event] Update available received:', info)
-
-                // Since getAppVersion handler doesn't exist, use placeholder
-                // In production, this should come from main process or package.json
-                const currentVersion = ''
-
-                this.updateInfo = {
-                    currentVersion: currentVersion,
-                    version: info.version || 'Unknown',
-                    releaseNotes: info.releaseNotes || info.releaseNote || 'No release notes available',
-                    releasedAt: info.releaseDate,
-                    updateType: this.getUpdateType(currentVersion, info.version),
-                    isDownloading: false,
-                    downloadProgress: 0
-                }
-                this.dialogUpdate = true
-
-                // Reload notifications to show update notification
-                this.loadNotifications()
-            })
-
-            window.electronAPI.onUpdateNotAvailable((info) => {
-                console.log('[Event] Update not available:', info)
-                this.$message.success('You are using the latest version')
-            })
-
-            window.electronAPI.onUpdateError((error) => {
-                console.error('[Event] Update error:', error)
-                this.$message.error('Update error: ' + error.message)
-            })
-
-            window.electronAPI.onDownloadProgress((progress) => {
-                console.log('Download progress:', progress.percent + '%')
-            })
-
-            window.electronAPI.onUpdateDownloaded((info) => {
-                this.$message.success('Update downloaded! Restarting to install...')
-                window.electronAPI.installUpdate()
-            })
-
-            // Listen for auto-updater logs from main process
-            window.electronAPI.onAutoUpdaterLog((log) => {
-                console.log('[MainProcess]', log)
             })
         }
 
@@ -471,85 +361,7 @@ export default {
                 case 'config':
                     this.dialogConfig = true
                     break
-                case 'check_update':
-                    this.checkForUpdate()
-                    break
             }
-        },
-        async checkForUpdate() {
-            // Show loading message
-            const loadingMsg = this.$message({
-                message: 'Checking for updates...',
-                duration: 0,
-                showClose: true
-            })
-
-            const data = await window.electronAPI.checkForUpdate()
-            loadingMsg.close()
-
-            // If there's version info in result, show dialog
-            if (data?.data?.versionInfo) {
-                const versionInfo = data.data.versionInfo
-                console.log('[Check for Update] Full version info:', JSON.stringify(versionInfo, null, 2))
-
-                // Since getAppVersion handler doesn't exist, use placeholder
-                const currentVersion = ''
-
-                this.updateInfo = {
-                    currentVersion: currentVersion,
-                    version: versionInfo.version || 'Unknown',
-                    releaseNotes: versionInfo.releaseNotes || versionInfo.releaseNote || versionInfo.notes || versionInfo.body || 'No release notes available',
-                    releasedAt: versionInfo.releaseDate,
-                    updateType: this.getUpdateType(currentVersion, versionInfo.version),
-                    isDownloading: false,
-                    downloadProgress: 0
-                }
-                this.dialogUpdate = true
-            } else {
-                // If no version in result, wait for event (handled in mounted)
-                console.log('[Check for Update] No version in result, waiting for event...')
-            }
-        },
-        parseVersion(version) {
-            if (!version) return [0, 0, 0]
-            const parts = version.split('.')
-            return parts.map(p => parseInt(p, 10) || 0)
-        },
-        getUpdateType(current, latest) {
-            const c = this.parseVersion(current)
-            const l = this.parseVersion(latest)
-
-            if (l[0] > c[0]) return 'major'
-            if (l[1] > c[1]) return 'minor'
-            return 'patch'
-        },
-        handleUpdate() {
-            this.dialogUpdate = false
-
-            const loadingMessage = this.$message({
-                type: 'info',
-                message: 'Downloading update...',
-                duration: 0,
-                showClose: false
-            })
-
-            window.electronAPI.downloadUpdate()
-                .then((result) => {
-                    if (result.success) {
-                        this.$message.success('Download started! The app will restart automatically after download completes.')
-                    } else {
-                        loadingMessage.close()
-                        this.$message.error('Download failed: ' + result.error)
-                    }
-                })
-                .catch((error) => {
-                    loadingMessage.close()
-                    console.error('Download error:', error)
-                    this.$message.error('Download failed')
-                })
-        },
-        dismissUpdate() {
-            this.dialogUpdate = false
         },
         async changePass() {
             this.loading = true
@@ -776,35 +588,6 @@ export default {
                 // Không reset notificationLimit
             }
         },
-        formatReleaseDate(dateStr) {
-            if (!dateStr) return ''
-            const date = new Date(dateStr)
-            if (isNaN(date.getTime())) return dateStr
-            return date.toLocaleDateString('vi-VN', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            })
-        },
-        formatReleaseNotes(notes) {
-            if (!notes) return 'No release notes available'
-
-            // Convert markdown-style lists to HTML
-            let formatted = notes
-                .replace(/^- (.+)$/gm, '<li>$1</li>')
-                .replace(/^\* (.+)$/gm, '<li>$1</li>')
-                .replace(/^• (.+)$/gm, '<li>$1</li>')
-
-            // Wrap lists in ul tags
-            if (formatted.includes('<li>')) {
-                formatted = '<ul>' + formatted + '</ul>'
-            }
-
-            // Convert line breaks to <br>
-            formatted = formatted.replace(/\n/g, '<br>')
-
-            return formatted
-        }
     }
 }
 </script>
@@ -1153,144 +936,6 @@ export default {
 ::v-deep(.custom-footer .footer-btn i) {
     font-size: 14px;
     color: inherit;
-}
-
-.update-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    color: #ffffff;
-}
-
-.update-top-section {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 10px;
-}
-
-.version-info {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.info-label {
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.7);
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.version-number {
-    font-size: 24px;
-    font-weight: 800;
-    color: #ffffff;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.release-date {
-    font-size: 11px;
-    color: rgba(255, 255, 255, 0.6);
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-}
-
-.current-version {
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.6);
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-}
-
-.new-version-label {
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.7);
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.update-type-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    font-size: 10px;
-    font-weight: 700;
-    color: #ffffff;
-    background: linear-gradient(135deg, #e6a23c 0%, #f56c6c 100%);
-    border-radius: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    width: fit-content;
-    margin-top: 4px;
-}
-
-.download-progress {
-    margin-top: 20px;
-    padding: 15px;
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 8px;
-}
-
-.progress-text {
-    text-align: center;
-    margin-top: 8px;
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.app-logo-mini img {
-    height: 50px;
-    width: auto;
-    object-fit: contain;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-}
-
-.changelog {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.changelog-title {
-    font-size: 14px;
-    font-weight: 600;
-    margin-left: 10px;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.changelog-body {
-    height: 200px;
-    overflow-y: auto;
-    padding: 12px 20px;
-    background: rgba(0, 0, 0, 0.2) !important;
-    backdrop-filter: blur(10px);
-    border: 2px solid rgba(255, 255, 255, 0.3) !important;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15),
-        inset 0 1px 1px rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
-    font-size: 13.5px;
-    line-height: 1.6;
-    color: rgba(255, 255, 255, 0.8);
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    white-space: pre-line;
-}
-
-.changelog-body::v-deep ul {
-    margin: 0;
-    padding-left: 20px;
-    list-style-type: disc;
-}
-
-.changelog-body::v-deep li {
-    margin: 6px 0;
-    color: rgba(255, 255, 255, 0.85);
-}
-
-.changelog-body::v-deep br {
-    display: block;
-    content: "";
-    margin: 4px 0;
-}
-
-.changelog-body::-webkit-scrollbar {
-    display: none;
-    width: 0 !important;
 }
 
 @media (max-width: 767px) {

@@ -2,14 +2,10 @@ import * as rootOrganisationFunc from './organisationRoot/index'
 import * as procedureFunc from './procedure/index'
 import * as databaseInitFunc from './database/init'
 import { normalizeServerMrids } from '@/function/entity/mRIDCheck/normalizeServerMrid'
-import UpdateSchedulerService from '@/function/entity/update/UpdateSchedulerService'
 import { entityFunc } from '@/function'
 import db from '@/function/datacontext/index'
 import { app } from 'electron'
 import { migrateLegacySfraTraces } from '@/function/cim/sfraTrace'
-
-const schedulerService = new UpdateSchedulerService()
-const { checkForUpdates } = entityFunc.updateEntityFunc
 
 export const createRootOrganisation = async () => {
     try {
@@ -181,42 +177,12 @@ export const updateDatabase = async () => {
 }
 
 /**
- * Bỏ qua thông báo update cho version hiện tại
- */
-export const dismissUpdateNotification = async (version) => {
-    schedulerService.dismissVersion(version)
-    return { success: true }
-}
-
-/**
- * Reset scheduler (force check on next startup)
- */
-export const resetScheduler = () => {
-    schedulerService.reset()
-    return { success: true }
-}
-
-/**
- * Lấy trạng thái scheduler
- */
-export const getSchedulerStatus = () => {
-    return schedulerService.getStatusInfo()
-}
-
-/**
  * 🚀 ENTERPRISE STARTUP SEQUENCE
  */
 export const active = async () => {
     await updateDatabase()
     await createRootOrganisation()
     await normalizeMridOnce()
-
-    schedulerService.scheduleCheck(async () => {
-        await checkForUpdates()
-        schedulerService.scheduleNextCheck(async () => {
-            await checkForUpdates()
-        })
-    })
 }
 
 const runAsync = (sql, dbsql, params = []) => {

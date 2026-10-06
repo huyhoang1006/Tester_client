@@ -2,28 +2,27 @@
 import { ipcMain } from 'electron'
 import {entityFunc} from "@/function"
 
-const checkForUpdate = () => {
-    ipcMain.handle('checkForUpdate', async (event) => {
+const checkForStartupUpdate = () => {
+    ipcMain.handle('checkForStartupUpdate', async (_event, serviceDomain) => {
         try {
-            const data = await entityFunc.updateEntityFunc.checkForUpdates()
+            await entityFunc.updateEntityFunc.checkForStartupUpdate(serviceDomain)
             return {
                 success: true,
-                data: data,
-                message: 'check for update successfully'
+                message: 'Startup update check completed'
             }
         } catch (error) {
-            console.error('Error checking for update:', error)
+            console.error('Error checking for startup update:', error)
             return {
                 success: false,
-                message: error.message || 'Failed to check for update',
-                error: error
+                message: error.message || 'Failed to check for startup update',
+                error: error.message || String(error)
             }
         }
     })
 }
 
 const downloadUpdate = () => {
-    ipcMain.handle('downloadUpdate', async (event) => {
+    ipcMain.handle('downloadUpdate', async () => {
         try {
             const data = await entityFunc.updateEntityFunc.downloadUpdate()
             return {
@@ -36,7 +35,7 @@ const downloadUpdate = () => {
             return {
                 success: false,
                 message: error.message || 'Failed to download update',
-                error: error
+                error: error.message || String(error)
             }
         }
     })
@@ -44,8 +43,6 @@ const downloadUpdate = () => {
 
 
 export const active = () => {
-    checkForUpdate()
+    checkForStartupUpdate()
     downloadUpdate()
-    // Auto check for updates on startup
-    entityFunc.updateEntityFunc.autoCheckForUpdates()
 }

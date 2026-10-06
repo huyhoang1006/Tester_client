@@ -1,3 +1,5 @@
+const updateMetadataUrl = process.env.APP_UPDATE_FEED_URL || 'http://localhost/'
+
 module.exports = {
     pluginOptions: {
         electronBuilder: {
@@ -5,9 +7,11 @@ module.exports = {
             builderOptions: {
                 appId: 'com.at.digitaltester',
                 productName: 'AT Digital Tester',
+                artifactName: 'AT-Digital-Tester-Setup-${version}.${ext}',
                 publish: {
                     provider: 'generic',
-                    url: 'http://103.163.118.212:30151/tester-ied/tester/Tester_client/'
+                    // Runtime checks replace this with the configured service domain.
+                    url: updateMetadataUrl
                 },
                 extraResources: ['./database/**', './icon/**', './attachment/**', './etrc-icon/**', './template/**', './extra_binaries/**'],
                 win: {
