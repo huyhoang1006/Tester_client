@@ -1,6 +1,6 @@
 stages:
   - build
-  - release
+  - publish
 
 workflow:
   rules:
@@ -11,105 +11,94 @@ build_electron:
   stage: build
   tags:
     - electron
+  interruptible: true
+  variables:
+    npm_config_cache: "$CI_PROJECT_DIR/.npm"
+  cache:
+    key: "npm-$CI_COMMIT_REF_SLUG"
+    paths:
+      - .npm/
   script:
     - |
+      $ErrorActionPreference = 'Stop'
+      Write-Host "Node: $(node --version)"
+      Write-Host "npm: $(npm --version)"
+
       if (Test-Path -LiteralPath 'dist_electron') {
         Remove-Item -LiteralPath 'dist_electron' -Recurse -Force
       }
-    - npm install
+    - npm ci --prefer-offline --no-audit
     - |
       if ($LASTEXITCODE -ne 0) {
-        throw "npm install failed with exit code $LASTEXITCODE."
+        throw "npm ci failed with exit code $LASTEXITCODE."
       }
     - npm run electron:build
     - |
       if ($LASTEXITCODE -ne 0) {
         throw "Electron build failed with exit code $LASTEXITCODE."
       }
-    - |
-      Write-Host 'Contents of dist_electron:'
-      Get-ChildItem -LiteralPath 'dist_electron' -Recurse | Format-Table -AutoSize
 
-      $version = node -p "require('./package.json').version"
+      $version = (node -p "require('./package.json').version").Trim()
       if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($version)) {
         throw 'Could not read a valid version from package.json.'
       }
-      $version = $version.Trim()
 
-      $exeFiles = @(Get-ChildItem -LiteralPath 'dist_electron' -File -Filter '*.exe')
-      if ($exeFiles.Count -eq 0) {
-        throw 'No .exe installer was produced in dist_electron.'
+      $installers = @(Get-ChildItem -LiteralPath 'dist_electron' -File -Filter '*.exe')
+      if ($installers.Count -eq 0) {
+        throw 'No Windows installer was produced in dist_electron.'
       }
 
-      $expectedInstaller = "AT Digital Tester Setup $version.exe"
-      $matchingInstaller = @($exeFiles | Where-Object { $_.Name -ceq $expectedInstaller })
-      if ($matchingInstaller.Count -ne 1) {
-        $actualNames = ($exeFiles.Name -join ', ')
-        throw "Expected exactly one installer named '$expectedInstaller'. Found: $actualNames"
-      }
-
-      Write-Host "Validated installer: $expectedInstaller"
+      Write-Host "Built AT Digital Tester $version"
+      Get-ChildItem -LiteralPath 'dist_electron' -Recurse | Format-Table -AutoSize
   artifacts:
     name: "ATDigitalTester-$CI_COMMIT_SHORT_SHA"
     paths:
-      - dist_electron/*.exe
-    expire_in: 7 days
+      - dist_electron/
+    expire_in: 30 days
 
-release:
-  stage: release
+publish_update_package:
+  stage: publish
   tags:
     - electron
+  interruptible: true
   needs:
     - job: build_electron
       artifacts: true
   script:
     - |
-      $version = node -p "require('./package.json').version"
+      $ErrorActionPreference = 'Stop'
+
+      $version = (node -p "require('./package.json').version").Trim()
       if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($version)) {
         throw 'Could not read a valid version from package.json.'
       }
-      $version = $version.Trim()
 
-      Write-Host "Preparing GitLab release for version $version."
+      $installerName = "AT-Digital-Tester-Setup-$version.exe"
+      $blockmapName = "$installerName.blockmap"
+      $latestFiles = @(Get-ChildItem -LiteralPath 'dist_electron' -Recurse -File | Where-Object { $_.Name -ceq 'latest.yml' })
+      $installers = @(Get-ChildItem -LiteralPath 'dist_electron' -Recurse -File | Where-Object { $_.Name -ceq $installerName })
+      $blockmaps = @(Get-ChildItem -LiteralPath 'dist_electron' -Recurse -File | Where-Object { $_.Name -ceq $blockmapName })
 
-      git ls-remote --exit-code --tags origin "refs/tags/$version" *> $null
-      $tagCheckExitCode = $LASTEXITCODE
-      if ($tagCheckExitCode -eq 0) {
-        throw "Git tag '$version' already exists. Refusing to overwrite an existing release."
+      if ($latestFiles.Count -ne 1) {
+        throw "Expected exactly one latest.yml, found $($latestFiles.Count)."
       }
-      if ($tagCheckExitCode -ne 2) {
-        throw "Could not check whether Git tag '$version' exists (git exit code $tagCheckExitCode)."
+      if ($installers.Count -ne 1) {
+        throw "Expected exactly one installer named '$installerName', found $($installers.Count)."
+      }
+      if ($blockmaps.Count -ne 1) {
+        throw "Expected exactly one blockmap named '$blockmapName', found $($blockmaps.Count)."
       }
 
-      if ([string]::IsNullOrWhiteSpace($env:CI_JOB_TOKEN)) {
-        throw 'CI_JOB_TOKEN is not available to create the GitLab release.'
-      }
-
-      $releaseName = "ATDigital Tester v$version"
-      # TODO: Replace the artifact-only handoff after a real binary publishing destination is approved.
-      $releaseDescription = @"
-      Automated release from the product branch at commit $env:CI_COMMIT_SHA.
-
-      The Windows installer is retained as a GitLab CI job artifact for 7 days.
-
-      TODO: Publish the .exe to a durable binary store (for example, the GitLab Generic Package Registry or the existing update server) and add a real downloadable asset link to this release.
-      "@
-      $payload = @{
-        name        = $releaseName
-        tag_name    = $version
-        ref         = $env:CI_COMMIT_SHA
-        description = $releaseDescription
-      } | ConvertTo-Json
-
+      $packageName = 'at-digital-tester'
+      $packageBaseUrl = "$env:CI_API_V4_URL/projects/$env:CI_PROJECT_ID/packages/generic/$packageName/$version"
       $headers = @{ 'JOB-TOKEN' = $env:CI_JOB_TOKEN }
-      $releaseUri = "$env:CI_API_V4_URL/projects/$env:CI_PROJECT_ID/releases"
+      $files = @($latestFiles + $installers + $blockmaps)
 
-      try {
-        Invoke-RestMethod -Method Post -Uri $releaseUri -Headers $headers -ContentType 'application/json' -Body $payload | Out-Null
-      }
-      catch {
-        $statusCode = $_.Exception.Response.StatusCode.value__
-        throw "GitLab Release API failed (HTTP $statusCode). No existing release was overwritten."
+      foreach ($file in $files) {
+        $encodedName = [Uri]::EscapeDataString($file.Name)
+        $uploadUrl = "$packageBaseUrl/$encodedName"
+        Write-Host "Publishing $($file.Name) to package $packageName/$version"
+        Invoke-WebRequest -Uri $uploadUrl -Method Put -Headers $headers -InFile $file.FullName -UseBasicParsing | Out-Null
       }
 
-      Write-Host "Created Git tag '$version' and release '$releaseName'."
+      Write-Host "Published AT Digital Tester update package version $version."
