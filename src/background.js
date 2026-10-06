@@ -4,13 +4,11 @@ import {app, protocol, BrowserWindow, ipcMain, screen, shell} from 'electron'
 import {createBrowserSso} from './utils/ssoBrowser'
 import {createProtocol} from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, {VUEJS_DEVTOOLS} from 'electron-devtools-installer'
-import sqlite3 from '@journeyapps/sqlcipher'
 import fs from 'fs'
 import path from 'path'
 import {v4 as newUuid} from 'uuid'
-import {spawn} from 'child_process'
-import readline from 'readline'
 import * as updateStart from '@/update/index'
+import db, {databaseReady} from '@/function/datacontext/index'
 
 // import {userFunc} from '@/function'
 // import {ipcUploadCustom} from '@/ipcmain'
@@ -20,11 +18,7 @@ let importerProcess = null
 let ssoWindow = null
 
 const pendingRequests = new Map()
-const nameDB = 'database.db'
-const pathDB = path.join(__dirname, `/../database/${nameDB}`)
 const pathUpload = path.join(__dirname, `/../attachment`)
-const db = new sqlite3.Database(pathDB)
-db.run('PRAGMA foreign_keys=ON')
 
 const isDevelopment = process.env.NODE_ENV !== 'development'
 
@@ -371,9 +365,17 @@ app.on('ready', async () => {
         }
     }
 
-    process.on('unhandledRejection', (reason, p) => {
+    process.on('unhandledRejection', (reason) => {
         console.error('🔥 UNHANDLED PROMISE:', reason)
     })
+
+    try {
+        await databaseReady
+    } catch (error) {
+        console.error('Database startup failed:', error)
+        app.quit()
+        return
+    }
 
     ipcMain.handle('openSsoLogin', (_event, targetUrl, redirectUri) => (
         browserSso.open(targetUrl, redirectUri, true)
