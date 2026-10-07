@@ -7,6 +7,8 @@ const UPDATE_PATH = '/api/app-updates/win/'
 const VERSION_PATTERN = /\bVersion\s+v?([0-9]+(?:\.[0-9]+){1,3}(?:-[0-9A-Za-z.-]+)?)/i
 
 autoUpdater.autoDownload = false
+autoUpdater.autoInstallOnAppQuit = false
+autoUpdater.disableWebInstaller = true
 
 let checkPromise = null
 let lastAvailableVersion = ''
@@ -192,5 +194,5 @@ autoUpdater.on('update-downloaded', (info) => {
     sendToRenderer('update-downloaded', info)
 
     autoUpdater.autoRunAppAfterInstall = true
-    setTimeout(() => autoUpdater.quitAndInstall(false, true), 500)
+    setTimeout(() => autoUpdater.quitAndInstall(true, true), 500)
 })

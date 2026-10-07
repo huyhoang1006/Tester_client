@@ -80,7 +80,7 @@
 
 ; 🌐 MỞ TRANG WEB
 !macro OpenPage
-  ExecShell "open" "https://automationandtesting.vn/"
+  ExecShell "open" "https://at-energy.vn/"
 !macroend
 
 ; ✅ HOÀN TẤT
@@ -91,7 +91,9 @@
 ; 🔄 TOÀN BỘ LUỒNG INSTALL
 !macro customInstall
   !insertmacro copyResourceToUserData
-  !insertmacro RunApp
-  !insertmacro OpenPage
-  !insertmacro customQuit
+  ${IfNot} ${isUpdated}
+    !insertmacro RunApp
+    !insertmacro OpenPage
+    !insertmacro customQuit
+  ${EndIf}
 !macroend
