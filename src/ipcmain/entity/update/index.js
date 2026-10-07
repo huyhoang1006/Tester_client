@@ -5,9 +5,10 @@ import {entityFunc} from "@/function"
 const checkForStartupUpdate = () => {
     ipcMain.handle('checkForStartupUpdate', async (_event, serviceDomain) => {
         try {
-            await entityFunc.updateEntityFunc.checkForStartupUpdate(serviceDomain)
+            const data = await entityFunc.updateEntityFunc.checkForStartupUpdate(serviceDomain)
             return {
                 success: true,
+                data,
                 message: 'Startup update check completed'
             }
         } catch (error) {
@@ -21,10 +22,25 @@ const checkForStartupUpdate = () => {
     })
 }
 
-const downloadUpdate = () => {
-    ipcMain.handle('downloadUpdate', async () => {
+const checkForBackgroundUpdate = () => {
+    ipcMain.handle('checkForBackgroundUpdate', async (_event, serviceDomain) => {
         try {
-            const data = await entityFunc.updateEntityFunc.downloadUpdate()
+            const data = await entityFunc.updateEntityFunc.checkForBackgroundUpdate(serviceDomain)
+            return {success: true, data, message: 'Background update check completed'}
+        } catch (error) {
+            return {
+                success: false,
+                message: error.message || 'Failed to check for updates',
+                error: error.message || String(error)
+            }
+        }
+    })
+}
+
+const downloadUpdate = () => {
+    ipcMain.handle('downloadUpdate', async (_event, serviceDomain) => {
+        try {
+            const data = await entityFunc.updateEntityFunc.downloadUpdate(serviceDomain)
             return {
                 success: true,
                 data: data,
@@ -44,5 +60,6 @@ const downloadUpdate = () => {
 
 export const active = () => {
     checkForStartupUpdate()
+    checkForBackgroundUpdate()
     downloadUpdate()
 }

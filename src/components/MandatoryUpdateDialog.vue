@@ -1,12 +1,5 @@
 <template>
     <div>
-        <div v-if="checking" class="startup-update-check" role="status" aria-live="polite">
-            <div class="startup-update-check__content">
-                <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
-                <span>Checking for updates...</span>
-            </div>
-        </div>
-
         <el-dialog
             custom-class="mandatory-update-dialog"
             title="Update required"
@@ -59,15 +52,15 @@ export default {
     name: 'MandatoryUpdateDialog',
     data() {
         return {
-            checking: true,
             dialogVisible: false,
             version: '',
             downloading: false,
             installing: false,
             downloadProgress: 0,
             downloadError: '',
-            checkTimeout: null,
-            checkStarted: false
+            startupCheckInProgress: false,
+            startupResolved: false,
+            hourlyCheckTimer: null
         }
     },
     computed: {
@@ -85,35 +78,27 @@ export default {
     },
     mounted() {
         this.registerUpdateEvents()
-        this.checkForStartupUpdate()
+        this.initializeUpdateFlow()
     },
     watch: {
         serviceDomain(value) {
-            if (value && !this.checkStarted) this.checkForStartupUpdate()
+            if (!value) return
+            this.scheduleHourlyChecks()
+            if (!this.startupResolved && !this.startupCheckInProgress) this.initializeUpdateFlow()
         }
     },
     beforeDestroy() {
-        if (this.checkTimeout) clearTimeout(this.checkTimeout)
+        if (this.hourlyCheckTimer) clearInterval(this.hourlyCheckTimer)
     },
     methods: {
         registerUpdateEvents() {
-            if (!window.electronAPI) {
-                this.checking = false
-                return
-            }
+            if (!window.electronAPI) return
 
             window.electronAPI.onUpdateAvailable((info) => {
-                this.finishChecking()
-                this.version = info && info.version ? info.version : ''
-                this.dialogVisible = true
-            })
-
-            window.electronAPI.onUpdateNotAvailable(() => {
-                this.finishChecking()
+                if (this.dialogVisible && info && info.version) this.version = info.version
             })
 
             window.electronAPI.onUpdateError((message) => {
-                this.finishChecking()
                 if (this.dialogVisible) {
                     this.downloading = false
                     this.installing = false
@@ -134,34 +119,40 @@ export default {
                 this.downloadProgress = 100
             })
         },
-        async checkForStartupUpdate() {
-            if (!this.serviceDomain) {
-                this.finishChecking()
-                return
-            }
-
+        async initializeUpdateFlow() {
             if (!window.electronAPI || !window.electronAPI.checkForStartupUpdate) {
-                this.finishChecking()
+                this.startupResolved = true
                 return
             }
 
-            this.checkStarted = true
-            this.checking = true
-            this.checkTimeout = setTimeout(() => this.finishChecking(), 30000)
+            this.startupCheckInProgress = true
             try {
                 const result = await window.electronAPI.checkForStartupUpdate(this.serviceDomain)
-                if (!result || !result.success || !this.dialogVisible) {
-                    this.finishChecking()
+                const state = result && result.success ? result.data : null
+                if (state && state.mandatory) {
+                    this.version = state.version || ''
+                    this.dialogVisible = true
                 }
+                this.startupResolved = Boolean(this.serviceDomain) || Boolean(state && state.mandatory)
             } catch {
-                this.finishChecking()
+                this.startupResolved = Boolean(this.serviceDomain)
+            } finally {
+                this.startupCheckInProgress = false
+                this.scheduleHourlyChecks()
             }
         },
-        finishChecking() {
-            this.checking = false
-            if (this.checkTimeout) {
-                clearTimeout(this.checkTimeout)
-                this.checkTimeout = null
+        scheduleHourlyChecks() {
+            if (this.hourlyCheckTimer || !this.serviceDomain) return
+            this.hourlyCheckTimer = setInterval(() => this.checkForBackgroundUpdate(), 60 * 60 * 1000)
+        },
+        async checkForBackgroundUpdate() {
+            if (this.dialogVisible || !this.serviceDomain) return
+            if (!window.electronAPI || !window.electronAPI.checkForBackgroundUpdate) return
+
+            try {
+                await window.electronAPI.checkForBackgroundUpdate(this.serviceDomain)
+            } catch {
+                return
             }
         },
         async downloadUpdate() {
@@ -170,7 +161,7 @@ export default {
             this.downloadError = ''
 
             try {
-                const result = await window.electronAPI.downloadUpdate()
+                const result = await window.electronAPI.downloadUpdate(this.serviceDomain)
                 if (result && result.success) return
 
                 this.downloading = false
@@ -192,30 +183,6 @@ export default {
 </script>
 
 <style lang="scss">
-.startup-update-check {
-    position: fixed;
-    inset: 0;
-    z-index: 5000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.96);
-}
-
-.startup-update-check__content {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #273142;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.startup-update-check__content i {
-    color: #0b3daa;
-    font-size: 20px;
-}
-
 .mandatory-update-dialog {
     max-width: calc(100vw - 32px);
     border-radius: 6px;

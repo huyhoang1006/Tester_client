@@ -66,7 +66,7 @@
                                                     <i class="fas fa-check"></i>
                                                     Mark as Read
                                                 </el-dropdown-item>
-                                                <el-dropdown-item
+                                                <el-dropdown-item v-if="notification.type !== 'update'"
                                                     @click.native.stop="deleteNotification(notification.mrid)">
                                                     <i class="fas fa-trash"></i>
                                                     Delete Notification
@@ -261,7 +261,8 @@ export default {
             notifications: [],
             isReloading: false,
             dialogNotificationDetail: false,
-            selectedNotification: null
+            selectedNotification: null,
+            removeUpdateNotificationListener: null
         }
     },
     mounted() {
@@ -276,12 +277,17 @@ export default {
 
         // Load notifications from database
         this.loadNotifications()
+        if (window.electronAPI && window.electronAPI.onUpdateNotificationCreated) {
+            this.removeUpdateNotificationListener = window.electronAPI.onUpdateNotificationCreated(() => {
+                this.loadNotifications()
+            })
+        }
         // this.updateSearchState()
         // window.addEventListener('resize', this.updateSearchState)
     },
-    // beforeDestroy() {
-    //     window.removeEventListener('resize', this.updateSearchState)
-    // },
+    beforeDestroy() {
+        if (this.removeUpdateNotificationListener) this.removeUpdateNotificationListener()
+    },
     computed: {
         ...mapState(['user', 'loginAddr', 'serviceAddr']),
         unreadCount() {
@@ -536,8 +542,8 @@ export default {
             try {
                 const response = await window.electronAPI.deleteAllNotifications()
                 if (response.success) {
-                    this.notifications = []
-                    this.$message.success('All notifications have been deleted.')
+                    await this.loadNotifications()
+                    this.$message.success('Notifications have been cleared.')
                 }
                 // Keep dropdown open
                 this.$nextTick(() => {
