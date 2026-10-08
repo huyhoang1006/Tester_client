@@ -1,7 +1,8 @@
 <template>
     <div id="app">
-        <router-view />
-        <GlobalLoading />
+        <router-view v-if="licenseReady" />
+        <GlobalLoading v-if="licenseReady" />
+        <OnlineLicenseGate @licensed-change="licenseReady = $event" />
         <MandatoryUpdateDialog />
     </div>
 </template>
@@ -9,12 +10,19 @@
 <script>
 import GlobalLoading from '@/components/GlobalLoading.vue';
 import MandatoryUpdateDialog from '@/components/MandatoryUpdateDialog.vue';
+import OnlineLicenseGate from '@/components/OnlineLicenseGate.vue';
 
 export default {
     name: 'App',
     components: {
         GlobalLoading,
-        MandatoryUpdateDialog
+        MandatoryUpdateDialog,
+        OnlineLicenseGate
+    },
+    data() {
+        return {
+            licenseReady: false
+        }
     }
 };
 </script>

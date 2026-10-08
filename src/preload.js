@@ -92,6 +92,7 @@ const compareTestAPI = entityPreload.compareTestPreload.compareTestPreload()
 const userIdentifiedObjectAPI = entityPreload.userIdentifiedObjectPreload.userIdentifiedObjectPreload()
 const powerPlantAPI = entityPreload.powerPlantPreload.powerPlantPreload()
 const fmecaAPI = entityPreload.fmecaPreload.fmecaPreload()
+const appLicenseAPI = entityPreload.appLicensePreload.appLicensePreload()
 
 
 // Update API from entity preload
@@ -177,6 +178,7 @@ const ipcMain = Object.assign(
     compareTestAPI,
     userIdentifiedObjectAPI,
     powerPlantAPI,
-    fmecaAPI
+    fmecaAPI,
+    appLicenseAPI
 )
 contextBridge.exposeInMainWorld('electronAPI', ipcMain)

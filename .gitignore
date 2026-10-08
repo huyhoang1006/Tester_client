@@ -25,12 +25,13 @@ pnpm-debug.log*
 #Electron-builder output
 /dist_electron
 
-# Database và template — dữ liệu chạy thật, không phải mã nguồn.
-# database.db đang là 22 MB và đổi mỗi lần dùng app, đưa vào git thì mỗi commit phình
-# thêm một bản 22 MB nữa và không bao giờ merge được.
-database/**
-!database/.gitkeep
-template/
+# Runtime-generated and local working data. Keep these out of `git add .`.
+/attachment/**
+/test/**
+/tmp/**
+/database/**
+/template/**
+!/database/.gitkeep
 
 # bv (beads viewer) local config and caches
 .bv/

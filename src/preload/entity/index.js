@@ -30,6 +30,7 @@ import * as treeSearchPreload from './treeSearch/index'
 import * as userIdentifiedObjectPreload from './userIdentifiedObject/index.js'
 import * as powerPlantPreload from './powerPlant/index.js'
 import * as fmecaPreload from './fmeca/index.js'
+import * as appLicensePreload from './appLicense/index.js'
 
 export {
     attachmentPreload, substationPreload, parentOrganizationPreload,
@@ -39,5 +40,5 @@ export {
     capacitorEntityPreload, breakerEntityPreload, reactorEntityPreload, exportPreload, assetPsrPreload, notificationEntityPreload,
     entitySnapshotPreload, templatePreload, mRIDCheckPreload, testingEquipmentEntityPreload, syncStatePreload,
     auditLogPreload, compareTestPreload, userIdentifiedObjectPreload, treeSearchPreload,
-    powerPlantPreload, fmecaPreload
+    powerPlantPreload, fmecaPreload, appLicensePreload
 }
