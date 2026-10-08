@@ -1,4 +1,5 @@
 import {v4 as uuid} from 'uuid'
+import {getLoginDomain} from '@/config/server'
 
 export const SSO_CLIENT_ID = '1005'
 export const SSO_TOKEN_HEADER = `smart-sso-token-${SSO_CLIENT_ID}`
@@ -21,8 +22,7 @@ export const toApiBase = (address) => {
 }
 
 export const getSsoApiBase = () => {
-    const loginAddress = localStorage.getItem('LOGIN_ADDR') || ''
-    return toApiBase(loginAddress)
+    return toApiBase(getLoginDomain())
 }
 
 export const getStoredAccessToken = () => (

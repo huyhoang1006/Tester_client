@@ -14,6 +14,8 @@ const LICENSE_STORE_VERSION = 1
 const LICENSE_STORE_FILE = 'online-license.json'
 const REQUEST_TIMEOUT_MS = 15000
 const STORAGE_CONTEXT = 'ATDigitalTester/online-license/v1'
+const LICENSE_SERVER_URL = 'http://103.163.118.212:30840'
+const LICENSE_PRODUCT_ID = '907e544d-bdd1-40b2-98f5-f69144ad4531'
 const ACTIVATION_REQUIRED_CODES = new Set([
     'NO_MACHINE',
     'NO_MACHINES',
@@ -115,8 +117,8 @@ export const getDeviceFingerprint = async () => {
 }
 
 const getDefaultConfig = () => ({
-    serverUrl: process.env.VUE_APP_LICENSE_SERVER_URL || process.env.APP_LICENSE_SERVER_URL || '',
-    productId: process.env.VUE_APP_LICENSE_PRODUCT_ID || process.env.APP_LICENSE_PRODUCT_ID || ''
+    serverUrl: LICENSE_SERVER_URL,
+    productId: LICENSE_PRODUCT_ID
 })
 
 const normalizeServerUrl = value => {
@@ -361,7 +363,7 @@ const invalidValidationError = validation => createLicenseError(
 )
 
 export const activateOnlineLicense = async payload => {
-    const config = requireOnlineLicenseConfig(payload)
+    const config = requireOnlineLicenseConfig(getDefaultConfig())
     const licenseKey = String((payload && payload.licenseKey) || '').trim()
     if (!licenseKey) {
         throw createLicenseError('License key is required', 'LICENSE_KEY_REQUIRED')
@@ -415,7 +417,7 @@ export const activateOnlineLicense = async payload => {
 
 export const checkOnlineLicense = async () => {
     const stored = readStoredLicense()
-    const config = requireOnlineLicenseConfig((stored && stored.config) || getDefaultConfig())
+    const config = requireOnlineLicenseConfig(getDefaultConfig())
     const device = await getDeviceFingerprint()
 
     if (!stored || !stored.secret) {
@@ -481,7 +483,7 @@ export const checkOnlineLicense = async () => {
 
 export const getOnlineLicenseSetup = async () => {
     const stored = readStoredLicense()
-    const config = normalizeOnlineLicenseConfig((stored && stored.config) || getDefaultConfig())
+    const config = normalizeOnlineLicenseConfig(getDefaultConfig())
     const device = await getDeviceFingerprint()
     return {
         configured: Boolean(config.serverUrl && config.productId),

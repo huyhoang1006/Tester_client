@@ -1,28 +1,29 @@
 <template>
     <div v-if="!licensed" class="license-gate">
-        <section class="license-gate__panel" aria-live="polite">
+        <div v-if="loading && !setupLoaded" class="license-gate__preloader" aria-live="polite">
+            <div class="license-gate__brand license-gate__brand--preloader" aria-label="AT License Manager">
+                <span class="license-gate__brand-mark" aria-hidden="true">
+                    <img src="@/assets/images/atdigitaltester_logo.png" alt="">
+                </span>
+                <span class="license-gate__brand-name">AT License Manager</span>
+            </div>
+            <div class="license-gate__preloader-progress" aria-hidden="true">
+                <span></span>
+            </div>
+            <p>Loading application...</p>
+        </div>
+
+        <section v-else class="license-gate__panel" aria-live="polite">
             <header class="license-gate__header">
-                <img
-                    class="license-gate__logo"
-                    src="@/assets/images/atdigitaltester_logo.png"
-                    alt="AT Digital Tester">
-                <el-tooltip v-if="!loading" content="License server configuration" placement="bottom">
-                    <el-button
-                        class="license-gate__settings"
-                        type="text"
-                        icon="el-icon-setting"
-                        aria-label="License server configuration"
-                        @click="showConfiguration = !showConfiguration" />
-                </el-tooltip>
+                <div class="license-gate__brand" aria-label="AT License Manager">
+                    <span class="license-gate__brand-mark" aria-hidden="true">
+                        <img src="@/assets/images/atdigitaltester_logo.png" alt="">
+                    </span>
+                    <span class="license-gate__brand-name">AT License Manager</span>
+                </div>
             </header>
 
-            <div v-if="loading && !setupLoaded" class="license-gate__checking">
-                <i class="el-icon-loading" aria-hidden="true"></i>
-                <h1>Checking license</h1>
-                <p>Connecting to the license server...</p>
-            </div>
-
-            <div v-else class="license-gate__content">
+            <div class="license-gate__content">
                 <div class="license-gate__title-row">
                     <span class="license-gate__title-icon" aria-hidden="true">
                         <i class="el-icon-key"></i>
@@ -54,18 +55,6 @@
                     :rules="rules"
                     label-position="top"
                     @submit.native.prevent="activate">
-                    <div v-if="showConfiguration || !configured" class="license-gate__configuration">
-                        <el-form-item label="License server" prop="serverUrl">
-                            <el-input
-                                v-model.trim="form.serverUrl"
-                                placeholder="https://license.example.com"
-                                autocomplete="off" />
-                        </el-form-item>
-                        <el-form-item label="Product ID" prop="productId">
-                            <el-input v-model.trim="form.productId" autocomplete="off" />
-                        </el-form-item>
-                    </div>
-
                     <el-form-item label="License key" prop="licenseKey">
                         <el-input
                             v-model.trim="form.licenseKey"
@@ -109,22 +98,16 @@ export default {
             loading: true,
             activating: false,
             setupLoaded: false,
-            configured: false,
             activated: false,
-            showConfiguration: false,
             fingerprint: '',
             fingerprintStrategy: '',
             errorCode: '',
             errorMessage: '',
             checkTimer: null,
             form: {
-                serverUrl: '',
-                productId: '',
                 licenseKey: ''
             },
             rules: {
-                serverUrl: [{required: true, message: 'License server is required', trigger: 'blur'}],
-                productId: [{required: true, message: 'Product ID is required', trigger: 'blur'}],
                 licenseKey: [{required: true, message: 'License key is required', trigger: 'blur'}]
             }
         }
@@ -154,21 +137,13 @@ export default {
     methods: {
         applySetup(data) {
             if (!data) return
-            this.configured = Boolean(data.configured)
             this.activated = Boolean(data.activated)
             this.fingerprint = data.fingerprint || this.fingerprint
             this.fingerprintStrategy = data.fingerprintStrategy || this.fingerprintStrategy
-            const config = data.config || {}
-            this.form.serverUrl = config.serverUrl || this.form.serverUrl
-            this.form.productId = config.productId || this.form.productId
-            this.showConfiguration = !this.configured
         },
         setError(result) {
             this.errorCode = (result && result.code) || 'LICENSE_CHECK_FAILED'
             this.errorMessage = (result && result.message) || 'Could not verify the application license.'
-            if (result && result.data && result.data.config) {
-                this.applySetup({config: result.data.config})
-            }
         },
         clearError() {
             this.errorCode = ''
@@ -190,7 +165,6 @@ export default {
                     return
                 }
                 this.applySetup(setup.data)
-                this.setupLoaded = true
                 if (setup.data.activated) await this.checkLicense()
             } catch (error) {
                 this.setError({message: error.message})
@@ -231,7 +205,7 @@ export default {
                 this.activating = true
                 this.clearError()
                 try {
-                    const result = await window.electronAPI.activateOnlineLicense({...this.form})
+                    const result = await window.electronAPI.activateOnlineLicense({licenseKey: this.form.licenseKey})
                     if (!result.success) {
                         this.setError(result)
                         return
@@ -289,31 +263,44 @@ export default {
     min-height: 60px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
     padding: 0 24px;
     border-bottom: 1px solid #e5e8ee;
 }
 
-.license-gate__logo {
+.license-gate__brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.license-gate__brand-mark {
+    flex: 0 0 52px;
+    width: 52px;
+    height: 34px;
+    overflow: hidden;
+}
+
+.license-gate__brand-mark img {
     display: block;
     width: auto;
-    max-width: 190px;
-    height: 30px;
-    object-fit: contain;
+    max-width: none;
+    height: 34px;
 }
 
-.license-gate__settings {
-    font-size: 19px;
-    color: #576174;
+.license-gate__brand-name {
+    font-size: 18px;
+    line-height: 1.2;
+    font-weight: 600;
+    color: #202936;
+    letter-spacing: 0;
 }
 
-.license-gate__content,
-.license-gate__checking {
+.license-gate__content {
     padding: 28px 30px 30px;
 }
 
-.license-gate__checking {
-    min-height: 240px;
+.license-gate__preloader {
+    width: min(360px, 100%);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -321,9 +308,48 @@ export default {
     text-align: center;
 }
 
-.license-gate__checking > i {
-    font-size: 34px;
-    color: #123b78;
+.license-gate__brand--preloader {
+    gap: 14px;
+}
+
+.license-gate__brand--preloader .license-gate__brand-mark {
+    flex-basis: 62px;
+    width: 62px;
+    height: 40px;
+}
+
+.license-gate__brand--preloader .license-gate__brand-mark img {
+    height: 40px;
+}
+
+.license-gate__brand--preloader .license-gate__brand-name {
+    font-size: 22px;
+}
+
+.license-gate__preloader-progress {
+    width: min(280px, 100%);
+    height: 4px;
+    margin-top: 28px;
+    overflow: hidden;
+    background: #dce2eb;
+}
+
+.license-gate__preloader-progress span {
+    display: block;
+    width: 38%;
+    height: 100%;
+    background: #123b78;
+    animation: license-preload 1.2s ease-in-out infinite;
+}
+
+.license-gate__preloader p {
+    margin-top: 14px;
+    font-size: 13px;
+}
+
+@keyframes license-preload {
+    0% { transform: translateX(-110%); }
+    100% { transform: translateX(300%); }
 }
 
 .license-gate h1 {
@@ -386,12 +412,6 @@ export default {
     color: #7c8595;
 }
 
-.license-gate__configuration {
-    margin-bottom: 4px;
-    padding-bottom: 2px;
-    border-bottom: 1px solid #e5e8ee;
-}
-
 .license-gate__actions {
     display: flex;
     justify-content: flex-end;
@@ -408,8 +428,7 @@ export default {
         max-height: calc(100vh - 24px);
     }
 
-    .license-gate__content,
-    .license-gate__checking {
+    .license-gate__content {
         padding: 22px 18px 20px;
     }
 

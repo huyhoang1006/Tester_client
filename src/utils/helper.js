@@ -1,6 +1,7 @@
 /* eslint-disable */
 import store from '@/store'
 import client from './client'
+import {getLoginDomain, getServiceDomain} from '@/config/server'
 import {
     clearSsoTokens,
     getStoredAccessToken,
@@ -11,15 +12,13 @@ let interceptorAuthenticate = null
 
 export const initApp = () => {
     // 1. Khôi phục Server Address
-    const serviceAddr = localStorage.getItem('SERVICE_ADDR')
-    if (serviceAddr) {
-        store.dispatch('setServiceAddr', serviceAddr)
-        client.defaults.baseURL = serviceAddr
-    }
-    const loginAddr = localStorage.getItem('LOGIN_ADDR')
-    if (loginAddr) {
-        store.dispatch('setLoginAddr', loginAddr)
-    }
+    const serviceAddr = getServiceDomain()
+    const loginAddr = getLoginDomain()
+    localStorage.setItem('SERVICE_ADDR', serviceAddr)
+    localStorage.setItem('LOGIN_ADDR', loginAddr)
+    store.dispatch('setServiceAddr', serviceAddr)
+    store.dispatch('setLoginAddr', loginAddr)
+    client.defaults.baseURL = serviceAddr
 
     // 2. Khôi phục thông tin User & Token từ LocalStorage
     const userStr = localStorage.getItem('user')
