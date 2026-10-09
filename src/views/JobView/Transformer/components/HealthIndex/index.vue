@@ -9,19 +9,40 @@
                 </div>
             </div>
             <div class="health-overview__metrics">
-                <div class="health-metric">
-                    <span class="health-metric__label">Average case</span>
-                    <strong class="health-metric__value">{{ formatNumber(averageHealthIndex) }}</strong>
-                    <span class="health-metric__status" :class="nameColor(judge_average(averageHealthIndex))">
-                        {{ judge_average(averageHealthIndex) || 'Not assessed' }}
-                    </span>
+                <div class="health-case-column">
+                    <div class="health-metric">
+                        <span class="health-metric__label">Average case</span>
+                        <strong class="health-metric__value">{{ formatNumber(averageHealthIndex) }}</strong>
+                        <span class="health-metric__status" :class="nameColor(judge_average(averageHealthIndex))">
+                            {{ judge_average(averageHealthIndex) || 'Not assessed' }}
+                        </span>
+                    </div>
+                    <div class="health-metric">
+                        <span class="health-metric__label">Worst case</span>
+                        <strong class="health-metric__value">{{ formatNumber(worstHealthIndex) }}</strong>
+                        <span class="health-metric__status" :class="nameColor(judge_worst(worstHealthIndex))">
+                            {{ judge_worst(worstHealthIndex) || 'Not assessed' }}
+                        </span>
+                    </div>
                 </div>
-                <div class="health-metric">
-                    <span class="health-metric__label">Worst case</span>
-                    <strong class="health-metric__value">{{ formatNumber(worstHealthIndex) }}</strong>
-                    <span class="health-metric__status" :class="nameColor(judge_worst(worstHealthIndex))">
-                        {{ judge_worst(worstHealthIndex) || 'Not assessed' }}
-                    </span>
+
+                <div class="confidence-card">
+                    <div class="confidence-card__heading">
+                        <span>Assessment confidence</span>
+                        <el-popover placement="bottom-end" width="270" trigger="hover">
+                            <div class="confidence-help">
+                                <strong>Missing core test data:</strong>
+                                <ul v-if="assessmentConfidence.missing.length">
+                                    <li v-for="test in assessmentConfidence.missing" :key="test">{{ test }}</li>
+                                </ul>
+                                <span v-else>No missing core test.</span>
+                            </div>
+                            <button slot="reference" class="confidence-info" aria-label="Show missing core tests">i</button>
+                        </el-popover>
+                    </div>
+                    <strong class="confidence-card__value" :class="confidenceClass">
+                        {{ assessmentConfidence.label }}
+                    </strong>
                 </div>
             </div>
         </header>
@@ -85,7 +106,8 @@
 </template>
 
 <script>
-import demoFmeca from '@/config/fmeca/transformer-condition-assessment-rev1.json'
+import {calculateWeighting, toEditableFmeca} from '@/views/Fmeca/mapper'
+import {calculateAssessmentConfidence, normalizeAssessedRows} from './calculation'
 
 const CONDITION_INDICATOR_SCORES = {
     good: 3,
@@ -172,25 +194,6 @@ const HEALTH_CRITERIA = [
     }
 ]
 
-const cellValue = cell => {
-    if (cell && typeof cell === 'object' && Object.prototype.hasOwnProperty.call(cell, 'cached')) {
-        return cell.cached
-    }
-    return cell
-}
-
-const demoWeightingFactor = criterion => {
-    const rows = demoFmeca && demoFmeca.tableCalculate &&
-        demoFmeca.tableCalculate.weightingFactors &&
-        demoFmeca.tableCalculate.weightingFactors.rows
-    if (!Array.isArray(rows)) return null
-    const normalizedCriterion = String(criterion).trim().toLowerCase()
-    const row = rows.slice(1).find(cells => (
-        String(cellValue(cells && cells[1]) || '').trim().toLowerCase() === normalizedCriterion
-    ))
-    return row ? cellValue(row[4]) : null
-}
-
 const indicatorScore = field => {
     const value = field && typeof field === 'object' ? field.value : field
     return CONDITION_INDICATOR_SCORES[String(value || '').trim().toLowerCase()]
@@ -222,11 +225,16 @@ export default {
     data() {
         return {
             isMonitor : false,
-            data__ : []
+            data__ : [],
+            fmecaWeightingFactors: null
         }
     },
 
     computed: {
+        userId() {
+            const user = this.$store && this.$store.state && this.$store.state.user
+            return user && user.user_id ? user.user_id : null
+        },
         data_() {
             const tests = Object.values(this.data || {})
             return HEALTH_CRITERIA.map(criterion => this.buildContribution(criterion, tests))
@@ -238,20 +246,63 @@ export default {
             return this.resolveHealthIndex('worst', this.properties.worst_health_index)
         },
         assessedRows() {
-            return this.data_.filter(item => (
-                this.isNumber(this.itemScore(item, 'average')) ||
-                this.isNumber(this.itemScore(item, 'worst'))
-            ))
+            return normalizeAssessedRows(this.data_)
+        },
+        assessmentConfidence() {
+            return calculateAssessmentConfidence(this.data_, this.fmecaWeightingFactors !== null)
+        },
+        confidenceClass() {
+            const classes = {
+                'Very high confidence': 'Good',
+                'High confidence': 'Fair',
+                'Moderate confidence': 'Poor',
+                'Low confidence': 'Bad',
+                Insufficient: 'Unacceptable'
+            }
+            return classes[this.assessmentConfidence.label] || ''
         }
     },
 
-    async beforeMount() {
-    },
-
-    mounted: function() {
+    watch: {
+        userId: {
+            immediate: true,
+            handler() {
+                this.loadFmecaWeightingFactors()
+            }
+        }
     },
 
     methods: {
+        async loadFmecaWeightingFactors() {
+            if (!this.userId || !window.electronAPI || !window.electronAPI.listFmeca) {
+                this.fmecaWeightingFactors = null
+                return
+            }
+            try {
+                const records = await window.electronAPI.listFmeca(this.userId)
+                const source = Array.isArray(records)
+                    ? records.find(record => record.isHiSource)
+                    : null
+                if (!source) {
+                    this.fmecaWeightingFactors = null
+                    return
+                }
+                const model = toEditableFmeca(source.tableFmeca, source.tableCalculate)
+                const weighting = calculateWeighting(model.components)
+                this.fmecaWeightingFactors = weighting.rows.reduce((result, row) => {
+                    result[row.test] = row
+                    return result
+                }, {})
+            } catch (error) {
+                this.fmecaWeightingFactors = null
+            }
+        },
+        weightingCriterion(criterion) {
+            if (this.fmecaWeightingFactors === null) return null
+            return Object.prototype.hasOwnProperty.call(this.fmecaWeightingFactors, criterion)
+                ? this.fmecaWeightingFactors[criterion]
+                : null
+        },
         average(values) {
             return values.length
                 ? values.reduce((sum, value) => sum + value, 0) / values.length
@@ -309,12 +360,15 @@ export default {
                 }
             }
 
+            const weighting = this.weightingCriterion(criterion.weightingCriterion)
             return {
                 mrid: criterion.key,
                 name: criterion.name,
+                core_test_name: criterion.weightingCriterion,
                 average_score: averageScore,
                 worst_score: worstScore,
-                weighting_factor: demoWeightingFactor(criterion.weightingCriterion)
+                source_rpn: weighting ? weighting.totalRPN : null,
+                source_weighting_factor: weighting ? weighting.weightingFactor : null
             }
         },
         itemScore(item, mode) {
@@ -339,9 +393,9 @@ export default {
             return 'Bad'
         },
         resolveHealthIndex(mode, savedValue) {
-            const totals = this.data_.map(item => this.itemTotal(item, mode)).filter(value => value !== null)
+            const totals = this.assessedRows.map(item => this.itemTotal(item, mode)).filter(value => value !== null)
             if (totals.length) return totals.reduce((sum, value) => sum + value, 0)
-            return savedValue
+            return this.fmecaWeightingFactors === null ? savedValue : null
         },
         isNumber(value) {
             return value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value))
@@ -464,18 +518,24 @@ export default {
 }
 
 .health-overview__metrics {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(340px, 1fr) minmax(210px, 0.65fr);
     gap: 10px;
+    width: min(690px, 68%);
+}
+
+.health-case-column {
+    display: grid;
+    gap: 7px;
 }
 
 .health-metric {
     display: grid;
-    grid-template-columns: auto auto;
+    grid-template-columns: minmax(92px, 1fr) 82px minmax(112px, 1fr);
     align-items: center;
-    column-gap: 16px;
-    row-gap: 5px;
-    min-width: 220px;
-    padding: 10px 12px;
+    column-gap: 12px;
+    min-width: 0;
+    padding: 8px 10px;
     border-left: 3px solid #a9b5c8;
     background: #f6f8fb;
 }
@@ -494,7 +554,6 @@ export default {
 }
 
 .health-metric__status {
-    grid-column: 1 / -1;
     justify-self: stretch;
     padding: 4px 10px;
     border-radius: 4px;
@@ -502,6 +561,71 @@ export default {
     font-size: 12px;
     font-weight: 600;
     text-align: center;
+}
+
+.confidence-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    padding: 12px;
+    border-left: 3px solid #0b3aa4;
+    background: #f6f8fb;
+}
+
+.confidence-card__heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    color: #5f6875;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.confidence-info {
+    display: inline-grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: 1px solid #8291a8;
+    border-radius: 50%;
+    background: #fff;
+    color: #33445f;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: help;
+}
+
+.confidence-card__value {
+    display: block;
+    margin-top: 12px;
+    padding: 9px 10px;
+    border-radius: 4px;
+    color: #202733;
+    font-size: 14px;
+    text-align: center;
+}
+
+.confidence-help {
+    color: #344054;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.confidence-help strong {
+    display: block;
+    margin-bottom: 6px;
+}
+
+.confidence-help ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.confidence-help li + li {
+    margin-top: 3px;
 }
 
 .health-results {
@@ -644,10 +768,19 @@ export default {
     .health-overview__metrics {
         width: 100%;
     }
+}
+
+@media (max-width: 620px) {
+    .health-overview__metrics {
+        grid-template-columns: 1fr;
+    }
 
     .health-metric {
-        flex: 1;
-        min-width: 0;
+        grid-template-columns: 1fr auto;
+    }
+
+    .health-metric__status {
+        grid-column: 1 / -1;
     }
 }
 
