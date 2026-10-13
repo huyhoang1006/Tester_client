@@ -119,7 +119,8 @@ export const getAllStringMeasurementByProcedure = (procedureId) => {
 
 // Thêm mới stringMeasurement
 export const insertStringMeasurementTransaction = async (stringMeasurement, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Thêm measurement trước
             const measResult = await measurementFunc.insertMeasurementTransaction(stringMeasurement, dbsql)
@@ -143,6 +144,7 @@ export const insertStringMeasurementTransaction = async (stringMeasurement, dbsq
         } catch (err) {
             return reject({ success: false, err, message: 'Insert stringMeasurement failed' })
         }
+        })().catch(reject)
     })
 }
 
@@ -171,7 +173,7 @@ export const insertStringMeasurement = async (stringMeasurement) => {
                         ON CONFLICT(mrid) DO NOTHING
                         `,
                         [
-                            analog.mrid
+                            stringMeasurement.mrid
                         ],
                         function (err) {
                             if (err) {
@@ -184,8 +186,8 @@ export const insertStringMeasurement = async (stringMeasurement) => {
                                 }
                                 return resolve({
                                     success: true,
-                                    data: analog,
-                                    message: 'Insert analog completed'
+                                    data: stringMeasurement,
+                                    message: 'Insert string measurement completed'
                                 });
                             });
                         }
@@ -201,7 +203,8 @@ export const insertStringMeasurement = async (stringMeasurement) => {
 
 // Cập nhật stringMeasurement
 export const updateStringMeasurementByIdTransaction = async (mrid, stringMeasurement, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Cập nhật measurement trước
             const measResult = await measurementFunc.updateMeasurementByIdTransaction(mrid, stringMeasurement, dbsql)
@@ -224,12 +227,14 @@ export const updateStringMeasurementByIdTransaction = async (mrid, stringMeasure
         } catch (err) {
             return reject({ success: false, err, message: 'Update stringMeasurement failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa stringMeasurement
 export const deleteStringMeasurementByIdTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run("DELETE FROM string_measurement WHERE mrid=?", [mrid], function (err) {
                 if (err) return reject({ success: false, err, message: 'Delete stringMeasurement failed' })
@@ -241,6 +246,7 @@ export const deleteStringMeasurementByIdTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete stringMeasurement failed' })
         }
+        })().catch(reject)
     })
 }
 

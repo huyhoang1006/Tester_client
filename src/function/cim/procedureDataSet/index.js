@@ -26,7 +26,8 @@ export const getProcedureDataSetById = async (mrid) => {
 
 // Thêm mới procedureDataSet
 export const insertProcedureDataSetTransaction = async (procedureDataSet, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Thêm document trước
             const docResult = await documentFunc.insertDocumentTransaction(procedureDataSet, dbsql)
@@ -58,12 +59,14 @@ export const insertProcedureDataSetTransaction = async (procedureDataSet, dbsql)
         } catch (err) {
             return reject({ success: false, err, message: 'Insert procedureDataSet failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật procedureDataSet
 export const updateProcedureDataSetByIdTransaction = async (mrid, procedureDataSet, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Cập nhật document trước
             const docResult = await documentFunc.updateDocumentByIdTransaction(mrid, procedureDataSet, dbsql)
@@ -92,12 +95,14 @@ export const updateProcedureDataSetByIdTransaction = async (mrid, procedureDataS
         } catch (err) {
             return reject({ success: false, err, message: 'Update procedureDataSet failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa procedureDataSet
 export const deleteProcedureDataSetByIdTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run("DELETE FROM procedure_dataset WHERE mrid=?", [mrid], function (err) {
                 if (err) return reject({ success: false, err, message: 'Delete procedureDataSet failed' })
@@ -109,5 +114,6 @@ export const deleteProcedureDataSetByIdTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete procedureDataSet failed' })
         }
+        })().catch(reject)
     })
 }

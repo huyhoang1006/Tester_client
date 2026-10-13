@@ -26,7 +26,8 @@ export const getBreakerInfoById = async (mrid) => {
 
 // Thêm mới breakerInfo (transaction)
 export const insertBreakerInfoTransaction = async (info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const switchInfoResult = await OldSwitchInfoFunc.insertOldSwitchInfoTransaction(info, dbsql)
             if (!switchInfoResult.success) {
@@ -51,12 +52,14 @@ export const insertBreakerInfoTransaction = async (info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert breakerInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật breakerInfo (transaction)
 export const updateBreakerInfoTransaction = async (mrid, info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const switchInfoResult = await OldSwitchInfoFunc.updateOldSwitchInfoTransaction(mrid, info, dbsql)
             if (!switchInfoResult.success) {
@@ -78,6 +81,7 @@ export const updateBreakerInfoTransaction = async (mrid, info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Update breakerInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 

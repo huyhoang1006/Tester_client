@@ -26,7 +26,8 @@ export const getBushingInfoById = async (mrid) => {
 
 // Thêm mới bushingInfo (transaction)
 export const insertBushingInfoTransaction = async (info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetInfoResult = await AssetInfoFunc.insertAssetInfoTransaction(info, dbsql)
             if (!assetInfoResult.success) {
@@ -66,12 +67,14 @@ export const insertBushingInfoTransaction = async (info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert bushingInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật bushingInfo (transaction)
 export const updateBushingInfoTransaction = async (mrid, info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetInfoResult = await AssetInfoFunc.updateAssetInfoTransaction(mrid, info, dbsql)
             if (!assetInfoResult.success) {
@@ -107,12 +110,14 @@ export const updateBushingInfoTransaction = async (mrid, info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Update bushingInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa bushingInfo (transaction)
 export const deleteBushingInfoTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetInfoResult = await AssetInfoFunc.deleteAssetInfoByIdTransaction(mrid, dbsql)
             if (!assetInfoResult.success) {
@@ -127,5 +132,6 @@ export const deleteBushingInfoTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete bushingInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }

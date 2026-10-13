@@ -120,7 +120,8 @@ export const getAllAnalogByProcedure = (procedureId) => {
 
 // Thêm mới analog
 export const insertAnalogTransaction = async (analog, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Thêm measurement trước
             const measResult = await measurementFunc.insertMeasurementTransaction(analog, dbsql)
@@ -152,6 +153,7 @@ export const insertAnalogTransaction = async (analog, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert analog failed' })
         }
+        })().catch(reject)
     })
 }
 
@@ -219,7 +221,8 @@ export const insertAnalog = async (analog) => {
 
 // Cập nhật analog
 export const updateAnalogByIdTransaction = async (mrid, analog, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Cập nhật measurement trước
             const measResult = await measurementFunc.updateMeasurementByIdTransaction(mrid, analog, dbsql)
@@ -248,12 +251,14 @@ export const updateAnalogByIdTransaction = async (mrid, analog, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Update analog failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa analog
 export const deleteAnalogByIdTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run("DELETE FROM analog WHERE mrid=?", [mrid], function (err) {
                 if (err) return reject({ success: false, err, message: 'Delete analog failed' })
@@ -265,6 +270,7 @@ export const deleteAnalogByIdTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete analog failed' })
         }
+        })().catch(reject)
     })
 }
 

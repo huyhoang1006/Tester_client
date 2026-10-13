@@ -50,7 +50,8 @@ export const getOtherByPowerTransformerInfoId = async (powerTransformerInfoId) =
 
 // Thêm mới other
 export const insertOther = async (other) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const identifiedObjectResult = await IdentifiedObjectFunc.insertIdentifiedObject(other)
             if (!identifiedObjectResult.success) {
@@ -80,12 +81,14 @@ export const insertOther = async (other) => {
         } catch (err) {
             return reject({ success: false, err: err, message: 'Insert other failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Thêm mới other (transaction)
 export const insertOtherTransaction = async (other, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const identifiedObjectResult = await IdentifiedObjectFunc.insertIdentifiedObjectTransaction(other, dbsql)
             if (!identifiedObjectResult.success) {
@@ -132,12 +135,14 @@ export const insertOtherTransaction = async (other, dbsql) => {
         } catch (err) {
             return reject({ success: false, err: err, message: 'Insert other transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật other
 export const updateOtherById = async (mrid, other) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const identifiedObjectResult = await IdentifiedObjectFunc.updateIdentifiedObjectById(mrid, other)
             if (!identifiedObjectResult.success) {
@@ -168,12 +173,14 @@ export const updateOtherById = async (mrid, other) => {
         } catch (err) {
             return reject({ success: false, err: err, message: 'Update other failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật other (transaction)
 export const updateOtherByIdTransaction = async (mrid, other, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const identifiedObjectResult = await IdentifiedObjectFunc.updateIdentifiedObjectByIdTransaction(mrid, other, dbsql)
             if (!identifiedObjectResult.success) {
@@ -204,12 +211,14 @@ export const updateOtherByIdTransaction = async (mrid, other, dbsql) => {
         } catch (err) {
             return reject({ success: false, err: err, message: 'Update other transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa other theo mrid
 export const deleteOtherById = async (mrid) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const identifiedObjectResult = await IdentifiedObjectFunc.deleteIdentifiedObjectById(mrid)
             if (!identifiedObjectResult.success) {
@@ -225,12 +234,14 @@ export const deleteOtherById = async (mrid) => {
         } catch (err) {
             return reject({ success: false, err: err, message: 'Delete other failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa other theo mrid (transaction)
 export const deleteOtherByIdTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const identifiedObjectResult = await IdentifiedObjectFunc.deleteIdentifiedObjectByIdTransaction(mrid, dbsql)
             if (!identifiedObjectResult.success) {
@@ -246,5 +257,6 @@ export const deleteOtherByIdTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err: err, message: 'Delete other transaction failed' })
         }
+        })().catch(reject)
     })
 }

@@ -26,7 +26,8 @@ export const getSurgeArresterWorkTaskById = async (mrid) => {
 
 // Thêm mới surgeArresterWorkTask
 export const insertSurgeArresterWorkTaskTransaction = async (surgeArresterWorkTask, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Thêm workTask trước
             const workTaskResult = await workTaskFunc.insertWorkTaskTransaction(surgeArresterWorkTask, dbsql)
@@ -54,12 +55,14 @@ export const insertSurgeArresterWorkTaskTransaction = async (surgeArresterWorkTa
         } catch (err) {
             return reject({ success: false, err, message: 'Insert surgeArresterWorkTask failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật surgeArresterWorkTask
 export const updateSurgeArresterWorkTaskByIdTransaction = async (mrid, surgeArresterWorkTask, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Cập nhật workTask trước
             const workTaskResult = await workTaskFunc.updateWorkTaskByIdTransaction(mrid, surgeArresterWorkTask, dbsql)
@@ -84,12 +87,14 @@ export const updateSurgeArresterWorkTaskByIdTransaction = async (mrid, surgeArre
         } catch (err) {
             return reject({ success: false, err, message: 'Update surgeArresterWorkTask failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa surgeArresterWorkTask
 export const deleteSurgeArresterWorkTaskByIdTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run("DELETE FROM surge_arrester_work_task WHERE mrid=?", [mrid], function (err) {
                 if (err) return reject({ success: false, err, message: 'Delete surgeArresterWorkTask failed' })
@@ -101,5 +106,6 @@ export const deleteSurgeArresterWorkTaskByIdTransaction = async (mrid, dbsql) =>
         } catch (err) {
             return reject({ success: false, err, message: 'Delete surgeArresterWorkTask failed'})
         }
+        })().catch(reject)
     })
 }

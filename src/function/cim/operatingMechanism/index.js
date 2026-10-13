@@ -40,7 +40,8 @@ export const getOperatingMechanismByAssetId = async (assetId) => {
 
 // Thêm mới operatingMechanism (transaction)
 export const insertOperatingMechanismTransaction = async (info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetRes = await AssetFunc.insertAssetTransaction(info, dbsql)
             if (!assetRes.success) return reject({ success: false, message: 'Insert Asset failed', err: assetRes.err })
@@ -58,12 +59,14 @@ export const insertOperatingMechanismTransaction = async (info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert operatingMechanism transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật operatingMechanism (transaction)
 export const updateOperatingMechanismTransaction = async (mrid, info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetRes = await AssetFunc.updateAssetTransaction(mrid, info, dbsql)
             if (!assetRes.success) return reject({ success: false, message: 'Update Asset failed', err: assetRes.err })
@@ -79,12 +82,14 @@ export const updateOperatingMechanismTransaction = async (mrid, info, dbsql) => 
         } catch (err) {
             return reject({ success: false, err, message: 'Update operatingMechanism transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa operatingMechanism (transaction)
 export const deleteOperatingMechanismTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run('DELETE FROM operating_mechanism WHERE mrid = ?', [mrid], function (err) {
                 if (err) return reject({ success: false, err, message: 'Delete operatingMechanism failed' })
@@ -100,5 +105,6 @@ export const deleteOperatingMechanismTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete operatingMechanism transaction failed' })
         }
+        })().catch(reject)
     })
 }

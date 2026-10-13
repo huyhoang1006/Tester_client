@@ -5,6 +5,16 @@ import * as PowerPlantMapping from '@/views/Mapping/PowerPlant/index'
 
 export default {
     methods: {
+        async handleClientJobUpdated(payload) {
+            const assetMrid = payload && payload.assetMrid
+            if (!assetMrid) return
+            const assetNode = this.findNodeById(assetMrid, this.organisationClientList)
+            if (!assetNode) return
+
+            this.$set(assetNode, 'children', [])
+            this.$set(assetNode, '_childrenFetched', false)
+            await this.fetchChildren(assetNode)
+        },
         async doubleClickNode(node) {
             await this.showDataClient(node)
             // showPropertiesDataClient được gọi tự động từ single click event
@@ -171,11 +181,10 @@ export default {
                     mrid: node.mrid,
                     parent: assetName
                 })
-            } else if (node.type == 'test') {
+            } else if (node.mode === 'test') {
                 this.assetPropertySignClient = true
                 this.jobPropertySignClient = true
-                const jobNode = node.parentId ? this.findNodeById(node.parentId, this.organisationClientList) : null
-                const assetNode = jobNode ? (jobNode.parentId ? this.findNodeById(jobNode.parentId, this.organisationClientList) : null) : null
+                const assetNode = node.parentId ? this.findNodeById(node.parentId, this.organisationClientList) : null
                 const locationNode = assetNode ? (assetNode.parentId ? this.findNodeById(assetNode.parentId, this.organisationClientList) : null) : null
                 if (locationNode) {
                     await this.mappingPropertiesClient(locationNode)
@@ -183,9 +192,7 @@ export default {
                 if (assetNode) {
                     await this.mappingAssetPropertiesClient(assetNode)
                 }
-                if (jobNode) {
-                    await this.mappingJobPropertiesClient(jobNode)
-                }
+                await this.mappingJobPropertiesClient({ ...node, mrid: node.workMrid || node.mrid })
                 await this.loadPathMapClient(node)
                 const testName = node.name || node.serial_number || node.serial_no || 'Unknown'
                 this.pathMapClient.push({
@@ -193,7 +200,7 @@ export default {
                     mrid: node.mrid,
                     parent: testName
                 })
-            } else if (node.type == 'job') {
+            } else if (node.mode === 'job') {
                 this.assetPropertySignClient = true
                 this.jobPropertySignClient = true
                 // Tìm parent thực sự từ cây dữ liệu

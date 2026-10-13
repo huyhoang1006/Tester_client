@@ -26,7 +26,8 @@ export const getOldPotentialTransformerInfoById = async (mrid) => {
 
 // Thêm mới oldPotentialTransformerInfo (transaction)
 export const insertOldPotentialTransformerTransaction = async (info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const ptInfoResult = await PotentialTransformerInfoFunc.insertPotentialTransformerTransaction(info, dbsql)
             if (!ptInfoResult.success) {
@@ -61,12 +62,14 @@ export const insertOldPotentialTransformerTransaction = async (info, dbsql) => {
         } catch (error) {
             return reject({ success: false, err: error, message: 'Insert oldPotentialTransformerInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật oldPotentialTransformerInfo (transaction)
 export const updateOldPotentialTransformerInfoTransaction = async (mrid, info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const ptInfoResult = await PotentialTransformerInfoFunc.updatePotentialTransformerInfoTransaction(mrid, info, dbsql)
             if (!ptInfoResult.success) {
@@ -100,13 +103,15 @@ export const updateOldPotentialTransformerInfoTransaction = async (mrid, info, d
         } catch (error) {
             return reject({ success: false, err: error, message: 'Update oldPotentialTransformerInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa oldPotentialTransformerInfo (transaction)
 export const deleteOldPotentialTransformerInfoTransaction = async (mrid, dbsql) => {
 
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // 1️⃣ Xóa bản ghi trong old_potential_transformer_info trước
             dbsql.run("DELETE FROM old_potential_transformer_info WHERE mrid=?", [mrid], async function (err) {
@@ -149,5 +154,6 @@ export const deleteOldPotentialTransformerInfoTransaction = async (mrid, dbsql) 
                 message: 'Delete oldPotentialTransformerInfo transaction failed'
             });
         }
+        })().catch(reject)
     });
 };

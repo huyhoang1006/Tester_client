@@ -22,6 +22,7 @@ import * as PowerSystemResourceFunc from './powerSystemResource/index.js'
 import * as surgeArresterFunc from './surgeArrester/index.js'
 import * as ProductAssetModelFunc from './productAssetModel/index.js'
 import * as oldWorkFunc from './oldWork/index.js'
+import * as workTaskFunc from './workTask/index.js'
 import * as assetFunc from './asset/index.js'
 import * as analogFunc from './analog/index.js'
 import * as stringMeasurementFunc from './stringMeasurement/index.js'
@@ -48,7 +49,7 @@ export {
     townDetailFunc, telephoneNumberFunc, organisationFunc, parentOrganizationFunc,
     activityRecordFunc, configurationEventFunc, positionPointFunc, voltageFunc, baseVoltageFunc,
     bayFunc, voltageLevelFunc, PowerSystemResourceFunc, surgeArresterFunc, ProductAssetModelFunc,
-    oldWorkFunc, assetFunc, analogFunc, stringMeasurementFunc, discreteFunc, valueToAliasFunc, valueAliasSetFunc,
+    oldWorkFunc, workTaskFunc, assetFunc, analogFunc, stringMeasurementFunc, discreteFunc, valueToAliasFunc, valueAliasSetFunc,
     bushingFunc, capacitorInfoFunc, capacitanceInfoFunc, dissipationFactorInfoFunc, reactivePowerFunc, reactorInfoFunc,
     procedureFunc, otherFunc, ctExcitationPointFunc, cbMotorCurrentPointFunc, cbTimingTraceFunc, statusFunc
 }

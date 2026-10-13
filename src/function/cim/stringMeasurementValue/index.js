@@ -82,7 +82,8 @@ export const getStringMeasurementValueByTestDataSetMrids = async (mrids) => {
 
 // Thêm mới stringMeasurementValue
 export const insertStringMeasurementValueTransaction = async (stringMeasurementValue, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Thêm measurementValue trước
             const mvResult = await measurementValueFunc.insertMeasurementValueTransaction(stringMeasurementValue, dbsql)
@@ -110,6 +111,7 @@ export const insertStringMeasurementValueTransaction = async (stringMeasurementV
         } catch (err) {
             return reject({ success: false, err, message: 'Insert stringMeasurementValue failed' })
         }
+        })().catch(reject)
     })
 }
 
@@ -153,7 +155,8 @@ export const insertStringMeasurementValuesTransaction = async (stringMeasurement
 
 // Cập nhật stringMeasurementValue
 export const updateStringMeasurementValueByIdTransaction = async (mrid, stringMeasurementValue, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Cập nhật measurementValue trước
             const mvResult = await measurementValueFunc.updateMeasurementValueByIdTransaction(mrid, stringMeasurementValue, dbsql)
@@ -178,12 +181,14 @@ export const updateStringMeasurementValueByIdTransaction = async (mrid, stringMe
         } catch (err) {
             return reject({ success: false, err, message: 'Update stringMeasurementValue failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa stringMeasurementValue
 export const deleteStringMeasurementValueByIdTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run("DELETE FROM string_measurement_value WHERE mrid=?", [mrid], function (err) {
                 if (err) return reject({ success: false, err, message: 'Delete stringMeasurementValue failed' })
@@ -195,6 +200,7 @@ export const deleteStringMeasurementValueByIdTransaction = async (mrid, dbsql) =
         } catch (err) {
             return reject({ success: false, err, message: 'Delete stringMeasurementValue failed' })
         }
+        })().catch(reject)
     })
 }
 

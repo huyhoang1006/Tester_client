@@ -24,7 +24,8 @@ export const getOldOperatingMechanismById = async (mrid) => {
 }
 
 export const getOldOperatingMechanismByAssetIdTransaction = async (assetId) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const query = `
                 SELECT o.*, om.*, a.*, io.*
@@ -65,13 +66,15 @@ export const getOldOperatingMechanismByAssetIdTransaction = async (assetId) => {
                 message: 'Get oldOperatingMechanism transaction failed'
             });
         }
+        })().catch(reject)
     });
 };
 
 
 // Thêm mới oldOperatingMechanism (transaction)
 export const insertOldOperatingMechanismTransaction = async (info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const parentRes = await OperatingMechanismFunc.insertOperatingMechanismTransaction(info, dbsql)
             if (!parentRes.success) return reject({ success: false, message: 'Insert OperatingMechanism failed', err: parentRes.err })
@@ -97,12 +100,14 @@ export const insertOldOperatingMechanismTransaction = async (info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert oldOperatingMechanism transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật oldOperatingMechanism (transaction)
 export const updateOldOperatingMechanismTransaction = async (mrid, info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const parentRes = await OperatingMechanismFunc.updateOperatingMechanismTransaction(mrid, info, dbsql)
             if (!parentRes.success) return reject({ success: false, message: 'Update OperatingMechanism failed', err: parentRes.err })
@@ -125,12 +130,14 @@ export const updateOldOperatingMechanismTransaction = async (mrid, info, dbsql) 
         } catch (err) {
             return reject({ success: false, err, message: 'Update oldOperatingMechanism transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa oldOperatingMechanism (transaction)
 export const deleteOldOperatingMechanismTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Delete child row first
             dbsql.run("DELETE FROM old_operating_mechanism WHERE mrid = ?", [mrid], function (err) {
@@ -147,5 +154,6 @@ export const deleteOldOperatingMechanismTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete oldOperatingMechanism transaction failed' })
         }
+        })().catch(reject)
     })
 }

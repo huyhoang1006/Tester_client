@@ -70,7 +70,8 @@ export const insertPowerCable = async (cable) => {
 }
 
 export const insertPowerCableTransaction = async (cable, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetResult = await AssetFunc.insertAssetTransaction(cable, db)
             if (!assetResult.success) {
@@ -105,6 +106,7 @@ export const insertPowerCableTransaction = async (cable, dbsql) => {
         } catch (error) {
             return reject({ success: false, err: error, message: 'Insert power cable transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
@@ -141,7 +143,7 @@ export const updatePowerCable = async (mrid, cable) => {
                                 return reject({ success: false, err: err, message: 'Update surge arrester failed' })
                             }
                             db.run('COMMIT')
-                            return resolve({ success: true, data: arrester, message: 'Update surge arrester completed' })
+                            return resolve({ success: true, data: cable, message: 'Update power cable completed' })
                         }
                     )
                 })
@@ -154,7 +156,8 @@ export const updatePowerCable = async (mrid, cable) => {
 }
 
 export const updatePowerCableTransaction = async (mrid, cable, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetResult = await AssetFunc.updateAssetTransaction(mrid, cable, dbsql)
             if (!assetResult.success) {
@@ -187,6 +190,7 @@ export const updatePowerCableTransaction = async (mrid, cable, dbsql) => {
         } catch (error) {
             return reject({ success: false, err: error, message: 'Update power cable transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
@@ -212,7 +216,8 @@ export const deletePowerCableById = async (mrid) => {
 }
 
 export const deletePowerCableTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run("DELETE FROM power_cable WHERE mrid=?", [mrid], function (err) {
                 if (err) {
@@ -232,6 +237,7 @@ export const deletePowerCableTransaction = async (mrid, dbsql) => {
         } catch (error) {
             return reject({ success: false, err: error, message: 'Delete power cable transaction failed' })
         }
+        })().catch(reject)
     })
 }
 

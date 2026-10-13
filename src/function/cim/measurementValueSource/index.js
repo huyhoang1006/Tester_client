@@ -26,7 +26,8 @@ export const getMeasurementValueSourceById = async (mrid) => {
 
 // Thêm mới measurementValueSource
 export const insertMeasurementValueSourceTransaction = async (measurementValueSource, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Thêm identifiedObject trước
             const idObjResult = await identifiedObjectFunc.insertIdentifiedObjectTransaction(measurementValueSource, dbsql)
@@ -51,12 +52,14 @@ export const insertMeasurementValueSourceTransaction = async (measurementValueSo
         } catch (err) {
             return reject({ success: false, err, message: 'Insert measurementValueSource failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật measurementValueSource
 export const updateMeasurementValueSourceByIdTransaction = async (mrid, measurementValueSource, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Cập nhật identifiedObject trước
             const idObjResult = await identifiedObjectFunc.updateIdentifiedObjectByIdTransaction(mrid, measurementValueSource, dbsql)
@@ -79,12 +82,14 @@ export const updateMeasurementValueSourceByIdTransaction = async (mrid, measurem
         } catch (err) {
             return reject({ success: false, err, message: 'Update measurementValueSource failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa measurementValueSource
 export const deleteMeasurementValueSourceByIdTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run("DELETE FROM measurement_value_source WHERE mrid=?", [mrid], function (err) {
                 if (err) return reject({ success: false, err, message: 'Delete measurementValueSource failed' })
@@ -96,5 +101,6 @@ export const deleteMeasurementValueSourceByIdTransaction = async (mrid, dbsql) =
         } catch (err) {
             return reject({ success: false, err, message: 'Delete measurementValueSource failed' })
         }
+        })().catch(reject)
     })
 }

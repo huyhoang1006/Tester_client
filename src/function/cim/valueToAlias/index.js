@@ -54,7 +54,8 @@ export const getValueToAliasByValueAliasSetId = async (valueAliasSetId) => {
 
 // Thêm mới valueToAlias
 export const insertValueToAliasTransaction = async (valueToAlias, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Thêm identifiedObject trước
             const idObjResult = await identifiedObjectFunc.insertIdentifiedObjectTransaction(valueToAlias, dbsql)
@@ -82,12 +83,14 @@ export const insertValueToAliasTransaction = async (valueToAlias, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert valueToAlias failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật valueToAlias
 export const updateValueToAliasByIdTransaction = async (mrid, valueToAlias, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Cập nhật identifiedObject trước
             const idObjResult = await identifiedObjectFunc.updateIdentifiedObjectByIdTransaction(mrid, valueToAlias, dbsql)
@@ -112,12 +115,14 @@ export const updateValueToAliasByIdTransaction = async (mrid, valueToAlias, dbsq
         } catch (err) {
             return reject({ success: false, err, message: 'Update valueToAlias failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa valueToAlias
 export const deleteValueToAliasByIdTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run("DELETE FROM value_to_alias WHERE mrid=?", [mrid], function (err) {
                 if (err) return reject({ success: false, err, message: 'Delete valueToAlias failed' })
@@ -129,5 +134,6 @@ export const deleteValueToAliasByIdTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete valueToAlias failed'})
         }
+        })().catch(reject)
     })
 }

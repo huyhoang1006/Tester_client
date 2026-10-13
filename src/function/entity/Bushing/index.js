@@ -11,7 +11,7 @@ import { insertCurrentFlowTransaction, getCurrentFlowById, deleteCurrentFlowById
 import { insertFrequencyTransaction, deleteFrequencyByIdTransaction, getFrequencyById } from '@/function/cim/frequency'
 import { insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction } from '@/function/cim/lifecycleDate';
 import { insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction } from '@/function/cim/productAssetModel';
-import { insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from '@/function/entity/assetPsr'
+import { insertAssetPsrTransaction, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from '@/function/entity/assetPsr'
 import { insertOldBushingInfoTransaction, getOldBushingInfoById, deleteOldBushingInfoTransaction } from '@/function/cim/oldBushingInfo';
 import BushingEntity from '@/views/Flatten/Bushing';
 import { writeAssetSaveAuditLog, writeAssetDeleteAuditLog } from '../assetAudit/index'

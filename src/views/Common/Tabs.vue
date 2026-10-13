@@ -26,6 +26,7 @@
                             <span v-else-if="tab.mode == 'bay'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
                             <span v-else-if="tab.mode == 'asset'" class="tab-label">{{ tab.apparatus_id || tab.serial_number }}</span>
                             <span v-else-if="tab.mode == 'job'" class="tab-label">{{ tab.name }}</span>
+                            <span v-else-if="tab.mode == 'test'" class="tab-label">{{ tab.name }}</span>
                         </div>
                         <span class="close-icon mgr-10 mgl-10" :class="{ visible: hoveredTab === (tab.mrid || tab.id) || compareTab(activeTab, tab) }" @click.stop="closeTab(index)">✖</span>
                     </div>
@@ -98,6 +99,7 @@
                             <span v-else-if="tab.mode == 'bay'" class="tab-label">{{ tab.aliasName || tab.name }}</span>
                             <span v-else-if="tab.mode == 'asset'" class="tab-label">{{ tab.apparatus_id || tab.serial_number }}</span>
                             <span v-else-if="tab.mode == 'job'" class="tab-label">{{ tab.name }}</span>
+                            <span v-else-if="tab.mode == 'test'" class="tab-label">{{ tab.name }}</span>
                         </div>
                         <span class="close-icon mgr-10 mgl-10" :class="{ visible: hoveredTab === (tab.mrid || tab.id) || compareTab(activeTab, tab) }" @click.stop="closeTab(index)">✖</span>
                     </div>
@@ -264,11 +266,13 @@ export default {
                 if (!newTab) return;
                 const id = newTab.mrid || newTab.id;
 
-                this.$nextTick(() => {
+                this.$nextTick(async () => {
                     const comp = this.getComponentRef(id);
                     if (comp && this.pendingLoadData[id]) {
-                        this.pendingLoadData[id](comp);
+                        await Promise.resolve(this.pendingLoadData[id](comp));
                         this.$delete(this.pendingLoadData, id); 
+                        await this.$nextTick();
+                        this.focusRequestedTest(comp, newTab);
                     }
                     this.refreshStickyTestHeader();
                 });
@@ -335,14 +339,37 @@ export default {
         },
 
         executeOrQueueLoadData(id, loadFn) {
-            this.$nextTick(() => {
+            this.$nextTick(async () => {
                 const comp = this.getComponentRef(id);
                 if (comp) {
-                    loadFn(comp); 
+                    await Promise.resolve(loadFn(comp));
+                    const tab = this.tabs.find(item => (item.mrid || item.id) === id)
+                    await this.$nextTick();
+                    this.focusRequestedTest(comp, tab);
                 } else {
                     this.$set(this.pendingLoadData, id, loadFn); 
                 }
             });
+        },
+
+        focusRequestedTest(comp, tab) {
+            if (!comp || !tab) return
+            if (tab._openTestSettings) {
+                comp.mainActiveName = 'test-settings'
+                return
+            }
+            if (tab.mode !== 'test' || !tab.mrid) return
+
+            const dtoKey = Object.keys(comp.$data || {}).find(key => /JobDto$/.test(key) && !/Old$/.test(key))
+            const dto = dtoKey ? comp[dtoKey] : null
+            const tests = dto && Array.isArray(dto.testList) ? dto.testList : []
+            const index = tests.findIndex(test => test && test.mrid === tab.mrid)
+            if (index === -1) return
+
+            comp.mainActiveName = 'test-data'
+            if (comp.objActiveName) {
+                comp.objActiveName.activeName = `${tests[index].name}${index}`
+            }
         },
 
         async attachServerAssetMedia(dto, assetType, serverAssetId) {
@@ -377,6 +404,12 @@ export default {
                 }
             }
             await this.loadData(tab, index, savedData)
+            if (tab && ['job', 'test'].includes(tab.mode)) {
+                this.$emit('job-updated', {
+                    workMrid: tab.workMrid || tab.mrid,
+                    assetMrid: tab.parentId
+                })
+            }
         },
 
         async loadData(tab, index, savedData) {
@@ -385,7 +418,7 @@ export default {
                 ? startLoading(this, {
                     action: 'load',
                     customText: 'Loading tab data...',
-                    type: tab && tab.mode === 'job' ? 'heavy' : 'default'
+                    type: tab && ['job', 'test'].includes(tab.mode) ? 'heavy' : 'default'
                 })
                 : null;
 
@@ -699,7 +732,7 @@ export default {
                             }
                         }
                     }
-                } else if (tab.mode === 'job') {
+                } else if (tab.mode === 'job' || tab.mode === 'test') {
                     const dataAsset = await window.electronAPI.getAssetByMrid(tab.parentId)
                     if (dataAsset.success) {
                         ctx.assetData = dataAsset.data
@@ -722,7 +755,7 @@ export default {
                         const dataSurgeArrester = await window.electronAPI.getSurgeArresterByMrid(tab.parentId)
                         ctx.assetData = dataSurgeArrester.success ? dataSurgeArrester.data : {}
 
-                        const data = await window.electronAPI.getSurgeArresterJobByMrid(tab.mrid)
+                        const data = await window.electronAPI.getSurgeArresterJobByMrid(tab.workMrid || tab.mrid)
                         if (data.success) {
                             const surgeArresterJobDto = SurgeArresterJobMapper.JobEntityToDto(data.data)
                             for (const test of surgeArresterJobDto.testList) {
@@ -750,7 +783,7 @@ export default {
                             ctx.assetData = {}
                         }
 
-                        const data = await window.electronAPI.getPowerCableJobByMrid(tab.mrid)
+                        const data = await window.electronAPI.getPowerCableJobByMrid(tab.workMrid || tab.mrid)
                         if (data.success) {
                             const powerCableJobDto = PowerCableJobMapper.JobEntityToDto(data.data)
                             for (const test of powerCableJobDto.testList) {
@@ -773,7 +806,7 @@ export default {
                         const dataTransformer = await window.electronAPI.getTransformerEntityByMrid(tab.parentId)
                         ctx.assetData = dataTransformer.success ? transformerMapper.transformerEntityToDto(dataTransformer.data) : {}
 
-                        const data = await window.electronAPI.getTransformerJobByMrid(tab.mrid)
+                        const data = await window.electronAPI.getTransformerJobByMrid(tab.workMrid || tab.mrid)
                         if (data.success) {
                             const transformerJobDto = TransformerJobMapper.JobEntityToDto(data.data)
                             for (const test of transformerJobDto.testList) {
@@ -804,7 +837,7 @@ export default {
                             ctx.productAssetModelData = dataProductAssetModel.success ? dataProductAssetModel.data : {}
                         }
 
-                        const data = await window.electronAPI.getVoltageTransformerJobByMrid(tab.mrid)
+                        const data = await window.electronAPI.getVoltageTransformerJobByMrid(tab.workMrid || tab.mrid)
                         if (data.success) {
                             const voltageTransformerJobDto = VoltageTransformerJobMapper.JobEntityToDto(data.data)
                             for (const test of voltageTransformerJobDto.testList) {
@@ -827,7 +860,7 @@ export default {
                         const dataCurrentTransformer = await window.electronAPI.getCurrentTransformerEntityByMrid(tab.parentId)
                         ctx.assetData = dataCurrentTransformer.success ? currentTransformerMapper.mapEntityToDto(dataCurrentTransformer.data) : {}
 
-                        const data = await window.electronAPI.getCurrentTransformerJobByMrid(tab.mrid)
+                        const data = await window.electronAPI.getCurrentTransformerJobByMrid(tab.workMrid || tab.mrid)
                         if (data.success) {
                             const currentTransformerJobDto = CurrentTransformerJobMapper.JobEntityToDto(data.data)
                             for (const test of currentTransformerJobDto.testList) {
@@ -850,7 +883,7 @@ export default {
                         const dataDisconnector = await window.electronAPI.getDisconnectorEntityByMrid(tab.parentId)
                         ctx.assetData = dataDisconnector.success ? disconnectorMapper.disconnectorEntityToDto(dataDisconnector.data) : {}
 
-                        const data = await window.electronAPI.getDisconnectorJobByMrid(tab.mrid)
+                        const data = await window.electronAPI.getDisconnectorJobByMrid(tab.workMrid || tab.mrid)
                         if (data.success) {
                             const disconnectorJobDto = DisconnectorJobMapper.JobEntityToDto(data.data)
                             for (const test of disconnectorJobDto.testList) {
@@ -873,7 +906,7 @@ export default {
                         const dataRotatingMachine = await window.electronAPI.getRotatingMachineEntityByMrid(tab.parentId)
                         ctx.assetData = dataRotatingMachine.success ? RotatingMachineMapper.mapEntityToDto(dataRotatingMachine.data) : {}
 
-                        const data = await window.electronAPI.getRotatingMachineJobByMrid(tab.mrid)
+                        const data = await window.electronAPI.getRotatingMachineJobByMrid(tab.workMrid || tab.mrid)
                         if (data.success) {
                             const rotatingMachineJobDto = RotatingMachineJobMapper.JobEntityToDto(data.data)
                             for (const test of rotatingMachineJobDto.testList) {
@@ -902,7 +935,7 @@ export default {
                         const dataReactor = await window.electronAPI.getReactorEntityByMrid(tab.parentId)
                         ctx.assetData = dataReactor.success ? reactorMapper.mapEntityToDto(dataReactor.data) : {}
 
-                        const data = await window.electronAPI.getReactorJobByMrid(tab.mrid)
+                        const data = await window.electronAPI.getReactorJobByMrid(tab.workMrid || tab.mrid)
                         if (data.success) {
                             const reactorJobDto = ReactorJobMapper.JobEntityToDto(data.data)
                             for (const test of reactorJobDto.testList) {
@@ -925,7 +958,7 @@ export default {
                         const dataCapacitor = await window.electronAPI.getCapacitorEntityByMrid(tab.parentId)
                         ctx.assetData = dataCapacitor.success ? CapacitorMapper.mapEntityToDto(dataCapacitor.data) : {}
 
-                        const data = await window.electronAPI.getCapacitorJobByMrid(tab.mrid)
+                        const data = await window.electronAPI.getCapacitorJobByMrid(tab.workMrid || tab.mrid)
                         if (data.success) {
                             const capacitorJobDto = CapacitorJobMapper.JobEntityToDto(data.data)
                             for (const test of capacitorJobDto.testList) {
@@ -948,7 +981,7 @@ export default {
                         const dataBushing = await window.electronAPI.getBushingByMrid(tab.parentId)
                         ctx.assetData = dataBushing.success ? dataBushing.data : {}
 
-                        const data = await window.electronAPI.getBushingJobByMrid(tab.mrid)
+                        const data = await window.electronAPI.getBushingJobByMrid(tab.workMrid || tab.mrid)
                         if (data.success) {
                             const bushingJobDto = BushingJobMapper.JobEntityToDto(data.data)
                             for (const test of bushingJobDto.testList) {
@@ -971,7 +1004,7 @@ export default {
                         const dataCircuitBreaker = await window.electronAPI.getBreakerEntityByMrid(tab.parentId)
                         ctx.assetData = dataCircuitBreaker.success ? BreakerMapper.mapEntityToDto(dataCircuitBreaker.data) : {}
 
-                        const data = await window.electronAPI.getCircuitBreakerJobByMrid(tab.mrid)
+                        const data = await window.electronAPI.getCircuitBreakerJobByMrid(tab.workMrid || tab.mrid)
                         if (data.success) {
                             const circuitBreakerJobDto = CircuitBreakerJobMapper.JobEntityToDto(data.data)
                             for (const test of circuitBreakerJobDto.testList) {
@@ -1184,7 +1217,7 @@ export default {
             this.$emit('input', tab);
             const needsRestoreLoad = !!(tab && tab._needsRestoreLoad)
             await this.loadRestoredTabIfNeeded(tab, index);
-            if (tab && tab.mode === 'job' && !needsRestoreLoad) {
+            if (tab && ['job', 'test'].includes(tab.mode) && !needsRestoreLoad) {
                 await this.loadData(tab, index);
             }
 
@@ -1269,7 +1302,7 @@ export default {
                 else if (tab.asset === 'Circuit breaker') return 'CircuitBreaker'
                 else if (tab.asset === 'Transformer') return 'Transformer'
                 else if (tab.asset === 'Reactor') return 'Reactor'
-            } else if (tab.mode == 'job') {
+            } else if (tab.mode == 'job' || tab.mode == 'test') {
                 if (tab.job === 'Surge arrester') return 'SurgeArresterJob'
                 else if (tab.job === 'Transformer') return 'TransformerJob'
                 else if (tab.job === 'Voltage transformer') return 'VoltageTransformerJob'
@@ -1291,7 +1324,7 @@ export default {
                     if (comp && comp.saveCtrS) {
                         const { close } = startLoading(this, {
                             action: 'save',
-                            type: this.activeTab.mode === 'job' ? 'heavy' : 'default'
+                            type: ['job', 'test'].includes(this.activeTab.mode) ? 'heavy' : 'default'
                         });
 
                         try {

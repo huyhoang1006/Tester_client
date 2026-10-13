@@ -15,7 +15,7 @@ import { getDisconnectorInfoById, insertDisconnectorInfoTransaction, deleteDisco
 import { getSwitchInfoById } from '@/function/cim/switchInfo';
 import { getOldSwitchInfoById } from '@/function/cim/oldSwitchInfo';
 import DisconnectorEntity from '@/views/Flatten/Disconnector';
-import { insertAssetPsrTransaction, getAssetPsrById, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from '@/function/entity/assetPsr'
+import { insertAssetPsrTransaction, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from '@/function/entity/assetPsr'
 import { insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction } from '@/function/cim/lifecycleDate';
 import { insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction } from '@/function/cim/productAssetModel';
 import { writeAssetSaveAuditLog, writeAssetDeleteAuditLog } from '../assetAudit/index'

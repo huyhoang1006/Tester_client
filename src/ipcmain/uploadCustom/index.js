@@ -40,7 +40,7 @@ export const uploadCustom = () => {
 }
 
 export const getNameTemplate = () => {
-    ipcMain.handle('getNameTemplate', async function (event) {
+    ipcMain.handle('getNameTemplate', async function () {
         try {
             const nameTemp = await uploadFunc.getNameTemplate()
 
@@ -223,7 +223,7 @@ export const checkNameExist = () => {
 }
 
 export const getVariableFromJson = () => {
-    ipcMain.handle('getVariableFromJson', async function (event) {
+    ipcMain.handle('getVariableFromJson', async function () {
         const rs = await dialog.showOpenDialog({
             title: 'Select the file to be uploaded',
             buttonLabel: 'Upload',

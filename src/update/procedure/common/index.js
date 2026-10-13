@@ -11,7 +11,6 @@ import * as laborelecStandardFunc   from '@/function/cim/laborelecStandard/index
 import * as tappiStandardFunc       from '@/function/cim/tappiStandard/index'
 import * as ukministryStandardFunc  from '@/function/cim/ukministryOfDefenceStandard/index'
 import * as wepStandardFunc         from '@/function/cim/wepStandard/index'
-import * as customizedStandardFunc  from '@/function/cim/customizedStandard/index'
 // Assessment imports
 import * as assessmentRuleFunc  from '@/function/cim/assessmentRule/index'
 import * as assessmentGroupFunc from '@/function/cim/assessmentGroup/index'

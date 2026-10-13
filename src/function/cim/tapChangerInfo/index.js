@@ -26,7 +26,8 @@ export const getTapChangerInfoById = async (mrid) => {
 
 // Thêm mới tapChangerInfo (transaction)
 export const insertTapChangerInfoTransaction = async (info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetInfoResult = await AssetInfoFunc.insertAssetInfoTransaction(info, dbsql)
             if (!assetInfoResult.success) {
@@ -81,12 +82,14 @@ export const insertTapChangerInfoTransaction = async (info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert tapChangerInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật tapChangerInfo (transaction)
 export const updateTapChangerInfoTransaction = async (mrid, info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetInfoResult = await AssetInfoFunc.updateAssetInfoTransaction(mrid, info, dbsql)
             if (!assetInfoResult.success) {
@@ -136,12 +139,14 @@ export const updateTapChangerInfoTransaction = async (mrid, info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Update tapChangerInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa tapChangerInfo (transaction)
 export const deleteTapChangerInfoTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetInfoResult = await AssetInfoFunc.deleteAssetInfoByIdTransaction(mrid, dbsql)
             if (!assetInfoResult.success) {
@@ -156,5 +161,6 @@ export const deleteTapChangerInfoTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete tapChangerInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }

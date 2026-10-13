@@ -1,6 +1,6 @@
 <template>
     <el-dialog 
-        title="Add Job" 
+        title="Add Test"
         :visible="visible" 
         @close="handleClose"
         @update:visible="$emit('update:visible', $event)"
@@ -13,6 +13,8 @@
             ref="jobData" 
             :is="checkJobType" 
             :parent="parentOrganization"
+            class="add-test-content"
+            @hook:mounted="openTestSettings"
         />
         <span slot="footer" class="dialog-footer custom-footer">
             <el-button class="footer-btn" size="small" type="danger" @click="handleCancel">Cancel</el-button>
@@ -101,7 +103,23 @@ export default {
             default: 'app-dialog'
         }
     },
+    watch: {
+        visible(isVisible) {
+            if (isVisible) this.openTestSettings()
+        },
+        checkJobType() {
+            if (this.visible) this.openTestSettings()
+        }
+    },
     methods: {
+        openTestSettings() {
+            this.$nextTick(() => {
+                const jobData = this.$refs.jobData
+                if (jobData && jobData.$data && Object.prototype.hasOwnProperty.call(jobData.$data, 'mainActiveName')) {
+                    jobData.mainActiveName = 'test-settings'
+                }
+            })
+        },
         handleClose() {
             this.$emit('close')
         },

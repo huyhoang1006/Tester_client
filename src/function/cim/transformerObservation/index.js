@@ -26,7 +26,8 @@ export const getTransformerObservationById = async (mrid) => {
 
 // Thêm mới transformerObservation
 export const insertTransformerObservationTransaction = async (transformerObservation, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Thêm identifiedObject trước
             const idObjResult = await identifiedObjectFunc.insertIdentifiedObjectTransaction(transformerObservation, dbsql)
@@ -84,12 +85,14 @@ export const insertTransformerObservationTransaction = async (transformerObserva
         } catch (err) {
             return reject({ success: false, err, message: 'Insert transformerObservation failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật transformerObservation
 export const updateTransformerObservationByIdTransaction = async (mrid, transformerObservation, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Cập nhật identifiedObject trước
             const idObjResult = await identifiedObjectFunc.updateIdentifiedObjectByIdTransaction(mrid, transformerObservation, dbsql)
@@ -142,12 +145,14 @@ export const updateTransformerObservationByIdTransaction = async (mrid, transfor
         } catch (err) {
             return reject({ success: false, err, message: 'Update transformerObservation failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa transformerObservation
 export const deleteTransformerObservationByIdTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run("DELETE FROM transformer_observation WHERE mrid=?", [mrid], function (err) {
                 if (err) return reject({ success: false, err, message: 'Delete transformerObservation failed' })
@@ -159,5 +164,6 @@ export const deleteTransformerObservationByIdTransaction = async (mrid, dbsql) =
         } catch (err) {
             return reject({ success: false, err, message: 'Delete transformerObservation failed' })
         }
+        })().catch(reject)
     })
 }

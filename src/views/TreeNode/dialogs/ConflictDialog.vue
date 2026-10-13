@@ -1,7 +1,7 @@
 <template>
   <el-dialog
     title="Conflict Resolution"
-    :visible.sync="visible"
+    :visible="visible"
     width="860px"
     :close-on-click-modal="false"
     :close-on-press-escape="false"

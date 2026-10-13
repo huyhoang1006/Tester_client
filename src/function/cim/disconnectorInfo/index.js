@@ -26,7 +26,8 @@ export const getDisconnectorInfoById = async (mrid) => {
 
 // Thêm mới disconnectorInfo (transaction)
 export const insertDisconnectorInfoTransaction = async (info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const switchInfoResult = await OldSwitchInfoFunc.insertOldSwitchInfoTransaction(info, dbsql)
             if (!switchInfoResult.success) {
@@ -57,12 +58,14 @@ export const insertDisconnectorInfoTransaction = async (info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert disconnectorInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật disconnectorInfo (transaction)
 export const updateDisconnectorInfoTransaction = async (mrid, info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const switchInfoResult = await OldSwitchInfoFunc.updateOldSwitchInfoTransaction(mrid, info, dbsql)
             if (!switchInfoResult.success) {
@@ -90,12 +93,14 @@ export const updateDisconnectorInfoTransaction = async (mrid, info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Update disconnectorInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa disconnectorInfo (transaction)
 export const deleteDisconnectorInfoTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const switchInfoResult = await OldSwitchInfoFunc.deleteOldSwitchInfoTransaction(mrid, dbsql)
             if (!switchInfoResult.success) {
@@ -110,5 +115,6 @@ export const deleteDisconnectorInfoTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete disconnectorInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }

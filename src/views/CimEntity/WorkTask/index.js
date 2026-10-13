@@ -1,4 +1,5 @@
 import BaseWork from "../BaseWork";
+import Work from '../Work'
 class WorkTask extends BaseWork {
     constructor() {
         super();

@@ -110,7 +110,8 @@ export const insertLocation = async (location) => {
 }
 
 export const insertLocationTransaction = async (location, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Insert vào identified_object trước
             const identifiedResult = await IdentifiedObjectFunc.insertIdentifiedObjectTransaction(location, dbsql)
@@ -152,6 +153,7 @@ export const insertLocationTransaction = async (location, dbsql) => {
         } catch (err) {
             return reject({ success: false, err : err, message: 'Insert location transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
@@ -206,7 +208,8 @@ export const updateLocation = async (mrid, location) => {
 }
 
 export const updateLocationTransaction = async (mrid, location, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Update identified_object trước
             const identifiedResult = await IdentifiedObjectFunc.updateIdentifiedObjectByIdTransaction(mrid, location, dbsql)
@@ -245,6 +248,7 @@ export const updateLocationTransaction = async (mrid, location, dbsql) => {
         } catch (err) {
             return reject({ success: false, err : err, message: 'Update location transaction failed' })
         }
+        })().catch(reject)
     })
 }
 

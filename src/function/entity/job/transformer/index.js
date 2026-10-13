@@ -19,7 +19,6 @@ import { insertTestStandardTransaction, deleteTestStandardByIdTransaction, getTe
 import { insertAssessmentTransaction, deleteAssessmentByIdTransaction, getAssessmentInGroupIds } from '@/function/cim/assessment/index.js'
 import { insertAssessmentGroupTransaction, deleteAssessmentGroupByIdTransaction, getAssessmentGroupByParentId, getAssessmentGroupByRuleId } from '@/function/cim/assessmentGroup/index.js'
 import { insertAssessmentRuleTransaction, deleteAssessmentRuleByIdTransaction, getAssessmentRuleByStandardId } from '@/function/cim/assessmentRule/index.js'
-import transformerAssessmentMap from '@/config/testing-assessment/Transformer/index.js'
 import { rollbackQuietly } from '@/function/datacontext/rollback'
 import {
     deleteSfraTraceByDatasetIdTransaction,
@@ -114,11 +113,9 @@ export const insertTransformerJobEntity = async (old_entity,entity) => {
             
 
             //customized standard
-            const newCustomizedIds = entity.standardCustomized.map(v => v && v.mrid).filter(id => id); // bỏ null/empty
             const oldCustomizedIds = old_entity.standardCustomized.map(v => v && v.mrid).filter(id => id);
 
             const toAddCustomized = entity.standardCustomized.filter(v => v.mrid && !oldCustomizedIds.includes(v.mrid));
-            const toDeleteCustomized = old_entity.standardCustomized.filter(v => v.mrid && !newCustomizedIds.includes(v.mrid));
             const toUpdateCustomized = entity.standardCustomized.filter(v => v.mrid && oldCustomizedIds.includes(v.mrid));
             for (const customized of toAddCustomized) {
                 await insertCustomizedStandardTransaction(customized, db);
@@ -196,11 +193,9 @@ export const insertTransformerJobEntity = async (old_entity,entity) => {
             }
 
             //assessment rule
-            const newAssessmentRuleIds = entity.assessment_rule.map(v => v && v.mrid).filter(id => id); // bỏ null/empty
             const oldAssessmentRuleIds = old_entity.assessment_rule.map(v => v && v.mrid).filter(id => id);
 
             const toAddAssessmentRule = entity.assessment_rule.filter(v => v.mrid && !oldAssessmentRuleIds.includes(v.mrid));
-            const toDeleteAssessmentRule = old_entity.assessment_rule.filter(v => v.mrid && !newAssessmentRuleIds.includes(v.mrid));
             const toUpdateAssessmentRule = entity.assessment_rule.filter(v => v.mrid && oldAssessmentRuleIds.includes(v.mrid));
 
             for (const assessmentRule of toAddAssessmentRule) {
@@ -212,11 +207,9 @@ export const insertTransformerJobEntity = async (old_entity,entity) => {
             }
 
             //assessment group
-            const newAssessmentGroupIds = entity.assessment_group.map(v => v && v.mrid).filter(id => id); // bỏ null/empty
             const oldAssessmentGroupIds = old_entity.assessment_group.map(v => v && v.mrid).filter(id => id);
 
             const toAddAssessmentGroup = entity.assessment_group.filter(v => v.mrid && !oldAssessmentGroupIds.includes(v.mrid));
-            const toDeleteAssessmentGroup = old_entity.assessment_group.filter(v => v.mrid && !newAssessmentGroupIds.includes(v.mrid));
             const toUpdateAssessmentGroup = entity.assessment_group.filter(v => v.mrid && oldAssessmentGroupIds.includes(v.mrid));
             for (const assessmentGroup of toAddAssessmentGroup) {
                 await insertAssessmentGroupTransaction(assessmentGroup, db);
@@ -226,10 +219,8 @@ export const insertTransformerJobEntity = async (old_entity,entity) => {
             }
 
             //assessment
-            const newAssessmentIds = entity.assessment.map(v => v && v.mrid).filter(id => id); // bỏ null/empty
             const oldAssessmentIds = old_entity.assessment.map(v => v && v.mrid).filter(id => id);
             const toAddAssessment = entity.assessment.filter(v => v.mrid && !oldAssessmentIds.includes(v.mrid));
-            const toDeleteAssessment = old_entity.assessment.filter(v => v.mrid && !newAssessmentIds.includes(v.mrid));
             const toUpdateAssessment = entity.assessment.filter(v => v.mrid && oldAssessmentIds.includes(v.mrid));
             for (const assessment of toAddAssessment) {
                 await insertAssessmentTransaction(assessment, db);

@@ -1,5 +1,5 @@
 'use strict'
-const {contextBridge, ipcRenderer} = require('electron')
+const { ipcRenderer } = require('electron')
 export const uploadCustomPreload = () => {
     return {
     // uploadCustom

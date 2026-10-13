@@ -26,7 +26,8 @@ export const getWireInfoById = async (mrid) => {
 
 // Thêm mới wireInfo (transaction)
 export const insertWireInfoTransaction = async (info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetInfoResult = await AssetInfoFunc.insertAssetInfoTransaction(info, dbsql)
             if (!assetInfoResult.success) {
@@ -77,12 +78,14 @@ export const insertWireInfoTransaction = async (info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert wireInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật wireInfo (transaction)
 export const updateWireInfoTransaction = async (mrid, info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetInfoResult = await AssetInfoFunc.updateAssetInfoTransaction(mrid, info, dbsql)
             if (!assetInfoResult.success) {
@@ -130,12 +133,14 @@ export const updateWireInfoTransaction = async (mrid, info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Update wireInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa wireInfo (transaction)
 export const deleteWireInfoTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Xóa wire_info TRƯỚC (nó REFERENCES asset_info ON DELETE CASCADE)
             // rồi mới xóa asset_info
@@ -156,5 +161,6 @@ export const deleteWireInfoTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete wireInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }

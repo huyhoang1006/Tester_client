@@ -23,7 +23,8 @@ export const getSwitchInfoById = async (mrid) => {
 
 // --- CREATE / UPSERT ---
 export const insertSwitchInfoTransaction = async (info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetInfoResult = await AssetInfoFunc.insertAssetInfoTransaction(info, dbsql)
             if (!assetInfoResult.success) {
@@ -72,12 +73,14 @@ export const insertSwitchInfoTransaction = async (info, dbsql) => {
             console.log(err);
             return reject({ success: false, err, message: 'Insert SwitchInfo failed' })
         }
+        })().catch(reject)
     })
 }
 
 // --- UPDATE ---
 export const updateSwitchInfoTransaction = async (mrid, info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetInfoResult = await AssetInfoFunc.updateAssetInfoTransaction(mrid, info, dbsql)
             if (!assetInfoResult.success) {
@@ -94,6 +97,7 @@ export const updateSwitchInfoTransaction = async (mrid, info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Update SwitchInfo failed' })
         }
+        })().catch(reject)
     })
 }
 

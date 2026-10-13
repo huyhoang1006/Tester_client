@@ -2,6 +2,7 @@ import {v4 as uuidv4} from 'uuid'
 
 export const CUSTOM_TEST = 'Custom test'
 export const TRANSFORMER_AGE_TEST = 'Transformer age'
+const EXCLUDED_TEST_OPTIONS = new Set(['dga etc.'])
 
 export const DEFAULT_TEST_OPTIONS = [
     'DGA main tank',
@@ -232,7 +233,10 @@ export const collectTestOptions = records => {
             if (failure.test) options.add(failure.test)
         }))
     })
-    return [...options].filter(Boolean)
+    const supportedOptions = [...options].filter(option => (
+        option && !EXCLUDED_TEST_OPTIONS.has(String(option).trim().toLowerCase()) && option !== CUSTOM_TEST
+    ))
+    return [...supportedOptions, CUSTOM_TEST]
 }
 
 export const validateEditableFmeca = components => {

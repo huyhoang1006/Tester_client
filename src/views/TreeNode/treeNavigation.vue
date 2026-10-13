@@ -98,8 +98,6 @@
                             :properties="properties"
                             :show-asset="assetPropertySign"
                             :asset-properties="assetProperties"
-                            :show-job="jobPropertySign"
-                            :job-properties="jobProperties"
                             @hide="hideProperties" />
                     </div>
                     <button v-if="!propertiesSign" @click="showProperties" class="op-show-btn" title="Show Object Properties">
@@ -113,11 +111,11 @@
             <ContextDataClient v-show="activeWorkspaceTab === 'tree' && clientSlide" ref="contextDataClient" :activeTabClient="activeTabClient"
                 :tabsClient="tabsClient" :propertiesSignClient.sync="propertiesSignClient"
                 :propertiesClient="propertiesClient" :assetPropertySignClient="assetPropertySignClient"
-                :assetPropertiesClient="assetPropertiesClient" :jobPropertySignClient="jobPropertySignClient"
-                :jobPropertiesClient="jobPropertiesClient" :logSignClient.sync="logSignClient"
+                :assetPropertiesClient="assetPropertiesClient" :logSignClient.sync="logSignClient"
                 :logDataClient="logDataClient" @update:activeTabClient="activeTabClient = $event"
                 @tab-changed="handleTabSelect" @remove-tab-client="removeTabClient"
                 @update-node-data="handleUpdateNodeData" @refresh-properties="handleRefreshPropertiesClient"
+                @job-updated="handleClientJobUpdated"
                 @sync-state-changed="handleSyncStateChanged"
                 @reload-log-client="reloadLogClient" />
                 </div>
@@ -1493,7 +1491,7 @@ export default {
         },
 
         async mappingJobPropertiesClient(data) {
-            this.jobPropertiesClient.name = mapClientJobProperties(data)
+            this.jobPropertiesClient = mapClientJobProperties(data)
         },
 
         async updateSelection(node) {

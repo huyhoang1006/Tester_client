@@ -64,7 +64,8 @@ export const getOldTapChangerInfoByPowerTransformerInfoId = async (powerTransfor
 
 // Thêm mới OldTapChangerInfo (transaction)
 export const insertOldTapChangerInfoTransaction = async (info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // 1. Gọi transaction của lớp cha (TapChangerInfo)
             // Việc này sẽ lưu data vào bảng asset_info và tap_changer_info trước
@@ -101,12 +102,14 @@ export const insertOldTapChangerInfoTransaction = async (info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert oldTapChangerInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật OldTapChangerInfo (transaction)
 export const updateOldTapChangerInfoTransaction = async (mrid, info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // 1. Gọi transaction update của lớp cha
             const parentResult = await TapChangerInfoFunc.updateTapChangerInfoTransaction(mrid, info, dbsql)
@@ -139,12 +142,14 @@ export const updateOldTapChangerInfoTransaction = async (mrid, info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Update oldTapChangerInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa OldTapChangerInfo (transaction)
 export const deleteOldTapChangerInfoTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // 1. Xoá ở bảng old_tap_changer_info TRƯỚC (Bảng con)
             await new Promise((res, rej) => {
@@ -165,5 +170,6 @@ export const deleteOldTapChangerInfoTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete oldTapChangerInfo transaction failed' });
         }
+        })().catch(reject)
     })
 }

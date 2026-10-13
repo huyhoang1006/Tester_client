@@ -70,7 +70,8 @@ export const getProcedureByGenericAssetModel = async (generic_asset_model) => {
 
 // Thêm mới procedure
 export const insertProcedureTransaction = async (procedure, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Thêm document trước
             const docResult = await documentFunc.insertDocumentTransaction(procedure, dbsql)
@@ -102,12 +103,14 @@ export const insertProcedureTransaction = async (procedure, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert procedure failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật procedure
 export const updateProcedureByIdTransaction = async (mrid, procedure, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Cập nhật document trước
             const docResult = await documentFunc.updateDocumentByIdTransaction(mrid, procedure, dbsql)
@@ -135,12 +138,14 @@ export const updateProcedureByIdTransaction = async (mrid, procedure, dbsql) => 
         } catch (err) {
             return reject({ success: false, err, message: 'Update procedure failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa procedure
 export const deleteProcedureByIdTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run("DELETE FROM procedure WHERE mrid=?", [mrid], function (err) {
                 if (err) return reject({ success: false, err, message: 'Delete procedure failed' })
@@ -152,5 +157,6 @@ export const deleteProcedureByIdTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete procedure failed' })
         }
+        })().catch(reject)
     })
 }

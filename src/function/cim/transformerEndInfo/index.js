@@ -26,7 +26,8 @@ export const getTransformerEndInfoById = async (mrid) => {
 
 // Thêm mới transformerEndInfo (transaction)
 export const insertTransformerEndInfoTransaction = async (info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetInfoResult = await AssetInfoFunc.insertAssetInfoTransaction(info, dbsql)
             if (!assetInfoResult.success) {
@@ -71,12 +72,14 @@ export const insertTransformerEndInfoTransaction = async (info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert transformerEndInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật transformerEndInfo (transaction)
 export const updateTransformerEndInfoTransaction = async (mrid, info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetInfoResult = await AssetInfoFunc.updateAssetInfoTransaction(mrid, info, dbsql)
             if (!assetInfoResult.success) {
@@ -118,6 +121,7 @@ export const updateTransformerEndInfoTransaction = async (mrid, info, dbsql) => 
         } catch (err) {
             return reject({ success: false, err, message: 'Update transformerEndInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 

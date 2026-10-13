@@ -26,7 +26,8 @@ export const getReconditioningById = async (mrid) => {
 
 // Thêm mới reconditioning (transaction)
 export const insertReconditioningTransaction = async (info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const identifiedObjectResult = await IdentifiedObjectFunc.insertIdentifiedObjectTransaction(info, dbsql)
             if (!identifiedObjectResult.success) {
@@ -55,12 +56,14 @@ export const insertReconditioningTransaction = async (info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert reconditioning transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật reconditioning (transaction)
 export const updateReconditioningTransaction = async (mrid, info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const identifiedObjectResult = await IdentifiedObjectFunc.updateIdentifiedObjectTransaction(mrid, info, dbsql)
             if (!identifiedObjectResult.success) {
@@ -86,12 +89,14 @@ export const updateReconditioningTransaction = async (mrid, info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Update reconditioning transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa reconditioning (transaction)
 export const deleteReconditioningTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const identifiedObjectResult = await IdentifiedObjectFunc.deleteIdentifiedObjectTransaction(mrid, dbsql)
             if (!identifiedObjectResult.success) {
@@ -106,5 +111,6 @@ export const deleteReconditioningTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete reconditioning transaction failed' })
         }
+        })().catch(reject)
     })
 }

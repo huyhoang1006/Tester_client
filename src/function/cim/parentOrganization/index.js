@@ -4,7 +4,7 @@ import * as organisationFunc from '../organisation/index'
 // Thêm mới Parent Organisation (gồm cả insert identified_object)
 export const insertParentOrganisation = async (parentOrganization) => {
     console.log("Insert parent organisation:", parentOrganization)
-    return new Promise((resolve, reject) => {
+    return Promise.resolve({ success: false, data: parentOrganization, message: 'Insert parent organisation is not implemented' })
         // db.serialize(() => {
         //     db.run('BEGIN TRANSACTION')
         //     organisationFunc.insertOrganisationTransaction(parentOrganization, db)
@@ -34,7 +34,6 @@ export const insertParentOrganisation = async (parentOrganization) => {
         //             return reject({ success: false, err, message: 'Insert organisation transaction failed' })
         //         })
         // })
-    })
 }
 
 // Thêm mới parent organization trong transaction (cho lớp cha gọi)
@@ -181,7 +180,7 @@ export const updateParentOrganizationById = async (mrid, parentOrganization) => 
                                 return reject({ success: false, err, message: 'Update organisation failed' })
                             }
                             db.run('COMMIT')
-                            return resolve({ success: true, data: organisation, message: 'Update organisation completed' })
+                            return resolve({ success: true, data: parentOrganization, message: 'Update organisation completed' })
                         }
                     )
                 })
@@ -196,7 +195,7 @@ export const updateParentOrganizationById = async (mrid, parentOrganization) => 
 // Cập nhật Organisation trong transaction (cho lớp cha gọi)
 export const updateParentOrganizationTransaction = async (mrid, parentOrganization, dbsql) => {
     return new Promise((resolve, reject) => {
-        organisationFunc.updateOrganisationByIdTransaction(mrid, parentOrganisation, dbsql)
+        organisationFunc.updateOrganisationByIdTransaction(mrid, parentOrganization, dbsql)
             .then(identifiedResult => {
                 if (!identifiedResult.success) {
                     return reject({ success: false, message: 'Update identified object failed', err: identifiedResult.err })
@@ -212,7 +211,7 @@ export const updateParentOrganizationTransaction = async (mrid, parentOrganizati
                         if (err) {
                             return reject({ success: false, err, message: 'Update organisation failed' })
                         }
-                        return resolve({ success: true, data: parentOrganisation, message: 'Update organisation completed' })
+                        return resolve({ success: true, data: parentOrganization, message: 'Update organisation completed' })
                     }
                 )
             })

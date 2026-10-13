@@ -1,7 +1,6 @@
 import TransformerTest from "../TransformerTest";
 import CurrentFlow from "../CurrentFlow";
 import Impedance from "../Impedance";
-import Voltage from "../Voltage";
 import ApparentPower from "../ApparentPower"; // Import thêm
 import ActivePower from "../ActivePower";     // Import thêm
 import KiloActivePower from "../KiloActivePower"; // Import thêm

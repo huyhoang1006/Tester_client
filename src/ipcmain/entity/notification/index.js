@@ -4,7 +4,7 @@ import { entityFunc } from "@/function"
 import { describeFailure } from '@/ipcmain/failureMessage'
 
 export const getAllNotifications = () => {
-    ipcMain.handle('getAllNotifications', async function (event) {
+    ipcMain.handle('getAllNotifications', async function () {
         try {
             const rs = await entityFunc.notificationEntityFunc.getAllNotifications()
             if (rs.success == true) {
@@ -187,7 +187,7 @@ export const deleteNotification = () => {
 }
 
 export const deleteAllNotifications = () => {
-    ipcMain.handle('deleteAllNotifications', async function (event) {
+    ipcMain.handle('deleteAllNotifications', async function () {
         try {
             const rs = await entityFunc.notificationEntityFunc.deleteAllNotifications()
             if (rs.success == true) {

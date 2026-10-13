@@ -26,7 +26,8 @@ export const getBushingById = async (mrid) => {
 
 // Thêm mới bushing (transaction)
 export const insertBushingTransaction = async (info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetResult = await AssetFunc.insertAssetTransaction(info, dbsql)
             if (!assetResult.success) {
@@ -57,12 +58,14 @@ export const insertBushingTransaction = async (info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert bushing transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật bushing (transaction)
 export const updateBushingTransaction = async (mrid, info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetResult = await AssetFunc.updateAssetTransaction(mrid, info, dbsql)
             if (!assetResult.success) {
@@ -90,12 +93,14 @@ export const updateBushingTransaction = async (mrid, info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Update bushing transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa bushing (transaction)
 export const deleteBushingTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetResult = await AssetFunc.deleteAssetByIdTransaction(mrid, dbsql)
             if (!assetResult.success) {
@@ -110,6 +115,7 @@ export const deleteBushingTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete bushing transaction failed' })
         }
+        })().catch(reject)
     })
 }
 

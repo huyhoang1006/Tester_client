@@ -1,6 +1,11 @@
 
 import { ipcMain } from 'electron'
-import { checkLicenseLimitation, initLicenseLimitation } from '../../../function/cim/license/index'
+import {
+    checkLicenseLimitation,
+    getAllLicenses,
+    initLicenseLimitation,
+    updateLicenseLimit
+} from '../../../function/cim/license/index'
 
 export const active = () => {
     initLicenseLimitation();
@@ -15,10 +20,6 @@ export const active = () => {
         }
     });
     ipcMain.handle('getAllLicenses', async () => {
-        return new Promise((resolve) => {
-            db.all("SELECT * FROM limitation_license", [], (err, rows) => {
-                resolve(rows || []);
-            });
-        });
+        return await getAllLicenses();
     });
 }

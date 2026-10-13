@@ -230,7 +230,7 @@
                 <small>Weighting always uses the designated HI source, regardless of the FMECA currently open.</small>
             </div>
 
-            <div :class="['summary-grid', {'has-age': weighting.includesTransformerAge}]">
+            <div class="summary-grid has-age">
                 <div class="summary-item">
                     <span>Total RPN</span>
                     <strong>{{ weighting.totalRpn }}</strong>
@@ -241,10 +241,15 @@
                     <strong>{{ weighting.testsIncluded }}</strong>
                     <small>Custom tests excluded</small>
                 </div>
-                <div v-if="weighting.includesTransformerAge" class="summary-item">
+                <div class="summary-item">
                     <span>Transformer age</span>
-                    <strong class="summary-text">Included in HI</strong>
-                    <small>Operating date, or manufacturing date when unavailable</small>
+                    <strong class="summary-text">
+                        {{ weighting.includesTransformerAge ? 'Included in HI' : 'Not included in HI' }}
+                    </strong>
+                    <small v-if="weighting.includesTransformerAge">
+                        Operating date, or manufacturing date when unavailable
+                    </small>
+                    <small v-else>Enable Include in HI for Transformer age in the HI source FMECA</small>
                 </div>
             </div>
 

@@ -50,7 +50,8 @@ export const getOldWorkByAssetId = async (assetId) => {
 
 // Thêm mới oldWork
 export const insertOldWorkTransaction = async (oldWork, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Thêm work trước
             const workResult = await workFunc.insertWorkTransaction(oldWork, dbsql)
@@ -86,12 +87,14 @@ export const insertOldWorkTransaction = async (oldWork, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert oldWork failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật oldWork
 export const updateOldWorkByIdTransaction = async (mrid, oldWork, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Cập nhật work trước
             const workResult = await workFunc.updateWorkByIdTransaction(mrid, oldWork, dbsql)
@@ -124,6 +127,7 @@ export const updateOldWorkByIdTransaction = async (mrid, oldWork, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Update oldWork failed' })
         }
+        })().catch(reject)
     })
 }
 
@@ -151,7 +155,8 @@ export const updateOldWorkAssetIdById = async (mrid, assetId) => {
 
 // Xóa oldWork
 export const deleteOldWorkByIdTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run("DELETE FROM old_work WHERE mrid=?", [mrid], function (err) {
                 if (err) return reject({ success: false, err, message: 'Delete old_work failed' })
@@ -163,5 +168,6 @@ export const deleteOldWorkByIdTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete old_work failed' })
         }
+        })().catch(reject)
     })
 }

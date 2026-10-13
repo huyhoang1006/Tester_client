@@ -21,7 +21,7 @@
             @dblclick="doubleToggle">
 
             <!-- mũi tên expand / placeholder cho node lá để thẳng hàng -->
-            <span v-if="node.mode != 'job'" class="arrow-wrapper" @click.stop="fetchNodeData" @dblclick.stop>
+            <span v-if="!['job', 'test'].includes(node.mode)" class="arrow-wrapper" @click.stop="fetchNodeData" @dblclick.stop>
                 <i class="fa-solid fa-angle-right arrow-icon" :class="{ open: node.expanded }"></i>
             </span>
             <span v-else class="arrow-wrapper placeholder"></span>
@@ -38,6 +38,7 @@
             <i v-else-if="node.mode === 'powerPlant'" :class="[powerPlantIcon, 'type-icon', 'icon-power-plant']"></i>
             <!-- chỉ organisation + job dùng icon phẳng mới -->
             <i v-else-if="node.mode === 'job'" class="fa-solid fa-clipboard-list type-icon icon-job"></i>
+            <i v-else-if="node.mode === 'test'" class="fa-solid fa-clipboard-check type-icon icon-test"></i>
             <i v-else class="fa-solid fa-building type-icon icon-org"></i>
             <span
                 v-if="showSyncBadge"
@@ -50,20 +51,28 @@
         <spinner class="tree-spinner" v-if="isLoading"></spinner>
 
         <ul v-if="node.expanded" class="tree-children">
-            <TreeNode
-                v-for="child in sortedChildren"
-                :key="getChildUniqueKey(child)" :node="child"
-                :selectedNodes="selectedNodes"
-                :draggableNodes="draggableNodes"
-                @drop-node="(payload) => $emit('drop-node', payload)"
-                @double-click-node="(n) => $emit('double-click-node', n)"
-                @fetch-children="(n) => $emit('fetch-children', n)"
-                @show-properties="(n) => $emit('show-properties', n)"
-                @update-selection="updateSelection"
-                @clear-selection="clearSelection"
-                @open-context-menu="openContextMenu"
-            >
-            </TreeNode>
+            <template v-for="(child, index) in sortedChildren">
+                <li
+                    v-if="showTestingYearDivider(child, index)"
+                    :key="`test-year-${testingYearLabel(child)}-${index}`"
+                    class="testing-year-divider">
+                    <span>{{ testingYearLabel(child) }}</span>
+                    <span class="testing-year-line"></span>
+                </li>
+                <TreeNode
+                    :key="getChildUniqueKey(child)" :node="child"
+                    :selectedNodes="selectedNodes"
+                    :draggableNodes="draggableNodes"
+                    @drop-node="(payload) => $emit('drop-node', payload)"
+                    @double-click-node="(n) => $emit('double-click-node', n)"
+                    @fetch-children="(n) => $emit('fetch-children', n)"
+                    @show-properties="(n) => $emit('show-properties', n)"
+                    @update-selection="updateSelection"
+                    @clear-selection="clearSelection"
+                    @open-context-menu="openContextMenu"
+                >
+                </TreeNode>
+            </template>
         </ul>
     </li>
 </template>
@@ -128,6 +137,10 @@ export default {
                 return `Job`;
             }
 
+            if (this.node.mode === 'test') {
+                return `Test`;
+            }
+
             return this.node.aliasName || this.node.name || 'Unknown';
         },
         // các mode dùng icon PNG của công ty -> không đụng vào
@@ -153,6 +166,7 @@ export default {
             if (!this.node) return ''
             if (this.node.mode === 'asset') return this.node.apparatus_id || this.node.serial_number
             if (this.node.mode === 'job') return this.node.name
+            if (this.node.mode === 'test') return this.node.name || this.node.title || this.node.type || 'Unnamed test'
             return this.node.aliasName || this.node.name
         },
         syncStatus() {
@@ -182,7 +196,7 @@ export default {
                     if (node.mode === 'asset') {
                         // Asset: ưu tiên apparatus_id, sau đó serial_number, cuối cùng name
                         return (node.apparatus_id || node.serial_number || node.name || '').toLowerCase()
-                    } else if (node.mode === 'job') {
+                    } else if (node.mode === 'job' || node.mode === 'test') {
                         // Job: dùng name
                         return (node.name || '').toLowerCase()
                     } else {
@@ -193,6 +207,22 @@ export default {
 
                 const nameA = getDisplayName(a)
                 const nameB = getDisplayName(b)
+
+                if (['job', 'test'].includes(a.mode) && ['job', 'test'].includes(b.mode)) {
+                    const yearA = this.testingYearValue(a)
+                    const yearB = this.testingYearValue(b)
+
+                    // Năm mới nhất lên trước; job chưa có ngày luôn nằm ở nhóm cuối.
+                    if (yearA !== yearB) return yearB - yearA
+
+                    const timeA = this.testingDateValue(a)
+                    const timeB = this.testingDateValue(b)
+                    if (timeA !== timeB) return timeB - timeA
+                } else if (['job', 'test'].includes(a.mode)) {
+                    return 1
+                } else if (['job', 'test'].includes(b.mode)) {
+                    return -1
+                }
 
                 // So sánh theo bảng chữ cái
                 return nameA.localeCompare(nameB, 'en', { numeric: true, sensitivity: 'base' })
@@ -218,6 +248,52 @@ export default {
         }
     },
     methods: {
+        rawTestingDate(node) {
+            if (!node) return ''
+            return node.execution_date || node.executionDate || node.testing_date || node.testingDate || ''
+        },
+        testingDateValue(node) {
+            const rawDate = this.rawTestingDate(node)
+            if (!rawDate) return 0
+            if (rawDate instanceof Date) return Number.isNaN(rawDate.getTime()) ? 0 : rawDate.getTime()
+
+            const value = String(rawDate).trim()
+            const parsed = Date.parse(value)
+            if (!Number.isNaN(parsed)) return parsed
+
+            const parts = value.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/)
+            if (!parts) return 0
+            return Date.UTC(Number(parts[3]), Number(parts[1]) - 1, Number(parts[2]))
+        },
+        testingYearValue(node) {
+            const rawDate = this.rawTestingDate(node)
+            if (!rawDate) return 0
+            if (rawDate instanceof Date) {
+                const year = rawDate.getFullYear()
+                return Number.isNaN(year) ? 0 : year
+            }
+
+            const value = String(rawDate).trim()
+            const leadingYear = value.match(/^(\d{4})[/-]/)
+            if (leadingYear) return Number(leadingYear[1])
+
+            const trailingYear = value.match(/[/-](\d{4})(?:\D.*)?$/)
+            if (trailingYear) return Number(trailingYear[1])
+
+            const timestamp = this.testingDateValue(node)
+            return timestamp ? new Date(timestamp).getFullYear() : 0
+        },
+        testingYearLabel(node) {
+            const year = this.testingYearValue(node)
+            return year || 'No testing date available'
+        },
+        showTestingYearDivider(child, index) {
+            if (!child || !['job', 'test'].includes(child.mode)) return false
+            if (index === 0) return true
+            const previous = this.sortedChildren[index - 1]
+            return !previous || !['job', 'test'].includes(previous.mode) ||
+                this.testingYearLabel(previous) !== this.testingYearLabel(child)
+        },
         // ── Kéo thả ─────────────────────────────────────────────────────────
         onDragStart(event) {
             if (!this.draggableNodes) return
@@ -336,6 +412,33 @@ export default {
     border-bottom: none !important;
     border-right: none !important;
     box-shadow: none !important;
+}
+
+.testing-year-divider {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    height: 18px;
+    margin: 2px 4px 0 20px;
+    color: #909399;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 18px;
+    cursor: default;
+    user-select: none;
+}
+
+.testing-year-divider > span:first-child {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.testing-year-line {
+    flex: 1;
+    min-width: 12px;
+    height: 1px;
+    background: #dcdfe6;
 }
 
 /* ===== Hàng node ===== */

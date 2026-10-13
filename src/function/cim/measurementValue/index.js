@@ -26,7 +26,8 @@ export const getMeasurementValueById = async (mrid) => {
 
 // Thêm mới measurementValue
 export const insertMeasurementValueTransaction = async (measurementValue, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Thêm iopoint trước
             const ioResult = await iopointFunc.insertIOPointTransaction(measurementValue, dbsql)
@@ -60,6 +61,7 @@ export const insertMeasurementValueTransaction = async (measurementValue, dbsql)
         } catch (err) {
             return reject({ success: false, err, message: 'Insert measurementValue failed' })
         }
+        })().catch(reject)
     })
 }
 
@@ -129,7 +131,8 @@ export const insertMeasurementValuesTransaction = async (measurementValues = [],
 
 // Cập nhật measurementValue
 export const updateMeasurementValueByIdTransaction = async (mrid, measurementValue, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Cập nhật iopoint trước
             const ioResult = await iopointFunc.updateIOPointByIdTransaction(mrid, measurementValue, dbsql)
@@ -160,12 +163,14 @@ export const updateMeasurementValueByIdTransaction = async (mrid, measurementVal
         } catch (err) {
             return reject({ success: false, err, message: 'Update measurementValue failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa measurementValue
 export const deleteMeasurementValueByIdTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run("DELETE FROM measurement_value WHERE mrid=?", [mrid], function (err) {
                 if (err) return reject({ success: false, err, message: 'Delete measurementValue failed' })
@@ -177,6 +182,7 @@ export const deleteMeasurementValueByIdTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete measurementValue failed' })
         }
+        })().catch(reject)
     })
 }
 

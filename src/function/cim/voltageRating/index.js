@@ -46,7 +46,8 @@ export const getVoltageRatingByTransformerEndId = async (transformerEndId) => {
 
 // 🔹 Thêm mới VoltageRating (transaction)
 export const insertVoltageRatingTransaction = async (info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run(
                 `INSERT INTO voltage_rating(
@@ -78,12 +79,14 @@ export const insertVoltageRatingTransaction = async (info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert VoltageRating transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // 🔹 Cập nhật VoltageRating (transaction)
 export const updateVoltageRatingTransaction = async (mrid, info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run(
                 `UPDATE voltage_rating SET
@@ -113,12 +116,14 @@ export const updateVoltageRatingTransaction = async (mrid, info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Update VoltageRating transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // 🔹 Xóa VoltageRating (transaction)
 export const deleteVoltageRatingTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run(
                 `DELETE FROM voltage_rating WHERE mrid = ?`,
@@ -133,5 +138,6 @@ export const deleteVoltageRatingTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete VoltageRating transaction failed' })
         }
+        })().catch(reject)
     })
 }

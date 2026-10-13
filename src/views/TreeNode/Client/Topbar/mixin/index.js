@@ -109,15 +109,10 @@ export default {
                     this.propertiesClient = mapClientProperties(parentNode)
 
                 }
-            } else if (currentNode.type == 'test') {
+            } else if (currentNode.mode === 'test') {
                 this.assetPropertySignClient = true
                 this.jobPropertySignClient = true
-                // Tìm parent thực sự từ cây dữ liệu
-                // Test -> Job (parent)
-                // Test -> Asset (parent.parent)
-                // Test -> Location (parent.parent.parent)
-                const jobNode = currentNode.parentId ? this.findNodeById(currentNode.parentId, this.organisationClientList) : null
-                const assetNode = jobNode ? (jobNode.parentId ? this.findNodeById(jobNode.parentId, this.organisationClientList) : null) : null
+                const assetNode = currentNode.parentId ? this.findNodeById(currentNode.parentId, this.organisationClientList) : null
                 const locationNode = assetNode ? (assetNode.parentId ? this.findNodeById(assetNode.parentId, this.organisationClientList) : null) : null
                 if (locationNode) {
                     this.propertiesClient = mapClientProperties(locationNode)
@@ -125,10 +120,11 @@ export default {
                 if (assetNode) {
                     this.assetPropertiesClient = mapClientAssetProperties(assetNode)
                 }
-                if (jobNode) {
-                    this.jobPropertiesClient = mapClientJobProperties(jobNode)
-                }
-            } else if (currentNode.type == 'job') {
+                this.jobPropertiesClient = mapClientJobProperties({
+                    ...currentNode,
+                    mrid: currentNode.workMrid || currentNode.mrid
+                })
+            } else if (currentNode.mode === 'job') {
                 this.assetPropertySignClient = true
                 this.jobPropertySignClient = true
                 // Tìm parent thực sự từ cây dữ liệu

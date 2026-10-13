@@ -65,7 +65,8 @@ export const insertAssetInfo = async (info) => {
 
 // Transaction: Thêm mới assetInfo
 export const insertAssetInfoTransaction = (info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const identifiedResult = await IdentifiedObjectFunc.insertIdentifiedObjectTransaction(info, dbsql)
             if (!identifiedResult.success) {
@@ -94,6 +95,7 @@ export const insertAssetInfoTransaction = (info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err: err, message: 'Insert assetInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
@@ -138,7 +140,8 @@ export const updateAssetInfo = async (mrid, info) => {
 
 // Transaction: Cập nhật assetInfo
 export const updateAssetInfoTransaction = (mrid, info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const identifiedResult = await IdentifiedObjectFunc.updateIdentifiedObjectByIdTransaction(mrid, info, dbsql)
             if (!identifiedResult.success) {
@@ -164,6 +167,7 @@ export const updateAssetInfoTransaction = (mrid, info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err: err, message: 'Update assetInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 

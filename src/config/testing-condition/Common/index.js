@@ -1,4 +1,4 @@
-{
+export default {
   "columns": [
     {
       "mrid": "8d2fdece-b599-4270-a3bf-d0ce2c516d02",

@@ -5,3 +5,5 @@ class ReconditioningCoolingPowerRating {
         this.cooling_power_rating_id = null
     }
 }
+
+export default ReconditioningCoolingPowerRating

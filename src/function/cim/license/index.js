@@ -92,3 +92,25 @@ export const checkLicenseLimitation = (name) => {
         });
     });
 };
+
+export const updateLicenseLimit = (name, limit) => {
+    return new Promise((resolve, reject) => {
+        db.run(
+            'UPDATE limitation_license SET number_of_liscense = ? WHERE name = ?',
+            [limit, name],
+            function (err) {
+                if (err) return reject({ success: false, err, message: 'Update license limit failed' })
+                return resolve({ success: true, updated: this.changes, message: 'Update license limit completed' })
+            }
+        )
+    })
+}
+
+export const getAllLicenses = () => {
+    return new Promise((resolve, reject) => {
+        db.all('SELECT * FROM limitation_license', [], (err, rows) => {
+            if (err) return reject({ success: false, err, message: 'Get licenses failed' })
+            return resolve(rows || [])
+        })
+    })
+}

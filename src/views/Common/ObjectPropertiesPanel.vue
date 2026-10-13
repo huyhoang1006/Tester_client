@@ -41,14 +41,6 @@ export default {
         assetProperties: {
             type: Object,
             default: () => ({})
-        },
-        showJob: {
-            type: Boolean,
-            default: false
-        },
-        jobProperties: {
-            type: Object,
-            default: () => ({})
         }
     },
     data() {
@@ -60,7 +52,6 @@ export default {
         visibleSections() {
             const p = this.properties || {}
             const a = this.assetProperties || {}
-            const j = this.jobProperties || {}
             const sections = [{
                 key: 'owner',
                 title: 'Owner & Position',
@@ -90,22 +81,6 @@ export default {
                         { label: 'Manufacturing year', value: a.manufacturing_year },
                         { label: 'Country', value: a.country },
                         { label: 'Asset ID', value: a.apparatus_id }
-                    ]
-                })
-            }
-            if (this.showJob) {
-                sections.push({
-                    key: 'job',
-                    title: 'Job Properties',
-                    rows: [
-                        { label: 'Name', value: j.name },
-                        { label: 'Work order', value: j.work_order },
-                        { label: 'Creation date', value: j.creation_date },
-                        { label: 'Execution date', value: j.execution_date },
-                        { label: 'Tested by', value: j.tested_by },
-                        { label: 'Approved by', value: j.approved_by },
-                        { label: 'Ambient condition', value: j.ambient_condition },
-                        { label: 'Standard', value: j.standard }
                     ]
                 })
             }

@@ -107,15 +107,12 @@ export const insertBreakerEntity = async (old_entity, entity) => {
                 // Nếu thất bại do FK, thử retry với location = null
                 if (!assetResult.success && assetResult.err && assetResult.err.code === 'SQLITE_CONSTRAINT') {
 
-                    // Backup location cũ để log
-                    const oldLocation = entity.asset.location;
                     entity.asset.location = null;
 
                     // Retry
                     assetResult = await insertAssetTransaction(entity.asset, db);
 
-                    if (assetResult.success) {
-                    } else {
+                    if (!assetResult.success) {
                         console.error('Retry Insert Asset also FAILED:', assetResult.err);
                         // Có thể throw error ở đây nếu muốn dừng hẳn, hoặc để nó trôi qua (nhưng sẽ mất asset)
                         throw new Error(`Critical: Failed to insert Asset even with NULL location. Error: ${assetResult.err.message}`);

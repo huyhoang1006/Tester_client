@@ -135,7 +135,8 @@ export const insertSurgeArrester = async (arrester) => {
 }
 
 export const insertSurgeArresterTransaction = async (arrester, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetResult = await AssetFunc.insertAssetTransaction(arrester, db)
             if (!assetResult.success) {
@@ -168,6 +169,7 @@ export const insertSurgeArresterTransaction = async (arrester, dbsql) => {
         } catch (error) {
             return reject({ success: false, err: error, message: 'Insert surge arrester transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
@@ -215,7 +217,8 @@ export const updateSurgeArrester = async (mrid, arrester) => {
 }
 
 export const updateSurgeArresterTransaction = async (mrid, arrester, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetResult = await AssetFunc.updateAssetTransaction(mrid, arrester, dbsql)
             if (!assetResult.success) {
@@ -246,6 +249,7 @@ export const updateSurgeArresterTransaction = async (mrid, arrester, dbsql) => {
         } catch (error) {
             return reject({ success: false, err: error, message: 'Update surge arrester transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
@@ -271,7 +275,8 @@ export const deleteSurgeArresterById = async (mrid) => {
 }
 
 export const deleteSurgeArresterTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run("DELETE FROM surge_arrester WHERE mrid=?", [mrid], function (err) {
                 if (err) {
@@ -291,6 +296,7 @@ export const deleteSurgeArresterTransaction = async (mrid, dbsql) => {
         } catch (error) {
             return reject({ success: false, err: error, message: 'Delete surge arrester transaction failed' })
         }
+        })().catch(reject)
     })
 }
 

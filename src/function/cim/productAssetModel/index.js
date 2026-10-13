@@ -102,7 +102,8 @@ export const insertProductAssetModelTransaction = (model, dbsql) => {
         }
         return Promise.resolve({ success: true, data: model, message: 'No product asset model to insert' })
     }
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const identifiedResult = await IdentifiedObjectFunc.insertIdentifiedObjectTransaction(model, dbsql)
             if (!identifiedResult.success) {
@@ -149,6 +150,7 @@ export const insertProductAssetModelTransaction = (model, dbsql) => {
         } catch (err) {
             return reject({ success: false, err: err, message: 'Insert product asset model transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
@@ -209,7 +211,8 @@ export const updateProductAssetModel = async (mrid, model) => {
 
 // Transaction: Cập nhật product asset model
 export const updateProductAssetModelTransaction = (mrid, model, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const identifiedResult = await IdentifiedObjectFunc.updateIdentifiedObjectByIdTransaction(mrid, model, dbsql)
             if (!identifiedResult.success) {
@@ -251,6 +254,7 @@ export const updateProductAssetModelTransaction = (mrid, model, dbsql) => {
         } catch (err) {
             return reject({ success: false, err: err, message: 'Update product asset model transaction failed' })
         }
+        })().catch(reject)
     })
 }
 

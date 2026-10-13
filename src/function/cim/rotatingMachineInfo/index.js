@@ -26,7 +26,8 @@ export const getRotatingMachineInfoById = async (mrid) => {
 
 // Thêm mới rotatingMachineInfo (transaction)
 export const insertRotatingMachineInfoTransaction = async (info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetInfoResult = await AssetInfoFunc.insertAssetInfoTransaction(info, dbsql)
             if (!assetInfoResult.success) {
@@ -72,12 +73,14 @@ export const insertRotatingMachineInfoTransaction = async (info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert rotatingMachineInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật rotatingMachineInfo (transaction)
 export const updateRotatingMachineInfoTransaction = async (mrid, info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetInfoResult = await AssetInfoFunc.updateAssetInfoTransaction(mrid, info, dbsql)
             if (!assetInfoResult.success) {
@@ -119,12 +122,14 @@ export const updateRotatingMachineInfoTransaction = async (mrid, info, dbsql) =>
         } catch (err) {
             return reject({ success: false, err, message: 'Update rotatingMachineInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa rotatingMachineInfo (transaction)
 export const deleteRotatingMachineInfoTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetInfoResult = await AssetInfoFunc.deleteAssetInfoByIdTransaction(mrid, dbsql)
             if (!assetInfoResult.success) {
@@ -139,5 +144,6 @@ export const deleteRotatingMachineInfoTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete rotatingMachineInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }

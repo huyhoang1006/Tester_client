@@ -98,7 +98,8 @@ export const getDiscreteValueByTestDataSetMrids = async (mrids) => {
 
 // Thêm mới discreteValue
 export const insertDiscreteValueTransaction = async (discreteValue, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Thêm measurementValue trước
             const mvResult = await measurementValueFunc.insertMeasurementValueTransaction(discreteValue, dbsql)
@@ -126,6 +127,7 @@ export const insertDiscreteValueTransaction = async (discreteValue, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert discreteValue failed' })
         }
+        })().catch(reject)
     })
 }
 
@@ -169,7 +171,8 @@ export const insertDiscreteValuesTransaction = async (discreteValues = [], dbsql
 
 // Cập nhật discreteValue
 export const updateDiscreteValueByIdTransaction = async (mrid, discreteValue, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Cập nhật measurementValue trước
             const mvResult = await measurementValueFunc.updateMeasurementValueByIdTransaction(mrid, discreteValue, dbsql)
@@ -194,12 +197,14 @@ export const updateDiscreteValueByIdTransaction = async (mrid, discreteValue, db
         } catch (err) {
             return reject({ success: false, err, message: 'Update discreteValue failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa discreteValue
 export const deleteDiscreteValueByIdTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run("DELETE FROM discrete_value WHERE mrid=?", [mrid], function (err) {
                 if (err) return reject({ success: false, err, message: 'Delete discreteValue failed' })
@@ -211,6 +216,7 @@ export const deleteDiscreteValueByIdTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete discreteValue failed' })
         }
+        })().catch(reject)
     })
 }
 

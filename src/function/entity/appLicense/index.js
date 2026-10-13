@@ -337,20 +337,6 @@ const ensureMachine = async params => {
     return createMachine(params)
 }
 
-const pingMachine = async ({config, licenseKey, machineId}) => {
-    if (!machineId) return
-    const client = createHttpClient(config, licenseKey)
-    try {
-        await client.post(`${LICENSE_API_PATH}/machines/${encodeURIComponent(machineId)}/actions/ping-heartbeat`, {
-            meta: {}
-        })
-    } catch (error) {
-        const mapped = mapHttpError(error)
-        // Heartbeat is optional for many policies. Validation remains authoritative.
-        if (![403, 404, 405, 422].includes(mapped.httpStatus)) throw mapped
-    }
-}
-
 const publicConfig = config => ({
     serverUrl: config.serverUrl,
     productId: config.productId
@@ -386,7 +372,6 @@ export const activateOnlineLicense = async payload => {
     }
 
     const activatedParams = {...params, machineId: machine.id}
-    await pingMachine(activatedParams)
     const validation = await validateLicenseKey(activatedParams)
     if (!validation.valid) throw invalidValidationError(validation)
 
@@ -449,7 +434,6 @@ export const checkOnlineLicense = async () => {
         fingerprint: device.fingerprint,
         machineId: stored.machineId
     }
-    await pingMachine(params)
     const validation = await validateLicenseKey(params)
 
     if (!validation.valid) {

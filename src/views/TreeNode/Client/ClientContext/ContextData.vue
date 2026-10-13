@@ -8,6 +8,7 @@
                         @input="onTabChange"
                         @close-tab="removeTabClient"
                         @update-node-data="handleUpdateNodeData"
+                        @job-updated="$emit('job-updated', $event)"
                         @sync-state-changed="$emit('sync-state-changed', $event)"
                         @refresh-properties="handleRefreshProperties" />
                 </div>
@@ -18,8 +19,6 @@
                     :properties="propertiesClient"
                     :show-asset="assetPropertySignClient"
                     :asset-properties="assetPropertiesClient"
-                    :show-job="jobPropertySignClient"
-                    :job-properties="jobPropertiesClient"
                     @hide="hidePropertiesClient" />
             </div>
             <button v-if="!propertiesSignClient" @click="showPropertiesClient" class="op-show-btn" title="Show Object Properties">
@@ -89,23 +88,6 @@ export default {
                 manufacturing_year: '',
                 apparatus_id: '',
                 country: ''
-            })
-        },
-        jobPropertySignClient: {
-            type: Boolean,
-            default: false
-        },
-        jobPropertiesClient: {
-            type: Object,
-            default: () => ({
-                name: '',
-                work_order: '',
-                creation_date: '',
-                execution_date: '',
-                tested_by: '',
-                approved_by: '',
-                ambient_condition: '',
-                standard: ''
             })
         },
         logSignClient: {

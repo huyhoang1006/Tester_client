@@ -10,6 +10,7 @@
                 <span>{{ serverSign ? 's' : 'c' }}</span>
             </div>
             <div class="outline-right">
+                <span class="app-version">v{{ appVersion }}</span>
                 <i @click="showLog" class="fa-solid fa-circle-chevron-up"></i>
             </div>
         </div>
@@ -21,6 +22,7 @@
 import TopBar from '@/components/TopBar'
 import { mapState } from 'vuex'
 import { loadWorkspaceState, saveWorkspaceState } from '@/utils/workspaceRestore'
+import packageInfo from '../../package.json'
 
 export default {
     components: { TopBar },
@@ -30,6 +32,7 @@ export default {
     data() {
         return {
             serverSign: false,
+            appVersion: packageInfo.version,
         }
     },
     watch: {
@@ -174,12 +177,21 @@ export default {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    cursor: pointer;
+    gap: 6px;
+}
+
+.app-version {
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1;
+    user-select: none;
 }
 
 .outline-right i {
     font-size: 12px;
     line-height: 1;
     display: flex;
+    cursor: pointer;
 }
 </style>

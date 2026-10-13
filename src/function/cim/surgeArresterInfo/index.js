@@ -81,7 +81,8 @@ export const insertSurgeArresterInfo = async (info) => {
 
 // Transaction: Thêm mới surge arrester info
 export const insertSurgeArresterInfoTransaction = (info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetInfoResult = await AssetInfoFunc.insertAssetInfoTransaction(info, dbsql)
             if (!assetInfoResult.success) {
@@ -126,6 +127,7 @@ export const insertSurgeArresterInfoTransaction = (info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err: err, message: 'Insert surge arrester info transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
@@ -184,7 +186,8 @@ export const updateSurgeArresterInfo = async (mrid, info) => {
 
 // Transaction: Cập nhật surge arrester info
 export const updateSurgeArresterInfoTransaction = (mrid, info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetInfoResult = await AssetInfoFunc.updateAssetInfoTransaction(mrid, info, dbsql)
             if (!assetInfoResult.success) {
@@ -224,6 +227,7 @@ export const updateSurgeArresterInfoTransaction = (mrid, info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err: err, message: 'Update surge arrester info transaction failed' })
         }
+        })().catch(reject)
     })
 }
 

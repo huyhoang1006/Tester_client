@@ -25,7 +25,8 @@ export const getOperatingMechanismInfoById = async (mrid) => {
 
 // Thêm mới operatingMechanismInfo (transaction)
 export const insertOperatingMechanismInfoTransaction = async (info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const parentRes = await AssetInfoFunc.insertAssetInfoTransaction(info, dbsql)
             if (!parentRes.success) return reject({ success: false, message: 'Insert AssetInfo failed', err: parentRes.err })
@@ -65,12 +66,14 @@ export const insertOperatingMechanismInfoTransaction = async (info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert operatingMechanismInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật operatingMechanismInfo (transaction)
 export const updateOperatingMechanismInfoTransaction = async (mrid, info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const parentRes = await AssetInfoFunc.updateAssetInfoTransaction(mrid, info, dbsql)
             if (!parentRes.success) return reject({ success: false, message: 'Update AssetInfo failed', err: parentRes.err })
@@ -105,12 +108,14 @@ export const updateOperatingMechanismInfoTransaction = async (mrid, info, dbsql)
         } catch (err) {
             return reject({ success: false, err, message: 'Update operatingMechanismInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa operatingMechanismInfo (transaction)
 export const deleteOperatingMechanismInfoTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Delete child row first
             dbsql.run("DELETE FROM operating_mechanism_info WHERE mrid = ?", [mrid], function (err) {
@@ -127,5 +132,6 @@ export const deleteOperatingMechanismInfoTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete operatingMechanismInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }

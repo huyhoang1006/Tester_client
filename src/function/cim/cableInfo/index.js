@@ -26,7 +26,8 @@ export const getCableInfoById = async (mrid) => {
 
 // Thêm mới cableInfo (transaction)
 export const insertCableInfoTransaction = async (info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const wireInfoResult = await WireInfoFunc.insertWireInfoTransaction(info, dbsql)
             if (!wireInfoResult.success) {
@@ -73,12 +74,14 @@ export const insertCableInfoTransaction = async (info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert cableInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật cableInfo (transaction)
 export const updateCableInfoTransaction = async (mrid, info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const wireInfoResult = await WireInfoFunc.updateWireInfoTransaction(mrid, info, dbsql)
             if (!wireInfoResult.success) {
@@ -120,12 +123,14 @@ export const updateCableInfoTransaction = async (mrid, info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Update cableInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa cableInfo (transaction)
 export const deleteCableInfoTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Xóa cable_info TRƯỚC (nó REFERENCES wire_info), rồi mới xóa wire_info
             dbsql.run("DELETE FROM cable_info WHERE mrid=?", [mrid], async function (err) {
@@ -145,5 +150,6 @@ export const deleteCableInfoTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete cableInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }

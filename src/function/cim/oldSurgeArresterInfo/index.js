@@ -127,7 +127,8 @@ export const insertOldSurgeArresterInfo = async (info) => {
 
 // Transaction: Thêm mới old surge arrester info
 export const insertOldSurgeArresterInfoTransaction = (info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const arresterInfoResult = await SurgeArresterInfoFunc.insertSurgeArresterInfoTransaction(info, dbsql)
             if (!arresterInfoResult.success) {
@@ -174,6 +175,7 @@ export const insertOldSurgeArresterInfoTransaction = (info, dbsql) => {
             console.log(err)
             return reject({ success: false, err: err, message: 'Insert old surge arrester info transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
@@ -232,7 +234,8 @@ export const updateOldSurgeArresterInfo = async (mrid, info) => {
 
 // Transaction: Cập nhật old surge arrester info
 export const updateOldSurgeArresterInfoTransaction = (mrid, info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const arresterInfoResult = await SurgeArresterInfoFunc.updateSurgeArresterInfoTransaction(mrid, info, dbsql)
             if (!arresterInfoResult.success) {
@@ -272,6 +275,7 @@ export const updateOldSurgeArresterInfoTransaction = (mrid, info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err: err, message: 'Update old surge arrester info transaction failed' })
         }
+        })().catch(reject)
     })
 }
 

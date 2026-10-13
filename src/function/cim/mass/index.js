@@ -51,8 +51,8 @@ export const insertMass = async (mass) => {
                 mass.value
             ],
             function (err) {
-                if (err) return reject({ success: false, err, message: 'Insert voltage failed' })
-                return resolve({ success: true, data: voltage, message: 'Insert voltage completed' })
+                if (err) return reject({ success: false, err, message: 'Insert mass failed' })
+                return resolve({ success: true, data: mass, message: 'Insert mass completed' })
             }
         )
     })

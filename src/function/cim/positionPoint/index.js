@@ -146,9 +146,7 @@ export const insertPositionPointArrayTransaction = async (positionPoints, locati
                     dbsql.run("DELETE FROM position_point WHERE mrid = ?", [mrid]);
                 }
 
-                let completedCount = 0;
-                let hasError = false;
-                const errors = [];
+                let completedCount = 0;                const errors = [];
 
                 if (positionPoints.length === 0) {
                     return resolve({ success: true, deleted: mridsToDelete, updated: [], inserted: [], message: 'Sync completed with only deletion' });
@@ -178,9 +176,7 @@ export const insertPositionPointArrayTransaction = async (positionPoints, locati
                             locationId
                         ],
                         function (err) {
-                            if (err) {
-                                hasError = true;
-                                errors.push({ index, error: err, mrid: pp.mrid });
+                            if (err) {                                errors.push({ index, error: err, mrid: pp.mrid });
                                 return reject({ success: false, err: errors, message: 'Insert/Update failed' });
                             }
 

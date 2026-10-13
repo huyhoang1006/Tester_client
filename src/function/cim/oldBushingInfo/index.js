@@ -70,7 +70,8 @@ export const getOldBushingInfoByTransformerEndInfoIds = async (transformerEndInf
 
 // Thêm mới oldBushingInfo (transaction)
 export const insertOldBushingInfoTransaction = async (info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const bushingInfoResult = await BushingInfoFunc.insertBushingInfoTransaction(info, dbsql)
             if (!bushingInfoResult.success) {
@@ -107,12 +108,14 @@ export const insertOldBushingInfoTransaction = async (info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert oldBushingInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật oldBushingInfo (transaction)
 export const updateOldBushingInfoTransaction = async (mrid, info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const bushingInfoResult = await BushingInfoFunc.updateBushingInfoTransaction(mrid, info, dbsql)
             if (!bushingInfoResult.success) {
@@ -146,12 +149,14 @@ export const updateOldBushingInfoTransaction = async (mrid, info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Update oldBushingInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa oldBushingInfo (transaction)
 export const deleteOldBushingInfoTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const bushingInfoResult = await BushingInfoFunc.deleteBushingInfoTransaction(mrid, dbsql)
             if (!bushingInfoResult.success) {
@@ -166,5 +171,6 @@ export const deleteOldBushingInfoTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete oldBushingInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }

@@ -30,7 +30,7 @@ export const getConfigurationEventByMrid = () => {
 }
 
 export const getAllConfigurationEvents = () => {
-    ipcMain.handle('getAllConfigurationEvents', async function (event) {
+    ipcMain.handle('getAllConfigurationEvents', async function () {
         try {
             const rs = await cimFunc.configurationEventFunc.getAllConfigurationEvents()
             if (rs.success === true) {

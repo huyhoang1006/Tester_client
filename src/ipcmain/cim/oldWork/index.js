@@ -57,6 +57,48 @@ export const getOldWorkByAssetId = () => {
     })
 }
 
+export const getWorkTasksByWorkId = () => {
+    ipcMain.handle('getWorkTasksByWorkId', async function (event, workId) {
+        try {
+            const rs = await cimFunc.workTaskFunc.getWorkTaskByWork(workId)
+            return {
+                success: rs.success === true,
+                message: rs.message || (rs.success ? 'Success' : 'fail'),
+                data: Array.isArray(rs.data) ? rs.data : []
+            }
+        } catch (error) {
+            console.log(error)
+            return {
+                error,
+                success: false,
+                message: (error && error.message) ? error.message : 'Internal error',
+                data: []
+            }
+        }
+    })
+}
+
+export const getWorkTasksByAssetId = () => {
+    ipcMain.handle('getWorkTasksByAssetId', async function (event, assetId) {
+        try {
+            const rs = await cimFunc.workTaskFunc.getWorkTaskByAsset(assetId)
+            return {
+                success: rs.success === true,
+                message: rs.message || (rs.success ? 'Success' : 'fail'),
+                data: Array.isArray(rs.data) ? rs.data : []
+            }
+        } catch (error) {
+            console.log(error)
+            return {
+                error,
+                success: false,
+                message: (error && error.message) ? error.message : 'Internal error',
+                data: []
+            }
+        }
+    })
+}
+
 export const updateOldWorkAssetIdById = () => {
     ipcMain.handle('updateOldWorkAssetIdById', async function (event, mrid, assetId) {
         try {
@@ -87,5 +129,7 @@ export const updateOldWorkAssetIdById = () => {
 export const active = () => {
     getOldWorkByMrid()
     getOldWorkByAssetId()
+    getWorkTasksByWorkId()
+    getWorkTasksByAssetId()
     updateOldWorkAssetIdById()
 }

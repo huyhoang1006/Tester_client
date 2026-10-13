@@ -26,7 +26,8 @@ export const getDocumentById = async (mrid) => {
 
 // Thêm mới document
 export const insertDocumentTransaction = async (document, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Thêm identifiedObject trước
             const idObjResult = await identifiedObjectFunc.insertIdentifiedObjectTransaction(document, db)
@@ -81,12 +82,14 @@ export const insertDocumentTransaction = async (document, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert document failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật document
 export const updateDocumentByIdTransaction = async (mrid, document, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Cập nhật identifiedObject trước
             const idObjResult = await identifiedObjectFunc.updateIdentifiedObjectByIdTransaction(mrid, document, dbsql)
@@ -137,12 +140,14 @@ export const updateDocumentByIdTransaction = async (mrid, document, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Update document failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa document
 export const deleteDocumentByIdTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run("DELETE FROM document WHERE mrid=?", [mrid], function (err) {
                 if (err) return reject({ success: false, err, message: 'Delete document failed' })
@@ -154,5 +159,6 @@ export const deleteDocumentByIdTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete document failed' })
         }
+        })().catch(reject)
     })
 }

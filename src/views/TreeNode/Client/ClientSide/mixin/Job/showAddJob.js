@@ -23,8 +23,53 @@ export default {
         }
     },
     methods: {
+        formatToday() {
+            const now = new Date()
+            const month = String(now.getMonth() + 1).padStart(2, '0')
+            const day = String(now.getDate()).padStart(2, '0')
+            return `${month}/${day}/${now.getFullYear()}`
+        },
+        prepareNewTestForm() {
+            const jobData = this.$refs.jobDialog && this.$refs.jobDialog.getJobDataRef()
+            if (!jobData) return
+
+            jobData.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
+            const dtoKey = Object.keys(jobData.$data || {}).find(key => /JobDto$/.test(key) && !/Old$/.test(key))
+            const dto = dtoKey ? jobData[dtoKey] : null
+            if (dto && dto.properties) {
+                const year = new Date().getFullYear()
+                dto.properties.name = `Job ${year}`
+                dto.properties.execution_date = this.formatToday()
+                dto.properties.creation_date = dto.properties.creation_date || this.formatToday()
+            }
+            jobData.mainActiveName = 'test-settings'
+        },
         async showAddJob(node) {
             try {
+                const currentYear = new Date().getFullYear()
+                const worksResponse = await window.electronAPI.getOldWorkByAssetId(node.mrid)
+                const works = worksResponse && Array.isArray(worksResponse.data) ? worksResponse.data : []
+                const canonicalWorkName = `Job ${currentYear}`
+                const currentYearWork = works.find(work =>
+                    String(work.name || '').trim().toLowerCase() === canonicalWorkName.toLowerCase()
+                )
+
+                if (currentYearWork) {
+                    await this.showDataClient({
+                        mrid: currentYearWork.mrid,
+                        workMrid: currentYearWork.mrid,
+                        name: `Add test - ${currentYear}`,
+                        parentId: node.mrid,
+                        parentName: node.parentName,
+                        parentArr: node.parentArr || [],
+                        mode: 'test',
+                        job: node.asset,
+                        execution_date: currentYearWork.execution_date,
+                        _openTestSettings: true
+                    })
+                    return
+                }
+
                 const dataAsset = await window.electronAPI.getAssetByMrid(node.mrid)
                 if (dataAsset.success) {
                     this.assetData = dataAsset.data
@@ -65,7 +110,7 @@ export default {
                     this.checkJobType = 'JobSurgeArrester'
                     this.signJob = true
                     this.$nextTick(() => {
-                        this.$refs.jobDialog.$refs.jobData.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
+                        this.prepareNewTestForm()
                     })
                 } else if (node.asset == 'Power cable') {
                     const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Power cable")
@@ -77,7 +122,7 @@ export default {
                     this.checkJobType = 'JobPowerCable'
                     this.signJob = true
                     this.$nextTick(() => {
-                        this.$refs.jobDialog.$refs.jobData.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
+                        this.prepareNewTestForm()
                     })
                 } else if (node.asset == 'Disconnector') {
                     const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Disconnector")
@@ -89,7 +134,7 @@ export default {
                     this.checkJobType = 'JobDisconnector'
                     this.signJob = true
                     this.$nextTick(() => {
-                        this.$refs.jobDialog.$refs.jobData.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
+                        this.prepareNewTestForm()
                     })
                 } else if (node.asset == 'Current transformer') {
                     const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Current transformer")
@@ -107,7 +152,7 @@ export default {
                     this.checkJobType = 'JobCurrentTransformer'
                     this.signJob = true
                     this.$nextTick(() => {
-                        this.$refs.jobDialog.$refs.jobData.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
+                        this.prepareNewTestForm()
                     })
                 } else if (node.asset == 'Voltage transformer') {
                     const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Voltage transformer")
@@ -128,7 +173,7 @@ export default {
                     this.checkJobType = 'JobVoltageTransformer'
                     this.signJob = true
                     this.$nextTick(() => {
-                        this.$refs.jobDialog.$refs.jobData.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
+                        this.prepareNewTestForm()
                     })
                 } else if (node.asset == 'Circuit breaker') {
                     const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Circuit breaker")
@@ -147,7 +192,7 @@ export default {
                     this.checkJobType = 'JobCircuitBreaker'
                     this.signJob = true
                     this.$nextTick(() => {
-                        this.$refs.jobDialog.$refs.jobData.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
+                        this.prepareNewTestForm()
                     })
                 } else if (node.asset == 'Transformer') {
                     const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Transformer")
@@ -166,7 +211,7 @@ export default {
                     this.checkJobType = 'JobTransformer'
                     this.signJob = true
                     this.$nextTick(() => {
-                        this.$refs.jobDialog.$refs.jobData.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
+                        this.prepareNewTestForm()
                     })
                 } else if (node.asset == 'Bushing') {
                     const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Bushing")
@@ -184,7 +229,7 @@ export default {
                     this.checkJobType = 'JobBushing'
                     this.signJob = true
                     this.$nextTick(() => {
-                        this.$refs.jobDialog.$refs.jobData.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
+                        this.prepareNewTestForm()
                     })
                 } else if (node.asset == 'Capacitor') {
                     const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Capacitor")
@@ -202,7 +247,7 @@ export default {
                     this.checkJobType = 'JobCapacitor'
                     this.signJob = true
                     this.$nextTick(() => {
-                        this.$refs.jobDialog.$refs.jobData.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
+                        this.prepareNewTestForm()
                     })
                 } else if (node.asset == 'Reactor') {
                     const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Reactor")
@@ -220,7 +265,7 @@ export default {
                     this.checkJobType = 'JobReactor'
                     this.signJob = true
                     this.$nextTick(() => {
-                        this.$refs.jobDialog.$refs.jobData.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
+                        this.prepareNewTestForm()
                     })
                 } else if (node.asset == 'Rotating machine') {
                     const dataTestType = await window.electronAPI.getProcedureByGenericAssetModel("Rotating machine")
@@ -238,10 +283,10 @@ export default {
                     this.checkJobType = 'JobRotatingMachine'
                     this.signJob = true
                     this.$nextTick(() => {
-                        this.$refs.jobDialog.$refs.jobData.loadParameter(this.testTypeListData, this.assetData, this.productAssetModelData, this.locationData)
+                        this.prepareNewTestForm()
                     })
                 } else {
-                    this.$message.error('This asset type not support for job')
+                    this.$message.error('This asset type does not support tests')
                 }
             } catch (error) {
                 this.parentOrganization = null

@@ -26,7 +26,8 @@ export const getIOPointSourceById = async (mrid) => {
 
 // Thêm mới iopointSource
 export const insertIOPointSourceTransaction = async (iopointSource, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Thêm measurementValueSource trước
             const mvsResult = await measurementValueSourceFunc.insertMeasurementValueSourceTransaction(iopointSource, dbsql)
@@ -51,12 +52,14 @@ export const insertIOPointSourceTransaction = async (iopointSource, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert iopointSource failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật iopointSource
 export const updateIOPointSourceByIdTransaction = async (mrid, iopointSource, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Cập nhật measurementValueSource trước
             const mvsResult = await measurementValueSourceFunc.updateMeasurementValueSourceByIdTransaction(mrid, iopointSource, dbsql)
@@ -79,12 +82,14 @@ export const updateIOPointSourceByIdTransaction = async (mrid, iopointSource, db
         } catch (err) {
             return reject({ success: false, err, message: 'Update iopointSource failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa iopointSource
 export const deleteIOPointSourceByIdTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run("DELETE FROM iopoint_source WHERE mrid=?", [mrid], function (err) {
                 if (err) return reject({ success: false, err, message: 'Delete iopointSource failed' })
@@ -96,5 +101,6 @@ export const deleteIOPointSourceByIdTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete iopointSource failed' })
         }
+        })().catch(reject)
     })
 }

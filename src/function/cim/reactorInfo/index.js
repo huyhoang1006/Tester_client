@@ -29,7 +29,8 @@ export const getReactorInfoById = async (mrid) => {
 
 // Thêm mới reactorInfo (transaction)
 export const insertReactorInfoTransaction = async (info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetInfoResult = await AssetInfoFunc.insertAssetInfoTransaction(info, dbsql)
             if (!assetInfoResult.success) {
@@ -67,12 +68,14 @@ export const insertReactorInfoTransaction = async (info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert reactorInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật reactorInfo (transaction)
 export const updateReactorInfoTransaction = async (mrid, info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetInfoResult = await AssetInfoFunc.updateAssetInfoTransaction(mrid, info, dbsql)
             if (!assetInfoResult.success) {
@@ -106,12 +109,14 @@ export const updateReactorInfoTransaction = async (mrid, info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Update reactorInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa reactorInfo (transaction)
 export const deleteReactorInfoTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetInfoResult = await AssetInfoFunc.deleteAssetInfoByIdTransaction(mrid, dbsql)
             if (!assetInfoResult.success) {
@@ -126,6 +131,7 @@ export const deleteReactorInfoTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete reactorInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 

@@ -32,6 +32,11 @@ export default {
                 const jobData = dialogRef ? dialogRef.getJobDataRef() : null
                 if (jobData) {
                     jobDataRef = jobData;
+                    const dtoKey = Object.keys(jobData.$data || {}).find(key => /JobDto$/.test(key) && !/Old$/.test(key))
+                    const dto = dtoKey ? jobData[dtoKey] : null
+                    if (!dto || !Array.isArray(dto.testList) || dto.testList.length === 0) {
+                        throw new Error('Select at least one test')
+                    }
                     const savePromise = jobData.saveJob();
 
                     let result;
@@ -80,21 +85,29 @@ export default {
                                 jobType = 'Job'
                             }
 
-                            const jobData = data.oldWork || data.job || data
-                            const newRow = {
-                                mrid: jobData.mrid,
-                                name: jobData.name || `Unnamed ${jobType} Job`,
+                            const savedWork = data.oldWork || data.job || data
+                            const tasksResponse = await window.electronAPI.getWorkTasksByWorkId(savedWork.mrid)
+                            const tasks = tasksResponse && Array.isArray(tasksResponse.data) ? tasksResponse.data : []
+                            newRows = tasks.map(task => ({
+                                ...savedWork,
+                                ...task,
+                                mrid: task.mrid,
+                                workMrid: savedWork.mrid,
+                                workName: savedWork.name,
+                                name: task.name || task.title || task.type || 'Unnamed test',
                                 parentId: this.parentOrganization.mrid,
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
-                                mode: 'job',
+                                execution_date: task.testing_date || task.testingDate || savedWork.execution_date,
+                                tested_by: task.tested_by || task.testedBy || savedWork.tested_by,
+                                mode: 'test',
                                 job: jobType
-                            }
-                            newRows.push(newRow)
+                            }))
                             const node = this.findNodeById(this.parentOrganization.mrid, this.organisationClientList)
                             if (node) {
                                 const children = Array.isArray(node.children) ? node.children : []
-                                Vue.set(node, 'children', [...children, ...newRows])
+                                const newIds = new Set(newRows.map(row => row.mrid))
+                                Vue.set(node, 'children', [...children.filter(child => !newIds.has(child.mrid)), ...newRows])
                             }
                         }
                     }
@@ -118,7 +131,7 @@ export default {
             }
 
             if (saveSuccess) {
-                this.$message.success('Job saved successfully');
+                this.$message.success('Test saved successfully');
                 this.signJob = false;
                 if (jobDataRef) {
                     this.resetFormAfterSave(jobDataRef);

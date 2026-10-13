@@ -29,7 +29,8 @@ export const getCapacitorInfoById = async (mrid) => {
 
 // Thêm mới capacitorInfo (transaction)
 export const insertCapacitorInfoTransaction = async (info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetInfoResult = await AssetInfoFunc.insertAssetInfoTransaction(info, dbsql)
             if (!assetInfoResult.success) {
@@ -71,12 +72,14 @@ export const insertCapacitorInfoTransaction = async (info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert capacitorInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật capacitorInfo (transaction)
 export const updateCapacitorInfoTransaction = async (mrid, info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetInfoResult = await AssetInfoFunc.updateAssetInfoTransaction(mrid, info, dbsql)
             if (!assetInfoResult.success) {
@@ -114,12 +117,14 @@ export const updateCapacitorInfoTransaction = async (mrid, info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Update capacitorInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa capacitorInfo (transaction)
 export const deleteCapacitorInfoTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetInfoResult = await AssetInfoFunc.deleteAssetInfoByIdTransaction(mrid, dbsql)
             if (!assetInfoResult.success) {
@@ -134,6 +139,7 @@ export const deleteCapacitorInfoTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete capacitorInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 

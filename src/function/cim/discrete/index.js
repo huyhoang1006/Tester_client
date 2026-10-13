@@ -120,7 +120,8 @@ export const getAllDiscreteByProcedure = (procedureId) => {
 
 // Thêm mới discrete (transaction)
 export const insertDiscreteTransaction = async (info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const measurementResult = await MeasurementFunc.insertMeasurementTransaction(info, dbsql)
             if (!measurementResult.success) {
@@ -153,11 +154,13 @@ export const insertDiscreteTransaction = async (info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert discrete transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 export const insertDiscrete = async (info) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         db.serialize(async () => {
             db.run('BEGIN TRANSACTION');
             try {
@@ -198,12 +201,14 @@ export const insertDiscrete = async (info) => {
                 return reject({ success: false, err, message: 'Insert discrete failed' });
             }
         });
+        })().catch(reject)
     });
 }
 
 // Cập nhật discrete (transaction)
 export const updateDiscreteByIdTransaction = async (mrid, info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const measurementResult = await MeasurementFunc.updateMeasurementByIdTransaction(mrid, info, dbsql)
             if (!measurementResult.success) {
@@ -233,12 +238,14 @@ export const updateDiscreteByIdTransaction = async (mrid, info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Update discrete transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa discrete (transaction)
 export const deleteDiscreteByIdTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Xóa discrete trước
             dbsql.run("DELETE FROM discrete WHERE mrid=?", [mrid], function (err) {
@@ -260,11 +267,13 @@ export const deleteDiscreteByIdTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete discrete transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 export const deleteDiscreteById = async (mrid) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         db.serialize(() => {
             db.run('BEGIN TRANSACTION');
             // Xóa discrete trước
@@ -289,5 +298,6 @@ export const deleteDiscreteById = async (mrid) => {
                     });
             });
         });
+        })().catch(reject)
     });
 }

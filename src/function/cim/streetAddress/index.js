@@ -32,8 +32,8 @@ export const insertStreetAddress = async (streetAddress) => {
                 streetAddress.town_detail
             ],
             function (err) {
-                if (err) return reject({ success: false, err, message: 'Insert identified object failed' })
-                return resolve({ success: true, data: identifiedObject, message: 'Insert identified object completed' })
+                if (err) return reject({ success: false, err, message: 'Insert street address failed' })
+                return resolve({ success: true, data: streetAddress, message: 'Insert street address completed' })
             }
         )
     })

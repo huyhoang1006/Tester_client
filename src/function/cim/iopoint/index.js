@@ -26,7 +26,8 @@ export const getIOPointById = async (mrid) => {
 
 // Thêm mới iopoint
 export const insertIOPointTransaction = async (iopoint, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Thêm identifiedObject trước
             const idObjResult = await identifiedObjectFunc.insertIdentifiedObjectTransaction(iopoint, dbsql)
@@ -52,12 +53,14 @@ export const insertIOPointTransaction = async (iopoint, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert iopoint failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật iopoint
 export const updateIOPointByIdTransaction = async (mrid, iopoint, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Cập nhật identifiedObject trước
             const idObjResult = await identifiedObjectFunc.updateIdentifiedObjectByIdTransaction(mrid, iopoint, dbsql)
@@ -80,12 +83,14 @@ export const updateIOPointByIdTransaction = async (mrid, iopoint, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Update iopoint failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa iopoint
 export const deleteIOPointByIdTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run("DELETE FROM iopoint WHERE mrid=?", [mrid], function (err) {
                 if (err) return reject({ success: false, err, message: 'Delete iopoint failed' })
@@ -97,5 +102,6 @@ export const deleteIOPointByIdTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete iopoint failed'})
         }
+        })().catch(reject)
     })
 }

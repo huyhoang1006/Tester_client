@@ -36,7 +36,8 @@ import db from '../../datacontext/index'
 
 // Thêm mới oldCurrentTransformerInfo (transaction)
 export const insertOldCurrentTransformerInfoTransaction = async (info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const currentTransformerInfoResult = await CurrentTransformerInfoFunc.insertCurrentTransformerInfo(info, dbsql)
             if (!currentTransformerInfoResult.success) {
@@ -92,6 +93,7 @@ export const insertOldCurrentTransformerInfoTransaction = async (info, dbsql) =>
         catch (err) {
             return reject({ success: false, err, message: 'Insert oldCurrentTransformerInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 

@@ -26,7 +26,8 @@ export const getMeasurementById = async (mrid) => {
 
 // Thêm mới measurement
 export const insertMeasurementTransaction = async (measurement, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Thêm identifiedObject trước
             const idObjResult = await identifiedObjectFunc.insertIdentifiedObjectTransaction(measurement, dbsql)
@@ -69,12 +70,14 @@ export const insertMeasurementTransaction = async (measurement, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert measurement failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật measurement
 export const updateMeasurementByIdTransaction = async (mrid, measurement, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Cập nhật identifiedObject trước
             const idObjResult = await identifiedObjectFunc.updateIdentifiedObjectByIdTransaction(mrid, measurement, dbsql)
@@ -113,12 +116,14 @@ export const updateMeasurementByIdTransaction = async (mrid, measurement, dbsql)
         } catch (err) {
             return reject({ success: false, err, message: 'Update measurement failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa measurement
 export const deleteMeasurementByIdTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run("DELETE FROM measurement WHERE mrid=?", [mrid], function (err) {
                 if (err) return reject({ success: false, err, message: 'Delete measurement failed' })
@@ -130,5 +135,6 @@ export const deleteMeasurementByIdTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete measurement failed'})
         }
+        })().catch(reject)
     })
 }

@@ -1,15 +1,15 @@
 <template>
     <div id="job">
         <el-row :gutter="20" style="padding: 0">
-            <el-tabs type="card">
+            <el-tabs v-model="mainActiveName" type="card">
                 <!-- Overview -->
-                <el-tab-pane style="width: 100%;">
+                <el-tab-pane name="overview" style="width: 100%;">
                     <span slot="label"><i class="fa-solid fa-book"></i> Overview</span>
                     <overview :data="transformerJobDto.properties" @update-attachment="updateAttachmentOverView" :attachment.sync="transformerJobDto.attachmentData" :locationData="locationData" :assetData="assetData" :productAssetModelData="productAssetModelData" :parentOrganization="parentOrganization"></overview>
                 </el-tab-pane>
 
                 <!-- Select test -->
-                <el-tab-pane>
+                <el-tab-pane name="test-settings">
                     <span slot="label"><i class="fa-solid fa-list-check"></i> Test settings</span>
                     <select-test style="width: 100%;"
                         :data="transformerJobDto.testList"
@@ -19,7 +19,7 @@
                         ></select-test>
                 </el-tab-pane>
 
-                <el-tab-pane>
+                <el-tab-pane name="testing-equipment">
                     <span slot="label"><i class="fa-solid fa-list-check"></i> Testing equipment</span>
                     <div>
                         <testing-equipment :data="transformerJobDto.testingEquipmentData" :test-list="transformerJobDto.testList"></testing-equipment>
@@ -27,7 +27,7 @@
                 </el-tab-pane>
 
                 <!-- Tests -->
-                <el-tab-pane>
+                <el-tab-pane name="test-data">
                     <span slot="label"><i class="fa-solid fa-calculator"></i> Test data</span>
                     <div id="tests" style="width: 100%;">
                         <el-tabs v-model="objActiveName.activeName" type="card" class="w-100 h-100">
@@ -35,6 +35,7 @@
                                 <test-information
                                     :title="item.name"
                                     :data="item.testCondition"
+                                    :job-properties="transformerJobDto.properties"
                                     :assetData="assetData"
                                     :attachment="item.testCondition.attachmentData"
                                     :show-compare.sync="compareOpen[item.testTypeCode + index]"
@@ -180,6 +181,7 @@ export default {
     mixins: [mixin],
     data() {
         return {
+            mainActiveName: 'test-settings',
             // Trạng thái mở/đóng bảng so sánh, tách theo từng tab test.
             // Phải để ở đây vì nút nằm trong component test còn bảng nằm trong
             // test-information — hai component anh em, không tự nói chuyện được.

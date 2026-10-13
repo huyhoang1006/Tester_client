@@ -2,42 +2,24 @@ import db from '../../datacontext/index'
 import path from 'path'
 import { safePathSegment } from '@/utils/fileName'
 import * as attachmentContext from '../../attachmentcontext/index'
-import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteAttachmentByIdTransaction, deleteDirectory } from '@/function/entity/attachment'
-import { insertVoltageTransaction, getVoltageByIds, deleteVoltageByIdTransaction } from '@/function/cim/voltage';
-import { insertCurrentFlowTransaction, getCurrentFlowByIds, deleteCurrentFlowByIdTransaction } from '@/function/cim/currentFlow';
-import { insertLifecycleDateTransaction, getLifecycleDateById, deleteLifecycleDateByIdTransaction } from '@/function/cim/lifecycleDate';
-import { insertProductAssetModelTransaction, getProductAssetModelById, deleteProductAssetModelByIdTransaction } from '@/function/cim/productAssetModel';
-import { insertAssetPsrTransaction, getAssetPsrByAssetIdAndPsrId, deleteAssetPsrTransaction } from '@/function/entity/assetPsr'
-import { insertFrequencyTransaction, getFrequencyByIds, deleteFrequencyByIdTransaction } from '@/function/cim/frequency';
-import { insertAssetTransaction, getAssetById, deleteAssetByIdTransaction } from '@/function/cim/asset';
-import { insertCapacitorInfoTransaction, getCapacitorInfoById, deleteCapacitorInfoTransaction } from '@/function/cim/capacitorInfo';
-import { insertCapacitanceCapacitorInfoTransaction, getCapacitanceCapacitorInfoById, getCapacitanceCapacitorInfoByIds, deleteCapacitanceInfoTransaction } from '@/function/cim/capacitanceInfo';
-import { insertDissipationFactorCapacitorInfoTransaction, getDissipationFactorCapacitorInfoById, getDissipationFactorCapacitorInfoByIds, deleteDissipationFactorCapacitorInfoTransaction } from '@/function/cim/dissipationFactorInfo';
+import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteDirectory } from '@/function/entity/attachment'
+import { insertVoltageTransaction, getVoltageByIds } from '@/function/cim/voltage';
+import { insertCurrentFlowTransaction, getCurrentFlowByIds } from '@/function/cim/currentFlow';
+import { insertLifecycleDateTransaction, getLifecycleDateById } from '@/function/cim/lifecycleDate';
+import { insertProductAssetModelTransaction, getProductAssetModelById } from '@/function/cim/productAssetModel';
+import { insertAssetPsrTransaction, getAssetPsrByAssetIdAndPsrId } from '@/function/entity/assetPsr'
+import { insertFrequencyTransaction, getFrequencyByIds } from '@/function/cim/frequency';
+import { insertAssetTransaction, getAssetById } from '@/function/cim/asset';
+import { insertCapacitorInfoTransaction, getCapacitorInfoById } from '@/function/cim/capacitorInfo';
+import { insertCapacitanceCapacitorInfoTransaction, getCapacitanceCapacitorInfoByIds, deleteCapacitanceInfoTransaction } from '@/function/cim/capacitanceInfo';
+import { insertDissipationFactorCapacitorInfoTransaction, getDissipationFactorCapacitorInfoByIds, deleteDissipationFactorCapacitorInfoTransaction } from '@/function/cim/dissipationFactorInfo';
 import CapacitorEntity from '@/views/Flatten/Capacitor';
-import { insertReactivePowerTransaction, getReactivePowerByIds, deleteReactivePowerByIdTransaction } from '@/function/cim/reactivePower';
+import { insertReactivePowerTransaction, getReactivePowerByIds } from '@/function/cim/reactivePower';
 import { insertCapacitanceTransaction, getCapacitanceById, deleteCapacitanceByIdTransaction } from '@/function/cim/capacitance';
 import { insertPercentTransaction, getPercentById, deletePercentByIdTransaction } from '@/function/cim/percent';
-import { insertMassTransaction, getMassById, deleteMassByIdTransaction } from '@/function/cim/mass';
+import { insertMassTransaction, getMassById } from '@/function/cim/mass';
 import { writeAssetSaveAuditLog, writeAssetDeleteAuditLog } from '../assetAudit/index'
 import { rollbackQuietly } from '@/function/datacontext/rollback'
-
-// Helper to safely delete with FK check
-const tryDelete = async (deleteFunc, id, dbsql, name) => {
-    try {
-        await deleteFunc(id, dbsql);
-    } catch (error) {
-        // Handle wrapped error from delete*ByIdTransaction functions
-        // structure: { success: false, err: ErrorObject, message: '...' }
-        const sqlError = error.err || error;
-        
-        // If FK constraint, log warning and skip
-        if (sqlError && sqlError.code === 'SQLITE_CONSTRAINT') {
-             console.warn(`Skipping delete ${name} (${id}): Used by other entities.`);
-        } else {
-             throw error;
-        }
-    }
-}
 
 // Helper to check usage directly (for raw runAsync deletions)
 const isUsedInTable = async (table, column, id, db) => {

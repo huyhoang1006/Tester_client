@@ -119,7 +119,8 @@ export const getValueAliasSetByIds = async (mridArray) => {
 
 // Thêm mới valueAliasSet
 export const insertValueAliasSetTransaction = async (valueAliasSet, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Thêm identifiedObject trước
             const idObjResult = await identifiedObjectFunc.insertIdentifiedObjectTransaction(valueAliasSet, dbsql)
@@ -144,12 +145,14 @@ export const insertValueAliasSetTransaction = async (valueAliasSet, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert valueAliasSet failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật valueAliasSet
 export const updateValueAliasSetByIdTransaction = async (mrid, valueAliasSet, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Cập nhật identifiedObject trước
             const idObjResult = await identifiedObjectFunc.updateIdentifiedObjectByIdTransaction(mrid, valueAliasSet, dbsql)
@@ -172,12 +175,14 @@ export const updateValueAliasSetByIdTransaction = async (mrid, valueAliasSet, db
         } catch (err) {
             return reject({ success: false, err, message: 'Update valueAliasSet failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa valueAliasSet
 export const deleteValueAliasSetByIdTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run("DELETE FROM value_alias_set WHERE mrid=?", [mrid], function (err) {
                 if (err) return reject({ success: false, err, message: 'Delete valueAliasSet failed' })
@@ -189,5 +194,6 @@ export const deleteValueAliasSetByIdTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete valueAliasSet failed' })
         }
+        })().catch(reject)
     })
 }

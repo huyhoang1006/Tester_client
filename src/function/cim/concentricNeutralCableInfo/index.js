@@ -26,7 +26,8 @@ export const getConcentricNeutralCableInfoById = async (mrid) => {
 
 // Thêm mới concentricNeutralCableInfo (transaction)
 export const insertConcentricNeutralCableInfoTransaction = async (info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const cableInfoResult = await CableInfoFunc.insertCableInfoTransaction(info, dbsql)
             if (!cableInfoResult.success) {
@@ -61,12 +62,14 @@ export const insertConcentricNeutralCableInfoTransaction = async (info, dbsql) =
         } catch (err) {
             return reject({ success: false, err, message: 'Insert concentricNeutralCableInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật concentricNeutralCableInfo (transaction)
 export const updateConcentricNeutralCableInfoTransaction = async (mrid, info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const cableInfoResult = await CableInfoFunc.updateCableInfoTransaction(mrid, info, dbsql)
             if (!cableInfoResult.success) {
@@ -98,12 +101,14 @@ export const updateConcentricNeutralCableInfoTransaction = async (mrid, info, db
         } catch (err) {
             return reject({ success: false, err, message: 'Update concentricNeutralCableInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa concentricNeutralCableInfo (transaction)
 export const deleteConcentricNeutralCableInfoTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Xóa concentric_neutral_cable_info TRƯỚC (nó REFERENCES cable_info ON DELETE CASCADE)
             // rồi mới xóa cable_info
@@ -124,5 +129,6 @@ export const deleteConcentricNeutralCableInfoTransaction = async (mrid, dbsql) =
         } catch (err) {
             return reject({ success: false, err, message: 'Delete concentricNeutralCableInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }

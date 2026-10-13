@@ -48,7 +48,15 @@ export default {
                 return rows
             }
             const ownedIds = new Set(rs.data)
-            return rows.filter((row) => !row || !row.mrid || ownedIds.has(row.mrid))
+            return rows.filter((row) => {
+                if (!row || !row.mrid) return true
+
+                // Jobs and tests inherit access from the asset whose children are
+                // being loaded. They are not assigned their own ownership rows.
+                if (row.mode === 'job' || row.mode === 'test') return true
+
+                return ownedIds.has(row.mrid)
+            })
         },
 
         async fetchChildren(node) {
@@ -61,7 +69,8 @@ export default {
             // 2. Hoặc có children nhưng chưa được fetch từ server (chỉ có asset mới add)
             // 3. Hoặc có children đã fetch nhưng có asset mới add (cần merge)
             const hasExistingChildren = existingChildren.length > 0
-            const needsFetch = !node.children || !node._childrenFetched || hasExistingChildren
+            const needsFetch = !node.children || !node._childrenFetched || hasExistingChildren ||
+                (node.mode === 'asset' && existingChildren.length === 0)
             if (needsFetch) {
                 try {
                     let newRows = []
@@ -78,7 +87,7 @@ export default {
                             if (jobsReturn.success) {
                                 jobsReturn.data.forEach((row) => {
                                     row.parentId = clickedRow.mrid
-                                    row.mode = 'job'
+                                    row.mode = row.workMrid ? 'test' : 'job'
                                     row.job = 'Surge arrester'
                                     let parentName = clickedRow.parentName + '/' + clickedRow.name
                                     row.parentName = parentName
@@ -95,7 +104,7 @@ export default {
                             if (jobsReturn.success) {
                                 jobsReturn.data.forEach((row) => {
                                     row.parentId = clickedRow.mrid
-                                    row.mode = 'job'
+                                    row.mode = row.workMrid ? 'test' : 'job'
                                     row.job = 'Transformer'
                                     let parentName = clickedRow.parentName + '/' + clickedRow.name
                                     row.parentName = parentName
@@ -112,7 +121,7 @@ export default {
                             if (jobsReturn.success) {
                                 jobsReturn.data.forEach((row) => {
                                     row.parentId = clickedRow.mrid
-                                    row.mode = 'job'
+                                    row.mode = row.workMrid ? 'test' : 'job'
                                     row.job = 'Voltage transformer'
                                     let parentName = clickedRow.parentName + '/' + clickedRow.name
                                     row.parentName = parentName
@@ -129,7 +138,7 @@ export default {
                             if (jobsReturn.success) {
                                 jobsReturn.data.forEach((row) => {
                                     row.parentId = clickedRow.mrid
-                                    row.mode = 'job'
+                                    row.mode = row.workMrid ? 'test' : 'job'
                                     row.job = 'Current transformer'
                                     let parentName = clickedRow.parentName + '/' + clickedRow.name
                                     row.parentName = parentName
@@ -146,7 +155,7 @@ export default {
                             if (jobsReturn.success) {
                                 jobsReturn.data.forEach((row) => {
                                     row.parentId = clickedRow.mrid
-                                    row.mode = 'job'
+                                    row.mode = row.workMrid ? 'test' : 'job'
                                     row.job = 'Disconnector'
                                     let parentName = clickedRow.parentName + '/' + clickedRow.name
                                     row.parentName = parentName
@@ -163,7 +172,7 @@ export default {
                             if (jobsReturn.success) {
                                 jobsReturn.data.forEach((row) => {
                                     row.parentId = clickedRow.mrid
-                                    row.mode = 'job'
+                                    row.mode = row.workMrid ? 'test' : 'job'
                                     row.job = 'Circuit breaker'
                                     let parentName = clickedRow.parentName + '/' + clickedRow.name
                                     row.parentName = parentName
@@ -180,7 +189,7 @@ export default {
                             if (jobsReturn.success) {
                                 jobsReturn.data.forEach((row) => {
                                     row.parentId = clickedRow.mrid
-                                    row.mode = 'job'
+                                    row.mode = row.workMrid ? 'test' : 'job'
                                     row.job = 'Power cable'
                                     let parentName = clickedRow.parentName + '/' + clickedRow.name
                                     row.parentName = parentName
@@ -197,7 +206,7 @@ export default {
                             if (jobsReturn.success) {
                                 jobsReturn.data.forEach((row) => {
                                     row.parentId = clickedRow.mrid
-                                    row.mode = 'job'
+                                    row.mode = row.workMrid ? 'test' : 'job'
                                     row.job = 'Rotating machine'
                                     let parentName = clickedRow.parentName + '/' + clickedRow.name
                                     row.parentName = parentName
@@ -214,7 +223,7 @@ export default {
                             if (jobsReturn.success) {
                                 jobsReturn.data.forEach((row) => {
                                     row.parentId = clickedRow.mrid
-                                    row.mode = 'job'
+                                    row.mode = row.workMrid ? 'test' : 'job'
                                     row.job = 'Reactor'
                                     let parentName = clickedRow.parentName + '/' + clickedRow.name
                                     row.parentName = parentName
@@ -231,7 +240,7 @@ export default {
                             if (jobsReturn.success) {
                                 jobsReturn.data.forEach((row) => {
                                     row.parentId = clickedRow.mrid
-                                    row.mode = 'job'
+                                    row.mode = row.workMrid ? 'test' : 'job'
                                     row.job = 'Capacitor'
                                     let parentName = clickedRow.parentName + '/' + clickedRow.name
                                     row.parentName = parentName
@@ -248,7 +257,7 @@ export default {
                             if (jobsReturn.success) {
                                 jobsReturn.data.forEach((row) => {
                                     row.parentId = clickedRow.mrid
-                                    row.mode = 'job'
+                                    row.mode = row.workMrid ? 'test' : 'job'
                                     row.job = 'Bushing'
                                     let parentName = clickedRow.parentName + '/' + clickedRow.name
                                     row.parentName = parentName
@@ -828,6 +837,7 @@ export default {
                         await this.applySyncStatesToTree(node.children || [])
                     }
                 } catch (error) {
+                    Vue.set(node, '_childrenFetched', false)
                     console.error('Error fetching children:', error)
                     this.$message.error('Error fetching children: ' + error.message)
                 }

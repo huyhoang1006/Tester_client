@@ -21,7 +21,7 @@ import { insertVolumeTransaction, deleteVolumeByIdTransaction, getVolumeByIds } 
 import { insertTemperatureTransaction, deleteTemperatureByIdTransaction, getTemperatureByIds } from '@/function/cim/temperature'
 import { insertAssetTransaction, getAssetByAssetInfoId, deleteAssetByIdTransaction, getAssetById } from '@/function/cim/asset'
 import { insertZeroSequenceImpedanceTransaction, deleteZeroSequenceImpedanceTransaction, getZeroSequenceImpedanceByTransformerInfoId } from '@/function/cim/zeroSequenceImpedance'
-import { insertZeroSequenceImpedanceTableTransaction, getZeroSequenceImpedanceTableByZeroSequenceImpedanceId, deleteZeroSequenceImpedanceTableTransaction, getZeroSequenceImpedanceTableByTransformerEndIdAndZeroSequenceImpedance } from '@/function/cim/zeroSequenceImpedanceTable'
+import { insertZeroSequenceImpedanceTableTransaction, getZeroSequenceImpedanceTableByZeroSequenceImpedanceId, deleteZeroSequenceImpedanceTableTransaction } from '@/function/cim/zeroSequenceImpedanceTable'
 import { insertVoltageRatingTransaction, deleteVoltageRatingTransaction, getVoltageRatingByTransformerEndId } from "@/function/cim/voltageRating"
 import { insertCoolingPowerRatingTransaction, getCoolingPowerRatingByPowerTransformerInfoId, deleteCoolingPowerRatingTransaction } from "@/function/cim/coolingPowerRating"
 import { insertCurrentRatingTransaction, getCurrentRatingByRatedPower, deleteCurrentRatingByIdTransaction } from "@/function/cim/currentRating"

@@ -40,7 +40,8 @@ export const getTestStandardByWorkTaskId = async (workTaskId) => {
 
 // Thêm mới testStandard
 export const insertTestStandardTransaction = async (testStandard, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Thêm identifiedObject trước
             const idObjResult = await identifiedObjectFunc.insertIdentifiedObjectTransaction(testStandard, dbsql)
@@ -99,12 +100,14 @@ export const insertTestStandardTransaction = async (testStandard, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert testStandard failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật testStandard
 export const updateTestStandardByIdTransaction = async (mrid, testStandard, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Cập nhật identifiedObject trước
             const idObjResult = await identifiedObjectFunc.updateIdentifiedObjectByIdTransaction(mrid, testStandard, dbsql)
@@ -157,12 +160,14 @@ export const updateTestStandardByIdTransaction = async (mrid, testStandard, dbsq
         } catch (err) {
             return reject({ success: false, err, message: 'Update testStandard failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa testStandard
 export const deleteTestStandardByIdTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run("DELETE FROM test_standard WHERE mrid=?", [mrid], function (err) {
                 if (err) return reject({ success: false, err, message: 'Delete testStandard failed' })
@@ -174,5 +179,6 @@ export const deleteTestStandardByIdTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete testStandard failed' })
         }
+        })().catch(reject)
     })
 }

@@ -83,7 +83,8 @@ export const getAnalogValueByTestDataSetMrids = async (mrids) => {
 
 // Thêm mới analogValue
 export const insertAnalogValueTransaction = async (analogValue, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Thêm measurementValue trước
             const mvResult = await measurementValueFunc.insertMeasurementValueTransaction(analogValue, dbsql)
@@ -111,6 +112,7 @@ export const insertAnalogValueTransaction = async (analogValue, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert analogValue failed' })
         }
+        })().catch(reject)
     })
 }
 
@@ -154,7 +156,8 @@ export const insertAnalogValuesTransaction = async (analogValues = [], dbsql) =>
 
 // Cập nhật analogValue
 export const updateAnalogValueByIdTransaction = async (mrid, analogValue, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Cập nhật measurementValue trước
             const mvResult = await measurementValueFunc.updateMeasurementValueByIdTransaction(mrid, analogValue, dbsql)
@@ -179,12 +182,14 @@ export const updateAnalogValueByIdTransaction = async (mrid, analogValue, dbsql)
         } catch (err) {
             return reject({ success: false, err, message: 'Update analogValue failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa analogValue
 export const deleteAnalogValueByIdTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run("DELETE FROM analog_value WHERE mrid=?", [mrid], function (err) {
                 if (err) return reject({ success: false, err, message: 'Delete analogValue failed' })
@@ -196,6 +201,7 @@ export const deleteAnalogValueByIdTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete analogValue failed' })
         }
+        })().catch(reject)
     })
 }
 

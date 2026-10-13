@@ -49,7 +49,8 @@ export const getTestDataSetByWorkTaskId = async (workTaskId) => {
 
 // Thêm mới testDataSet
 export const insertTestDataSetTransaction = async (testDataSet, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Thêm procedureDataSet trước
             const procResult = await procedureDataSetFunc.insertProcedureDataSetTransaction(testDataSet, dbsql)
@@ -79,12 +80,14 @@ export const insertTestDataSetTransaction = async (testDataSet, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert testDataSet failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật testDataSet
 export const updateTestDataSetByIdTransaction = async (mrid, testDataSet, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Cập nhật procedureDataSet trước
             const procResult = await procedureDataSetFunc.updateProcedureDataSetByIdTransaction(mrid, testDataSet, dbsql)
@@ -111,12 +114,14 @@ export const updateTestDataSetByIdTransaction = async (mrid, testDataSet, dbsql)
         } catch (err) {
             return reject({ success: false, err, message: 'Update testDataSet failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa testDataSet
 export const deleteTestDataSetByIdTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run("DELETE FROM test_dataset WHERE mrid=?", [mrid], function (err) {
                 if (err) return reject({ success: false, err, message: 'Delete testDataSet failed' })
@@ -128,5 +133,6 @@ export const deleteTestDataSetByIdTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete testDataSet failed' })
         }
+        })().catch(reject)
     })
 }

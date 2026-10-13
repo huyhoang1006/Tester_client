@@ -26,7 +26,8 @@ export const getWorkById = async (mrid) => {
 
 // Thêm mới work
 export const insertWorkTransaction = async (work, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Thêm baseWork trước
             const baseResult = await baseWorkFunc.insertBaseWorkTransaction(work, dbsql)
@@ -65,12 +66,14 @@ export const insertWorkTransaction = async (work, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert work failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật work
 export const updateWorkByIdTransaction = async (mrid, work, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Cập nhật baseWork trước
             const baseResult = await baseWorkFunc.updateBaseWorkByIdTransaction(mrid, work, dbsql)
@@ -105,12 +108,14 @@ export const updateWorkByIdTransaction = async (mrid, work, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Update work failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa work
 export const deleteWorkByIdTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run("DELETE FROM work WHERE mrid=?", [mrid], function (err) {
                 if (err) return reject({ success: false, err, message: 'Delete work failed' })
@@ -122,5 +127,6 @@ export const deleteWorkByIdTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete work failed' })
         }
+        })().catch(reject)
     })
 }

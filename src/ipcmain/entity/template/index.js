@@ -327,7 +327,7 @@ function decodeWordCoord(coord) {
 // ═════════════════════════════════════════════════════════════════════════════
 
 export const getAllTemplates = () => {
-    ipcMain.handle('getAllTemplates', async function (event) {
+    ipcMain.handle('getAllTemplates', async function () {
         try {
             const rs = await entityFunc.templateFunc.getAllTemplates()
             if (rs.success) return { success: true, data: rs.data }
@@ -556,7 +556,7 @@ export const saveTemplateWithScan = () => {
             // Fix: "A10".includes("A1") → true (sai)
             // tokenRegex đảm bảo A1 chỉ match khi không có ký tự chữ/số liền kề
             // → "Name : A1" ✓, "A10" ✗, "A11" ✗, "BA1" ✗
-            function codeMatchesCell(strVal, code) {
+            const codeMatchesCell = (strVal, code) => {
                 var escapedCode = code.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
                 var tokenRegex = new RegExp('(?<![A-Za-z0-9])' + escapedCode + '(?![A-Za-z0-9])')
                 return tokenRegex.test(strVal)
@@ -592,7 +592,7 @@ export const saveTemplateWithScan = () => {
                     const buffer = fs.readFileSync(filePath)
                     const { cells, paras } = parseDocxContent(buffer)
  
-                    function matchCode(text, code) {
+                    const matchCode = (text, code) => {
                         // Tìm {code} hoặc code standalone (không có { } trong trường hợp user dùng plain text)
                         return text.includes('{' + code + '}') || text === code
                     }
@@ -679,7 +679,7 @@ export const exportTemplateWithData = () => {
             ];
 
             // ── HÀM DỊCH CHUYỂN & CHÈN DÒNG (AUTO INSERT) ─────────────────
-            function insertAndShiftRows(sheet, insertAfterRow, shiftCount) {
+            const insertAndShiftRows = (sheet, insertAfterRow, shiftCount) => {
                 const usedRange = sheet.usedRange()
                 if (!usedRange) return
                 
@@ -729,7 +729,7 @@ export const exportTemplateWithData = () => {
             }
 
             // ── HÀM GHI DỮ LIỆU AN TOÀN (BẢO TOÀN KIỂU NUMBER) ────────────
-            function setCellValueSafe(cell, val, code) {
+            const setCellValueSafe = (cell, val, code) => {
                 const currentValue = cell.value()
                 const applyWrapIfNeeded = (value) => {
                     if (typeof value === 'string' && value.indexOf('\n') !== -1) {
@@ -771,7 +771,7 @@ export const exportTemplateWithData = () => {
             }
 
             // ── THUẬT TOÁN CHÍNH: QUẢN LÝ DỊCH CHUYỂN TỌA ĐỘ ───────────────
-            function fillWorkbookSheet(wb, vars, codeMap) {
+            const fillWorkbookSheet = (wb, vars, codeMap) => {
                 const actionsBySheet = {}
                 const parseExcelCellAddress = (addr) => {
                     const match = String(addr || '').match(/^([A-Z]+)(\d+)$/i)
@@ -874,7 +874,7 @@ export const exportTemplateWithData = () => {
             }
 
             // ── Sanitize sheet name ───────────────────────────────────────
-            function sanitizeSheetName(name, index) {
+            const sanitizeSheetName = (name, index) => {
                 return (name || ('Sheet' + (index + 1))).replace(/[[\]*?:/\\]/g, '_').trim().substring(0, 31) || ('Sheet' + (index + 1))
             }
 
@@ -884,7 +884,7 @@ export const exportTemplateWithData = () => {
                 const wb = await XlsxPopulate.fromFileAsync(templatePath)
                 const s = wb.sheet(0)
                 if (s && sheetName && sheetName !== s.name()) {
-                    try { s.name(sanitizeSheetName(sheetName, 0)) } catch(e) {}
+                    try { s.name(sanitizeSheetName(sheetName, 0)) } catch(e) { /* Keep the original sheet name. */ }
                 }
                 fillWorkbookSheet(wb, variables, codeMap)
 
@@ -934,7 +934,7 @@ export const exportTemplateWithData = () => {
                         const drawingRels = await drawingRelsFile.async('string')
                         baseZip.file('xl/worksheets/_rels/sheet' + (i + 1) + '.xml.rels', drawingRels.replace(/sheet1\./g, 'sheet' + (i + 1) + '.'))
                     }
-                } catch(e) {}
+                } catch(e) { /* Drawing relationships are optional. */ }
 
                 const rId = `rIdX${i}`
                 const sheetId = i + 1
@@ -985,7 +985,6 @@ export const exportWordWithData = () => {
             const classified = Array.isArray(variables) ? classifyVariables(variables) : {}
             console.log('[exportWord] classified:', JSON.stringify(Object.fromEntries(Object.entries(classified).map(([k,v]) => [k, v.type]))))
             const vertGroups = buildVerticalGroups(classified)
-            const vertCodes  = new Set(vertGroups.flatMap(g => g.codes))
  
             // ── Build dataForWord (scalar + multi_cell) ───────────────────────
             const dataForWord = {}
@@ -1020,7 +1019,6 @@ export const exportWordWithData = () => {
                 if (!values) continue
                 const valArr = Array.isArray(values) ? values : [values]
                 // Sort coords by colIndex
-                const sortedCoords = [...info.coords].sort((a, b) => a.colIndex - b.colIndex)
                 let idx = 0
                 const ph = `{${code}}`
                 xml = xml.replace(new RegExp(ph.replace(/[{}]/g, '\\$&'), 'g'), () => {
@@ -1143,7 +1141,7 @@ export const exportWordWithData = () => {
 
 // 1. pickExcelFileForImport — chọn file Excel bất kỳ (không cần trong template dir)
 export const pickExcelFileForImport = () => {
-    ipcMain.handle('pickExcelFileForImport', async function (event) {
+    ipcMain.handle('pickExcelFileForImport', async function () {
         try {
             const result = await dialog.showOpenDialog({
                 title: 'Select filled Excel/CSV file to import',
@@ -1254,7 +1252,7 @@ export const readTestingEquipmentColumnImportFile = () => {
 // THÊM: pickWordFileForImport — đặt sau pickExcelFileForImport
 // ══════════════════════════════════════════════════════════════════════════════
 export const pickWordFileForImport = () => {
-    ipcMain.handle('pickWordFileForImport', async function (event) {
+    ipcMain.handle('pickWordFileForImport', async function () {
         try {
             const result = await dialog.showOpenDialog({
                 title: 'Select filled Word file to import',
@@ -1608,11 +1606,11 @@ export const readWordForImport = () => {
             }
  
             // Lookup helpers
-            function getCellText(cells, t, r, c) {
+            const getCellText = (cells, t, r, c) => {
                 const f = cells.find(x => x.table === t && x.row === r && x.cell === c)
                 return f ? f.text : ''
             }
-            function getParaText(paras, p) {
+            const getParaText = (paras, p) => {
                 const f = paras.find(x => x.para === p)
                 return f ? f.text : ''
             }
@@ -1646,7 +1644,7 @@ export const readWordForImport = () => {
                     // Tách prefix/suffix y hệt Excel (reuse extractValue đã có)
                     let extracted = filledText
                     if (tmplText && tmplText !== filledText) {
-                        try { extracted = extractValue(tmplText, filledText, code) } catch(e) {}
+                        try { extracted = extractValue(tmplText, filledText, code) } catch(e) { /* Fall back to the filled text. */ }
                     }
                     codeValueMap[code].push(extracted.trim())
                 }
@@ -1825,11 +1823,11 @@ export const readWordForImportTE = () => {
                 } catch(e) { console.warn('Cannot parse Word template:', e.message) }
             }
 
-            function getCellText(cells, t, r, c) {
+            const getCellText = (cells, t, r, c) => {
                 const f = cells.find(x => x.table === t && x.row === r && x.cell === c)
                 return f ? f.text : ''
             }
-            function getParaText(paras, p) {
+            const getParaText = (paras, p) => {
                 const f = paras.find(x => x.para === p)
                 return f ? f.text : ''
             }
@@ -1893,7 +1891,7 @@ export const readWordForImportTE = () => {
                         const tmplText = tmplCells.length ? getCellText(tmplCells, tableIdx, row, spec.cell) : ''
                         let extracted = filledText
                         if (tmplText && tmplText !== filledText) {
-                            try { extracted = extractValueWordTE(tmplText, filledText, spec.code) } catch(e) {}
+                            try { extracted = extractValueWordTE(tmplText, filledText, spec.code) } catch(e) { /* Fall back to the filled text. */ }
                         }
                         codeValueMap[spec.code].push(String(extracted).trim())
                     }
@@ -1927,7 +1925,7 @@ export const readWordForImportTE = () => {
 
                     let extracted = filledText
                     if (tmplText && tmplText !== filledText) {
-                        try { extracted = extractValueWordTE(tmplText, filledText, code) } catch(e) {}
+                        try { extracted = extractValueWordTE(tmplText, filledText, code) } catch(e) { /* Fall back to the filled text. */ }
                     }
                     codeValueMap[code].push(extracted.trim())
                 }
@@ -1967,17 +1965,6 @@ function wordValueTE(val) {
 function codeTokenRegexTE(code) {
     const esc = String(code).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     return new RegExp('\\{' + esc + '\\}|(?<![A-Za-z0-9])' + esc + '(?![A-Za-z0-9])', 'g')
-}
-// Chỉ thay trong TEXT của <w:t> (không đụng attribute/tag XML)
-function replaceCodeInXmlTE(xmlFragment, code, val) {
-    const tokenRe = codeTokenRegexTE(code)
-    return xmlFragment.replace(/(<w:t(?:\s[^>]*)?>)([^<]*)(<\/w:t>)/g, (m, open, text, close) => {
-        tokenRe.lastIndex = 0
-        if (!tokenRe.test(text)) return m
-        tokenRe.lastIndex = 0
-        const replaced = text.replace(tokenRe, () => wordValueTE(val))
-        return open + replaced + close
-    })
 }
 // Fragment có chứa code (trong <w:t>) không — dùng để tìm hàng template
 function xmlHasCodeTE(xmlFragment, code) {

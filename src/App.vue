@@ -48,4 +48,8 @@ html, body {
     box-sizing: border-box;
     border: none;
 }
+
+#tab-overview {
+    display: none;
+}
 </style>

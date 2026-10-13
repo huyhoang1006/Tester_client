@@ -26,7 +26,8 @@ export const getBaseWorkById = async (mrid) => {
 
 // Thêm mới baseWork
 export const insertBaseWorkTransaction = async (baseWork, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Thêm document trước
             const docResult = await documentFunc.insertDocumentTransaction(baseWork, dbsql)
@@ -59,12 +60,14 @@ export const insertBaseWorkTransaction = async (baseWork, dbsql) => {
             console.error("Insert baseWork failed:", err)
             return reject({ success: false, err, message: 'Insert baseWork failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật baseWork
 export const updateBaseWorkByIdTransaction = async (mrid, baseWork, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Cập nhật document trước
             const docResult = await documentFunc.updateDocumentByIdTransaction(mrid, baseWork, dbsql)
@@ -93,12 +96,14 @@ export const updateBaseWorkByIdTransaction = async (mrid, baseWork, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Update baseWork failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa baseWork
 export const deleteBaseWorkByIdTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run("DELETE FROM base_work WHERE mrid=?", [mrid], function (err) {
                 if (err) return reject({ success: false, err, message: 'Delete base_work failed' })
@@ -110,5 +115,6 @@ export const deleteBaseWorkByIdTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete base_work failed' })
         }
+        })().catch(reject)
     })
 }

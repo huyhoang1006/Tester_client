@@ -1,3 +1,5 @@
+import WorkTask from '../WorkTask'
+
 class SurgeArresterWorkTask extends WorkTask {
     constructor() {
         super();

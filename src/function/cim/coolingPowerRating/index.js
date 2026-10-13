@@ -71,7 +71,8 @@ export const getCoolingPowerRatingByPowerTransformerInfoId = async (powerTransfo
 
 // Thêm mới coolingPowerRating (transaction)
 export const insertCoolingPowerRatingTransaction = async (info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const identifiedObjectResult = await IdentifiedObjectFunc.insertIdentifiedObjectTransaction(info, dbsql)
             if (!identifiedObjectResult.success) {
@@ -106,12 +107,14 @@ export const insertCoolingPowerRatingTransaction = async (info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert coolingPowerRating transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật coolingPowerRating (transaction)
 export const updateCoolingPowerRatingTransaction = async (mrid, info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const identifiedObjectResult = await IdentifiedObjectFunc.updateIdentifiedObjectTransaction(mrid, info, dbsql)
             if (!identifiedObjectResult.success) {
@@ -142,12 +145,14 @@ export const updateCoolingPowerRatingTransaction = async (mrid, info, dbsql) => 
         } catch (err) {
             return reject({ success: false, err, message: 'Update coolingPowerRating transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa coolingPowerRating (transaction)
 export const deleteCoolingPowerRatingTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const identifiedObjectResult = await IdentifiedObjectFunc.deleteIdentifiedObjectByIdTransaction(mrid, dbsql)
             if (!identifiedObjectResult.success) {
@@ -162,5 +167,6 @@ export const deleteCoolingPowerRatingTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete coolingPowerRating transaction failed' })
         }
+        })().catch(reject)
     })
 }

@@ -65,7 +65,7 @@
                     </ul>
                 </li>
                 <li @click="addJob" v-if="isClient && this.selectedNode && this.selectedNode.mode == 'asset'">
-                    <i class="fa-solid fa-plus"></i> Add job
+                    <i class="fa-solid fa-plus"></i> Add test
                 </li>
                 <li v-if="this.selectedNode && this.selectedNode.mode == 'substation'" @click="showZeroDiagram">
                     <i class="fa-solid fa-project-diagram"></i> Zero diagram
@@ -84,7 +84,7 @@
                         <li @click="downloadFullTree"><i class="fa-solid fa-sitemap"></i> Download full tree</li>
                     </ul>
                 </li>
-                <li v-if="isClient" class="has-submenu">
+                <li v-if="isClient && selectedNode && selectedNode.mode !== 'test'" class="has-submenu">
                     <i class="fa-solid fa-upload"></i> Upload
                     <ul class="submenu">
                         <li @click="uploadOnlyNode"><i class="fa-solid fa-file-arrow-up"></i> Upload only node</li>
@@ -92,19 +92,19 @@
                         <li @click="uploadFullTree"><i class="fa-solid fa-sitemap"></i> Upload full tree</li>
                     </ul>
                 </li>
-                <li @click="move">
+                <li v-if="selectedNode && selectedNode.mode !== 'test'" @click="move">
                     <i class="fa-solid fa-arrows-up-down-left-right"></i> Move
                 </li>
-                <li @click="deleteNode">
+                <li v-if="selectedNode && selectedNode.mode !== 'test'" @click="deleteNode">
                     <i class="fas fa-trash-alt"></i> Delete
                 </li>
-                <li v-if="isClient" @click="duplicate">
+                <li v-if="isClient && selectedNode && selectedNode.mode !== 'test'" @click="duplicate">
                     <i class="fa-solid fa-copy"></i> Duplicate
                 </li>
-                <li v-if="isClient" @click="showEquipment">
+                <li v-if="isClient && selectedNode && selectedNode.mode !== 'test'" @click="showEquipment">
                     <i class="fa-solid fa-screwdriver-wrench"></i> Show equipment
                 </li>
-                <li v-if="isClient" class="has-submenu submenu-up">
+                <li v-if="isClient && selectedNode && selectedNode.mode !== 'test'" class="has-submenu submenu-up">
                     <i class="fa-solid fa-file-export"></i> Export
                     <ul class="submenu">
                         <li @click="exportJSONOnlyNode"><i class="fa-solid fa-file-zipper"></i> Export package only node</li>
@@ -113,7 +113,7 @@
                         <li @click="exportWord"><i class="fa-solid fa-file-word"></i> Export to Word</li>
                     </ul>
                 </li>
-                <li v-if="isClient" class="has-submenu submenu-up">
+                <li v-if="isClient && selectedNode && selectedNode.mode !== 'test'" class="has-submenu submenu-up">
                     <i class="fa-solid fa-file-import"></i> Import
                     <ul class="submenu">
                         <li @click="importJSON"><i class="fa-solid fa-file-zipper"></i> Import tree package</li>

@@ -61,10 +61,8 @@ export const insertCurrentTransformerEntity = async (old_entity, entity) => {
         }
         await runAsync('BEGIN TRANSACTION');
         //voltage
-        const newVoltageIds = (entity.voltage || []).map(v => v.mrid).filter(id => id);
         const oldVoltageIds = (old_entity.voltage || []).map(v => v.mrid).filter(id => id);
         const toAddVoltage = (entity.voltage || []).filter(v => v.mrid && !oldVoltageIds.includes(v.mrid));
-        const toDeleteVoltage = (old_entity.voltage || []).filter(v => v.mrid && !newVoltageIds.includes(v.mrid));
         const toUpdateVoltage = (entity.voltage || []).filter(v => v.mrid && oldVoltageIds.includes(v.mrid));
         for (const voltage of toAddVoltage) {
             await insertVoltageTransaction(voltage, db);
@@ -73,10 +71,8 @@ export const insertCurrentTransformerEntity = async (old_entity, entity) => {
             await insertVoltageTransaction(voltage, db);
         }
         //currentFlow
-        const newCurrentFlowIds = (entity.currentFlow || []).map(c => c.mrid).filter(id => id);
         const oldCurrentFlowIds = (old_entity.currentFlow || []).map(c => c.mrid).filter(id => id);
         const toAddCurrentFlow = (entity.currentFlow || []).filter(c => c.mrid && !oldCurrentFlowIds.includes(c.mrid));
-        const toDeleteCurrentFlow = (old_entity.currentFlow || []).filter(c => c.mrid && !newCurrentFlowIds.includes(c.mrid));
         const toUpdateCurrentFlow = (entity.currentFlow || []).filter(c => c.mrid && oldCurrentFlowIds.includes(c.mrid));
         for (const currentFlow of toAddCurrentFlow) {
             await insertCurrentFlowTransaction(currentFlow, db);
@@ -85,10 +81,8 @@ export const insertCurrentTransformerEntity = async (old_entity, entity) => {
             await insertCurrentFlowTransaction(currentFlow, db);
         }
         //seconds
-        const newSecondsIds = (entity.seconds || []).map(s => s.mrid).filter(id => id);
         const oldSecondsIds = (old_entity.seconds || []).map(s => s.mrid).filter(id => id);
         const toAddSeconds = (entity.seconds || []).filter(s => s.mrid && !oldSecondsIds.includes(s.mrid));
-        const toDeleteSeconds = (old_entity.seconds || []).filter(s => s.mrid && !newSecondsIds.includes(s.mrid));
         const toUpdateSeconds = (entity.seconds || []).filter(s => s.mrid && oldSecondsIds.includes(s.mrid));
         for (const seconds of toAddSeconds) {
             await insertSecondsTransaction(seconds, db);
@@ -97,10 +91,8 @@ export const insertCurrentTransformerEntity = async (old_entity, entity) => {
             await insertSecondsTransaction(seconds, db);
         }
         //frequency
-        const newFrequencyIds = (entity.frequency || []).map(f => f.mrid).filter(id => id);
         const oldFrequencyIds = (old_entity.frequency || []).map(f => f.mrid).filter(id => id);
         const toAddFrequency = (entity.frequency || []).filter(f => f.mrid && !oldFrequencyIds.includes(f.mrid));
-        const toDeleteFrequency = (old_entity.frequency || []).filter(f => f.mrid && !newFrequencyIds.includes(f.mrid));
         const toUpdateFrequency = (entity.frequency || []).filter(f => f.mrid && oldFrequencyIds.includes(f.mrid));
         for (const frequency of toAddFrequency) {
             await insertFrequencyTransaction(frequency, db);
@@ -109,10 +101,8 @@ export const insertCurrentTransformerEntity = async (old_entity, entity) => {
             await insertFrequencyTransaction(frequency, db);
         }
         //resistance
-        const newResistanceIds = (entity.resistance || []).map(r => r.mrid).filter(id => id);
         const oldResistanceIds = (old_entity.resistance || []).map(r => r.mrid).filter(id => id);
         const toAddResistance = (entity.resistance || []).filter(r => r.mrid && !oldResistanceIds.includes(r.mrid));
-        const toDeleteResistance = (old_entity.resistance || []).filter(r => r.mrid && !newResistanceIds.includes(r.mrid));
         const toUpdateResistance = (entity.resistance || []).filter(r => r.mrid && oldResistanceIds.includes(r.mrid));
         for (const resistance of toAddResistance) {
             await insertResistanceTransaction(resistance, db);
@@ -121,10 +111,8 @@ export const insertCurrentTransformerEntity = async (old_entity, entity) => {
             await insertResistanceTransaction(resistance, db);
         }
         //percent
-        const newPercentIds = (entity.percent || []).map(p => p.mrid).filter(id => id);
         const oldPercentIds = (old_entity.percent || []).map(p => p.mrid).filter(id => id);
         const toAddPercent = (entity.percent || []).filter(p => p.mrid && !oldPercentIds.includes(p.mrid));
-        const toDeletePercent = (old_entity.percent || []).filter(p => p.mrid && !newPercentIds.includes(p.mrid));
         const toUpdatePercent = (entity.percent || []).filter(p => p.mrid && oldPercentIds.includes(p.mrid));
         for (const percent of toAddPercent) {
             await insertPercentTransaction(percent, db);
@@ -133,10 +121,8 @@ export const insertCurrentTransformerEntity = async (old_entity, entity) => {
             await insertPercentTransaction(percent, db);
         }
         //apparentPower 
-        const newApparentPowerIds = (entity.apparentPower || []).map(a => a.mrid).filter(id => id);
         const oldApparentPowerIds = (old_entity.apparentPower || []).map(a => a.mrid).filter(id => id);
         const toAddApparentPower = (entity.apparentPower || []).filter(a => a.mrid && !oldApparentPowerIds.includes(a.mrid));
-        const toDeleteApparentPower = (old_entity.apparentPower || []).filter(a => a.mrid && !newApparentPowerIds.includes(a.mrid));
         const toUpdateApparentPower = (entity.apparentPower || []).filter(a => a.mrid && oldApparentPowerIds.includes(a.mrid));
         for (const apparentPower of toAddApparentPower) {
             await insertApparentPowerTransaction(apparentPower, db);
@@ -145,10 +131,8 @@ export const insertCurrentTransformerEntity = async (old_entity, entity) => {
             await insertApparentPowerTransaction(apparentPower, db);
         }
         //temperature
-        const newTemperatureIds = (entity.temperature || []).map(t => t.mrid).filter(id => id);
         const oldTemperatureIds = (old_entity.temperature || []).map(t => t.mrid).filter(id => id);
         const toAddTemperature = (entity.temperature || []).filter(t => t.mrid && !oldTemperatureIds.includes(t.mrid));
-        const toDeleteTemperature = (old_entity.temperature || []).filter(t => t.mrid && !newTemperatureIds.includes(t.mrid));
         const toUpdateTemperature = (entity.temperature || []).filter(t => t.mrid && oldTemperatureIds.includes(t.mrid));
         for (const temperature of toAddTemperature) {
             await insertTemperatureTransaction(temperature, db);
@@ -157,7 +141,7 @@ export const insertCurrentTransformerEntity = async (old_entity, entity) => {
             await insertTemperatureTransaction(temperature, db);
         }
         //productAssetModel
-        const productAssetModelResult = await insertProductAssetModelTransaction(entity.productAssetModel, db);
+        await insertProductAssetModelTransaction(entity.productAssetModel, db);
 
         //assetInfo
         await insertAssetInfoTransaction(entity.assetInfo, db);

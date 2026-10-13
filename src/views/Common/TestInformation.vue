@@ -1,5 +1,33 @@
 <template>
     <div class="ti-wrap">
+        <section class="ti-card ti-metadata-card">
+            <div class="ti-header">
+                <i class="fa-solid fa-calendar-check"></i>
+                <span>Test information</span>
+            </div>
+            <div class="ti-metadata-body">
+                <label class="ti-metadata-field">
+                    <span>Testing date</span>
+                    <el-date-picker
+                        v-model="workProperties.execution_date"
+                        size="mini"
+                        type="date"
+                        format="dd/MM/yyyy"
+                        value-format="MM/dd/yyyy"
+                        placeholder="Select testing date">
+                    </el-date-picker>
+                </label>
+                <label class="ti-metadata-field">
+                    <span>Tested by</span>
+                    <el-input
+                        v-model="workProperties.tested_by"
+                        size="mini"
+                        placeholder="Enter tester name">
+                    </el-input>
+                </label>
+            </div>
+        </section>
+
         <!-- Khi bật Compare: 3 khối dồn hết sang cột trái, cột phải dành cho bảng
              so sánh. .ti-card có height:100% + grid stretch nên ô phải tự cao bằng
              tổng cột trái, không cần tính chiều cao. -->
@@ -157,6 +185,10 @@ export default {
             type: Object,
             default: () => ({})
         },
+        jobProperties: {
+            type: Object,
+            default: () => ({})
+        },
         // ── So sánh với lần test trước ──────────────────────────────────────
         // Chỉ bài test nào được bật mới truyền compareTestCode; các job/test khác
         // không truyền gì thì layout giữ nguyên như cũ.
@@ -198,6 +230,9 @@ export default {
         },
         testConditions: function () {
             return this.data
+        },
+        workProperties() {
+            return this.jobProperties || {}
         },
         excludedConditionKeys() {
             if (this.showOilAndWindingTemperatures) return []
@@ -259,6 +294,37 @@ export default {
     background: #fff;
     border: 1px solid #e4e7ed;
     border-radius: 6px;
+}
+
+.ti-metadata-card {
+    height: auto;
+    margin-bottom: 12px;
+}
+
+.ti-metadata-body {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 16px;
+    padding: 10px 12px;
+}
+
+.ti-metadata-field {
+    display: grid;
+    grid-template-columns: minmax(90px, 34%) minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    color: #303133;
+    font-size: 12px;
+}
+
+.ti-metadata-field > span {
+    white-space: nowrap;
+}
+
+.ti-metadata-field ::v-deep(.el-date-editor.el-input),
+.ti-metadata-field ::v-deep(.el-input) {
+    width: 100%;
 }
 
 .ti-col-stack .ti-comment-card {
@@ -359,6 +425,12 @@ export default {
 }
 
 @media (max-width: 767px) {
+    .ti-metadata-body {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding: 10px;
+    }
+
     .ti-row {
         gap: 10px;
     }

@@ -12,7 +12,7 @@ export const downloadFile = async (src, dest) => {
                 })
             }
             else {
-                fs.writeFile(dest, inputD, (err, writeD) => {
+                fs.writeFile(dest, inputD, (err) => {
                     if(err) {
                         reject({
                             success: false,
@@ -42,7 +42,7 @@ export const uploadF = async (src, dest) => {
                 })
             }
             else {
-                fs.writeFile(dest, inputD, (err, writeD) => {
+                fs.writeFile(dest, inputD, (err) => {
                     if(err) {
                         reject({
                             success: false,

@@ -26,7 +26,8 @@ export const getPotentialTransformerInfoById = async (mrid) => {
 
 // Thêm mới potentialTransformerInfo (transaction)
 export const insertPotentialTransformerTransaction = async (potentialTransformer, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetInfoResult = await AssetInfoFunc.insertAssetInfoTransaction(potentialTransformer, dbsql)
             if (!assetInfoResult.success) {
@@ -63,12 +64,14 @@ export const insertPotentialTransformerTransaction = async (potentialTransformer
         } catch (err) {
             return reject({ success: false, err, message: 'Insert potential transformer transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật potentialTransformerInfo (transaction)
 export const updatePotentialTransformerInfoTransaction = async (mrid, info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const assetInfoResult = await AssetInfoFunc.updateAssetInfoTransaction(mrid, info, dbsql)
             if (!assetInfoResult.success) {
@@ -104,12 +107,14 @@ export const updatePotentialTransformerInfoTransaction = async (mrid, info, dbsq
         } catch (err) {
             return reject({ success: false, err, message: 'Update potentialTransformerInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa potentialTransformerInfo (transaction)
 export const deletePotentialTransformerInfoTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // 1️⃣ Xóa bản ghi trong potential_transformer_info trước
             dbsql.run("DELETE FROM potential_transformer_info WHERE mrid=?", [mrid], async function (err) {
@@ -152,5 +157,6 @@ export const deletePotentialTransformerInfoTransaction = async (mrid, dbsql) => 
                 message: 'Delete potentialTransformerInfo transaction failed'
             });
         }
+        })().catch(reject)
     });
 };

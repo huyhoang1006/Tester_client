@@ -26,7 +26,8 @@ export const getWorkTaskById = async (mrid) => {
 
 // Thêm mới workTask
 export const insertWorkTaskTransaction = async (workTask, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Thêm baseWork trước
             const baseResult = await baseWorkFunc.insertBaseWorkTransaction(workTask, dbsql)
@@ -76,12 +77,14 @@ export const insertWorkTaskTransaction = async (workTask, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert workTask failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật workTask
 export const updateWorkTaskByIdTransaction = async (mrid, workTask, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Cập nhật baseWork trước
             const baseResult = await baseWorkFunc.updateBaseWorkByIdTransaction(mrid, workTask, dbsql)
@@ -126,12 +129,14 @@ export const updateWorkTaskByIdTransaction = async (mrid, workTask, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Update workTask failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa workTask
 export const deleteWorkTaskByIdTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run("DELETE FROM work_task WHERE mrid=?", [mrid], function (err) {
                 if (err) return reject({ success: false, err, message: 'Delete work_task failed' })
@@ -143,12 +148,14 @@ export const deleteWorkTaskByIdTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete work_task failed' })
         }
+        })().catch(reject)
     })
 }
 
 export const getWorkTaskByWork = async (workId, dbsql) => {
+  const connection = dbsql || db
   return new Promise((resolve, reject) => {
-    dbsql.all(
+    connection.all(
       `SELECT 
           wt.*, 
           bw.*, 
@@ -165,6 +172,35 @@ export const getWorkTaskByWork = async (workId, dbsql) => {
         if (!rows || rows.length === 0) 
           return resolve({ success: false, data: [], message: 'No workTask found for this work' })
         return resolve({ success: true, data: rows, message: 'Get workTask by work completed' })
+      }
+    )
+  })
+}
+
+export const getWorkTaskByAsset = async (assetId, dbsql) => {
+  const connection = dbsql || db
+  return new Promise((resolve, reject) => {
+    connection.all(
+      `SELECT
+          wt.*,
+          bw.*,
+          d.*,
+          io.*,
+          wt.work AS work_mrid,
+          work_io.name AS work_name,
+          ow.execution_date AS work_execution_date,
+          ow.tested_by AS work_tested_by
+       FROM work_task wt
+       INNER JOIN old_work ow ON ow.mrid = wt.work
+       LEFT JOIN base_work bw ON wt.mrid = bw.mrid
+       LEFT JOIN document d ON wt.mrid = d.mrid
+       LEFT JOIN identified_object io ON wt.mrid = io.mrid
+       LEFT JOIN identified_object work_io ON ow.mrid = work_io.mrid
+       WHERE ow.asset_id = ?`,
+      [assetId],
+      (err, rows) => {
+        if (err) return reject({ success: false, err, message: 'Get workTask by asset failed' })
+        return resolve({ success: true, data: rows || [], message: 'Get workTask by asset completed' })
       }
     )
   })

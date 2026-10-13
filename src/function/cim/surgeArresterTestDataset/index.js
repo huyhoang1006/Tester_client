@@ -26,7 +26,8 @@ export const getSurgeArresterTestDataSetById = async (mrid) => {
 
 // Thêm mới surgeArresterTestDataSet
 export const insertSurgeArresterTestDataSetTransaction = async (surgeArresterTestDataSet, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Thêm testDataSet trước
             const testResult = await testDataSetFunc.insertTestDataSetTransaction(surgeArresterTestDataSet, dbsql)
@@ -54,12 +55,14 @@ export const insertSurgeArresterTestDataSetTransaction = async (surgeArresterTes
         } catch (err) {
             return reject({ success: false, err, message: 'Insert surgeArresterTestDataSet failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật surgeArresterTestDataSet
 export const updateSurgeArresterTestDataSetByIdTransaction = async (mrid, surgeArresterTestDataSet, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Cập nhật testDataSet trước
             const testResult = await testDataSetFunc.updateTestDataSetByIdTransaction(mrid, surgeArresterTestDataSet, dbsql)
@@ -84,12 +87,14 @@ export const updateSurgeArresterTestDataSetByIdTransaction = async (mrid, surgeA
         } catch (err) {
             return reject({ success: false, err, message: 'Update surgeArresterTestDataSet failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa surgeArresterTestDataSet
 export const deleteSurgeArresterTestDataSetByIdTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run("DELETE FROM surge_arrester_test_dataset WHERE mrid=?", [mrid], function (err) {
                 if (err) return reject({ success: false, err, message: 'Delete surgeArresterTestDataSet failed' })
@@ -101,5 +106,6 @@ export const deleteSurgeArresterTestDataSetByIdTransaction = async (mrid, dbsql)
         } catch (err) {
             return reject({ success: false, err, message: 'Delete surgeArresterTestDataSet failed' })
         }
+        })().catch(reject)
     })
 }

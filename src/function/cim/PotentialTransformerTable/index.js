@@ -1,7 +1,8 @@
 import db from '../../datacontext/index'
 
 export const insertPotentialTransformerTable = async (potentialTransformerTable, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             dbsql.run(`INSERT INTO potential_transformer_table(mrid, name, usr_formula, rated_burden, rated_power_factor, usr_rated_voltage, potential_transformer_info_id)
                  VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -29,6 +30,7 @@ export const insertPotentialTransformerTable = async (potentialTransformerTable,
         } catch (err) {
             return reject({ success: false, err, message: 'Insert potentialTransformerTable transaction failed' })
         }
+        })().catch(reject)
     })
 }
 

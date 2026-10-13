@@ -27,7 +27,8 @@ export const getOldBreakerInfoById = async (mrid) => {
 
 // Thêm mới oldBreakerInfo (transaction)
 export const insertOldBreakerInfoTransaction = async (info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const breakerInfoResult = await BreakerInfoFunc.insertBreakerInfoTransaction(info, dbsql)
             if (!breakerInfoResult.success) {
@@ -77,12 +78,14 @@ export const insertOldBreakerInfoTransaction = async (info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Insert oldBreakerInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Cập nhật oldBreakerInfo (transaction)
 export const updateOldBreakerInfoTransaction = async (mrid, info, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             const breakerInfoResult = await BreakerInfoFunc.updateBreakerInfoTransaction(mrid, info, dbsql)
             if (!breakerInfoResult.success) {
@@ -120,12 +123,14 @@ export const updateOldBreakerInfoTransaction = async (mrid, info, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Update oldBreakerInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
 
 // Xóa oldBreakerInfo (transaction)
 export const deleteOldBreakerInfoTransaction = async (mrid, dbsql) => {
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
+        void (async () => {
         try {
             // Delete old_breaker_info row first
             dbsql.run("DELETE FROM old_breaker_info WHERE mrid=?", [mrid], function (err) {
@@ -146,5 +151,6 @@ export const deleteOldBreakerInfoTransaction = async (mrid, dbsql) => {
         } catch (err) {
             return reject({ success: false, err, message: 'Delete oldBreakerInfo transaction failed' })
         }
+        })().catch(reject)
     })
 }
