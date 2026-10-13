@@ -43,9 +43,6 @@ Vue.component('AssessmentResultLabel', AssessmentResultLabel)
 // Bấm lại radio đang chọn để bỏ chọn (dùng ở form nhập liệu AssetView/JobView)
 Vue.directive('radio-clearable', radioClearable)
 
-// check login
-helper.initApp()
-
 Vue.prototype.$config = config
 Vue.prototype.$common = common
 Vue.prototype.$constant = constant
@@ -53,10 +50,17 @@ Vue.prototype.$helper = helper
 Vue.prototype.$client = client
 Vue.prototype.$uuid = uuid
 
-const app = new Vue({
-    router,
-    store,
-    LoadingPlugin,
-    render: h => h(App)
-})
-app.$mount('#app')
+const startApp = async () => {
+    // Restore persisted desktop settings before any component starts making requests.
+    await helper.initApp()
+
+    const app = new Vue({
+        router,
+        store,
+        LoadingPlugin,
+        render: h => h(App)
+    })
+    app.$mount('#app')
+}
+
+startApp()

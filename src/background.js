@@ -9,6 +9,7 @@ import path from 'path'
 import {v4 as newUuid} from 'uuid'
 import * as updateStart from '@/update/index'
 import db, {databaseReady} from '@/function/datacontext/index'
+import {createServerConfigStore} from '@/utils/serverConfigFile'
 
 // import {userFunc} from '@/function'
 // import {ipcUploadCustom} from '@/ipcmain'
@@ -377,6 +378,8 @@ app.on('ready', async () => {
         return
     }
 
+    const serverConfigStore = createServerConfigStore(app.getPath('userData'))
+
     ipcMain.handle('openSsoLogin', (_event, targetUrl, redirectUri) => (
         browserSso.open(targetUrl, redirectUri, true)
     ))
@@ -395,6 +398,8 @@ app.on('ready', async () => {
         focusMainWindow()
         return {success: true}
     })
+    ipcMain.handle('getServerConfig', () => serverConfigStore.read())
+    ipcMain.handle('setServerConfig', (_event, config) => serverConfigStore.write(config))
 
     ipcMain.handle('uploadAttachment', async function (event, id_foreign, type, info) {
         const rs = await uploadAttachment(id_foreign, type, info)

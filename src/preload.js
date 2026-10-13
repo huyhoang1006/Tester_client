@@ -12,6 +12,10 @@ const fileConverterAPI = {
 const systemInfoAPI = {
     platform: process.platform
 }
+const serverConfigAPI = {
+    getServerConfig: () => ipcRenderer.invoke('getServerConfig'),
+    setServerConfig: (config) => ipcRenderer.invoke('setServerConfig', config)
+}
 
 const appOptionAPI = appOptionPreload.appOptionPreload()
 const uploadCustomAPI = uploadCustomPreload.uploadCustomPreload()
@@ -169,6 +173,7 @@ const ipcMain = Object.assign(
     updateAPI,
     fileConverterAPI,
     systemInfoAPI,
+    serverConfigAPI,
     entitySnapshotAPI,
     templateAPI,
     mRIDCheckAPI,

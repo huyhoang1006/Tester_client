@@ -389,7 +389,7 @@ export default {
                 })
         },
         setServerAddr() {
-            this.$refs.formConfig.validate((valid) => {
+            this.$refs.formConfig.validate(async (valid) => {
                 if (valid) {
                     const cleanLoginDomain = this.formConfig.loginDomain.trim().replace(/\/+$/, '')
                     const cleanServiceDomain = this.formConfig.serviceDomain.trim().replace(/\/+$/, '')
@@ -397,13 +397,17 @@ export default {
                     this.formConfig.loginDomain = cleanLoginDomain
                     this.formConfig.serviceDomain = cleanServiceDomain
 
-                    this.$helper.setServerAddr({
-                        loginDomain: this.formConfig.loginDomain,
-                        serviceDomain: this.formConfig.serviceDomain
-                    })
-                    
-                    this.dialogConfig = false
-                    this.$message.success('Config successfully')
+                    try {
+                        await this.$helper.setServerAddr({
+                            loginDomain: this.formConfig.loginDomain,
+                            serviceDomain: this.formConfig.serviceDomain
+                        })
+
+                        this.dialogConfig = false
+                        this.$message.success('Config successfully')
+                    } catch (error) {
+                        this.$message.error(error.message || 'Unable to save server configuration')
+                    }
                     return
                 }
             })

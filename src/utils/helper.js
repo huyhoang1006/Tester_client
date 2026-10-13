@@ -10,10 +10,32 @@ import {
 
 let interceptorAuthenticate = null
 
-export const initApp = () => {
+const restoreServerConfig = async () => {
+    const localConfig = {
+        loginDomain: getLoginDomain(),
+        serviceDomain: getServiceDomain()
+    }
+    const configAPI = window.electronAPI
+    if (!configAPI || !configAPI.getServerConfig || !configAPI.setServerConfig) {
+        return localConfig
+    }
+
+    try {
+        const persistedConfig = await configAPI.getServerConfig()
+        if (persistedConfig && persistedConfig.loginDomain && persistedConfig.serviceDomain) {
+            return persistedConfig
+        }
+
+        return await configAPI.setServerConfig(localConfig)
+    } catch (error) {
+        console.warn('Unable to restore persisted server configuration:', error)
+        return localConfig
+    }
+}
+
+export const initApp = async () => {
     // 1. Khôi phục Server Address
-    const serviceAddr = getServiceDomain()
-    const loginAddr = getLoginDomain()
+    const {serviceDomain: serviceAddr, loginDomain: loginAddr} = await restoreServerConfig()
     localStorage.setItem('SERVICE_ADDR', serviceAddr)
     localStorage.setItem('LOGIN_ADDR', loginAddr)
     store.dispatch('setServiceAddr', serviceAddr)
@@ -107,7 +129,11 @@ export const afterLogout = () => {
     }
 }
 
-export const setServerAddr = ({loginDomain, serviceDomain}) => {
+export const setServerAddr = async ({loginDomain, serviceDomain}) => {
+    const configAPI = window.electronAPI
+    if (configAPI && configAPI.setServerConfig) {
+        await configAPI.setServerConfig({loginDomain, serviceDomain})
+    }
     localStorage.setItem('LOGIN_ADDR', loginDomain)
     localStorage.setItem('SERVICE_ADDR', serviceDomain)
     store.dispatch('setLoginAddr', loginDomain)
