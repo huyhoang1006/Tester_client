@@ -9,8 +9,9 @@ import path from 'path'
 import {app} from 'electron'
 
 const HELPER_RELATIVE_PATH = path.join('extra_binaries', 'at-license', 'lccinspector.exe')
-const FINGERPRINT_ORDER = ['DEFAULT', 'Disk', 'MAC', 'IP']
-const LICENSE_STORE_VERSION = 1
+const FINGERPRINT_ORDER = ['Disk', 'DEFAULT', 'MAC', 'IP']
+const LICENSE_STORE_VERSION = 2
+const SUPPORTED_LICENSE_STORE_VERSIONS = new Set([1, LICENSE_STORE_VERSION])
 const LICENSE_STORE_FILE = 'online-license.json'
 const REQUEST_TIMEOUT_MS = 15000
 const STORAGE_CONTEXT = 'ATDigitalTester/online-license/v1'
@@ -73,9 +74,12 @@ const normalizeFingerprints = report => {
         }))
 }
 
-export const selectFingerprint = report => {
+export const selectFingerprint = (report, preferredStrategy = null) => {
     const fingerprints = normalizeFingerprints(report)
-    for (const strategy of FINGERPRINT_ORDER) {
+    const strategies = preferredStrategy
+        ? [preferredStrategy, ...FINGERPRINT_ORDER.filter(strategy => strategy !== preferredStrategy)]
+        : FINGERPRINT_ORDER
+    for (const strategy of strategies) {
         const match = fingerprints.find(item => item.strategy === strategy)
         if (match) return match
     }
@@ -99,10 +103,10 @@ const executeInspector = inspectorPath => new Promise((resolve, reject) => {
     })
 })
 
-export const getDeviceFingerprint = async () => {
+export const getDeviceFingerprint = async (preferredStrategy = null) => {
     const inspectorPath = findInspectorPath()
     const report = await executeInspector(inspectorPath)
-    const selected = selectFingerprint(report)
+    const selected = selectFingerprint(report, preferredStrategy)
     if (!selected) {
         throw createLicenseError('No valid device fingerprint was generated', 'FINGERPRINT_NOT_AVAILABLE')
     }
@@ -166,7 +170,7 @@ const readStoredLicense = () => {
 
     try {
         const record = JSON.parse(fs.readFileSync(storePath, 'utf8'))
-        if (!record || record.version !== LICENSE_STORE_VERSION) {
+        if (!record || !SUPPORTED_LICENSE_STORE_VERSIONS.has(record.version)) {
             throw new Error('Unsupported license storage version')
         }
         return record
@@ -348,6 +352,30 @@ const invalidValidationError = validation => createLicenseError(
     {validation}
 )
 
+const getServerFingerprint = stored => String(
+    (stored && (stored.serverFingerprint || stored.fingerprint)) || ''
+).trim()
+
+const migrateLegacyStoredLicense = ({stored, config, licenseKey, device}) => {
+    if (!stored || stored.version !== 1 || device.strategy !== 'Disk') return stored
+
+    const migratedAt = new Date().toISOString()
+    const migrated = {
+        version: LICENSE_STORE_VERSION,
+        config: publicConfig(config),
+        fingerprint: device.fingerprint,
+        fingerprintStrategy: device.strategy,
+        serverFingerprint: getServerFingerprint(stored),
+        licenseId: stored.licenseId,
+        machineId: stored.machineId,
+        secret: encryptLicenseKey(licenseKey, device.fingerprint),
+        activatedAt: stored.activatedAt || migratedAt,
+        migratedAt
+    }
+    writeStoredLicense(migrated)
+    return migrated
+}
+
 export const activateOnlineLicense = async payload => {
     const config = requireOnlineLicenseConfig(getDefaultConfig())
     const licenseKey = String((payload && payload.licenseKey) || '').trim()
@@ -380,6 +408,7 @@ export const activateOnlineLicense = async payload => {
         config: publicConfig(config),
         fingerprint: device.fingerprint,
         fingerprintStrategy: device.strategy,
+        serverFingerprint: device.fingerprint,
         licenseId: validation.licenseId || initialValidation.licenseId,
         machineId: machine.id,
         secret: encryptLicenseKey(licenseKey, device.fingerprint),
@@ -403,7 +432,10 @@ export const activateOnlineLicense = async payload => {
 export const checkOnlineLicense = async () => {
     const stored = readStoredLicense()
     const config = requireOnlineLicenseConfig(getDefaultConfig())
-    const device = await getDeviceFingerprint()
+    const preferredStrategy = stored && stored.version === LICENSE_STORE_VERSION
+        ? stored.fingerprintStrategy
+        : null
+    const device = await getDeviceFingerprint(preferredStrategy)
 
     if (!stored || !stored.secret) {
         return {
@@ -415,7 +447,7 @@ export const checkOnlineLicense = async () => {
             fingerprintStrategy: device.strategy
         }
     }
-    if (stored.fingerprint !== device.fingerprint) {
+    if (stored.version === LICENSE_STORE_VERSION && stored.fingerprint !== device.fingerprint) {
         return {
             licensed: false,
             status: 'device_changed',
@@ -427,12 +459,15 @@ export const checkOnlineLicense = async () => {
         }
     }
 
-    const licenseKey = decryptLicenseKey(stored.secret, device.fingerprint)
+    const storageFingerprint = stored.version === 1 ? stored.fingerprint : device.fingerprint
+    const licenseKey = decryptLicenseKey(stored.secret, storageFingerprint)
+    const serverFingerprint = getServerFingerprint(stored)
+    const effectiveStored = migrateLegacyStoredLicense({stored, config, licenseKey, device})
     const params = {
         config,
         licenseKey,
-        fingerprint: device.fingerprint,
-        machineId: stored.machineId
+        fingerprint: serverFingerprint,
+        machineId: effectiveStored.machineId
     }
     const validation = await validateLicenseKey(params)
 
@@ -445,8 +480,8 @@ export const checkOnlineLicense = async () => {
             config: publicConfig(config),
             fingerprint: device.fingerprint,
             fingerprintStrategy: device.strategy,
-            licenseId: stored.licenseId,
-            machineId: stored.machineId,
+            licenseId: effectiveStored.licenseId,
+            machineId: effectiveStored.machineId,
             checkedAt: new Date().toISOString()
         }
     }
@@ -457,8 +492,8 @@ export const checkOnlineLicense = async () => {
         config: publicConfig(config),
         fingerprint: device.fingerprint,
         fingerprintStrategy: device.strategy,
-        licenseId: validation.licenseId || stored.licenseId,
-        machineId: stored.machineId,
+        licenseId: validation.licenseId || effectiveStored.licenseId,
+        machineId: effectiveStored.machineId,
         licenseStatus: validation.licenseStatus,
         expiresAt: validation.expiresAt,
         checkedAt: new Date().toISOString()
@@ -468,7 +503,10 @@ export const checkOnlineLicense = async () => {
 export const getOnlineLicenseSetup = async () => {
     const stored = readStoredLicense()
     const config = normalizeOnlineLicenseConfig(getDefaultConfig())
-    const device = await getDeviceFingerprint()
+    const preferredStrategy = stored && stored.version === LICENSE_STORE_VERSION
+        ? stored.fingerprintStrategy
+        : null
+    const device = await getDeviceFingerprint(preferredStrategy)
     return {
         configured: Boolean(config.serverUrl && config.productId),
         activated: Boolean(stored && stored.secret),
