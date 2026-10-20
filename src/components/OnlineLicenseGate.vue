@@ -50,6 +50,7 @@
                 </div>
 
                 <el-form
+                    v-if="showLicenseKeyInput"
                     ref="activationForm"
                     :model="form"
                     :rules="rules"
@@ -74,6 +75,7 @@
                         Retry
                     </el-button>
                     <el-button
+                        v-if="showLicenseKeyInput"
                         type="primary"
                         icon="el-icon-check"
                         :loading="activating"
@@ -88,7 +90,7 @@
 </template>
 
 <script>
-const LICENSE_CHECK_INTERVAL_MS = 5 * 60 * 1000
+const LICENSE_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000
 
 export default {
     name: 'OnlineLicenseGate',
@@ -103,6 +105,7 @@ export default {
             fingerprintStrategy: '',
             errorCode: '',
             errorMessage: '',
+            lastWarningMessage: '',
             checkTimer: null,
             form: {
                 licenseKey: ''
@@ -114,11 +117,27 @@ export default {
     },
     computed: {
         errorTitle() {
-            if (this.errorCode === 'LICENSE_SERVER_UNREACHABLE') return 'License server unavailable'
+            if (['LICENSE_SERVER_UNREACHABLE', 'LICENSE_SERVICE_UNAVAILABLE'].includes(this.errorCode)) {
+                return 'License server unavailable'
+            }
             if (this.errorCode === 'FINGERPRINT_HELPER_NOT_FOUND') return 'Fingerprint helper missing'
             if (this.errorCode === 'LICENSE_CONFIG_REQUIRED') return 'License server is not configured'
             if (this.errorCode === 'LICENSE_DEVICE_CHANGED') return 'Device changed'
+            if (this.errorCode === 'LICENSE_REVALIDATION_REQUIRED') return 'Online validation required'
+            if (this.errorCode === 'LICENSE_EXPIRED') return 'License expired'
+            if (this.errorCode === 'LICENSE_CACHE_INVALID') return 'License cache invalid'
+            if (['LICENSE_REVOKED', 'LICENSE_SUSPENDED', 'LICENSE_INACTIVE'].includes(this.errorCode)) {
+                return 'License unavailable'
+            }
             return 'License verification failed'
+        },
+        showLicenseKeyInput() {
+            return !this.activated || [
+                'LICENSE_ACTIVATION_REQUIRED',
+                'LICENSE_KEY_REQUIRED',
+                'LICENSE_EXPIRED',
+                'EXPIRED'
+            ].includes(this.errorCode)
         }
     },
     mounted() {
@@ -137,7 +156,7 @@ export default {
     methods: {
         applySetup(data) {
             if (!data) return
-            this.activated = Boolean(data.activated)
+            if (typeof data.activated === 'boolean') this.activated = data.activated
             this.fingerprint = data.fingerprint || this.fingerprint
             this.fingerprintStrategy = data.fingerprintStrategy || this.fingerprintStrategy
         },
@@ -186,11 +205,13 @@ export default {
 
                 this.applySetup(result.data)
                 if (result.data.licensed) {
+                    this.showGraceWarning(result.data)
                     this.setLicensed(true)
                 } else {
                     this.setLicensed(false)
                     this.errorCode = result.data.code || 'LICENSE_INVALID'
                     this.errorMessage = result.data.message || 'Activate AT Digital Tester to continue.'
+                    this.showGraceExpiryNotification(result.data)
                 }
             } catch (error) {
                 this.setLicensed(false)
@@ -199,7 +220,29 @@ export default {
                 this.loading = false
             }
         },
+        showGraceWarning(data) {
+            if (!data.warning || data.warning === this.lastWarningMessage) return
+            this.lastWarningMessage = data.warning
+            this.$notify.warning({
+                title: 'License validation reminder',
+                message: data.warning,
+                duration: 10000
+            })
+        },
+        showGraceExpiryNotification(data) {
+            if (data.code !== 'LICENSE_REVALIDATION_REQUIRED') return
+            const message = data.message
+                || 'The license has not been validated online for 30 days. Connect to the license service again.'
+            if (message === this.lastWarningMessage) return
+            this.lastWarningMessage = message
+            this.$notify.error({
+                title: 'Online license validation required',
+                message,
+                duration: 0
+            })
+        },
         activate() {
+            if (!this.showLicenseKeyInput || !this.$refs.activationForm) return
             this.$refs.activationForm.validate(async valid => {
                 if (!valid || this.activating) return
                 this.activating = true

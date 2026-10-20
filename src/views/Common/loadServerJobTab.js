@@ -39,6 +39,8 @@ import * as currentTransformerAPI from '@/api/demo/CurrentTransformer.js'
 import * as circuitBreakerAPI from '@/api/demo/CircuitBreaker.js'
 import * as disconnectorAPI from '@/api/demo/Disconnector.js'
 import * as surgeArresterAPI from '@/api/demo/SurgeArrester.js'
+import * as bushingAPI from '@/api/demo/Bushing.js'
+import * as powerCableAPI from '@/api/demo/PowerCable.js'
 
 import * as transformerServerMapper from '@/views/Mapping/ServerToDTO/Transformer/index.js'
 import * as voltageTransformerServerMapper from '@/views/Mapping/ServerToDTO/VoltageTransformer/index.js'
@@ -46,8 +48,13 @@ import * as currentTransformerServerMapper from '@/views/Mapping/ServerToDTO/Cur
 import * as circuitBreakerServerMapper from '@/views/Mapping/ServerToDTO/CircuitBreaker/index.js'
 import * as disconnectorServerMapper from '@/views/Mapping/ServerToDTO/Disconnector/index.js'
 import * as surgeArresterServerMapper from '@/views/Mapping/ServerToDTO/SurgeArrester/index.js'
+import * as bushingServerMapper from '@/views/Mapping/ServerToDTO/Bushing/index.js'
+import * as powerCableServerMapper from '@/views/Mapping/ServerToDTO/PowerCable/index.js'
 
 import { normalizeJobDto, applyTestTypeNames } from '@/utils/jobDtoNormalize'
+import { downloadTest } from '@/api/demo/Job'
+import { getTestSyncStrategy } from '@/utils/testSync'
+import { toLocalMrid } from '@/utils/serverId'
 
 /**
  * Khoá là `tab.job` — nhãn loại THIẾT BỊ mà job thuộc về, do `fetchChildrenServer`
@@ -106,7 +113,36 @@ const REGISTRY = {
  * @returns {Promise<object|null>} `{ jobDto, assetDto, testTypeList, productAssetModel,
  *          location }`, hoặc null nếu loại chưa hỗ trợ hoặc không tải được job
  */
-export async function loadServerJobTab(tab) {
+export async function loadServerJobTab(tab, userId = null) {
+    if (tab && tab.mode === 'test') {
+        const strategy = await getTestSyncStrategy(tab.job)
+        const data = await downloadTest(tab.job, tab.mrid)
+        const definitions = await window.electronAPI.getProcedureByGenericAssetModel(tab.job)
+        const testTypeList = definitions && definitions.success ? definitions.data : []
+        const jobDto = normalizeJobDto(strategy.server.mapServerToDto(data), strategy.linkKey, tab.job)
+        applyTestTypeNames(jobDto, testTypeList)
+        const contextEntry = REGISTRY[tab.job] || {
+            Bushing: { fetchAsset: bushingAPI.getBushingById, assetToDto: bushingServerMapper.mapServerToDto },
+            'Power cable': { fetchAsset: powerCableAPI.getPowerCableById, assetToDto: powerCableServerMapper.mapServerToDto }
+        }[tab.job]
+        let assetDto
+        if (contextEntry) {
+            const asset = await contextEntry.fetchAsset(tab.parentId)
+            assetDto = contextEntry.assetToDto((asset && asset.data) || asset)
+        } else {
+            const assetKind = { Capacitor: 'Capacitor', Reactor: 'Reactor', 'Rotating machine': 'RotatingMachine' }[tab.job]
+            const localId = toLocalMrid(tab.parentId, { mode: 'asset', asset: tab.job }, userId)
+            const asset = assetKind && await window.electronAPI[`get${assetKind}EntityByMrid`](localId)
+            if (!asset || !asset.success) throw new Error('Download the parent asset before opening this test.')
+            const mapper = await import(`@/views/Mapping/${assetKind}/index.js`)
+            assetDto = mapper.mapEntityToDto(asset.data)
+        }
+        if (!assetDto) throw new Error('Unable to load the parent asset details for this test.')
+        return {
+            jobDto, version: data.version, testTypeList, assetDto,
+            productAssetModel: assetDto.productAssetModel || {}, location: assetDto.location || {}
+        }
+    }
     const entry = REGISTRY[tab && tab.job]
     if (!entry) {
         console.warn('[Server job tab] chua ho tro loai thiet bi:', tab && tab.job)

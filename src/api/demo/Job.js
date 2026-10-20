@@ -22,6 +22,8 @@ export const JOB_KIND_BY_ASSET = {
     'Rotating machine':     'rm',
     'Power cable':          'pc',
     'Bushing':              'bushing',
+    'Capacitor':            'capacitor',
+    'Reactor':              'reactor',
 }
 
 /**
@@ -42,4 +44,25 @@ export const getJobsByAsset = (assetType, assetId) => {
     const kind = JOB_KIND_BY_ASSET[assetType]
     if (!kind) return Promise.resolve([])
     return client.get(`/${prefix}/${kind}/by-asset/${toServerId(assetId)}`)
+}
+
+const getTestKind = (assetType) => {
+    const kind = JOB_KIND_BY_ASSET[assetType]
+    if (!kind) throw new Error(`Unsupported test asset type: ${assetType}`)
+    return kind
+}
+
+export const getTestsByAsset = (assetType, assetId) => {
+    const kind = getTestKind(assetType)
+    return client.get(`/${prefix}/tests/${kind}/by-asset/${toServerId(assetId)}`)
+}
+
+export const uploadTest = (assetType, payload) => {
+    const kind = getTestKind(assetType)
+    return client.post(`/${prefix}/tests/${kind}`, payload)
+}
+
+export const downloadTest = (assetType, testId) => {
+    const kind = getTestKind(assetType)
+    return client.get(`/${prefix}/tests/${kind}/${toServerId(testId)}`)
 }

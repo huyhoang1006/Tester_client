@@ -8,5 +8,9 @@ export const powerPlantPreload = () => ({
     ),
     getPowerPlantsInOrganisationForUser: (organisationId, userId) => (
         ipcRenderer.invoke('getPowerPlantsInOrganisationForUser', organisationId, userId)
-    )
+    ),
+    movePowerPlantToOrganisation: (plantId, organisationId) => (
+        ipcRenderer.invoke('movePowerPlantToOrganisation', plantId, organisationId)
+    ),
+    deletePowerPlantEntityByMrid: (data) => ipcRenderer.invoke('deletePowerPlantEntityByMrid', data)
 })

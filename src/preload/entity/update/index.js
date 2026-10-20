@@ -14,6 +14,11 @@ export const updateEntityPreload = () => {
             const listener = (_event, data) => callback(data)
             ipcRenderer.on('update-notification-created', listener)
             return () => ipcRenderer.removeListener('update-notification-created', listener)
+        },
+        onNotificationCreated: (callback) => {
+            const listener = (_event, data) => callback(data)
+            ipcRenderer.on('notification-created', listener)
+            return () => ipcRenderer.removeListener('notification-created', listener)
         }
     }
 }

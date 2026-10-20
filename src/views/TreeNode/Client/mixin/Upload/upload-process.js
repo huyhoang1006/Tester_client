@@ -133,6 +133,39 @@ export default {
             }
         },
 
+        async processUploadPowerPlant(node) {
+            try {
+                const userId = this.$store.state.user.user_id
+                const entityRes = await window.electronAPI.getPowerPlantEntityByMrid(node.mrid, userId, node.parentId)
+                if (!entityRes.success || !entityRes.data) throw new Error('Local Power Plant data not found.')
+                if (!node.parentId) throw new Error('Cannot upload Power Plant without parent organisation.')
+
+                // The server stores power plants in its Substation aggregate. Keep the
+                // local Power Plant model, but adapt its common CIM fields for that API.
+                const serverEntity = {
+                    ...entityRes.data,
+                    substation: entityRes.data.powerPlant
+                }
+                const parentNode = this.findUploadParentNode(node)
+                const serverPayload = mapSubstationEntityToServer(serverEntity, parentNode)
+                serverPayload.psrType = null
+                serverPayload.generation = null
+                serverPayload.industry = null
+
+                const response = await demoAPI.createSubstation(serverPayload, node.parentId)
+                const serverId = await this.syncUploadedNodeServerId(node, response)
+                await this.uploadAssetMedia(
+                    'Substation',
+                    entityRes.data,
+                    serverId || this.extractUploadedServerId(response) || node.mrid
+                )
+                this.$message.success(`Upload Power Plant "${this.getUploadNodeName(node)}" successfully!`)
+                return response
+            } catch (error) {
+                this._handleUploadError(error, 'Power Plant')
+            }
+        },
+
         async processUploadVoltageLevel(node) {
             try {
                 const entityRes = await window.electronAPI.getVoltageLevelEntityByMrid(node.mrid)
@@ -1067,7 +1100,7 @@ export default {
             if (this.isLocalGeneratedMrid(id)) return false
 
             try {
-                if (node.mode === 'substation') {
+                if (node.mode === 'substation' || node.mode === 'powerPlant') {
                     await substationAPI.getSubstationById(id)
                     return true
                 }

@@ -28,7 +28,8 @@ export default {
                 return this.$message.warning('Please select a node to download')
             }
             const node = this.selectedNodes[this.selectedNodes.length - 1]
-            
+            if (node.mode === 'test') return this.runTestDownloadWithLog(node)
+
             await executeDownload(node, this, { includePath: true })
         },
 
@@ -37,6 +38,7 @@ export default {
                 return this.$message.warning('Please select a node to download')
             }
             const node = this.selectedNodes[this.selectedNodes.length - 1]
+            if (node.mode === 'test') return this.runTestDownloadWithLog(node)
 
             const hasParent = await this.hasLocalParentForDownload(node)
             if (!hasParent) {
@@ -74,6 +76,27 @@ export default {
                 this.$message = originalMessage
             }
             await this.writeSyncLog('DOWNLOAD', node, !captured, captured)
+        },
+
+        async runTestDownloadWithLog(node) {
+            let success = false
+            let message = ''
+            this.$store.dispatch('loading/start', { action: 'download', type: 'heavy' })
+            try {
+                // The shared test module owns overwrite confirmation and conflict resolution.
+                const result = await this.processDownloadTest(node)
+                if (!result) return false
+                success = true
+            } catch (error) {
+                message = (error && error.message) || String(error || 'Download failed')
+                if (!['cancel', 'close', 'CANCELED'].includes(message)) {
+                    this.$message.error(message)
+                }
+            } finally {
+                this.$store.dispatch('loading/stop')
+            }
+            await this.writeSyncLog('DOWNLOAD', node, success, message)
+            return success
         },
 
         /**

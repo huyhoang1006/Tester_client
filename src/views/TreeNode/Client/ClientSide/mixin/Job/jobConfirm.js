@@ -1,5 +1,6 @@
 import Vue from "vue"
 import { startLoading } from '@/utils/loading'
+import { sortTestsByDate } from '@/views/TreeNode/Common/Fetch/testDate'
 
 export default {
     methods: {
@@ -86,20 +87,20 @@ export default {
                             }
 
                             const savedWork = data.oldWork || data.job || data
-                            const tasksResponse = await window.electronAPI.getWorkTasksByWorkId(savedWork.mrid)
+                            const tasksResponse = await window.electronAPI.getWorkTasksByAssetId(this.parentOrganization.mrid)
                             const tasks = tasksResponse && Array.isArray(tasksResponse.data) ? tasksResponse.data : []
                             newRows = tasks.map(task => ({
                                 ...savedWork,
                                 ...task,
                                 mrid: task.mrid,
-                                workMrid: savedWork.mrid,
-                                workName: savedWork.name,
-                                name: task.name || task.title || task.type || 'Unnamed test',
+                                workMrid: task.work_mrid || task.work,
+                                workName: task.work_name,
+                                name: task.test_name || task.name || task.title || task.type || 'Unnamed test',
                                 parentId: this.parentOrganization.mrid,
                                 parentName: this.parentOrganization.name,
                                 parentArr: this.parentOrganization.parentArr || [],
-                                execution_date: task.testing_date || task.testingDate || savedWork.execution_date,
-                                tested_by: task.tested_by || task.testedBy || savedWork.tested_by,
+                                execution_date: task.testing_date || task.testingDate || task.work_execution_date || savedWork.execution_date,
+                                tested_by: task.tested_by || task.testedBy || task.work_tested_by || savedWork.tested_by,
                                 mode: 'test',
                                 job: jobType
                             }))
@@ -107,7 +108,12 @@ export default {
                             if (node) {
                                 const children = Array.isArray(node.children) ? node.children : []
                                 const newIds = new Set(newRows.map(row => row.mrid))
-                                Vue.set(node, 'children', [...children.filter(child => !newIds.has(child.mrid)), ...newRows])
+                                // Sắp lại theo ngày thử nghiệm: test vừa lưu không phải lúc nào
+                                // cũng mới nhất (nhập bù test năm trước chẳng hạn).
+                                Vue.set(node, 'children', sortTestsByDate([
+                                    ...children.filter(child => !newIds.has(child.mrid)),
+                                    ...newRows
+                                ]))
                             }
                         }
                     }

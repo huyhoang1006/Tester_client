@@ -1,3 +1,5 @@
+import { sortRowsByTestDate } from './testDate'
+
 export default {
     methods: {
         async fetchJobsByAssetId(assetId) {
@@ -13,14 +15,16 @@ export default {
 
             return {
                 ...result,
-                data: result.data.map(task => ({
+                // Job đã là lớp ẩn: test trải phẳng dưới thiết bị, nên phải tự sắp theo ngày
+                // thử nghiệm - câu truy vấn không có ORDER BY, để nguyên thì các năm lẫn nhau.
+                data: sortRowsByTestDate(result.data.map(task => ({
                     ...task,
-                    name: task.name || task.title || task.type || 'Unnamed test',
+                    name: task.test_name || task.name || task.title || task.type || 'Unnamed test',
                     workMrid: task.work_mrid || task.work,
                     workName: task.work_name,
                     execution_date: task.testing_date || task.testingDate || task.work_execution_date,
                     tested_by: task.tested_by || task.testedBy || task.work_tested_by
-                }))
+                })))
             }
         },
     }

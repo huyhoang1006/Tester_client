@@ -77,7 +77,7 @@ export const updateDatabase = async () => {
     // measurement definitions into databases that were created before those
     // tests were added. Without this migration, procedure_asset references a
     // procedure that only exists in the JSON config and SQLite rejects it.
-    const LATEST_DB_VERSION = 5;
+    const LATEST_DB_VERSION = 6;
     const oldVersion = await databaseInitFunc.getDbVersion(db)
 
     // Tạo những BẢNG còn thiếu, ở mọi lần khởi động.
@@ -93,6 +93,7 @@ export const updateDatabase = async () => {
         await databaseInitFunc.ensureTransformerVectorGroupColumns(db)
         await databaseInitFunc.ensureSubstationOperatingDateColumn(db)
         await databaseInitFunc.ensureCtCoreInfoClassRatingColumns(db)
+        await databaseInitFunc.ensureWorkTaskMetadataColumns(db)
         const sfraMigration = await migrateLegacySfraTraces(db)
         if (sfraMigration.migrated > 0) {
             console.log(`[DB] Migrated ${sfraMigration.migrated} legacy SFRA trace(s)`)

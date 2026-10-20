@@ -151,36 +151,8 @@ export const getTestingEquipmentById = async (mrid) => {
     })
 }
 
-export const getTestingEquipmentByWorkId = async (workId) => {
-    return new Promise((resolve, reject) => {
-        // JOIN để lấy lại model/serial/calibration cho JobView
-        // (các cột này đã chuyển sang asset/identified_object/product_asset_model/calibration_record)
-        db.all(
-            `SELECT te.*,
-                    COALESCE(pam.model_number, io.name) AS model,
-                    a.serial_number AS serial_number,
-                    a.in_use_state AS status,
-                    (SELECT cr.calibration_date FROM calibration_record cr
-                     WHERE cr.testing_equipment = te.mrid
-                     ORDER BY substr(cr.calibration_date,7,4)||substr(cr.calibration_date,1,2)||substr(cr.calibration_date,4,2) DESC
-                     LIMIT 1) AS calibration_date
-             FROM testing_equipment te
-             JOIN asset a ON a.mrid = te.mrid
-             LEFT JOIN identified_object io ON io.mrid = te.mrid
-             LEFT JOIN product_asset_model pam ON pam.mrid = a.product_asset_model
-             WHERE te.work_id=?`,
-            [workId],
-            (err, rows) => {
-                if (err) return reject({ success: false, err, message: 'Get testingEquipment by workId failed' })
-                if (!rows || rows.length === 0) return resolve({ success: false, data: null, message: 'TestingEquipment not found' })
-                return resolve({ success: true, data: rows, message: 'Get testingEquipment by workId completed' })
-            }
-        )
-    })
-}
-
-// Usage history is inferred from job/test links instead of a separate table.
-// work_task_id luôn trỏ work_task.mrid (từ khi equipment gắn theo test instance).
+// work_task_id always points to a concrete test instance. Keep work_id as a
+// legacy fallback, because older databases associated equipment with the Job.
 const TE_TEST_TYPE_TABLES = [
     'transformer_testing_equipment_test_type',
     'voltage_transformer_testing_equipment_test_type',
@@ -195,14 +167,49 @@ const TE_TEST_TYPE_TABLES = [
     'bushing_testing_equipment_test_type',
 ]
 
+export const getTestingEquipmentByWorkId = async (workId) => {
+    const linkedEquipmentSql = TE_TEST_TYPE_TABLES.map((table) => `
+        SELECT link.testing_equipment_id
+        FROM ${table} link
+        INNER JOIN work_task wt ON wt.mrid = link.work_task_id
+        WHERE wt.work = ?`).join('\n        UNION\n')
+
+    return new Promise((resolve, reject) => {
+        // JOIN để lấy lại model/serial/calibration cho JobView
+        // (các cột này đã chuyển sang asset/identified_object/product_asset_model/calibration_record)
+        db.all(
+            `SELECT DISTINCT te.*,
+                    COALESCE(pam.model_number, io.name) AS model,
+                    a.serial_number AS serial_number,
+                    a.in_use_state AS status,
+                    (SELECT cr.calibration_date FROM calibration_record cr
+                     WHERE cr.testing_equipment = te.mrid
+                     ORDER BY substr(cr.calibration_date,7,4)||substr(cr.calibration_date,1,2)||substr(cr.calibration_date,4,2) DESC
+                     LIMIT 1) AS calibration_date
+             FROM testing_equipment te
+             JOIN asset a ON a.mrid = te.mrid
+             LEFT JOIN identified_object io ON io.mrid = te.mrid
+             LEFT JOIN product_asset_model pam ON pam.mrid = a.product_asset_model
+             WHERE te.work_id = ?
+                OR te.mrid IN (${linkedEquipmentSql})`,
+            [workId, ...TE_TEST_TYPE_TABLES.map(() => workId)],
+            (err, rows) => {
+                if (err) return reject({ success: false, err, message: 'Get testingEquipment by workId failed' })
+                if (!rows || rows.length === 0) return resolve({ success: false, data: null, message: 'TestingEquipment not found' })
+                return resolve({ success: true, data: rows, message: 'Get testingEquipment by workId completed' })
+            }
+        )
+    })
+}
+
 export const getTestingEquipmentUsageHistory = async (teMrid) => {
     const unionSql = TE_TEST_TYPE_TABLES.map((t) => `
         SELECT DISTINCT
-               ow.execution_date            AS date,
+               COALESCE(wt.testing_date, ow.execution_date) AS date,
                io_w.name                    AS job_name,
                COALESCE(io_a.name, a.serial_number) AS asset_name,
                io_wt.name                   AS test_type,
-               ow.tested_by                 AS tested_by
+               COALESCE(wt.tested_by, ow.tested_by) AS tested_by
         FROM ${t} l
         LEFT JOIN work_task wt ON wt.mrid = l.work_task_id
         LEFT JOIN testing_equipment te ON te.mrid = l.testing_equipment_id

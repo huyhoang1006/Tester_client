@@ -7,9 +7,34 @@
             </div>
             <div class="ti-metadata-body">
                 <label class="ti-metadata-field">
+                    <span>Name</span>
+                    <el-input
+                        v-model="testMetadata.name"
+                        size="mini"
+                        placeholder="Enter test name">
+                    </el-input>
+                </label>
+                <label class="ti-metadata-field">
+                    <span>Type</span>
+                    <el-select
+                        v-model="testMetadata.type"
+                        size="mini"
+                        filterable
+                        allow-create
+                        default-first-option
+                        placeholder="Select or type a test type">
+                        <el-option
+                            v-for="jobType in jobTypeOptions"
+                            :key="jobType"
+                            :label="jobType"
+                            :value="jobType">
+                        </el-option>
+                    </el-select>
+                </label>
+                <label class="ti-metadata-field">
                     <span>Testing date</span>
                     <el-date-picker
-                        v-model="workProperties.execution_date"
+                        v-model="testMetadata.testing_date"
                         size="mini"
                         type="date"
                         format="dd/MM/yyyy"
@@ -20,9 +45,36 @@
                 <label class="ti-metadata-field">
                     <span>Tested by</span>
                     <el-input
-                        v-model="workProperties.tested_by"
+                        v-model="testMetadata.tested_by"
                         size="mini"
                         placeholder="Enter tester name">
+                    </el-input>
+                </label>
+                <label class="ti-metadata-field">
+                    <span>Approved by</span>
+                    <el-input
+                        v-model="testMetadata.approved_by"
+                        size="mini"
+                        placeholder="Enter approver name">
+                    </el-input>
+                </label>
+                <label class="ti-metadata-field">
+                    <span>Approved date</span>
+                    <el-date-picker
+                        v-model="testMetadata.approved_date"
+                        size="mini"
+                        type="date"
+                        format="dd/MM/yyyy"
+                        value-format="MM/dd/yyyy"
+                        placeholder="Select approved date">
+                    </el-date-picker>
+                </label>
+                <label class="ti-metadata-field ti-metadata-field-wide">
+                    <span>Reference standard</span>
+                    <el-input
+                        v-model="testMetadata.reference_standard"
+                        size="mini"
+                        placeholder="Enter reference standard">
                     </el-input>
                 </label>
             </div>
@@ -164,6 +216,7 @@ import Attachment from '../Common/Attachment.vue';
 import CompareResultsPanel from '@/views/JobView/Common/CompareResultsPanel/index.vue'
 import { notifyCompareOpened, notifyCompareClosed } from '@/utils/compareUiBus'
 import { UnitSymbol } from '@/views/Enum/UnitSymbol'
+import { JOB_TYPES } from '@/config/job-types'
 export default {
     components: {
         Attachment,
@@ -209,9 +262,34 @@ export default {
         return {
             attachment_: [],
             unitSymbol: UnitSymbol,
+            jobTypeOptions: JOB_TYPES,
         }
     },
     methods: {
+        ensureTestMetadata() {
+            if (!this.data || typeof this.data !== 'object') return
+            const job = this.jobProperties || {}
+            const defaults = {
+                name: this.title || '',
+                type: job.type || '',
+                testing_date: job.execution_date || '',
+                tested_by: job.tested_by || '',
+                approved_by: job.approved_by || '',
+                approved_date: job.approval_date || '',
+                reference_standard: job.ref_standard || ''
+            }
+
+            if (!this.data.metadata || typeof this.data.metadata !== 'object') {
+                this.$set(this.data, 'metadata', defaults)
+                return
+            }
+
+            Object.keys(defaults).forEach((key) => {
+                if (this.data.metadata[key] === undefined || this.data.metadata[key] === null) {
+                    this.$set(this.data.metadata, key, defaults[key])
+                }
+            })
+        },
         getDataAttachment(arr) {
             const attachmentData = Array.isArray(arr) ? arr : []
             this.attachment_ = attachmentData
@@ -231,8 +309,8 @@ export default {
         testConditions: function () {
             return this.data
         },
-        workProperties() {
-            return this.jobProperties || {}
+        testMetadata() {
+            return this.data.metadata || {}
         },
         excludedConditionKeys() {
             if (this.showOilAndWindingTemperatures) return []
@@ -241,6 +319,12 @@ export default {
 
     },
     watch: {
+        data: {
+            immediate: true,
+            handler() {
+                this.ensureTestMetadata()
+            }
+        },
         attachment: {
             immediate: true,
             deep: true,
@@ -323,8 +407,13 @@ export default {
 }
 
 .ti-metadata-field ::v-deep(.el-date-editor.el-input),
-.ti-metadata-field ::v-deep(.el-input) {
+.ti-metadata-field ::v-deep(.el-input),
+.ti-metadata-field ::v-deep(.el-select) {
     width: 100%;
+}
+
+.ti-metadata-field-wide {
+    grid-column: 1 / -1;
 }
 
 .ti-col-stack .ti-comment-card {

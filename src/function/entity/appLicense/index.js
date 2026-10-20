@@ -6,15 +6,19 @@ import crypto from 'crypto'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
-import {app} from 'electron'
+import {app, BrowserWindow} from 'electron'
+import * as notificationEntityFunc from '@/function/entity/notification'
 
 const HELPER_RELATIVE_PATH = path.join('extra_binaries', 'at-license', 'lccinspector.exe')
 const FINGERPRINT_ORDER = ['Disk', 'DEFAULT', 'MAC', 'IP']
-const LICENSE_STORE_VERSION = 2
-const SUPPORTED_LICENSE_STORE_VERSIONS = new Set([1, LICENSE_STORE_VERSION])
+const LICENSE_STORE_VERSION = 3
+const SUPPORTED_LICENSE_STORE_VERSIONS = new Set([1, 2, LICENSE_STORE_VERSION])
 const LICENSE_STORE_FILE = 'online-license.json'
 const REQUEST_TIMEOUT_MS = 15000
 const STORAGE_CONTEXT = 'ATDigitalTester/online-license/v1'
+const VALIDATION_CACHE_CONTEXT = 'ATDigitalTester/license-validation-cache/v1'
+const GRACE_PERIOD_MS = 30 * 24 * 60 * 60 * 1000
+const GRACE_WARNING_MS = 5 * 24 * 60 * 60 * 1000
 const LICENSE_SERVER_URL = 'http://103.163.118.212:30840'
 const LICENSE_PRODUCT_ID = '907e544d-bdd1-40b2-98f5-f69144ad4531'
 const ACTIVATION_REQUIRED_CODES = new Set([
@@ -24,8 +28,39 @@ const ACTIVATION_REQUIRED_CODES = new Set([
     'FINGERPRINT_SCOPE_REQUIRED',
     'FINGERPRINT_SCOPE_MISMATCH'
 ])
+const BLOCKED_LICENSE_STATUSES = new Set([
+    'expired',
+    'revoked',
+    'suspended',
+    'inactive',
+    'overdue'
+])
 
 const unique = values => [...new Set(values.filter(Boolean).map(value => path.resolve(value)))]
+
+const notifyNotificationChanged = data => {
+    BrowserWindow.getAllWindows()
+        .filter(browserWindow => !browserWindow.isDestroyed())
+        .forEach(browserWindow => browserWindow.webContents.send('notification-created', data))
+}
+
+const saveLicenseNotification = async notification => {
+    try {
+        const result = await notificationEntityFunc.upsertLicenseNotification(notification)
+        notifyNotificationChanged(result.data)
+    } catch (_) {
+        // A notification storage failure must not change the license decision.
+    }
+}
+
+const resolveLicenseNotifications = async () => {
+    try {
+        const result = await notificationEntityFunc.resolveLicenseNotifications()
+        if (result.changed) notifyNotificationChanged(null)
+    } catch (_) {
+        // A notification storage failure must not change the license decision.
+    }
+}
 
 const createLicenseError = (message, code, details = {}) => {
     const error = new Error(message)
@@ -224,6 +259,61 @@ const decryptLicenseKey = (secret, fingerprint) => {
     }
 }
 
+const validationCachePayload = record => ({
+    fingerprint: String(record.fingerprint || ''),
+    serverFingerprint: String(record.serverFingerprint || ''),
+    licenseId: record.licenseId || null,
+    machineId: record.machineId || null,
+    licenseStatus: record.licenseStatus || null,
+    expiresAt: record.expiresAt || null,
+    lastValidatedAt: record.lastValidatedAt || null,
+    lastObservedAt: record.lastObservedAt || null
+})
+
+const signValidationCache = (record, fingerprint) => crypto
+    .createHmac('sha256', deriveStorageKey(fingerprint))
+    .update(VALIDATION_CACHE_CONTEXT, 'utf8')
+    .update('\0', 'utf8')
+    .update(JSON.stringify(validationCachePayload(record)), 'utf8')
+    .digest('base64')
+
+const hasValidValidationSignature = (record, fingerprint) => {
+    if (!record || !record.validationSignature) return false
+    try {
+        const expected = Buffer.from(signValidationCache(record, fingerprint), 'base64')
+        const actual = Buffer.from(record.validationSignature, 'base64')
+        return expected.length === actual.length && crypto.timingSafeEqual(expected, actual)
+    } catch (_) {
+        return false
+    }
+}
+
+const parseDateMs = value => {
+    if (!value) return null
+    const parsed = Date.parse(value)
+    return Number.isFinite(parsed) ? parsed : null
+}
+
+const isExpiredAt = (expiresAt, now = Date.now()) => {
+    const expiryMs = parseDateMs(expiresAt)
+    return expiryMs !== null && expiryMs <= now
+}
+
+const isBlockedLicenseStatus = status => BLOCKED_LICENSE_STATUSES.has(
+    String(status || '').trim().toLowerCase()
+)
+
+const isGraceEligibleError = error => error && [
+    'LICENSE_SERVER_UNREACHABLE',
+    'LICENSE_SERVICE_UNAVAILABLE'
+].includes(error.code)
+
+const buildSignedRecord = (record, fingerprint) => {
+    const signed = {...record}
+    signed.validationSignature = signValidationCache(signed, fingerprint)
+    return signed
+}
+
 const LICENSE_API_PATH = '/v1'
 
 const createHttpClient = (config, licenseKey) => axios.create({
@@ -252,6 +342,13 @@ const mapHttpError = error => {
     const message = (firstError && (firstError.detail || firstError.title))
         || body.message
         || `License server rejected the request (${error.response.status})`
+    if (error.response.status >= 500 || [408, 429].includes(error.response.status)) {
+        return createLicenseError(
+            'The license service is temporarily unavailable.',
+            'LICENSE_SERVICE_UNAVAILABLE',
+            {httpStatus: error.response.status, serverResponse: body, cause: error}
+        )
+    }
     return createLicenseError(message, (firstError && firstError.code) || 'LICENSE_SERVER_REJECTED', {
         httpStatus: error.response.status,
         serverResponse: body
@@ -357,10 +454,11 @@ const getServerFingerprint = stored => String(
 ).trim()
 
 const migrateLegacyStoredLicense = ({stored, config, licenseKey, device}) => {
-    if (!stored || stored.version !== 1 || device.strategy !== 'Disk') return stored
+    if (!stored || stored.version === LICENSE_STORE_VERSION) return stored
 
     const migratedAt = new Date().toISOString()
-    const migrated = {
+    const lastValidatedAt = stored.lastValidatedAt || migratedAt
+    const migrated = buildSignedRecord({
         version: LICENSE_STORE_VERSION,
         config: publicConfig(config),
         fingerprint: device.fingerprint,
@@ -368,12 +466,160 @@ const migrateLegacyStoredLicense = ({stored, config, licenseKey, device}) => {
         serverFingerprint: getServerFingerprint(stored),
         licenseId: stored.licenseId,
         machineId: stored.machineId,
+        licenseStatus: stored.licenseStatus || 'active',
+        expiresAt: stored.expiresAt || null,
         secret: encryptLicenseKey(licenseKey, device.fingerprint),
         activatedAt: stored.activatedAt || migratedAt,
+        lastValidatedAt,
+        lastObservedAt: stored.lastObservedAt || lastValidatedAt,
         migratedAt
-    }
+    }, device.fingerprint)
     writeStoredLicense(migrated)
     return migrated
+}
+
+const getBlockedValidation = validation => {
+    const status = String(validation.licenseStatus || '').trim().toLowerCase()
+    const code = String(validation.code || '').trim().toUpperCase()
+    if (status === 'expired' || code.includes('EXPIRED') || isExpiredAt(validation.expiresAt)) {
+        return {
+            code: 'LICENSE_EXPIRED',
+            status: 'expired',
+            message: 'This license has expired. Enter a valid license key to continue.'
+        }
+    }
+    if (isBlockedLicenseStatus(status)) {
+        return {
+            code: `LICENSE_${status.toUpperCase()}`,
+            status,
+            message: `This license is ${status}. Contact the system administrator.`
+        }
+    }
+    for (const blockedStatus of ['REVOKED', 'SUSPENDED', 'INACTIVE', 'OVERDUE']) {
+        if (code.includes(blockedStatus)) {
+            return {
+                code: `LICENSE_${blockedStatus}`,
+                status: blockedStatus.toLowerCase(),
+                message: `This license is ${blockedStatus.toLowerCase()}. Contact the system administrator.`
+            }
+        }
+    }
+    return null
+}
+
+const persistSuccessfulValidation = async ({stored, config, device, validation}) => {
+    const validatedAt = new Date().toISOString()
+    const updated = buildSignedRecord({
+        ...stored,
+        version: LICENSE_STORE_VERSION,
+        config: publicConfig(config),
+        fingerprint: device.fingerprint,
+        fingerprintStrategy: device.strategy,
+        serverFingerprint: getServerFingerprint(stored),
+        licenseId: validation.licenseId || stored.licenseId,
+        licenseStatus: validation.licenseStatus || 'active',
+        expiresAt: validation.expiresAt || stored.expiresAt || null,
+        lastValidatedAt: validatedAt,
+        lastObservedAt: validatedAt
+    }, device.fingerprint)
+    writeStoredLicense(updated)
+    await resolveLicenseNotifications()
+    return updated
+}
+
+const createCachedLicenseResult = async ({stored, config, device}) => {
+    const common = {
+        config: publicConfig(config),
+        fingerprint: device.fingerprint,
+        fingerprintStrategy: device.strategy,
+        licenseId: stored.licenseId,
+        machineId: stored.machineId,
+        licenseStatus: stored.licenseStatus,
+        expiresAt: stored.expiresAt,
+        lastValidatedAt: stored.lastValidatedAt,
+        checkedAt: new Date().toISOString()
+    }
+    if (!hasValidValidationSignature(stored, device.fingerprint)) {
+        return {
+            ...common,
+            licensed: false,
+            status: 'cache_invalid',
+            code: 'LICENSE_CACHE_INVALID',
+            message: 'Stored license validation data is invalid. Connect to the license service again.'
+        }
+    }
+
+    const blocked = getBlockedValidation(stored)
+    if (blocked) return {...common, ...blocked, licensed: false}
+
+    const now = Date.now()
+    const lastValidatedMs = parseDateMs(stored.lastValidatedAt)
+    const lastObservedMs = parseDateMs(stored.lastObservedAt)
+    if (lastObservedMs !== null && now + (5 * 60 * 1000) < lastObservedMs) {
+        return {
+            ...common,
+            licensed: false,
+            status: 'revalidation_required',
+            code: 'LICENSE_REVALIDATION_REQUIRED',
+            message: 'The system clock changed. Connect to the license service to validate the license again.'
+        }
+    }
+    if (lastValidatedMs === null) {
+        return {
+            ...common,
+            licensed: false,
+            status: 'revalidation_required',
+            code: 'LICENSE_REVALIDATION_REQUIRED',
+            message: 'Online license validation is required.'
+        }
+    }
+
+    const graceExpiresMs = lastValidatedMs + GRACE_PERIOD_MS
+    const graceRemainingMs = graceExpiresMs - now
+    if (graceRemainingMs <= 0) {
+        const message = 'Online license validation is required. The license service is down, please contact system admin.'
+        await saveLicenseNotification({
+            kind: 'expired',
+            name: 'Online license validation required',
+            message,
+            type: 'error'
+        })
+        return {
+            ...common,
+            licensed: false,
+            status: 'revalidation_required',
+            code: 'LICENSE_REVALIDATION_REQUIRED',
+            message
+        }
+    }
+
+    const graceDaysRemaining = Math.max(1, Math.ceil(graceRemainingMs / (24 * 60 * 60 * 1000)))
+    const warning = graceRemainingMs <= GRACE_WARNING_MS
+        ? `Please connect to the internet within ${graceDaysRemaining} day(s) to validate the license.`
+        : null
+    if (warning) {
+        await saveLicenseNotification({
+            kind: 'warning',
+            name: 'License validation reminder',
+            message: warning,
+            type: 'warning'
+        })
+    }
+    const updated = buildSignedRecord({
+        ...stored,
+        lastObservedAt: new Date(now).toISOString()
+    }, device.fingerprint)
+    writeStoredLicense(updated)
+
+    return {
+        ...common,
+        licensed: true,
+        status: 'grace',
+        usingCache: true,
+        warning,
+        graceDaysRemaining,
+        graceExpiresAt: new Date(graceExpiresMs).toISOString()
+    }
 }
 
 export const activateOnlineLicense = async payload => {
@@ -387,6 +633,10 @@ export const activateOnlineLicense = async payload => {
     const params = {config, licenseKey, fingerprint: device.fingerprint}
     const initialValidation = await validateLicenseKey(params)
 
+    const initialBlocked = getBlockedValidation(initialValidation)
+    if (initialBlocked) {
+        throw createLicenseError(initialBlocked.message, initialBlocked.code, {validation: initialValidation})
+    }
     if (!initialValidation.valid && !ACTIVATION_REQUIRED_CODES.has(initialValidation.code)) {
         throw invalidValidationError(initialValidation)
     }
@@ -401,9 +651,12 @@ export const activateOnlineLicense = async payload => {
 
     const activatedParams = {...params, machineId: machine.id}
     const validation = await validateLicenseKey(activatedParams)
+    const blocked = getBlockedValidation(validation)
+    if (blocked) throw createLicenseError(blocked.message, blocked.code, {validation})
     if (!validation.valid) throw invalidValidationError(validation)
 
-    writeStoredLicense({
+    const activatedAt = new Date().toISOString()
+    const stored = buildSignedRecord({
         version: LICENSE_STORE_VERSION,
         config: publicConfig(config),
         fingerprint: device.fingerprint,
@@ -411,9 +664,15 @@ export const activateOnlineLicense = async payload => {
         serverFingerprint: device.fingerprint,
         licenseId: validation.licenseId || initialValidation.licenseId,
         machineId: machine.id,
+        licenseStatus: validation.licenseStatus || 'active',
+        expiresAt: validation.expiresAt || null,
         secret: encryptLicenseKey(licenseKey, device.fingerprint),
-        activatedAt: new Date().toISOString()
-    })
+        activatedAt,
+        lastValidatedAt: activatedAt,
+        lastObservedAt: activatedAt
+    }, device.fingerprint)
+    writeStoredLicense(stored)
+    await resolveLicenseNotifications()
 
     return {
         licensed: true,
@@ -425,14 +684,16 @@ export const activateOnlineLicense = async payload => {
         machineId: machine.id,
         licenseStatus: validation.licenseStatus,
         expiresAt: validation.expiresAt,
-        checkedAt: new Date().toISOString()
+        lastValidatedAt: activatedAt,
+        checkedAt: activatedAt,
+        usingCache: false
     }
 }
 
 export const checkOnlineLicense = async () => {
     const stored = readStoredLicense()
     const config = requireOnlineLicenseConfig(getDefaultConfig())
-    const preferredStrategy = stored && stored.version === LICENSE_STORE_VERSION
+    const preferredStrategy = stored && stored.fingerprintStrategy
         ? stored.fingerprintStrategy
         : null
     const device = await getDeviceFingerprint(preferredStrategy)
@@ -447,7 +708,7 @@ export const checkOnlineLicense = async () => {
             fingerprintStrategy: device.strategy
         }
     }
-    if (stored.version === LICENSE_STORE_VERSION && stored.fingerprint !== device.fingerprint) {
+    if (stored.version !== 1 && stored.fingerprint !== device.fingerprint) {
         return {
             licensed: false,
             status: 'device_changed',
@@ -459,17 +720,40 @@ export const checkOnlineLicense = async () => {
         }
     }
 
-    const storageFingerprint = stored.version === 1 ? stored.fingerprint : device.fingerprint
+    const storageFingerprint = stored.fingerprint
     const licenseKey = decryptLicenseKey(stored.secret, storageFingerprint)
-    const serverFingerprint = getServerFingerprint(stored)
     const effectiveStored = migrateLegacyStoredLicense({stored, config, licenseKey, device})
     const params = {
         config,
         licenseKey,
-        fingerprint: serverFingerprint,
+        fingerprint: getServerFingerprint(effectiveStored),
         machineId: effectiveStored.machineId
     }
-    const validation = await validateLicenseKey(params)
+    let validation
+    try {
+        validation = await validateLicenseKey(params)
+    } catch (error) {
+        if (isGraceEligibleError(error)) {
+            return createCachedLicenseResult({stored: effectiveStored, config, device})
+        }
+        throw error
+    }
+
+    const blocked = getBlockedValidation(validation)
+    if (blocked) {
+        return {
+            ...blocked,
+            licensed: false,
+            config: publicConfig(config),
+            fingerprint: device.fingerprint,
+            fingerprintStrategy: device.strategy,
+            licenseId: validation.licenseId || effectiveStored.licenseId,
+            machineId: effectiveStored.machineId,
+            licenseStatus: validation.licenseStatus,
+            expiresAt: validation.expiresAt,
+            checkedAt: new Date().toISOString()
+        }
+    }
 
     if (!validation.valid) {
         return {
@@ -486,24 +770,33 @@ export const checkOnlineLicense = async () => {
         }
     }
 
+    const updated = await persistSuccessfulValidation({
+        stored: effectiveStored,
+        config,
+        device,
+        validation
+    })
+
     return {
         licensed: true,
         status: 'valid',
         config: publicConfig(config),
         fingerprint: device.fingerprint,
         fingerprintStrategy: device.strategy,
-        licenseId: validation.licenseId || effectiveStored.licenseId,
-        machineId: effectiveStored.machineId,
-        licenseStatus: validation.licenseStatus,
-        expiresAt: validation.expiresAt,
-        checkedAt: new Date().toISOString()
+        licenseId: updated.licenseId,
+        machineId: updated.machineId,
+        licenseStatus: updated.licenseStatus,
+        expiresAt: updated.expiresAt,
+        lastValidatedAt: updated.lastValidatedAt,
+        checkedAt: updated.lastValidatedAt,
+        usingCache: false
     }
 }
 
 export const getOnlineLicenseSetup = async () => {
     const stored = readStoredLicense()
     const config = normalizeOnlineLicenseConfig(getDefaultConfig())
-    const preferredStrategy = stored && stored.version === LICENSE_STORE_VERSION
+    const preferredStrategy = stored && stored.fingerprintStrategy
         ? stored.fingerprintStrategy
         : null
     const device = await getDeviceFingerprint(preferredStrategy)

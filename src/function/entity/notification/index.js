@@ -2,6 +2,10 @@ import db from '../../datacontext/index.js'
 
 const UPDATE_NOTIFICATION_TYPE = 'update'
 const PROCESSED_STATUS = 'processed'
+const LICENSE_NOTIFICATION_IDS = {
+    warning: 'license-grace-warning',
+    expired: 'license-grace-expired'
+}
 
 export const getAllNotifications = async () => {
     return new Promise((resolve, reject) => {
@@ -89,6 +93,65 @@ export const upsertUpdateNotification = async (version) => {
             function (err) {
                 if (err) reject(err)
                 else resolve({success: true, data: notification, message: 'Update notification saved'})
+            }
+        )
+    })
+}
+
+export const upsertLicenseNotification = async ({kind, name, message, type}) => {
+    const mrid = LICENSE_NOTIFICATION_IDS[kind]
+    if (!mrid) throw new Error('Unsupported license notification kind')
+
+    const notification = {
+        mrid,
+        name,
+        message,
+        type,
+        status: 'unread',
+        created_at: new Date().toISOString()
+    }
+
+    return new Promise((resolve, reject) => {
+        db.run(
+            `INSERT INTO notification (mrid, name, message, type, status, created_at)
+             VALUES (?, ?, ?, ?, ?, ?)
+             ON CONFLICT(mrid) DO UPDATE SET
+                name = excluded.name,
+                message = excluded.message,
+                type = excluded.type,
+                status = CASE
+                    WHEN notification.message <> excluded.message THEN excluded.status
+                    ELSE notification.status
+                END,
+                created_at = CASE
+                    WHEN notification.message <> excluded.message THEN excluded.created_at
+                    ELSE notification.created_at
+                END`,
+            [
+                notification.mrid,
+                notification.name,
+                notification.message,
+                notification.type,
+                notification.status,
+                notification.created_at
+            ],
+            function (err) {
+                if (err) reject(err)
+                else resolve({success: true, data: notification, message: 'License notification saved'})
+            }
+        )
+    })
+}
+
+export const resolveLicenseNotifications = async () => {
+    const ids = Object.values(LICENSE_NOTIFICATION_IDS)
+    return new Promise((resolve, reject) => {
+        db.run(
+            `UPDATE notification SET status = 'read' WHERE mrid IN (?, ?) AND status = 'unread'`,
+            ids,
+            function (err) {
+                if (err) reject(err)
+                else resolve({success: true, changed: this.changes})
             }
         )
     })

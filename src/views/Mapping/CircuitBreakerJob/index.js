@@ -3,6 +3,7 @@ import uuid from "@/utils/uuid";
 import CircuitBreakerJobEntity from '@/views/Flatten/Job/CircuitBreaker'
 import CircuitBreakerJobDto from '@/views/Dto/Job/CircuitBreaker'
 import WorkTask from '@/views/Cim/WorkTask'
+import { applyTestMetadataToWorkTask, buildTestMetadata } from '@/utils/testMetadata'
 import TestDataSet from '@/views/Cim/TestDataSet'
 import Attachment from '@/views/Flatten/Attachment'
 import TestingEquipment from '@/views/Flatten/TestingEquipment'
@@ -117,10 +118,12 @@ export const jobDtoToEntity = (dto) => {
         workTask.mrid = item.mrid || null
         workTask.name = item.name || null
         workTask.type = item.testTypeCode || null
+        workTask.test_type_code = item.testTypeCode || null
         workTask.kind = 'test'
         workTask.comment = item.testCondition.comment || null
         workTask.work = entity.oldWork.mrid || null
         workTask.title = item.testTypeName || null
+        applyTestMetadataToWorkTask(workTask, item, dto.properties)
         entity.workTasks.push(workTask)
 
         //attachment
@@ -146,7 +149,7 @@ export const jobDtoToEntity = (dto) => {
                         if (value.type === 'analog') {
                             const analogValue = new AnalogValue()
                             analogValue.mrid = value.mrid || null
-                            analogValue.value = value.value || null
+                            analogValue.value = value.value ?? null
                             analogValue.alias_name = key || null
                             analogValue.analog = measurementIdOf(circuitBreakerTestMap, item.testTypeCode, key, value.measurement_id)
                             analogValue.procedure_dataset_id = data.mrid
@@ -158,7 +161,7 @@ export const jobDtoToEntity = (dto) => {
                         } else if (value.type === 'string') {
                             const stringValue = new StringMeaurementValue()
                             stringValue.mrid = value.mrid || null
-                            stringValue.value = value.value || null
+                            stringValue.value = value.value ?? null
                             stringValue.alias_name = key || null
                             stringValue.procedure_dataset_id = data.mrid
                             stringValue.string_measurement = measurementIdOf(circuitBreakerTestMap, item.testTypeCode, key, value.measurement_id)
@@ -169,16 +172,17 @@ export const jobDtoToEntity = (dto) => {
                             entity.procedureDataSetMeasurementValue.push(procedureDataSetMeasurementValue)
                         } else if (value.type === 'discrete') {
                             const discreteValue = new DiscreteValue()
+                            discreteValue.value = value.value ?? null
                             discreteValue.mrid = value.mrid || null
                             if (key == 'assessment') {
-                                discreteValue.value = commonFunc.assessmentToValue(value.value) ?? null
+                                discreteValue.value = commonFunc.assessmentToValue(value.value) ?? value.value ?? null
                             } else if (key == 'condition_indicator') {
-                                discreteValue.value = commonFunc.conditionIndicatorToValue(value.value) ?? null
+                                discreteValue.value = commonFunc.conditionIndicatorToValue(value.value) ?? value.value ?? null
                             } else {
                                 // For other discrete values, store value as-is
-                                discreteValue.value = value.value || null
+                                discreteValue.value = value.value ?? null
                             }
-                            discreteValue.vta_alias_name = value.value || ''
+                            discreteValue.vta_alias_name = value.value ?? ''
                             discreteValue.alias_name = key || null
                             discreteValue.procedure_dataset_id = data.mrid
                             discreteValue.discrete = measurementIdOf(circuitBreakerTestMap, item.testTypeCode, key, value.measurement_id)
@@ -204,7 +208,7 @@ export const jobDtoToEntity = (dto) => {
                 if (value.type === 'analog') {
                     const analogValue = new AnalogValue()
                     analogValue.mrid = value.mrid || null
-                    analogValue.value = value.value || null
+                    analogValue.value = value.value ?? null
                     analogValue.alias_name = key || null
                     analogValue.analog = measurementIdOf(circuitBreakerConditionMap, item.testTypeCode, key, value.measurement_id)
                     analogValue.procedure_dataset_id = testDataCondition.mrid
@@ -216,7 +220,7 @@ export const jobDtoToEntity = (dto) => {
                 } else if (value.type === 'string') {
                     const stringValue = new StringMeaurementValue()
                     stringValue.mrid = value.mrid || null
-                    stringValue.value = value.value || null
+                    stringValue.value = value.value ?? null
                     stringValue.alias_name = key || null
                     stringValue.procedure_dataset_id = testDataCondition.mrid
                     stringValue.string_measurement = measurementIdOf(circuitBreakerConditionMap, item.testTypeCode, key, value.measurement_id)
@@ -227,9 +231,10 @@ export const jobDtoToEntity = (dto) => {
                     entity.procedureDataSetMeasurementValue.push(procedureDataSetMeasurementValue)
                 } else if (value.type === 'discrete') {
                     const discreteValue = new DiscreteValue()
+                    discreteValue.value = value.value ?? null
                     discreteValue.mrid = value.mrid || null
-                    discreteValue.value = value.value || null
-                    discreteValue.vta_alias_name = value.value || null
+                    discreteValue.value = value.value ?? null
+                    discreteValue.vta_alias_name = value.value ?? null
                     discreteValue.alias_name = key || null
                     discreteValue.procedure_dataset_id = testDataCondition.mrid
                     discreteValue.discrete = measurementIdOf(circuitBreakerConditionMap, item.testTypeCode, key, value.measurement_id)
@@ -307,8 +312,8 @@ export const JobEntityToDto = (entity) => {
 
     //test list
     for (const item of entity.workTasks) {
-        let condition = commonFunc.buildEmptyTestCondition(circuitBreakerConditionMap[item.type]?.columns || [])
-        const testAssessmentList = JSON.parse(JSON.stringify(circuitBreakerAssessmentMap[item.type]?.testStandard || []));
+        let condition = commonFunc.buildEmptyTestCondition(circuitBreakerConditionMap[(item.test_type_code || item.type)]?.columns || [])
+        const testAssessmentList = JSON.parse(JSON.stringify(circuitBreakerAssessmentMap[(item.test_type_code || item.type)]?.testStandard || []));
         const testStandardData = entity.testStandard.find(x => x.work_task_id === item.mrid);
         let standardCustomized = null
         if(testStandardData) {
@@ -391,7 +396,7 @@ export const JobEntityToDto = (entity) => {
         let testTemplate = {
             mrid: item.mrid || '',
             name: item.name || '',
-            testTypeCode: item.type || '',
+            testTypeCode: (item.test_type_code || item.type) || '',
             testTypeName: item.title || '',
             testTypeId: '',
             average_score: null,
@@ -405,6 +410,7 @@ export const JobEntityToDto = (entity) => {
             worst_score_df: null,
             created_on: '',
             testCondition: {
+                metadata: buildTestMetadata(item, dto.properties),
                 mrid: '',
                 condition: condition,
                 comment: '',
@@ -420,7 +426,7 @@ export const JobEntityToDto = (entity) => {
             }
         }
         testTemplate.testCondition.comment = item.comment || ''
-        testTemplate.testTypeId = (circuitBreakerTestMap[item.type] || {}).testId || ''
+        testTemplate.testTypeId = (circuitBreakerTestMap[(item.test_type_code || item.type)] || {}).testId || ''
 
         for (const attachment of entity.attachmentTest) {
             if (attachment.id_foreign === item.mrid) {
@@ -457,7 +463,7 @@ export const JobEntityToDto = (entity) => {
                         mrid: smv.mrid,
                         type: 'string',
                         unit: unitOf(smv.string_measurement),
-                        value: smv.value || '',
+                        value: smv.value ?? '',
                         measurement_id: smv.string_measurement || ''
                     }
                 }
@@ -470,7 +476,7 @@ export const JobEntityToDto = (entity) => {
                         mrid: av.mrid,
                         type: 'analog',
                         unit: unitOf(av.analog),
-                        value: av.value || '',
+                        value: av.value ?? '',
                         measurement_id: av.analog || ''
                     }
                 }
@@ -479,7 +485,7 @@ export const JobEntityToDto = (entity) => {
                 for (const dv of discreteValueData) {
                     const key = dv.alias_name // vd: "assessment", "condition_indicator"
 
-                    let displayValue = dv.vta_alias_name || ''
+                    let displayValue = (dv.vta_alias_name === '' ? dv.value : (dv.vta_alias_name ?? dv.value)) ?? ''
 
                     // If vta_alias_name is empty, convert from numeric value
                     if (!displayValue && dv.value !== null && dv.value !== undefined) {
@@ -507,13 +513,13 @@ export const JobEntityToDto = (entity) => {
                             mrid: dv.mrid,
                             type: 'discrete',
                             unit: unitOf(dv.discrete),
-                            value: displayValue || dv.value || '',
+                            value: displayValue !== '' ? displayValue : (dv.value ?? ''),
                             measurement_id: dv.discrete || ''
                         }
                     }
                 }
 
-                ensureRowColumns(rowData, (circuitBreakerTestMap[item.type] || {}).columns)
+                ensureRowColumns(rowData, (circuitBreakerTestMap[(item.test_type_code || item.type)] || {}).columns)
                 testTemplate.data.table[key].push(rowData)
             }
         }
@@ -530,7 +536,7 @@ export const JobEntityToDto = (entity) => {
                     mrid: smv.mrid,
                     type: 'string',
                     unit: unitOf(smv.string_measurement),
-                    value: smv.value || '',
+                    value: smv.value ?? '',
                     measurement_id: smv.string_measurement || ''
                 }
             }
@@ -543,7 +549,7 @@ export const JobEntityToDto = (entity) => {
                     mrid: av.mrid,
                     type: 'analog',
                     unit: unitOf(av.analog),
-                    value: av.value || '',
+                    value: av.value ?? '',
                     measurement_id: av.analog || ''
                 }
             }
@@ -556,7 +562,7 @@ export const JobEntityToDto = (entity) => {
                     mrid: dv.mrid,
                     type: 'discrete',
                     unit: unitOf(dv.discrete),
-                    value: dv.value || '',
+                    value: dv.value ?? '',
                     measurement_id: dv.discrete || ''
                 }
             }

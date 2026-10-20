@@ -262,7 +262,8 @@ export default {
             isReloading: false,
             dialogNotificationDetail: false,
             selectedNotification: null,
-            removeUpdateNotificationListener: null
+            removeUpdateNotificationListener: null,
+            removeNotificationListener: null
         }
     },
     mounted() {
@@ -282,11 +283,17 @@ export default {
                 this.loadNotifications()
             })
         }
+        if (window.electronAPI && window.electronAPI.onNotificationCreated) {
+            this.removeNotificationListener = window.electronAPI.onNotificationCreated(() => {
+                this.loadNotifications()
+            })
+        }
         // this.updateSearchState()
         // window.addEventListener('resize', this.updateSearchState)
     },
     beforeDestroy() {
         if (this.removeUpdateNotificationListener) this.removeUpdateNotificationListener()
+        if (this.removeNotificationListener) this.removeNotificationListener()
     },
     computed: {
         ...mapState(['user', 'loginAddr', 'serviceAddr']),

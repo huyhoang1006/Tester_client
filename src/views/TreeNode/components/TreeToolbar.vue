@@ -13,6 +13,13 @@
                 <i class="fa-solid fa-table"></i>
             </button>
 
+            <button v-if="selectedMode === 'test' && clientSlide" type="button" class="rail-tab" title="Upload only test" aria-label="Upload only test" @click="$emit('upload')">
+                <i class="fa-solid fa-file-arrow-up"></i>
+            </button>
+            <button v-if="selectedMode === 'test' && !clientSlide" type="button" class="rail-tab" title="Download test" aria-label="Download test" @click="$emit('download-test')">
+                <i class="fa-solid fa-file-arrow-down"></i>
+            </button>
+
             <el-dropdown v-if="clientSlide" @command="handleImportCommand" trigger="click" placement="bottom-start">
                 <button type="button" class="rail-tab" :class="{ active: activeTab === 'import' }" title="Import">
                     <i class="fa-solid fa-file-import"></i>
@@ -133,6 +140,10 @@ export default {
         clientSlide: {
             type: Boolean,
             default: false
+        },
+        selectedMode: {
+            type: String,
+            default: ''
         },
         searchPreviewData: {
             type: Object,

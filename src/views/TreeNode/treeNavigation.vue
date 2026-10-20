@@ -4,7 +4,9 @@
         <!-- Thanh điều hướng có thể kéo rộng/kéo hẹp -->
         <div class="resizable-sidebar" :class="{ 'full-height': activeWorkspaceTab !== 'tree' }">
             <!-- Tree Toolbar: rail dọc bên trái, thu gọn được -->
-            <TreeToolbar ref="treeToolBar"  :clientSlide="clientSlide" :search-preview-data="searchPreviewData" @add-command="handleAddCommand"
+            <TreeToolbar ref="treeToolBar"  :clientSlide="clientSlide" :search-preview-data="searchPreviewData"
+                :selected-mode="selectedNodes.length ? selectedNodes[selectedNodes.length - 1].mode : ''"
+                @download-test="handleDownloadOnlyNode" @add-command="handleAddCommand"
                 @dropdown-visible-change="handleDropdownVisibleChange" @asset-command="handleAssetCommand"
                 @import-command="handleImportCommand" @export-command="handleCommand" @open-node="handleOpenNode"
                 @duplicate="duplicateSelectedNodes" @upload="handleUploadNode" @download="handleDownloadPathTree"
@@ -451,6 +453,7 @@ import pathNavigate from '@/views/TreeNode/Common/pathNavigate'
 import importPtm from '@/views/TreeNode/Common/Import/importPtm'
 import TopBarServer from './Server/TopBarServer/index.vue'
 import uploadNodeMixin from './Client/mixin/Upload/index.js';
+import testSyncMixin from './Common/testSyncMixin';
 import downloadNode from './Server/mixin/Download/downloadNode.js';
 import ClientTreePanel from './Client/ClientTree/index.vue'
 import ServerTreePanel from './Server/ServerTree/index.vue'
@@ -859,7 +862,7 @@ export default {
                 : 'app-dialog'
         }
     },
-    mixins: [mixin, mixinTreeNavigation, uploadNodeMixin, downloadNode, mainMixin, contextMenuSync, pathNavigate, importPtm],
+    mixins: [mixin, mixinTreeNavigation, uploadNodeMixin, downloadNode, mainMixin, contextMenuSync, pathNavigate, importPtm, testSyncMixin],
     async beforeMount() {
         try {
             const data = await window.electronAPI.getAllConfigurationEvents()
@@ -1412,6 +1415,14 @@ export default {
                     this.$set(treeNode, 'industry', data.industry || '')
                     this.$set(treeNode, '_hasFullProperties', true)
                     this.$set(treeNode, '_cachedEntityData', data)
+                } else if (mode === 'powerPlant') {
+                    const displayName = data.aliasName || data.name || ''
+                    this.$set(treeNode, 'name', data.name || '')
+                    this.$set(treeNode, 'aliasName', displayName)
+                    this.$set(treeNode, 'plantType', data.type || treeNode.plantType || '')
+                    this.$set(treeNode, 'plant_type', data.type || treeNode.plant_type || '')
+                    this.$set(treeNode, '_hasFullProperties', true)
+                    this.$set(treeNode, '_cachedEntityData', data)
                 } else if (mode === 'voltageLevel') {
                     this.$set(treeNode, 'name', data.name || '')
                     this.$set(treeNode, '_hasFullProperties', true)
@@ -1561,7 +1572,7 @@ export default {
             // deviceId trên URL, và giá trị đó luôn có sẵn ngay trên tab. Bắt tìm cho
             // bằng được sẽ chặn lượt lưu khi nhánh thiết bị đã bị thu lại hoặc cây vừa
             // nạp lại — lúc đó node cha không còn trong bộ nhớ, dù dữ liệu vẫn đủ.
-            if (tab.mode !== 'organisation' && tab.mode !== 'job' && !parentNode) {
+            if (!['organisation', 'job', 'test'].includes(tab.mode) && !parentNode) {
                 this.$message.error('Cannot resolve parent node on server.')
                 return
             }
@@ -1585,6 +1596,13 @@ export default {
                     result = await this.saveSubstationToServer(component, tab)
                 } else if (tab.mode === 'organisation') {
                     result = await this.saveOrganisationToServer(component, tab)
+                } else if (tab.mode === 'test') {
+                    const dtoKey = Object.keys(component.$data || {}).find(key => /JobDto$/.test(key) && !/Old$/.test(key))
+                    if (!dtoKey) throw new Error('Cannot find the selected test data.')
+                    const { uploadTestDto } = await import('@/utils/testSync')
+                    result = await uploadTestDto(tab.job, tab.parentId, tab.mrid, component[dtoKey], tab._jobVersion)
+                    this.$set(tab, '_jobVersion', result.version)
+                    await this.refreshServerTestAsset(tab.parentId)
                 } else if (tab.mode === 'job') {
                     const jobResult = await saveServerJobTab(component, tab)
 

@@ -239,7 +239,8 @@ client.interceptors.response.use(
             // Lỗi code backend (có message)
             if (error.response.data && error.response.data.message) {
                 console.error(error.response.data.message)
-                return Promise.reject(new Error(error.response.data.message))
+                error.message = error.response.data.message
+                return Promise.reject(error)
             }
         }
         return Promise.reject(error)

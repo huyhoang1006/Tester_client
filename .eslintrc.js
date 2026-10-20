@@ -11,7 +11,12 @@ module.exports = {
     parser: '@babel/eslint-parser'
   },
   rules: {
-    'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+    // console.error / console.warn là log chẩn đoán có chủ đích, không phải rác:
+    // đây là thứ in ra terminal của main process khi truy vấn hỏng. Chỉ còn
+    // console.log mới bị cảnh báo, để danh sách warning đúng nghĩa "chỗ cần dọn".
+    'no-console': process.env.NODE_ENV === 'production'
+      ? ['warn', { allow: ['error', 'warn'] }]
+      : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'vue/multi-word-component-names': 0,
 

@@ -50,12 +50,20 @@ export async function executeDownloadChainWithResults(chain, ctx, reporter = nul
         }
 
         try {
-            const fullInfoChain = await coreUtils.fetchFullInfoForChain([ref])
-            if (!fullInfoChain.length) {
-                row.status = 'skipped'
-                row.message = 'No download strategy for this node type'
+            if (ref._type === 'test') {
+                const result = await ctx.processDownloadTest({ ...ref, mode: 'test' })
+                if (result === null) {
+                    row.status = 'skipped'
+                    row.message = 'Download canceled by user'
+                }
             } else {
-                await coreUtils.downloadChainInfo(fullInfoChain, ctx)
+                const fullInfoChain = await coreUtils.fetchFullInfoForChain([ref])
+                if (!fullInfoChain.length) {
+                    row.status = 'skipped'
+                    row.message = 'No download strategy for this node type'
+                } else {
+                    await coreUtils.downloadChainInfo(fullInfoChain, ctx)
+                }
             }
         } catch (error) {
             row.status = 'failed'
@@ -87,6 +95,10 @@ export async function executeDownload(node, ctx, options = {}) {
     });
 
     try {
+        if (node.mode === 'test') {
+            await ctx.processDownloadTest(node)
+            return
+        }
         const nodeWithUser = {
             ...node,
             _currentUserId: ctx && ctx.$store && ctx.$store.state && ctx.$store.state.user

@@ -1180,13 +1180,13 @@ export default {
                     } else {
                         this.$message.error("Failed to load Circuit breaker data");
                     }
-                } else if (tab.mode === 'job') {
+                } else if (tab.mode === 'job' || tab.mode === 'test') {
                     // Nhánh này TỪNG KHÔNG TỒN TẠI. Cây server trước đây dừng ở cấp
                     // thiết bị nên `mode === 'job'` không bao giờ tới được đây; thêm
                     // nhánh job vào cây xong thì nháy đúp chạy hết chuỗi if/else mà
                     // không khớp cái nào, và tab dựng lên trắng tinh — không lỗi,
                     // không log, không gì để lần.
-                    const jobCtx = await loadServerJobTab(tab)
+                    const jobCtx = await loadServerJobTab(tab, this.$store.state.user.user_id)
                     if (jobCtx) {
                         // Cất phiên bản LÊN CHÍNH TAB, không nhét vào DTO. Lưu ngược
                         // lên server phải gửi lại đúng số này; để trong DTO thì phép

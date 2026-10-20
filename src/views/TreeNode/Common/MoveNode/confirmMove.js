@@ -129,12 +129,16 @@ export default {
                             // Lưu ý: Substation thường update Location refId
                             updateResult = await window.electronAPI.moveSubstationToOrganisation(nodeToMove.mrid, newParent.mrid)
                             success = updateResult.success
+                        } else if (nodeToMove.mode === 'powerPlant') {
+                            updateResult = await window.electronAPI.movePowerPlantToOrganisation(nodeToMove.mrid, newParent.mrid)
+                            success = updateResult.success
                         }
                         // ... (Voltage, Bay logic giữ nguyên) ...
                         else if (nodeToMove.mode === 'voltageLevel') {
                             const vl = await window.electronAPI.getVoltageLevelByMrid(nodeToMove.mrid)
                             if (vl.success) {
-                                vl.data.substation = newParent.mrid
+                                vl.data.substation = newParent.mode === 'substation' ? newParent.mrid : null
+                                vl.data.power_plant = newParent.mode === 'powerPlant' ? newParent.mrid : null
                                 updateResult = await window.electronAPI.updateVoltageLevelByMrid(nodeToMove.mrid, vl.data)
                                 success = updateResult.success
                             }
@@ -144,8 +148,14 @@ export default {
                                 if (newParent.mode === 'voltageLevel') {
                                     bay.data.voltage_level = newParent.mrid
                                     bay.data.substation = null
+                                    bay.data.power_plant = null
+                                } else if (newParent.mode === 'powerPlant') {
+                                    bay.data.power_plant = newParent.mrid
+                                    bay.data.substation = null
+                                    bay.data.voltage_level = null
                                 } else {
                                     bay.data.substation = newParent.mrid
+                                    bay.data.power_plant = null
                                     bay.data.voltage_level = null
                                 }
                                 updateResult = await window.electronAPI.updateBayByMrid(nodeToMove.mrid, bay.data)

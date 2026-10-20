@@ -8,47 +8,59 @@ export default {
                 try {
                     let newRows = []
                     if (node.mode == 'organisation') {
-                        const newRowsOwner = await demoAPI.getChildOrganisation(node.id)
-                        console.log('Fetched child organisations:', newRowsOwner)
-                        if (newRowsOwner && newRowsOwner.length > 0) {
-                            newRowsOwner.forEach((row) => {
-                                row.id = row.id || row.mrid || ''
-                                row.mrid = row.mrid || row.id || ''
-                                row.name = row.name || ''
-                                row.aliasName = row.shortName || row.name || ''
-                                row.parentId = node.mrid
-                                row.mode = 'organisation'
-                                row.parentName = node.parentName + '/' + node.name
-                                row.parentArr = [...node.parentArr]
-                                row.parentArr.push({
-                                    mrid: node.mrid,
-                                    id: node.id,
-                                    parent: node.aliasName || node.name,
-                                    mode: node.mode
+                        // Mỗi lệnh gọi một try/catch riêng, giống các nhánh bên dưới. Trước đây hai lệnh
+                        // dùng chung khối try ngoài cùng: thiếu quyền xem trạm (403) là văng ra ngoài, bỏ
+                        // luôn danh sách tổ chức con vừa lấy được, node không mở ra được nữa.
+                        try {
+                            const newRowsOwner = await demoAPI.getChildOrganisation(node.id)
+                            console.log('Fetched child organisations:', newRowsOwner)
+                            if (newRowsOwner && newRowsOwner.length > 0) {
+                                newRowsOwner.forEach((row) => {
+                                    row.id = row.id || row.mrid || ''
+                                    row.mrid = row.mrid || row.id || ''
+                                    row.name = row.name || ''
+                                    row.aliasName = row.shortName || row.name || ''
+                                    row.parentId = node.mrid
+                                    row.mode = 'organisation'
+                                    row.parentName = node.parentName + '/' + node.name
+                                    row.parentArr = [...node.parentArr]
+                                    row.parentArr.push({
+                                        mrid: node.mrid,
+                                        id: node.id,
+                                        parent: node.aliasName || node.name,
+                                        mode: node.mode
+                                    })
                                 })
-                            })
-                            newRows.push(...newRowsOwner)
+                                newRows.push(...newRowsOwner)
+                            }
+                        } catch (error) {
+                            console.log(error)
                         }
-                        const newRowsSubstation = await demoAPI.getChildSubstation(node.id)
-                        console.log('Fetched child substations:', newRowsSubstation)
-                        if (newRowsSubstation && newRowsSubstation.length > 0) {
-                            newRowsSubstation.forEach((row) => {
-                                row.id = row.id || row.mrid || ''
-                                row.mrid = row.mrid || row.id || ''
-                                row.name = row.name || ''
-                                row.aliasName = row.shortName || row.name || ''
-                                row.parentId = node.mrid
-                                row.mode = 'substation'
-                                row.parentName = node.parentName + '/' + node.name
-                                row.parentArr = [...node.parentArr]
-                                row.parentArr.push({
-                                    mrid: node.mrid,
-                                    id: node.id,
-                                    parent: node.aliasName || node.name,
-                                    mode: node.mode
+                        // Thiếu quyền SUBSTATION_LIST thì máy chủ trả 403: coi như không có trạm.
+                        try {
+                            const newRowsSubstation = await demoAPI.getChildSubstation(node.id)
+                            console.log('Fetched child substations:', newRowsSubstation)
+                            if (newRowsSubstation && newRowsSubstation.length > 0) {
+                                newRowsSubstation.forEach((row) => {
+                                    row.id = row.id || row.mrid || ''
+                                    row.mrid = row.mrid || row.id || ''
+                                    row.name = row.name || ''
+                                    row.aliasName = row.shortName || row.name || ''
+                                    row.parentId = node.mrid
+                                    row.mode = 'substation'
+                                    row.parentName = node.parentName + '/' + node.name
+                                    row.parentArr = [...node.parentArr]
+                                    row.parentArr.push({
+                                        mrid: node.mrid,
+                                        id: node.id,
+                                        parent: node.aliasName || node.name,
+                                        mode: node.mode
+                                    })
                                 })
-                            })
-                            newRows.push(...newRowsSubstation)
+                                newRows.push(...newRowsSubstation)
+                            }
+                        } catch (error) {
+                            console.log(error)
                         }
                     } else if (node.mode == 'substation') {
                         try {
@@ -186,30 +198,23 @@ export default {
                             console.log(error)
                         }
                     } else if (node.mode == 'asset') {
-                        // JOB là cấp cuối của cây. Trước đây cây server dừng ở thiết bị,
-                        // nên không có cách nào chọn một job trên server để tải về —
-                        // luồng job chỉ đi một chiều lên.
-                        //
-                        // Chỉ lấy phần tóm tắt, không kèm bài test: một thiết bị có thể
-                        // có vài chục job, mà màn hình này chỉ hiện tên và ngày.
+                        // Tests are direct asset children; hidden work containers are not tree nodes.
                         try {
-                            const jobs = await jobAPI.getJobsByAsset(node.asset, node.mrid)
-                            console.log('Fetched jobs of asset:', jobs)
-                            if (jobs && jobs.length > 0) {
-                                jobs.forEach((row) => {
-                                    row.id = row.id || row.mrid || ''
+                            const tests = await jobAPI.getTestsByAsset(node.asset, node.mrid || node.id)
+                            if (tests && tests.length > 0) {
+                                tests.forEach((row) => {
+                                    row.id = row.mrid || row.id || ''
                                     row.mrid = row.mrid || row.id || ''
-                                    row.name = row.name || ''
+                                    row.name = row.name || row.testTypeCode || 'Unnamed test'
                                     row.aliasName = row.name || row.mrid || ''
-                                    row.parentId = node.mrid
-                                    row.mode = 'job'
-                                    // `job` giữ NHÃN LOẠI THIẾT BỊ, không phải loại job.
-                                    // Tầng tải xuống dựa vào đây để chọn đúng mapper —
-                                    // giống hệt cách `asset` được dùng ở cấp trên.
+                                    row.parentId = node.mrid || node.id
+                                    row.mode = 'test'
                                     row.job = node.asset || ''
+                                    row.testing_date = row.testingDate || ''
+                                    row.execution_date = row.testing_date
                                     row.isLeaf = true
                                     row.parentName = node.parentName + '/' + node.name
-                                    row.parentArr = [...node.parentArr]
+                                    row.parentArr = [...(node.parentArr || [])]
                                     row.parentArr.push({
                                         mrid: node.mrid,
                                         id: node.id,
@@ -218,11 +223,9 @@ export default {
                                         asset: node.asset || null
                                     })
                                 })
-                                newRows.push(...jobs)
+                                newRows.push(...tests)
                             }
                         } catch (error) {
-                            // Nuốt lỗi có chủ ý, giống các nhánh trên: server chưa bật
-                            // job-service thì cây vẫn phải mở được tới thiết bị.
                             console.log(error)
                         }
                     }

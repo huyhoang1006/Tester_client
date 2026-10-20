@@ -3,6 +3,7 @@ import uuid from '@/utils/uuid'
 import RotatingMachineJobEntity from "@/views/Flatten/Job/RotatingMachine"
 import RotatingMachineJobDto from "@/views/Dto/Job/RotatingMachine";
 import WorkTask from "@/views/Cim/WorkTask";
+import { applyTestMetadataToWorkTask, buildTestMetadata } from '@/utils/testMetadata'
 import TestDataSet from "@/views/Cim/TestDataSet";
 import Attachment from '@/views/Flatten/Attachment'
 import TestingEquipment from "@/views/Flatten/TestingEquipment";
@@ -20,6 +21,16 @@ import TestStandard from "@/views/Cim/TestStandard";
 
 const toEntityValue = value => value === '' || value === null || value === undefined ? null : value
 const toDtoValue = value => value === null || value === undefined ? '' : value
+
+const unitOf = measurementId => {
+    for (const config of [rotatingMachineTestMap, rotatingMachineConditionMap]) {
+        for (const test of Object.values(config)) {
+            const column = (test.columns || []).find(item => item.mrid === measurementId)
+            if (column) return column.unit || ''
+        }
+    }
+    return ''
+}
 
 export const jobDtoToEntity = (dto) => {
     const entity = new RotatingMachineJobEntity();
@@ -78,10 +89,12 @@ export const jobDtoToEntity = (dto) => {
         workTask.mrid = item.mrid || null;
         workTask.name = item.name || null;
         workTask.type = item.testTypeCode || null;
+        workTask.test_type_code = item.testTypeCode || null;
         workTask.kind = 'test';
         workTask.comment = item.testCondition.comment || null;
         workTask.work = entity.oldWork.mrid || null;
         workTask.title = item.testTypeName || null;
+        applyTestMetadataToWorkTask(workTask, item, dto.properties)
         entity.workTasks.push(workTask);
 
         //attachment
@@ -92,12 +105,14 @@ export const jobDtoToEntity = (dto) => {
             entity.attachmentTest.push(item.testCondition.attachment);
         }
 
-        for (const data of item.data.table) {
+        const tables = Array.isArray(item.data.table) ? { table1: item.data.table } : (item.data.table || {})
+        for (const [tableName, data] of Object.entries(tables).flatMap(([name, rows]) => (Array.isArray(rows) ? rows : []).map(row => [name, row]))) {
             const testData = new TestDataSet();
             testData.mrid = data.mrid || null;
             testData.work_task = item.mrid || null;
             testData.procedure = item.testTypeId || null;
             testData.type = 'test'
+            testData.title = tableName
             entity.testDataSet.push(testData);
 
             for (const [key, value] of Object.entries(data)) {
@@ -128,11 +143,12 @@ export const jobDtoToEntity = (dto) => {
                         entity.procedureDataSetMeasurementValue.push(procedureDataSetMeasurementValue);
                     } else if (value.type === 'discrete') {
                         const discreteValue = new DiscreteValue();
+                        discreteValue.value = value.value ?? null
                         discreteValue.mrid = value.mrid || null;
                         if(key == 'assessment') {
-                            discreteValue.value = commonFunc.assessmentToValue(value.value) ?? null;
+                            discreteValue.value = commonFunc.assessmentToValue(value.value) ?? value.value ?? null;
                         } else if(key == 'condition_indicator') {
-                            discreteValue.value = commonFunc.conditionIndicatorToValue(value.value) ?? null;
+                            discreteValue.value = commonFunc.conditionIndicatorToValue(value.value) ?? value.value ?? null;
                         }
                         discreteValue.vta_alias_name = value.value
                         discreteValue.alias_name = key || null;
@@ -182,6 +198,7 @@ export const jobDtoToEntity = (dto) => {
                     entity.procedureDataSetMeasurementValue.push(procedureDataSetMeasurementValue);
                 } else if (value.type === 'discrete') {
                     const discreteValue = new DiscreteValue();
+                    discreteValue.value = value.value ?? null
                     discreteValue.mrid = value.mrid || null;
                     discreteValue.value = toEntityValue(value.value);
                     discreteValue.vta_alias_name = toEntityValue(value.value)
@@ -260,8 +277,8 @@ export const JobEntityToDto = (entity) => {
 
     //test list
     for (const item of entity.workTasks) {
-        let condition = commonFunc.buildEmptyTestCondition(rotatingMachineConditionMap[item.type]?.columns || []);
-        const testAssessmentList = JSON.parse(JSON.stringify(rotatingMachineAssessmentMap[item.type].testStandard || []));
+        let condition = commonFunc.buildEmptyTestCondition(rotatingMachineConditionMap[(item.test_type_code || item.type)]?.columns || []);
+        const testAssessmentList = JSON.parse(JSON.stringify(rotatingMachineAssessmentMap[(item.test_type_code || item.type)]?.testStandard || []));
         const testStandardData = entity.testStandard.find(x => x.work_task_id === item.mrid);
         let standardCustomized = null
         if(testStandardData) {
@@ -353,7 +370,7 @@ export const JobEntityToDto = (entity) => {
         let testTemplate = {
             mrid: item.mrid || '',
             name: item.name || '',
-            testTypeCode: item.type || '',
+            testTypeCode: (item.test_type_code || item.type) || '',
             testTypeName: item.title || '',
             testTypeId: '',
             average_score: null,
@@ -367,6 +384,7 @@ export const JobEntityToDto = (entity) => {
             worst_score_df: null,
             created_on: '',
             testCondition: {
+                metadata: buildTestMetadata(item, dto.properties),
                 mrid: '',
                 condition: condition,
                 comment: '',
@@ -378,11 +396,11 @@ export const JobEntityToDto = (entity) => {
                 assessment : assessment,
             },
             data : {
-                table : [],
+                table: {},
             }
         }
         testTemplate.testCondition.comment = item.comment || '';
-        testTemplate.testTypeId = rotatingMachineTestMap[item.type].testId || ''
+        testTemplate.testTypeId = (rotatingMachineTestMap[(item.test_type_code || item.type)] || {}).testId || ''
 
         for(const attachment of entity.attachmentTest) {
             if(attachment.id_foreign === item.mrid) {
@@ -407,7 +425,7 @@ export const JobEntityToDto = (entity) => {
                 rowData[key] = {
                     mrid: smv.mrid,
                     type: "string",
-                    unit: "",
+                    unit: unitOf(smv.string_measurement),
                     value: toDtoValue(smv.value),
                     measurement_id: smv.string_measurement || ''
                 };
@@ -420,7 +438,7 @@ export const JobEntityToDto = (entity) => {
                 rowData[key] = {
                     mrid: av.mrid,
                     type: "analog",
-                    unit: "",
+                    unit: unitOf(av.analog),
                     value: toDtoValue(av.value),
                     measurement_id: av.analog || ''
                 };
@@ -429,26 +447,35 @@ export const JobEntityToDto = (entity) => {
             const discreteValueData = entity.discreteValues.filter(x => x.procedure_dataset_id === test.mrid);
             for (const dv of discreteValueData) {
                 const key = dv.alias_name; // vd: "assessment"
+                rowData[key] = {
+                    mrid: dv.mrid,
+                    type: 'discrete',
+                    unit: unitOf(dv.discrete),
+                    value: (dv.vta_alias_name === '' ? dv.value : (dv.vta_alias_name ?? dv.value)) ?? '',
+                    measurement_id: dv.discrete || ''
+                }
                 if(key == 'assessment') {
                     rowData[key] = {
                         mrid: dv.mrid,
                         type: "discrete",
-                        unit: "",
-                        value: dv.vta_alias_name || "",
+                        unit: unitOf(dv.discrete),
+                        value: (dv.vta_alias_name === '' ? dv.value : (dv.vta_alias_name ?? dv.value)) ?? "",
                         measurement_id: dv.discrete || ''
                     };
                 } else if(key == 'condition_indicator') {
                     rowData[key] = {
                         mrid: dv.mrid,
                         type: "discrete",
-                        unit: "",
-                        value: dv.vta_alias_name || "",
+                        unit: unitOf(dv.discrete),
+                        value: (dv.vta_alias_name === '' ? dv.value : (dv.vta_alias_name ?? dv.value)) ?? "",
                         measurement_id: dv.discrete || ''
                     };
                 }
             }
 
-            testTemplate.data.table.push(rowData);
+            const tableName = test.title || 'table1'
+            if (!testTemplate.data.table[tableName]) testTemplate.data.table[tableName] = []
+            testTemplate.data.table[tableName].push(rowData);
         }
         const testDataCondition = entity.testDataSet.find(x => x.work_task === item.mrid && x.type === 'condition');
         if (testDataCondition) {
@@ -461,7 +488,7 @@ export const JobEntityToDto = (entity) => {
                 rowData[key] = {
                     mrid: smv.mrid,
                     type: "string",
-                    unit: "",
+                    unit: unitOf(smv.string_measurement),
                     value: toDtoValue(smv.value),
                     measurement_id: smv.string_measurement || ''
                 };
@@ -474,7 +501,7 @@ export const JobEntityToDto = (entity) => {
                 rowData[key] = {
                     mrid: av.mrid,
                     type: "analog",
-                    unit: "",
+                    unit: unitOf(av.analog),
                     value: toDtoValue(av.value),
                     measurement_id: av.analog || ''
                 };
@@ -487,7 +514,7 @@ export const JobEntityToDto = (entity) => {
                 rowData[key] = {
                     mrid: dv.mrid,
                     type: "discrete",
-                    unit: "",
+                    unit: unitOf(dv.discrete),
                     value: toDtoValue(dv.value),
                     measurement_id: dv.discrete || ''
                 };

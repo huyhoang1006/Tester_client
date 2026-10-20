@@ -34,4 +34,26 @@ export const active = () => {
             return { success: false, data: [], error, message: error.message || 'Internal error' }
         }
     })
+
+    ipcMain.handle('movePowerPlantToOrganisation', async (event, plantId, organisationId) => {
+        try {
+            const result = await entityFunc.powerPlantEntityFunc.movePowerPlantToOrganisation(plantId, organisationId)
+            return result.success
+                ? { success: true, data: result.data, message: result.message }
+                : { success: false, message: describeFailure(result) }
+        } catch (error) {
+            return { success: false, error, message: error.message || 'Internal error' }
+        }
+    })
+
+    ipcMain.handle('deletePowerPlantEntityByMrid', async (event, data) => {
+        try {
+            const result = await entityFunc.powerPlantEntityFunc.deletePowerPlantEntityById(data)
+            return result.success
+                ? { success: true, message: result.message }
+                : { success: false, message: describeFailure(result) }
+        } catch (error) {
+            return { success: false, error, message: error.message || 'Internal error' }
+        }
+    })
 }

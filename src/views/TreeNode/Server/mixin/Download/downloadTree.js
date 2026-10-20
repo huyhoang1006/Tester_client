@@ -42,17 +42,22 @@ export default {
                 const userId = this.$store && this.$store.state && this.$store.state.user
                     ? this.$store.state.user.user_id
                     : null
-                // buildOrgAncestors trả về gốc → node, đúng thứ tự cha trước con
-                const chain = await coreUtils.buildOrgAncestors({ ...node, _currentUserId: userId })
+                // Test leaves retain their summary metadata and bypass whole-node ancestry.
+                const chain = node.mode === 'test'
+                    ? [{ ...node, _type: 'test' }]
+                    : await coreUtils.buildOrgAncestors({ ...node, _currentUserId: userId })
 
-                if (includeDescendants) {
+                if (includeDescendants && node.mode !== 'test') {
                     const descendants = await this.collectDownloadDescendants(node)
-                    const seen = new Set(chain.map(item => String(item.mrid || item.id)))
+                    const seen = new Set(chain.map(item => `${item._type}:${item.job || item.asset || ''}:${item.mrid || item.id}`))
                     for (const child of descendants) {
                         // đổi sang mrid local (có hậu tố loại node) như buildOrgAncestors
-                        const childId = String(toLocalMrid(child.mrid || child.id, child, userId))
-                        if (seen.has(childId)) continue
-                        seen.add(childId)
+                        const childId = child.mode === 'test'
+                            ? String(child.mrid || child.id)
+                            : String(toLocalMrid(child.mrid || child.id, child, userId))
+                        const key = `${child.mode}:${child.job || child.asset || ''}:${childId}`
+                        if (seen.has(key)) continue
+                        seen.add(key)
                         const parentArr = Array.isArray(child.parentArr) ? child.parentArr : []
                         const parentMeta = parentArr.length ? parentArr[parentArr.length - 1] : null
                         const rawParentId = child.parentId || parentMeta?.mrid || parentMeta?.id || node.mrid || node.id || constant.ROOT
@@ -60,6 +65,7 @@ export default {
                             ? toLocalMrid(rawParentId, parentMeta, userId)
                             : toLocalMrid(rawParentId, node, userId)
                         chain.push({
+                            ...child,
                             id: childId,
                             mrid: childId,
                             name: child.name || '',
@@ -116,6 +122,7 @@ export default {
         async collectDownloadDescendants(node) {
             const result = []
             const visit = async (current) => {
+                if (current.mode === 'test') return
                 if (this.fetchChildrenServer) {
                     try {
                         await this.fetchChildrenServer(current)

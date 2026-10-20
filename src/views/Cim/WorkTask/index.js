@@ -2,6 +2,13 @@ import BaseWork from "../BaseWork";
 class WorkTask extends BaseWork {
     constructor() {
         super();
+        this.test_name = null;
+        this.test_type_code = null;
+        this.testing_date = null;
+        this.tested_by = null;
+        this.approved_by = null;
+        this.approved_date = null;
+        this.reference_standard = null;
         this.completed_date_time = null; // Task ID
         this.contractor_cost = null; // Task Name
         this.crew_eta = null; // Assigned To

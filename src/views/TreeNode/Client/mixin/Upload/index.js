@@ -24,8 +24,13 @@ export default {
             let response
             try {
                 response = await handler.call(this, node)
+                // Individual test handlers signal failure by throwing, not by return value.
+                if (node.mode === 'test') {
+                    response = response || true
+                }
             } catch (error) {
                 captured = captured || (error && error.message) || 'Upload failed'
+                if (node.mode === 'test') originalMessage.error(captured)
             } finally {
                 this.$message = originalMessage
                 this.$store.dispatch('loading/stop')
@@ -48,11 +53,24 @@ export default {
                 return
             }
 
+            if (node.mode === 'test') {
+                try {
+                    await this.$confirm(`Upload only test "${node.name || node.mrid}" to Server?`, 'Confirm Upload', {
+                        confirmButtonText: 'Upload',
+                        cancelButtonText: 'Cancel',
+                        type: 'info'
+                    })
+                } catch (error) {
+                    return
+                }
+                return this.runUploadWithLog(node, this.processUploadTest)
+            }
+
             const confirmAndRun = async (label, handler) => {
                 const canContinue = await this.confirmUploadExistingServerNode(node)
                 if (!canContinue) return
 
-                this.$confirm(`Upload ${label} "${node.name || node.serial_number}" to Server?`, 'Confirm Upload', {
+                return this.$confirm(`Upload ${label} "${node.name || node.serial_number}" to Server?`, 'Confirm Upload', {
                     confirmButtonText: 'Upload',
                     cancelButtonText: 'Cancel',
                     type: 'info'
@@ -61,6 +79,8 @@ export default {
 
             if (node.mode === 'substation') {
                 confirmAndRun('Substation', this.processUploadSubstation)
+            } else if (node.mode === 'powerPlant') {
+                confirmAndRun('Power Plant', this.processUploadPowerPlant)
             } else if (node.mode === 'voltageLevel') {
                 confirmAndRun('VoltageLevel', this.processUploadVoltageLevel)
             } else if (node.mode === 'bay') {
@@ -180,7 +200,8 @@ export default {
                 typeLabel: this.getUploadNodeTypeLabel(item.node)
             }))
             this.uploadFullTreeDecisions = existingNodes.reduce((result, item) => {
-                result[this.getUploadNodeKey(item.node)] = 'update'
+                result[this.getUploadNodeKey(item.node)] = node.mode === 'test' && item.node !== node
+                    ? 'skip' : 'update'
                 return result
             }, {})
 
@@ -238,7 +259,7 @@ export default {
 
         isSupportedUploadNode(node) {
             if (!node) return false
-            if (['substation', 'voltageLevel', 'bay', 'job'].includes(node.mode)) return true
+            if (['substation', 'powerPlant', 'voltageLevel', 'bay', 'job', 'test'].includes(node.mode)) return true
             if (node.mode !== 'asset') return false
             return [
                 'Power cable',
@@ -268,8 +289,10 @@ export default {
         },
 
         getUploadNodeTypeLabel(node) {
+            if (node.mode === 'test') return `${node.job || 'Asset'} test`
             if (node.mode === 'asset') return node.asset || 'Asset'
             if (node.mode === 'job') return `${node.job || 'Asset'} job`
+            if (node.mode === 'powerPlant') return 'Power Plant'
             if (node.mode === 'voltageLevel') return 'Voltage level'
             return node.mode || ''
         },
@@ -384,8 +407,13 @@ export default {
         // Trả về response của processUpload* để bên gọi biết node nào thành công.
         // processUpload* trả undefined khi lỗi (đã tự bắt trong _handleUploadError).
         async processUploadNodeWithoutConfirm(node) {
+            if (node.mode === 'test') {
+                return (await this.processUploadTest(node)) || true
+            }
             if (node.mode === 'substation') {
                 return await this.processUploadSubstation(node)
+            } else if (node.mode === 'powerPlant') {
+                return await this.processUploadPowerPlant(node)
             } else if (node.mode === 'voltageLevel') {
                 return await this.processUploadVoltageLevel(node)
             } else if (node.mode === 'bay') {

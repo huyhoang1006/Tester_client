@@ -86,6 +86,7 @@ export default {
             const byMode = {
                 organisation: 'organisation',
                 substation: 'substation',
+                powerPlant: 'power plant',
                 voltageLevel: 'voltage level',
                 bay: 'bay',
                 job: 'job',

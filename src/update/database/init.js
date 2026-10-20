@@ -158,10 +158,86 @@ export const ensureCtCoreInfoClassRatingColumns = async (dbsql) => {
     }
 }
 
+export const ensureWorkTaskMetadataColumns = async (dbsql) => {
+    const table = 'work_task'
+    const migrationKey = 'work_task_metadata_v3'
+    const columns = await getTableColumns(dbsql, table)
+    const additions = [
+        ['test_name', 'TEXT'],
+        ['type', 'TEXT'],
+        ['test_type_code', 'TEXT'],
+        ['testing_date', 'TEXT'],
+        ['tested_by', 'TEXT'],
+        ['approved_by', 'TEXT'],
+        ['approved_date', 'TEXT'],
+        ['reference_standard', 'TEXT']
+    ]
+
+    for (const [name, type] of additions) {
+        if (!columns.has(name)) {
+            await run(dbsql, `ALTER TABLE "${table}" ADD COLUMN "${name}" ${type}`)
+        }
+    }
+
+    const migrated = await new Promise((resolve, reject) => {
+        dbsql.get('SELECT value FROM app_settings WHERE key = ?', [migrationKey], (err, row) => {
+            if (err) return reject(err)
+            resolve(row && row.value === '1')
+        })
+    })
+    if (migrated) return
+
+    if (columns.has('job_type')) {
+        await run(dbsql, `UPDATE work_task SET type = COALESCE(NULLIF(type, ''), job_type)`)
+    }
+
+    await run(dbsql, `
+        UPDATE work_task
+        SET test_name = COALESCE(NULLIF(test_name, ''), (
+                SELECT io.name FROM identified_object io WHERE io.mrid = work_task.mrid
+            )),
+            test_type_code = COALESCE(NULLIF(test_type_code, ''), (
+                SELECT d.type FROM document d WHERE d.mrid = work_task.mrid
+            )),
+            type = COALESCE(NULLIF(type, ''), (
+                SELECT d.type FROM document d WHERE d.mrid = work_task.work
+            )),
+            testing_date = COALESCE(NULLIF(testing_date, ''), (
+                SELECT ow.execution_date FROM old_work ow WHERE ow.mrid = work_task.work
+            )),
+            tested_by = COALESCE(NULLIF(tested_by, ''), (
+                SELECT ow.tested_by FROM old_work ow WHERE ow.mrid = work_task.work
+            )),
+            approved_by = COALESCE(NULLIF(approved_by, ''), (
+                SELECT d.approver FROM document d WHERE d.mrid = work_task.work
+            )),
+            approved_date = COALESCE(NULLIF(approved_date, ''), (
+                SELECT ow.approval_date FROM old_work ow WHERE ow.mrid = work_task.work
+            )),
+            reference_standard = COALESCE(NULLIF(reference_standard, ''), (
+                SELECT ow.ref_standard FROM old_work ow WHERE ow.mrid = work_task.work
+            ))
+    `)
+
+    if (columns.has('job_type')) {
+        await run(dbsql, 'ALTER TABLE work_task DROP COLUMN job_type')
+    }
+
+    await new Promise((resolve, reject) => {
+        dbsql.run(
+            `INSERT INTO app_settings(key, value) VALUES(?, '1')
+             ON CONFLICT(key) DO UPDATE SET value = '1'`,
+            [migrationKey],
+            (err) => err ? reject(err) : resolve()
+        )
+    })
+}
+
 export const updateDatabaseFromSQL = async (dbsql, oldVersion, newVersion) => {
     console.log(`Sync schema for database upgrade ${oldVersion} -> ${newVersion}`)
     await syncSchemaTables(dbsql)
     await ensureTransformerVectorGroupColumns(dbsql)
     await ensureSubstationOperatingDateColumn(dbsql)
     await ensureCtCoreInfoClassRatingColumns(dbsql)
+    await ensureWorkTaskMetadataColumns(dbsql)
 }

@@ -21,6 +21,7 @@
                                 <el-form-item label="AC capacity" :class="{ 'capacity-mismatch': acCapacityMismatch }">
                                     <div class="capacity-control">
                                         <el-input v-model="acCapacity.value" type="number" min="0"
+                                            @input="markCapacityManual('ac')"
                                             class="capacity-input">
                                             <el-select v-model="acCapacity.unit" slot="append" size="mini"
                                                 class="select-in-input">
@@ -34,6 +35,7 @@
                                     :class="{ 'capacity-mismatch': dcCapacityMismatch }">
                                     <div class="capacity-control">
                                         <el-input v-model="dcCapacity.value" type="number" min="0"
+                                            @input="markCapacityManual('dc')"
                                             class="capacity-input">
                                             <el-select v-model="dcCapacity.unit" slot="append" size="mini"
                                                 class="select-in-input">
@@ -417,6 +419,14 @@ export default {
             return this.isSolarPlant && this.capacityMismatch(this.dcCapacity, this.calculatedDcTotal)
         }
     },
+    watch: {
+        generatingUnits: {
+            deep: true,
+            handler() {
+                this.syncCalculatedCapacities()
+            }
+        }
+    },
     data() {
         return {
             acCapacity: {
@@ -426,6 +436,10 @@ export default {
             dcCapacity: {
                 value: '',
                 unit: 'MWp'
+            },
+            capacityManuallyEdited: {
+                ac: false,
+                dc: false
             },
             generatingUnits: [
                 {
@@ -488,6 +502,7 @@ export default {
         resetPowerPlantCapacity() {
             this.acCapacity = { value: '', unit: 'MW' }
             this.dcCapacity = { value: '', unit: 'MWp' }
+            this.capacityManuallyEdited = { ac: false, dc: false }
             this.nextGeneratingUnitKey = 2
             this.generatingUnits = [{
                 key: 1,
@@ -506,6 +521,10 @@ export default {
             if (!data) return
             this.acCapacity = { value: '', unit: 'MW', ...(data.acCapacity || {}) }
             this.dcCapacity = { value: '', unit: 'MWp', ...(data.dcCapacity || {}) }
+            this.capacityManuallyEdited = {
+                ac: this.hasCapacityValue(this.acCapacity.value),
+                dc: this.hasCapacityValue(this.dcCapacity.value)
+            }
             const units = Array.isArray(data.generatingUnits) ? data.generatingUnits : []
             this.generatingUnits = units.map((unit, index) => ({
                 key: index + 1,
@@ -523,6 +542,35 @@ export default {
                 this.generatingUnits = [this.createGeneratingUnit()]
             }
             this.nextGeneratingUnitKey = this.generatingUnits.length + 1
+            this.$nextTick(() => this.syncCalculatedCapacities())
+        },
+        hasCapacityValue(value) {
+            return value !== '' && value !== null && value !== undefined
+        },
+        markCapacityManual(type) {
+            this.$set(this.capacityManuallyEdited, type, true)
+        },
+        hasCapacityInputs(powerField) {
+            return this.generatingUnits.some((unit) => (
+                this.hasCapacityValue(unit.quantity) && this.hasCapacityValue(unit[powerField])
+            ))
+        },
+        capacityFromMega(value, unit) {
+            const converted = unit === 'kW' || unit === 'kWp' ? value * 1000 : value
+            return this.formatCapacity(converted)
+        },
+        syncCalculatedCapacities() {
+            if (!this.isPowerPlant) return
+            if (!this.capacityManuallyEdited.ac) {
+                this.acCapacity.value = this.hasCapacityInputs('acRatedPower')
+                    ? this.capacityFromMega(this.calculatedAcTotal, this.acCapacity.unit)
+                    : ''
+            }
+            if (this.isSolarPlant && !this.capacityManuallyEdited.dc) {
+                this.dcCapacity.value = this.hasCapacityInputs('dcRatedPower')
+                    ? this.capacityFromMega(this.calculatedDcTotal, this.dcCapacity.unit)
+                    : ''
+            }
         },
         capacityToMega(quantityValue, ratedPowerValue, unit) {
             const quantity = Number(quantityValue)

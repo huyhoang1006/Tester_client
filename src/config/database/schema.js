@@ -2897,6 +2897,14 @@ CREATE TABLE IF NOT EXISTS "work" (
 );
 CREATE TABLE IF NOT EXISTS "work_task" (
 	"mrid"	TEXT NOT NULL,
+	"test_name"	TEXT,
+	"type"	TEXT,
+	"test_type_code"	TEXT,
+	"testing_date"	TEXT,
+	"tested_by"	TEXT,
+	"approved_by"	TEXT,
+	"approved_date"	TEXT,
+	"reference_standard"	TEXT,
 	"completed_date_time"	TEXT,
 	"contractor_cost"	TEXT,
 	"crew_eta"	TEXT,

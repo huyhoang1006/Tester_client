@@ -1,406 +1,266 @@
-/* eslint-disable */
-import transformerTestMap from '@/config/test-definitions/Transformer'
-import transformerConditionMap from '@/config/testing-condition/Transformer'
-import { applySfraTracesToTests, buildSfraTraceMap } from '@/utils/sfraTrace'
+import testMap from '@/config/test-definitions/Transformer'
+import conditionMap from '@/config/testing-condition/Transformer'
+import assessmentMap from '@/config/testing-assessment/Transformer'
+import { applySfraTracesToTests, buildSfraTraceMap, SFRA_FIELD_CODES } from '@/utils/sfraTrace'
 
-// Map measurement_id → { alias: value } cho cột discrete (từ config options).
-// Dùng để convert discrete value chữ (UI: "Pass"/"Good") → số (server: 1/3),
-// vì server tra value_alias bằng số.
-const TF_DISCRETE_ALIAS_TO_VALUE = (() => {
-    const map = {}
-    const collect = (cfg) => {
-        for (const testCode in cfg) {
-            for (const col of (cfg[testCode]?.columns || [])) {
-                if (col.type === 'discrete' && col.options && col.mrid) {
-                    map[col.mrid] = {}
-                    for (const o of col.options) map[col.mrid][o.alias] = o.value
+const clone = value => {
+    if (Array.isArray(value)) return value.map(clone)
+    if (!value || typeof value !== 'object') return value
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, clone(item)]))
+}
+const isCell = value => value && typeof value === 'object' && !Array.isArray(value)
+    && ('measurement_id' in value || 'measurementId' in value || ('type' in value && 'value' in value))
+const asBoolean = value => value === true || value === 1 || value === '1'
+const joinUnit = unit => !unit || unit === 'null' || unit === 'undefined' ? null : unit.replace('|', '')
+const splitUnit = unit => {
+    if (!unit || unit === 'null' || unit === 'undefined') return null
+    if (unit.includes('|')) return unit
+    const match = unit.match(/^(k|M|G|m|\u00b5|u|n|p)(V|A|W|VA|var|Hz|s|F|H|Ohm|ohm)$/)
+    return match ? match[1] + '|' + match[2] : unit
+}
+const attachments = holder => {
+    const attachment = clone(holder.attachment || null)
+    let data = holder.attachmentData
+    if (data === undefined && attachment && attachment.path) {
+        try { data = Array.isArray(attachment.path) ? attachment.path : JSON.parse(attachment.path) } catch (error) { data = [] }
+    }
+    return {
+        attachmentId: holder.attachmentId ?? (attachment && (attachment.id || attachment.mrid || attachment.mRID)) ?? null,
+        attachment,
+        attachmentData: clone(Array.isArray(data) ? data : []),
+    }
+}
+
+// A shared implementation lives here to keep all eleven owned mapper entry points in sync.
+export const createJobServerMapper = (tests, conditions, assessments, linkKey, options = {}) => {
+    const definition = (map, code) => map[code] || Object.values(map).find(item => item.testCode === code) || {}
+    const columnFor = (code, field, condition) => (definition(condition ? conditions : tests, code).columns || [])
+        .find(column => column.code === field)
+    const columnById = new Map()
+    for (const config of [tests, conditions]) {
+        for (const item of Object.values(config)) {
+            for (const column of (item.columns || [])) if (column.mrid) columnById.set(column.mrid, column)
+        }
+    }
+    const mapCell = (cell, code, field, condition, download) => {
+        if (!isCell(cell)) return clone(cell)
+        const column = columnFor(code, field, condition) || {}
+        const measurementId = cell.measurement_id || cell.measurementId || column.mrid || null
+        const config = column.mrid === measurementId ? column : (columnById.get(measurementId) || column)
+        const type = cell.type || config.type || null
+        let value = cell.value ?? null
+        if (type === 'discrete' && value !== null && value !== '') {
+            const choice = (config.options || []).find(option => download
+                ? String(option.value) === String(value)
+                : option.alias === value)
+            if (choice) value = download ? choice.alias : choice.value
+            else if (!download && Number.isFinite(Number(value))) value = Number(value)
+        } else if (!download && type === 'analog') {
+            if (value === null || value === '') value = null
+            else if (Number.isFinite(Number(value))) value = Number(value)
+        }
+        const unit = cell.unit ?? config.unit
+        const out = {
+            ...clone(cell), mrid: cell.mrid ?? null, type, value,
+            unit: download ? (config.unit && joinUnit(config.unit) === joinUnit(unit) ? config.unit : splitUnit(unit)) : joinUnit(unit),
+        }
+        delete out[download ? 'measurementId' : 'measurement_id']
+        out[download ? 'measurement_id' : 'measurementId'] = measurementId
+        return out
+    }
+    const mapFields = (holder, code, condition, download) => Object.fromEntries(
+        Object.entries(holder || {}).map(([field, cell]) => [field, mapCell(cell, code, field, condition, download)])
+    )
+    const mapTables = (data, code, download) => {
+        const out = {}
+        const source = (data && data.table) || data || {}
+        const tables = Array.isArray(source) ? { table1: source } : source
+        for (const [name, rows] of Object.entries(tables)) {
+            if (!Array.isArray(rows)) continue
+            const tableName = options.normalizeTables && /^\d+$/.test(name) ? 'table' + (Number(name) + 1) : name
+            const mappedRows = rows.map(row => {
+                const mapped = { mrid: row.mrid ?? null }
+                for (const [field, cell] of Object.entries(row)) {
+                    if (field === 'mrid' || field.startsWith('_')) continue
+                    // SFRA's normalized fields are sent once; retain any other result columns.
+                    if (!download && code === 'SFRA' && (SFRA_FIELD_CODES.includes(field) || field === 'points_json')) continue
+                    mapped[field] = mapCell(cell, code, field, false, download)
                 }
+                if (download && row._sfraTraceMrid) mapped._sfraTraceMrid = row._sfraTraceMrid
+                return mapped
+            })
+            out[tableName] = (out[tableName] || []).concat(mappedRows)
+        }
+        return download ? { table: out } : out
+    }
+    const flattenStandard = standard => {
+        if (!Array.isArray(standard.tree)) return clone(standard)
+        const rules = new Map()
+        const groups = []
+        const values = []
+        const walk = (node, parentId = '') => {
+            groups.push({
+                mrid: node.mrid ?? '', rule_id: node.rule_id ?? '', parent_id: parentId,
+                logic: node.logic ?? '', is_default: asBoolean(node.is_default),
+            })
+            if (node.rule_id && !rules.has(node.rule_id)) {
+                rules.set(node.rule_id, {
+                    mrid: node.rule_id, standard_id: standard.mrid ?? '',
+                    result: node.result ?? '', priority: node.priority ?? '',
+                })
             }
+            for (const condition of (node.conditions || [])) values.push({ ...clone(condition), group_id: node.mrid ?? '' })
+            for (const child of (node.children || [])) walk(child, node.mrid)
+        }
+        standard.tree.forEach(node => walk(node))
+        const out = {
+            ...clone(standard), assessment_rule: [...rules.values()], assessment_group: groups, assessment: values,
+        }
+        delete out.tree
+        return out
+    }
+    const treeStandard = standard => {
+        if (Array.isArray(standard.tree)) return clone(standard)
+        const rules = new Map((standard.assessment_rule || []).map(rule => [rule.mrid, rule]))
+        const groups = new Map((standard.assessment_group || []).map(group => [group.mrid, {
+            ...clone(group), is_default: asBoolean(group.is_default), children: [], conditions: [],
+            result: (rules.get(group.rule_id) || {}).result ?? '',
+            priority: (rules.get(group.rule_id) || {}).priority ?? '',
+        }]))
+        const roots = []
+        for (const group of groups.values()) {
+            const parent = groups.get(group.parent_id)
+            if (parent && parent !== group) parent.children.push(group)
+            else roots.push(group)
+        }
+        for (const condition of (standard.assessment || [])) {
+            const group = groups.get(condition.group_id)
+            if (group) group.conditions.push(clone(condition))
+        }
+        return { ...clone(standard), tree: roots }
+    }
+    const mapAssessment = assessment => {
+        if (!assessment) return null
+        const standard = assessment.testStandard || {}
+        const fixed = Object.fromEntries(Object.entries(standard)
+            .filter(([key, value]) => key.startsWith('test_standard_') && key !== 'test_standard_customize' && value))
+        const customizeId = standard.test_standard_customize || null
+        if (!customizeId && !Object.keys(fixed).length) return null
+        const chosen = new Set(Object.values(fixed))
+        const definitions = assessment.assessment || []
+        const custom = definitions.filter(item => item.type === 'customized' && item.mrid === customizeId).map(flattenStandard)
+        const refs = definitions.filter(item => item.type && item.type !== 'customized' && chosen.has(item.mrid))
+            .map(item => ({ mrid: item.mrid, type: item.type, code: item.code || '' }))
+        return {
+            standardMrid: standard.mrid ?? null, workTaskId: standard.work_task_id ?? null,
+            fixedStandards: Object.keys(fixed).length ? fixed : null,
+            fixedStandardRefs: refs.length ? refs : null, customizeId,
+            customizedStandards: custom.length ? custom : null,
         }
     }
-    collect(transformerTestMap)
-    collect(transformerConditionMap)
-    return map
-})()
-
-// Convert discrete value: nếu là alias (chữ) → số theo config; nếu đã là số → giữ
-const discreteToValue = (measurementId, value) => {
-    if (value === null || value === undefined || value === '') return null
-    const m = measurementId && TF_DISCRETE_ALIAS_TO_VALUE[measurementId]
-    if (m && value in m) return m[value]   // chữ → số
-    const n = Number(value)
-    return Number.isNaN(n) ? value : n      // đã là số
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// Mapper: DTO Job (Transformer) → server JSON (upload)
-//
-// Lược bỏ (tổ chức nội bộ client, KHÔNG gửi):
-//   - procedureAsset            : ánh xạ test↔asset; server đã có procedure (seed config)
-//   - voltageTransformerTestingEquipmentTestType : bảng nối thiết bị↔test;
-//                                 server tự nối từ testingEquipmentData[].workTaskIds
-//   - listHealth, *_score, weighting_factor : health index client tự tính
-//
-// Gửi lên:
-//   - properties (header job)
-//   - testList[] : mỗi test = condition + data + assessment
-//   - testingEquipmentData[] : thiết bị nào đo bài nào (CẦN — không có thì hỏng)
-//
-// Customized standard: nếu test dùng customized → gửi kèm định nghĩa (assessment[].tree)
-//                      tiêu chuẩn cố định (iec/ieee...) → chỉ gửi mrid tham chiếu
-// ═══════════════════════════════════════════════════════════════════════════════
-
-// số: '' / null → null
-const num = (v) => (v !== null && v !== undefined && v !== '') ? parseFloat(v) : null
-// unit DTO 'k|V' → server 'kV' (gộp, bỏ pipe); '' → null
-const joinUnit = (u) => {
-    if (!u || u === 'null' || u === 'undefined') return null
-    return u.includes('|') ? u.replace('|', '') : u
-}
-// 1 ô đo {mrid,type,unit,value,measurement_id} → server cell
-const mapCell = (cell) => {
-    if (!cell) return null
-    let value
-    if (cell.type === 'analog')        value = num(cell.value)
-    else if (cell.type === 'discrete') value = discreteToValue(cell.measurement_id, cell.value)  // chữ → số
-    else                                value = cell.value ?? null  // string
-    return {
-        // GỬI mrid cell — client làm chủ định danh, server diff theo mrid
-        mrid:          cell.mrid || null,
-        type:          cell.type || null,            // analog | string | discrete
-        value,
-        unit:          joinUnit(cell.unit),
-        measurementId: cell.measurement_id || null,  // = column.mrid (khớp config seed) — GIỮ
-    }
-}
-
-// condition: giữ nguyên dạng dict {tên cột: cell}
-const mapCondition = (condition) => {
-    if (!condition) return {}
-    const out = {}
-    for (const fieldKey of Object.keys(condition)) {
-        const cell = mapCell(condition[fieldKey])
-        if (cell) out[fieldKey] = cell
-    }
-    return out
-}
-
-// data.table → giữ row dạng dict {mRID, tên cột: cell}.
-// data.table là object số bảng TÙY BIẾN: có bài 1 bảng (table1), có bài 2 bảng
-// (table1+table2), có bài 3 bảng (table1+table2+table3). Duyệt Object.keys nên
-// tự bắt mọi bảng, không hard-code tên/số lượng.
-// Gộp cột/gộp dòng chỉ là cách UI render (colspan/rowspan) — dữ liệu lưu vẫn là
-// row phẳng theo col.code, nên map theo dữ liệu thật, không quan tâm hiển thị.
-const isCell = (v) =>
-    v && typeof v === 'object' && !Array.isArray(v) &&
-    ('measurement_id' in v || 'type' in v || 'value' in v)
-
-const mapDataTable = (data, includeCells = true) => {
-    const out = {}
-    const tables = (data && data.table) || {}
-    for (const tableName of Object.keys(tables)) {
-        const rows = tables[tableName]
-        if (!Array.isArray(rows)) continue   // phòng cấu trúc lạ
-        out[tableName] = rows.map(row => {
-            // GỬI mrid row (procedure_dataset) — server diff theo mrid
-            const mapped = { mrid: row.mrid || null }
-            for (const fieldKey of Object.keys(row)) {
-                if (fieldKey === 'mrid') continue
-                const cell = row[fieldKey]
-                if (includeCells && isCell(cell)) mapped[fieldKey] = mapCell(cell)
-            }
-            return mapped
-        })
-    }
-    return out
-}
-
-// Làm phẳng cây tree[] (form DTO, dùng cho client gen UI) → form config/DB:
-// assessment_rule[] + assessment_group[] + assessment[] riêng biệt.
-// Server đọc form này map thẳng vào bảng (rule/group/assessment).
-const flattenTree = (tree, standardId) => {
-    const rules = []
-    const groups = []
-    const assessments = []
-    const seenRule = new Set()
-
-    const walk = (node) => {
-        if (!node) return
-        // group = chính node (mang logic, parent, is_default)
-        groups.push({
-            mrid:       node.mrid || '',
-            rule_id:    node.rule_id || '',
-            parent_id:  node.parent_id || '',
-            logic:      node.logic || '',
-            is_default: !!node.is_default,
-        })
-        // rule = (rule_id + result), dedup vì nhiều group có thể chung 1 rule
-        if (node.rule_id && !seenRule.has(node.rule_id)) {
-            seenRule.add(node.rule_id)
-            rules.push({
-                mrid:        node.rule_id,
-                standard_id: standardId || '',
-                result:      node.result || '',
-                priority:    node.priority || '',
-            })
+    const unmapAssessment = (test, code) => {
+        const source = test.testAssessment || test.assessment
+        const templates = clone(definition(assessments, code).testStandard || [])
+        if (source && source.testStandard) {
+            return { ...clone(source), assessment: (source.assessment || templates).map(treeStandard) }
         }
-        // assessment = các điều kiện trong group này
-        for (const cond of (node.conditions || [])) {
-            assessments.push({
-                mrid:           cond.mrid || '',
-                group_id:       cond.group_id || node.mrid || '',
-                measurement_id: cond.measurement_id || '',
-                operator:       cond.operator || '',
-                threshold:      cond.threshold ?? '',
-                // KHÔNG gửi label: schema server không có cột này. Nhãn hiển thị
-                // được đắp lại từ config khi tải job về, khớp theo measurement_id.
-            })
+        const standard = {
+            mrid: source ? source.standardMrid ?? null : null,
+            work_task_id: source ? source.workTaskId ?? test.mrid ?? null : test.mrid ?? null,
+            ...clone((source && source.fixedStandards) || {}),
+            test_standard_customize: source ? source.customizeId ?? null : null,
         }
-        for (const child of (node.children || [])) walk(child)
-    }
-    (tree || []).forEach(walk)
-    return { rules, groups, assessments }
-}
-
-// testAssessment → server. Form khớp config/DB (testStandard có rule/group/assessment phẳng).
-// Chỉ gửi định nghĩa customized (server không seed sẵn).
-// Tiêu chuẩn cố định (iec/ieee...) → chỉ gửi mrid tham chiếu.
-const mapAssessment = (testAssessment) => {
-    if (!testAssessment) return null
-    const ts  = testAssessment.testStandard || {}
-    const asm = testAssessment.assessment || []
-
-    // Người dùng CÓ CHỌN tiêu chuẩn không?
-    //  - test_standard_customize có giá trị → đã chọn customized
-    //  - test_standard_<loại cố định> có giá trị → đã chọn tiêu chuẩn cố định
-    // Nếu KHÔNG chọn gì → không gửi assessment (dù assessment[] có sẵn template
-    // do client load để hiển thị form). assessment[] chỉ là dữ liệu UI, không phải lựa chọn.
-    const customizeId = ts.test_standard_customize || null
-
-    const fixedStandards = {}
-    for (const k of Object.keys(ts)) {
-        if (k.startsWith('test_standard_') && k !== 'test_standard_customize' && ts[k]) {
-            fixedStandards[k] = ts[k]
+        const definitions = new Map(templates.map(item => [item.mrid, item]))
+        for (const item of ((source && source.fixedStandardRefs) || [])) {
+            definitions.set(item.mrid, { ...definitions.get(item.mrid), ...clone(item) })
         }
+        for (const item of ((source && source.customizedStandards) || [])) definitions.set(item.mrid, clone(item))
+        return { testStandard: standard, assessment: [...definitions.values()].map(treeStandard) }
     }
-    const hasFixed = Object.keys(fixedStandards).length > 0
-
-    // Không chọn tiêu chuẩn nào → không chấm → không gửi assessment
-    if (!customizeId && !hasFixed) return null
-
-    // Đã chọn CUSTOMIZED → gửi đầy đủ định nghĩa (server chưa seed).
-    // Lấy đúng định nghĩa customized mà người dùng chọn (mrid = customizeId).
-    let customizedStandards = null
-    if (customizeId) {
-        customizedStandards = asm
-            .filter(a => a.type === 'customized' && a.mrid === customizeId)
-            .map(a => {
-                const { rules, groups, assessments } = flattenTree(a.tree, a.mrid)
-                return {
-                    mrid:             a.mrid || '',
-                    code:             a.code || '',
-                    name:             a.name || '',
-                    type:             a.type,
-                    standard_edition: a.standard_edition || '',
-                    standard_number:  a.standard_number || '',
-                    assessment_rule:  rules,
-                    assessment_group: groups,
-                    assessment:       assessments,
-                }
-            })
-        if (!customizedStandards.length) customizedStandards = null
-    }
-
-    // Đã chọn tiêu chuẩn CỐ ĐỊNH → chỉ tham chiếu mrid (server đã seed, không gửi định nghĩa).
-    // CHỈ ref ĐÚNG bản ghi user chọn — fixedStandards[k] = mrid cụ thể.
-    // (Một type cố định như 'ieee' có thể có NHIỀU biến thể template; phải khớp mrid, không khớp type.)
-    let fixedStandardRefs = null
-    if (hasFixed) {
-        const chosenMrids = new Set(Object.values(fixedStandards))   // các mrid user thực chọn
-        fixedStandardRefs = asm
-            .filter(a => a.type && a.type !== 'customized' && chosenMrids.has(a.mrid))
-            .map(a => ({ mrid: a.mrid || '', type: a.type, code: a.code || '' }))
-        if (!fixedStandardRefs.length) fixedStandardRefs = null
-    }
-
-    return {
-        standardMrid:        ts.mrid || null,
-        workTaskId:          ts.work_task_id || null,
-        fixedStandards:      hasFixed ? fixedStandards : null,
-        fixedStandardRefs,
-        customizeId,
-        customizedStandards,
-    }
-}
-
-export const mapDtoToServer = (dto) => {
-    if (!dto) return null
-
-    const p = dto.properties || {}
-
-    return {
-        job: {
-            mRID:         p.mrid || null,
-            name:         p.name || null,
-            type:         p.type || null,
-            creationDate: p.creation_date || null,
-            executionDate:p.execution_date || null,
-            testedBy:     p.tested_by || null,
-            approvedBy:   p.approved_by || null,
-            approvalDate: p.approval_date || null,
-            testMethod:   p.test_method || null,
-            refStandard:  p.ref_standard || null,
-            standard:     p.standard || null,
-            summary:      p.summary || null,
-            assetId:      p.asset_id || null,
-        },
-
-        testList: (dto.testList || []).map(t => ({
-            // GỬI mrid work_task — server diff theo mrid
-            mrid:        t.mrid || null,
-            name:        t.name || null,        // tên instance user sửa được, vd "Insulation resistance (1)"
-            testTypeId:  t.testTypeId || null,    // = procedure.mrid (khớp config seed) — GIỮ
-            testTypeCode:t.testTypeCode || null,
-            testTypeName:t.testTypeName || null,
-            createdOn:   t.created_on || null,
-
-            testCondition: t.testCondition ? {
-                // GỬI mrid condition (procedure_dataset type=condition)
-                mrid:      t.testCondition.mrid || null,
-                comment:   t.testCondition.comment || null,
-                condition: mapCondition(t.testCondition.condition),
-                // TODO attachment: hiện BỎ QUA (chưa có API upload file).
-                // Khi có API: upload file trước, rồi gửi list file ở đây
-                // y hệt attachmentId/attachmentData top-level của job.
+    const mapTest = (test, download) => {
+        const code = test.testTypeCode || null
+        const condition = test.testCondition
+        const out = {
+            mrid: test.mrid ?? null,
+            name: test.name ?? test.testTypeName ?? null,
+            testTypeId: test.testTypeId ?? definition(tests, code).testId ?? null,
+            testTypeCode: code, testTypeName: test.testTypeName ?? definition(tests, code).testName ?? null,
+            [download ? 'created_on' : 'createdOn']: test.created_on ?? test.createdOn ?? null,
+            testCondition: condition ? {
+                ...clone(condition),
+                mrid: condition.mrid ?? null, comment: condition.comment ?? null,
+                ...attachments(condition),
+                metadata: clone(condition.metadata || {}),
+                condition: mapFields(condition.condition, code, true, download),
             } : null,
-
-            data: mapDataTable(t.data, t.testTypeCode !== 'SFRA'),
-
-            assessment: mapAssessment(t.testAssessment),
-        })),
-
-        testingEquipmentList: (dto.testingEquipmentData || []).map(e => ({
-            // GỬI mrid equipment — server chỉ link vào work_testing_equipment, không tạo mới
-            mrid:            e.mrid || null,
-            model:           e.model || null,
-            serialNumber:    e.serial_number || null,
-            calibrationDate: e.calibration_date || null,
-            // mảng work_task mrid mà thiết bị này được dùng để đo
-            workTaskIds:     e.work_task_ids || [],
-        })),
-
-        sfraTraces: buildSfraTraceMap(dto.testList),
-
-        // attachment job-level: hiện chỉ gửi id tham chiếu.
-        // Khi có API upload file: gửi thêm list file (attachmentData) tương tự.
-        // Attachment trong từng test/condition cũng sẽ theo cùng format này.
-        attachmentId: dto.attachmentId || null,
+            data: mapTables(test.data, code, download),
+            [download ? 'testAssessment' : 'assessment']: download ? unmapAssessment(test, code) : mapAssessment(test.testAssessment),
+        }
+        if (test.metadata !== undefined) out.metadata = clone(test.metadata)
+        for (const field of ['attachmentId', 'attachment', 'attachmentData']) {
+            if (test[field] !== undefined) out[field] = clone(test[field])
+        }
+        return out
     }
+    const propertyPairs = {
+        mrid: 'mRID', name: 'name', type: 'type', creation_date: 'creationDate',
+        execution_date: 'executionDate', tested_by: 'testedBy', approved_by: 'approvedBy',
+        approval_date: 'approvalDate', test_method: 'testMethod', ref_standard: 'refStandard',
+        standard: 'standard', summary: 'summary', asset_id: 'assetId',
+    }
+    const properties = (source, download) => Object.fromEntries(Object.entries(propertyPairs)
+        .map(([local, remote]) => [download ? local : remote, source[local] ?? source[remote] ?? null]))
+    const equipment = (source, download) => {
+        const out = clone(source)
+        for (const [local, remote] of Object.entries({
+            serial_number: 'serialNumber', calibration_date: 'calibrationDate', work_id: 'workId', work_task_ids: 'workTaskIds',
+        })) {
+            delete out[download ? remote : local]
+            out[download ? local : remote] = clone(source[local] ?? source[remote] ?? (local === 'work_task_ids' ? [] : null))
+        }
+        out.mrid = source.mrid ?? null
+        out.model = source.model ?? null
+        return out
+    }
+    const specialMaps = source => Object.fromEntries((options.series || [])
+        .map(key => [key, clone(source[key] || {})]))
+    const mapDtoToServer = dto => {
+        if (!dto) return null
+        const payload = {
+            job: properties(dto.properties || {}, false),
+            testList: (dto.testList || []).map(test => mapTest(test, false)),
+            testingEquipmentList: (dto.testingEquipmentData || dto.testingEquipmentList || []).map(item => equipment(item, false)),
+            ...attachments(dto),
+            ...specialMaps(dto),
+        }
+        if (options.sfra) payload.sfraTraces = buildSfraTraceMap(dto.testList, dto.sfraTraces)
+        return payload
+    }
+    const mapServerToDto = server => {
+        if (!server) return null
+        const dto = {
+            properties: properties(server.properties || server.job || {}, true),
+            testList: (server.testList || []).map(test => mapTest(test, true)),
+            testingEquipmentData: (server.testingEquipmentData || server.testingEquipmentList || []).map(item => equipment(item, true)),
+            procedureAsset: clone(server.procedureAsset || []),
+            ...attachments(server),
+            ...specialMaps(server),
+        }
+        const links = server[linkKey] || []
+        dto[linkKey] = dto.testingEquipmentData.flatMap(item => item.work_task_ids.map(taskId => ({
+            ...clone(links.find(link => link.testing_equipment_id === item.mrid && link.work_task_id === taskId) || {}),
+            mrid: (links.find(link => link.testing_equipment_id === item.mrid && link.work_task_id === taskId) || {}).mrid ?? null,
+            testing_equipment_id: item.mrid, work_task_id: taskId,
+        })))
+        if (options.sfra) {
+            dto.sfraTraces = clone(server.sfraTraces || {})
+            applySfraTracesToTests(dto.testList, dto.sfraTraces)
+        }
+        return dto
+    }
+    return { mapDtoToServer, mapServerToDto }
 }
 
-
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// Mapper: server JSON (download) → DTO Job
-// Chiều NGƯỢC của mapDtoToServer. Nhận JSON server trả khi tải job/test → DTO JobView.
-//   - server cell có 'measurement_id'(snake)+'mrid'(đã lưu) → DTO giữ nguyên
-//   - server 'job'(camel) → DTO 'properties'(snake)
-//   - unit 'kV'(gộp) → DTO 'k|V'(tách) cho form sửa được
-// ═══════════════════════════════════════════════════════════════════════════════
-
-const splitUnitD = (u) => {
-    if (!u || u === 'null') return null
-    const m = u.match(/^(k|M|G|m|µ|u|n|p)(.+)$/)
-    return m ? `${m[1]}|${m[2]}` : u
-}
-const unmapCellD = (cell) => {
-    if (!cell || typeof cell !== 'object') return cell
-    return {
-        mrid:           cell.mrid || null,
-        type:           cell.type || null,
-        value:          cell.value ?? null,
-        unit:           splitUnitD(cell.unit),
-        measurement_id: cell.measurement_id || cell.measurementId || null,
-    }
-}
-const unmapRowD = (row) => {
-    const out = { mrid: row.mrid || null }
-    for (const k of Object.keys(row)) {
-        if (k === 'mrid' || k.startsWith('_')) continue
-        const v = row[k]
-        out[k] = (v && typeof v === 'object' && 'type' in v) ? unmapCellD(v) : v
-    }
-    return out
-}
-const unmapDataTableD = (data) => {
-    const tables = (data && data.table) || data || {}
-    const out = {}
-    for (const tname of Object.keys(tables)) {
-        const rows = tables[tname]
-        if (!Array.isArray(rows)) continue
-        out[tname] = rows.map(unmapRowD)
-    }
-    return { table: out }
-}
-const unmapConditionD = (condition) => {
-    const out = {}
-    for (const k of Object.keys(condition || {})) {
-        const v = condition[k]
-        out[k] = (v && typeof v === 'object' && 'type' in v) ? unmapCellD(v) : v
-    }
-    return out
-}
-
-export const mapServerToDto = (server) => {
-    if (!server) return null
-    const p = server.properties || server.job || {}
-    const dto = {
-        properties: {
-            mrid:           p.mrid || p.mRID || null,
-            name:           p.name || null,
-            type:           p.type || null,
-            creation_date:  p.creation_date || p.creationDate || null,
-            execution_date: p.execution_date || p.executionDate || null,
-            tested_by:      p.tested_by || p.testedBy || null,
-            approved_by:    p.approved_by || p.approvedBy || null,
-            approval_date:  p.approval_date || p.approvalDate || null,
-            test_method:    p.test_method || p.testMethod || null,
-            ref_standard:   p.ref_standard || p.refStandard || null,
-            summary:        p.summary || null,
-            asset_id:       p.asset_id || p.assetId || null,
-        },
-        testList: (server.testList || []).map(t => ({
-            mrid:         t.mrid || null,
-            name:         t.name || t.testTypeName || null,
-            testTypeId:   t.testTypeId || null,
-            testTypeCode: t.testTypeCode || null,
-            testTypeName: t.testTypeName || null,
-            created_on:   t.created_on || t.createdOn || null,
-            testCondition: t.testCondition ? {
-                mrid:      t.testCondition.mrid || null,
-                comment:   t.testCondition.comment || null,
-                condition: unmapConditionD(t.testCondition.condition),
-            } : null,
-            data: unmapDataTableD(t.data),
-            testAssessment: t.testAssessment || null,
-        })),
-        testingEquipmentData: (server.testingEquipmentData || server.testingEquipmentList || []).map(e => ({
-            mrid:             e.mrid || null,
-            model:            e.model || null,
-            serial_number:    e.serial_number || e.serialNumber || null,
-            calibration_date: e.calibration_date || e.calibrationDate || null,
-            work_id:          e.work_id || null,
-            work_task_ids:    e.work_task_ids || e.workTaskIds || [],
-        })),
-        // Server không gửi bảng nối riêng — dựng lại từ testingEquipmentList[].workTaskIds
-        transformerTestingEquipmentTestType: (server.testingEquipmentData || server.testingEquipmentList || [])
-            .flatMap(e => (e.work_task_ids || e.workTaskIds || []).map(wid => ({
-                mrid: null, testing_equipment_id: e.mrid || null, work_task_id: wid
-            }))),
-        procedureAsset: server.procedureAsset || [],
-        attachmentId:   server.attachmentId || null,
-        attachment:     server.attachment || null,
-    }
-    applySfraTracesToTests(dto.testList, server.sfraTraces || {})
-    return dto
-}
+const mapper = createJobServerMapper(testMap, conditionMap, assessmentMap, 'transformerTestingEquipmentTestType', { sfra: true })
+export const mapDtoToServer = mapper.mapDtoToServer
+export const mapServerToDto = mapper.mapServerToDto

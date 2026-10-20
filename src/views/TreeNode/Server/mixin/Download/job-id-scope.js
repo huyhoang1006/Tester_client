@@ -1,5 +1,52 @@
 import { scopeDownloadedId } from './id-scope'
 
+const childId = (parent, suffix) => {
+    const index = String(parent).indexOf('@')
+    return index < 0 ? parent + '-' + suffix : String(parent).slice(0, index) + '-' + suffix + String(parent).slice(index)
+}
+
+const scopeAttachment = (attachment, userId) => {
+    if (!attachment || typeof attachment !== 'object') return
+    if (attachment.id) attachment.id = scopeDownloadedId(attachment.id, 'att', userId)
+    if (attachment.id_foreign) attachment.id_foreign = scopeDownloadedId(attachment.id_foreign, 'task', userId)
+    if (attachment.idForeign) attachment.idForeign = scopeDownloadedId(attachment.idForeign, 'task', userId)
+}
+
+const scopePoints = (points, userId, scope, traceId, datasetId) => {
+    for (const [index, point] of (Array.isArray(points) ? points : []).entries()) {
+        if (!point || typeof point !== 'object') continue
+        const pointId = point.mrid || ((traceId || datasetId) && childId(traceId || datasetId, scope + '-' + index))
+        if (pointId) point.mrid = scopeDownloadedId(pointId, scope, userId)
+        if (point.procedure_dataset_id) point.procedure_dataset_id = scopeDownloadedId(point.procedure_dataset_id, 'ds', userId)
+        if (traceId) point.trace_id = traceId
+        else if (point.trace_id) point.trace_id = scopeDownloadedId(point.trace_id, 'trace', userId)
+    }
+}
+
+const scopeSeriesMaps = (dto, userId) => {
+    for (const key of ['ctExcitationPoints', 'ctExcitationKneePoints', 'cbMotorCurrentPoints', 'cbTimingTraces', 'sfraTraces']) {
+        if (!dto[key] || typeof dto[key] !== 'object') continue
+        dto[key] = Object.fromEntries(Object.entries(dto[key]).map(([id, value]) => {
+            const scopedId = scopeDownloadedId(id, key === 'cbTimingTraces' ? 'task' : 'ds', userId)
+            if (key === 'sfraTraces') {
+                if (value && typeof value === 'object') {
+                    value.procedure_dataset_id = scopedId
+                    value.mrid = scopeDownloadedId(value.mrid || id, 'trace', userId)
+                    scopePoints(value.points, userId, 'sfra-point', value.mrid)
+                }
+            } else if (key === 'cbTimingTraces') {
+                for (const [index, trace] of (Array.isArray(value) ? value : []).entries()) {
+                    if (!trace) continue
+                    trace.work_task_id = scopedId
+                    trace.mrid = scopeDownloadedId(trace.mrid || childId(id, 'trace-' + index), 'trace', userId)
+                    scopePoints(trace.points, userId, 'cb-point', trace.mrid)
+                }
+            } else scopePoints(value, userId, key === 'cbMotorCurrentPoints' ? 'cb-point' : 'ct-point', null, scopedId)
+            return [scopedId, value]
+        }))
+    }
+}
+
 /**
  * Gắn hậu tố người dùng cho một job tải từ server.
  *
@@ -62,6 +109,20 @@ const scopeStandardTree = (standard, userId) => {
 
     if (standard.mrid) standard.mrid = scopeDownloadedId(standard.mrid, 'std', userId)
 
+    for (const rule of (standard.assessment_rule || [])) {
+        if (rule.mrid) rule.mrid = scopeDownloadedId(rule.mrid, 'rule', userId)
+        if (rule.standard_id) rule.standard_id = scopeDownloadedId(rule.standard_id, 'std', userId)
+    }
+    for (const group of (standard.assessment_group || [])) {
+        if (group.mrid) group.mrid = scopeDownloadedId(group.mrid, 'grp', userId)
+        if (group.rule_id) group.rule_id = scopeDownloadedId(group.rule_id, 'rule', userId)
+        if (group.parent_id) group.parent_id = scopeDownloadedId(group.parent_id, 'grp', userId)
+    }
+    for (const condition of (standard.assessment || [])) {
+        if (condition.mrid) condition.mrid = scopeDownloadedId(condition.mrid, 'cond', userId)
+        if (condition.group_id) condition.group_id = scopeDownloadedId(condition.group_id, 'grp', userId)
+    }
+
     const walk = (nodes) => {
         if (!Array.isArray(nodes)) return
         for (const node of nodes) {
@@ -113,6 +174,8 @@ export const scopeJobDtoForUser = (dto, userId, linkKey) => {
                 test.testCondition.mrid = scopeDownloadedId(test.testCondition.mrid, 'ds', userId)
             }
             scopeCellsOf(test.testCondition.condition, userId)
+            if (test.testCondition.attachmentId) test.testCondition.attachmentId = scopeDownloadedId(test.testCondition.attachmentId, 'att', userId)
+            scopeAttachment(test.testCondition.attachment, userId)
         }
 
         const tables = (test.data && test.data.table) || {}
@@ -123,6 +186,22 @@ export const scopeJobDtoForUser = (dto, userId, linkKey) => {
                 if (!row || typeof row !== 'object') continue
                 if (row.mrid) row.mrid = scopeDownloadedId(row.mrid, 'ds', userId)
                 scopeCellsOf(row, userId)
+                if (test.testTypeCode === 'SFRA') {
+                    if (row._sfraTraceMrid) row._sfraTraceMrid = scopeDownloadedId(row._sfraTraceMrid, 'trace', userId)
+                    if (row.sfra_trace_id) row.sfra_trace_id = scopeDownloadedId(row.sfra_trace_id, 'trace', userId)
+                    if (row.points_json) {
+                        const cell = row.points_json
+                        const raw = typeof cell === 'object' ? cell.value : cell
+                        let points
+                        try { points = Array.isArray(raw) ? raw : JSON.parse(raw) } catch (error) { points = null }
+                        // Leave malformed legacy input intact so upload validation can report it.
+                        if (Array.isArray(points)) {
+                            scopePoints(points, userId, 'sfra-point', row._sfraTraceMrid || row.sfra_trace_id || row.mrid)
+                            if (typeof cell === 'object') cell.value = JSON.stringify(points)
+                            else row.points_json = JSON.stringify(points)
+                        }
+                    }
+                }
             }
         }
 
@@ -133,6 +212,9 @@ export const scopeJobDtoForUser = (dto, userId, linkKey) => {
             }
             if (ta.testStandard && ta.testStandard.work_task_id) {
                 ta.testStandard.work_task_id = scopeDownloadedId(ta.testStandard.work_task_id, 'task', userId)
+            }
+            if (ta.testStandard && ta.testStandard.test_standard_customize) {
+                ta.testStandard.test_standard_customize = scopeDownloadedId(ta.testStandard.test_standard_customize, 'std', userId)
             }
             for (const standard of (ta.assessment || [])) scopeStandardTree(standard, userId)
         }
@@ -157,5 +239,6 @@ export const scopeJobDtoForUser = (dto, userId, linkKey) => {
         }
     }
 
+    scopeSeriesMaps(dto, userId)
     return dto
 }

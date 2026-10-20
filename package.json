@@ -1,6 +1,6 @@
 {
   "name": "ATDigitalTester",
-  "version": "27.1.9",
+  "version": "27.1.10",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",

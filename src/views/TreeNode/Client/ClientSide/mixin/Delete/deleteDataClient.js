@@ -48,6 +48,34 @@ export default {
                         } else {
                             this.$message.warning('Parent node not found in tree')
                         }
+                    } else if (node.mode == 'powerPlant') {
+                        const entity = await window.electronAPI.getPowerPlantEntityByMrid(
+                            node.mrid,
+                            this.$store.state.user.user_id,
+                            node.parentId
+                        )
+                        if (!entity.success) {
+                            this.$message.error('Power Plant not found: ' + (entity.message || 'Unknown error'))
+                            return
+                        }
+                        const deleteSign = await window.electronAPI.deletePowerPlantEntityByMrid(entity.data)
+                        if (!deleteSign.success) {
+                            this.$message.error('Delete Power Plant failed: ' + (deleteSign.message || 'Unknown error'))
+                            return
+                        }
+
+                        const parentNode = this.findNodeById(node.parentId, this.organisationClientList)
+                        if (parentNode && Array.isArray(parentNode.children)) {
+                            const index = parentNode.children.findIndex((child) => child.mrid === node.mrid)
+                            if (index !== -1) {
+                                parentNode.children.splice(index, 1)
+                                this.$message.success('Delete Power Plant successfully')
+                            } else {
+                                this.$message.warning('Power Plant not found in tree structure')
+                            }
+                        } else {
+                            this.$message.warning('Parent organisation not found in tree')
+                        }
                     } else if (node.mode == 'organisation') {
                         const entity = await window.electronAPI.getOrganisationEntityByMrid(node.mrid)
                         if (!entity.success) {

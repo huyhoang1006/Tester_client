@@ -26,11 +26,11 @@ export const getSsoApiBase = () => {
 }
 
 export const getStoredAccessToken = () => (
-    localStorage.getItem(SSO_ACCESS_TOKEN_KEY) || localStorage.getItem('token')
+    localStorage.getItem(SSO_ACCESS_TOKEN_KEY)
 )
 
 export const getStoredRefreshToken = () => (
-    localStorage.getItem(SSO_REFRESH_TOKEN_KEY) || localStorage.getItem('refresh_token')
+    localStorage.getItem(SSO_REFRESH_TOKEN_KEY)
 )
 
 export const storeSsoTokens = ({accessToken, refreshToken}) => {

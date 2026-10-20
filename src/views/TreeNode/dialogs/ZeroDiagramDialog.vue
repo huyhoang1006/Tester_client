@@ -226,15 +226,15 @@ export default {
 
           this.directSubstationAssets = await this.fetchAssetsFromServer(subId, 'Substation');
 
-          const vlsRes = await demoAPI.getVoltageLevelBySubstationId(subId);
-          const vls = Array.isArray(vlsRes) ? vlsRes : (vlsRes?.data || []);
+          // Mỗi danh sách lấy riêng, lỗi thì coi như rỗng: thiếu quyền xem voltage level
+          // hoặc bay (403) không được làm mất cả sơ đồ - giống cách thiết bị đã làm.
+          const vls = await this.fetchListFromServer(() => demoAPI.getVoltageLevelBySubstationId(subId));
 
           for (const vl of vls) {
             const vlId = vl.id || vl.mrid;
             if (vlId === undefined || vlId === null) continue; 
 
-            const baysRes = await demoAPI.getBayByVoltageLevel(vlId);
-            const bays = Array.isArray(baysRes) ? baysRes : (baysRes?.data || []);
+            const bays = await this.fetchListFromServer(() => demoAPI.getBayByVoltageLevel(vlId));
             const processedBays = [];
             
             for (const bay of bays) {
@@ -245,8 +245,7 @@ export default {
             this.voltageLevels.push({ name: vl.aliasName || vl.name, bays: processedBays });
           }
 
-          const directBaysRes = await demoAPI.getChildBay(subId);
-          const directBays = Array.isArray(directBaysRes) ? directBaysRes : (directBaysRes?.data || []);
+          const directBays = await this.fetchListFromServer(() => demoAPI.getChildBay(subId));
           if (directBays.length > 0) {
             const processedDirectBays = [];
             for (const bay of directBays) {
@@ -288,6 +287,16 @@ export default {
       } catch (error) {
         console.error("ZeroDiagram Fetch Error:", error);
       } finally { this.loading = false; }
+    },
+
+    async fetchListFromServer(call) {
+      try {
+        const res = await call();
+        return Array.isArray(res) ? res : (res?.data || []);
+      } catch (e) {
+        console.log(e);
+        return [];
+      }
     },
 
     async fetchAssetsFromServer(ownerId, mode) {

@@ -55,11 +55,18 @@
                 <li
                     v-if="showTestingYearDivider(child, index)"
                     :key="`test-year-${testingYearLabel(child)}-${index}`"
-                    class="testing-year-divider">
+                    class="testing-year-divider"
+                    :class="{ collapsed: isTestingYearCollapsed(child) }"
+                    :title="isTestingYearCollapsed(child) ? 'Show tests' : 'Hide tests'"
+                    @click.stop="toggleTestingYear(child)">
+                    <i class="fa-solid fa-angle-right arrow-icon testing-year-arrow"
+                        :class="{ open: !isTestingYearCollapsed(child) }"></i>
                     <span>{{ testingYearLabel(child) }}</span>
+                    <span v-if="isTestingYearCollapsed(child)" class="testing-year-count">({{ testingYearCount(child) }})</span>
                     <span class="testing-year-line"></span>
                 </li>
                 <TreeNode
+                    v-if="!isTestingYearCollapsed(child)"
                     :key="getChildUniqueKey(child)" :node="child"
                     :selectedNodes="selectedNodes"
                     :draggableNodes="draggableNodes"
@@ -287,6 +294,28 @@ export default {
             const year = this.testingYearValue(node)
             return year || 'No testing date available'
         },
+        // ── Thu / xoè test theo năm ────────────────────────────────────────
+        // Lưu năm đang thu gọn ngay trên node CHA chứ không trong data() của component:
+        // cây vẽ lại (làm mới, thêm test, tải lại con) là component con bị dựng lại từ đầu,
+        // giữ trong data() thì năm vừa thu lại tự xoè ra.
+        isTestingYearCollapsed(child) {
+            if (!child || !['job', 'test'].includes(child.mode)) return false
+            const collapsed = this.node && this.node._collapsedTestingYears
+            return !!(collapsed && collapsed[String(this.testingYearLabel(child))])
+        },
+        toggleTestingYear(child) {
+            if (!this.node) return
+            const key = String(this.testingYearLabel(child))
+            const current = this.node._collapsedTestingYears || {}
+            this.$set(this.node, '_collapsedTestingYears', { ...current, [key]: !current[key] })
+        },
+        // Số test của năm, hiện cạnh năm khi đã thu gọn để biết bên trong có gì.
+        testingYearCount(child) {
+            const key = String(this.testingYearLabel(child))
+            return this.sortedChildren.filter(item =>
+                item && ['job', 'test'].includes(item.mode) && String(this.testingYearLabel(item)) === key
+            ).length
+        },
         showTestingYearDivider(child, index) {
             if (!child || !['job', 'test'].includes(child.mode)) return false
             if (index === 0) return true
@@ -425,11 +454,27 @@ export default {
     font-size: 10px;
     font-weight: 600;
     line-height: 18px;
-    cursor: default;
+    cursor: pointer;
     user-select: none;
 }
 
-.testing-year-divider > span:first-child {
+.testing-year-divider:hover,
+.testing-year-divider:hover .arrow-icon {
+    color: #606266;
+}
+
+.testing-year-arrow {
+    flex: 0 0 auto;
+    font-size: 10px;
+}
+
+.testing-year-count {
+    flex: 0 0 auto;
+    font-weight: 400;
+}
+
+/* first-of-type chứ không first-child: phần tử đầu giờ là mũi tên <i> */
+.testing-year-divider > span:first-of-type {
     flex: 0 0 auto;
     white-space: nowrap;
 }

@@ -60,6 +60,7 @@
 import Attachment from '@/views/Flatten/Attachment'
 import TestStandard from '@/views/Cim/TestStandard'
 import uuid from '@/utils/uuid'
+import { todayTestDate } from '@/views/TreeNode/Common/Fetch/testDate'
 
 export default {
     name: 'SelectTestPanel',
@@ -142,7 +143,11 @@ export default {
                     condition: initTest.rowDataExampleCondition,
                     comment: '',
                     attachment: new Attachment(),
-                    attachmentData: []
+                    attachmentData: [],
+                    // Test mới mặc định thử HÔM NAY. Để trống thì TestInformation lấy ngày
+                    // của job - mà job ẩn "Job 2026" mang ngày lúc nó được tạo, nên test
+                    // thêm vào tháng 10 sẽ nhận ngày tháng 1. Các ô khác vẫn kế thừa từ job.
+                    metadata: { testing_date: todayTestDate() }
                 },
                 testAssessment: {
                     testStandard: new TestStandard(),

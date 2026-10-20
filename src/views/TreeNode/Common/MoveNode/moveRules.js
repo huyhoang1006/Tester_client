@@ -7,9 +7,10 @@
 export const VALID_PARENT_MODES = {
     organisation: ['organisation'],
     substation:   ['organisation'],
-    voltageLevel: ['substation'],
-    bay:          ['voltageLevel', 'substation'],
-    asset:        ['bay', 'substation'],
+    powerPlant:   ['organisation'],
+    voltageLevel: ['substation', 'powerPlant'],
+    bay:          ['voltageLevel', 'substation', 'powerPlant'],
+    asset:        ['bay', 'substation', 'powerPlant'],
     job:          ['asset']
 }
 

@@ -4,28 +4,31 @@ import path from 'path'
 import { insertEquipmentContainerTransaction } from '@/function/cim/equipmentContainer'
 import { insertPowerSystemResourceTransaction } from '@/function/cim/powerSystemResource'
 import { insertActivePowerTransaction } from '@/function/cim/activePower'
-import { insertStreetDetailTransaction, getStreetDetailById } from '@/function/cim/streetDetail'
-import { insertTownDetailTransaction, getTownDetailById } from '@/function/cim/townDetail'
-import { insertStreetAddressTransaction, getStreetAddressById } from '@/function/cim/streetAddress'
-import { insertLocationTransaction, getLocationById } from '@/function/cim/location'
-import { insertElectronicAddressTransaction, getElectronicAddressById } from '@/function/cim/electronicAddress'
-import { insertTelephoneNumberTransaction, getTelephoneNumberById } from '@/function/cim/telephoneNumber'
-import { insertPersonTransaction, getPersonById } from '@/function/cim/person'
-import { insertPersonRoleTransaction, getPersonRoleByPersonId } from '@/function/cim/personRole'
+import { insertStreetDetailTransaction, getStreetDetailById, deleteStreetDetailByIdTransaction } from '@/function/cim/streetDetail'
+import { insertTownDetailTransaction, getTownDetailById, deleteTownDetailByIdTransaction } from '@/function/cim/townDetail'
+import { insertStreetAddressTransaction, getStreetAddressById, deleteStreetAddressByIdTransaction } from '@/function/cim/streetAddress'
+import { insertLocationTransaction, getLocationById, deleteLocationByIdTransaction } from '@/function/cim/location'
+import { insertElectronicAddressTransaction, getElectronicAddressById, deleteElectronicAddressByIdTransaction } from '@/function/cim/electronicAddress'
+import { insertTelephoneNumberTransaction, getTelephoneNumberById, deleteTelephoneNumberByIdTransaction } from '@/function/cim/telephoneNumber'
+import { insertPersonTransaction, getPersonById, deletePersonByIdTransaction } from '@/function/cim/person'
+import { insertPersonRoleTransaction, getPersonRoleByPersonId, deletePersonRoleByIdTransaction } from '@/function/cim/personRole'
 import { insertUserTransaction, getUserById } from '@/function/entity/user'
 import { insertUserIdentifiedObjectTransaction, getUserIdentifiedObjectByUserIdAndIdentifiedObjectId } from '@/function/entity/userIdentifiedObject'
 import { insertOrganisationLocationTransaction, getOrganisationLocationByOrganisationIdAndLocationId } from '@/function/entity/organisationLocation'
 import { insertOrganisationPersonTransaction, getOrganisationPersonByOrganisationIdAndPersonId } from '@/function/entity/organisationPerson'
 import { insertOrganisationPsrTransaction, getOrganisationPsrByOrganisationIdAndPsrId } from '@/function/entity/organisationPsr'
 import { insertPositionPointArrayTransaction, getPositionPointByLocationId } from '@/function/cim/positionPoint'
-import { insertPsrTypeTransaction, getPsrTypeById } from '@/function/cim/psrType'
+import { insertPsrTypeTransaction, getPsrTypeById, deletePsrTypeByIdTransaction } from '@/function/cim/psrType'
+import { getPowerSystemResourceByLocationIdTransaction } from '@/function/cim/powerSystemResource'
 import {
     uploadAttachmentTransaction,
     backupAllFilesInDir,
     deleteBackupFiles,
     restoreFiles,
     syncFilesWithDeletion,
-    getAttachmentByForeignIdAndType
+    getAttachmentByForeignIdAndType,
+    deleteAttachmentByIdTransaction,
+    deleteDirectory
 } from '@/function/entity/attachment'
 import { tryWriteAuditLog } from '@/function/entity/auditLog'
 import { safePathSegment } from '@/utils/fileName'
@@ -110,6 +113,20 @@ const powerPlantChanges = (beforeEntity, afterEntity) => {
     return Object.keys(after)
         .map((field) => ({ field, from: before[field], to: after[field] }))
         .filter((change) => change.from !== change.to)
+}
+
+const writePowerPlantDeleteLog = async (entity) => {
+    const plant = entity && entity.powerPlant ? entity.powerPlant : {}
+    await tryWriteAuditLog({
+        objectType: 'Power Plant',
+        objectId: plant.mrid,
+        objectName: plant.name || 'Unnamed Power Plant',
+        action: 'DELETE',
+        user: {
+            id: entity && entity.user && entity.user.user_id,
+            name: entity && entity.user && (entity.user.name || entity.user.username)
+        }
+    })
 }
 
 export const ensurePowerPlantSchema = async () => {
@@ -334,6 +351,158 @@ export const insertPowerPlantEntity = async (entity) => {
             }
         }
         return { success: false, error, message: error.message || 'Power Plant save failed' }
+    }
+}
+
+export const movePowerPlantToOrganisation = async (plantId, organisationId) => {
+    if (!plantId || !organisationId) {
+        return { success: false, message: 'Missing Power Plant or organisation id' }
+    }
+
+    await ensurePowerPlantSchema()
+    try {
+        await runSQL('BEGIN TRANSACTION')
+        const powerPlant = await getSQL(
+            `SELECT pp.mrid, psr.location
+             FROM power_plant pp
+             LEFT JOIN power_system_resource psr ON psr.mrid = pp.mrid
+             WHERE pp.mrid = ?`,
+            [plantId]
+        )
+        if (!powerPlant) throw new Error('Power Plant not found')
+
+        const organisationPsr = await runSQL(
+            'UPDATE organisation_psr SET organisation_id = ? WHERE psr_id = ?',
+            [organisationId, plantId]
+        )
+        if (!organisationPsr.changes) throw new Error('Power Plant organisation link not found')
+
+        if (powerPlant.location) {
+            await runSQL(
+                'UPDATE organisation_location SET organisation_id = ? WHERE location_id = ?',
+                [organisationId, powerPlant.location]
+            )
+        }
+
+        const personLink = await getSQL(
+            'SELECT person_id FROM person_power_plant WHERE power_plant_id = ? LIMIT 1',
+            [plantId]
+        )
+        if (personLink && personLink.person_id) {
+            await runSQL(
+                'UPDATE organisation_person SET organisation_id = ? WHERE person_id = ?',
+                [organisationId, personLink.person_id]
+            )
+        }
+
+        await runSQL('COMMIT')
+        return {
+            success: true,
+            data: { plantId, organisationId },
+            message: 'Move Power Plant completed'
+        }
+    } catch (error) {
+        try {
+            await runSQL('ROLLBACK')
+        } catch (rollbackError) {
+            console.error('Rollback Power Plant move failed:', rollbackError)
+        }
+        return { success: false, error, message: error.message || 'Move Power Plant failed' }
+    }
+}
+
+export const deletePowerPlantEntityById = async (entity) => {
+    const plant = entity && entity.powerPlant
+    if (!plant || !plant.mrid) {
+        return { success: false, message: 'Power Plant must have a valid MRID' }
+    }
+
+    await ensurePowerPlantSchema()
+    const plantId = plant.mrid
+    try {
+        await runSQL('BEGIN TRANSACTION')
+
+        if (entity.attachment && entity.attachment.id) {
+            await deleteAttachmentByIdTransaction(entity.attachment.id, db)
+        }
+
+        const units = await allSQL(
+            `SELECT gu.mrid, gu.nominal_p, gu.dc_rated_power
+             FROM generating_unit gu
+             JOIN equipment e ON e.mrid = gu.mrid
+             WHERE e.equipment_container = ?`,
+            [plantId]
+        )
+        for (const unit of units) {
+            await runSQL('DELETE FROM user_identified_object WHERE identified_object_id = ?', [unit.mrid])
+            await runSQL('DELETE FROM identified_object WHERE mrid = ?', [unit.mrid])
+            if (unit.nominal_p) await runSQL('DELETE FROM active_power WHERE mrid = ?', [unit.nominal_p])
+            if (unit.dc_rated_power) await runSQL('DELETE FROM active_power WHERE mrid = ?', [unit.dc_rated_power])
+        }
+
+        await runSQL('DELETE FROM sync_state WHERE node_mrid = ?', [plantId])
+        await runSQL('DELETE FROM user_identified_object WHERE identified_object_id = ?', [plantId])
+        await runSQL('DELETE FROM person_power_plant WHERE power_plant_id = ?', [plantId])
+        await runSQL('DELETE FROM organisation_psr WHERE psr_id = ?', [plantId])
+        await runSQL('DELETE FROM identified_object WHERE mrid = ?', [plantId])
+
+        if (entity.acCapacity && entity.acCapacity.mrid) {
+            await runSQL('DELETE FROM active_power WHERE mrid = ?', [entity.acCapacity.mrid])
+        }
+        if (entity.dcCapacity && entity.dcCapacity.mrid) {
+            await runSQL('DELETE FROM active_power WHERE mrid = ?', [entity.dcCapacity.mrid])
+        }
+        if (entity.psrType && entity.psrType.mrid) {
+            await deletePsrTypeByIdTransaction(entity.psrType.mrid, db)
+        }
+
+        if (entity.location && entity.location.mrid) {
+            const locationRefs = await getPowerSystemResourceByLocationIdTransaction(entity.location.mrid, db)
+            if (!locationRefs.success || locationRefs.data.length === 0) {
+                await deleteLocationByIdTransaction(entity.location.mrid, db)
+                if (entity.streetAddress && entity.streetAddress.mrid) {
+                    await deleteStreetAddressByIdTransaction(entity.streetAddress.mrid, db)
+                }
+                if (entity.streetDetail && entity.streetDetail.mrid) {
+                    await deleteStreetDetailByIdTransaction(entity.streetDetail.mrid, db)
+                }
+                if (entity.townDetail && entity.townDetail.mrid) {
+                    await deleteTownDetailByIdTransaction(entity.townDetail.mrid, db)
+                }
+            }
+        }
+        if (entity.person && entity.person.mrid) {
+            const personRefs = await getSQL(
+                `SELECT
+                    (SELECT COUNT(*) FROM person_power_plant WHERE person_id = ?) +
+                    (SELECT COUNT(*) FROM person_substation WHERE person_id = ?) AS ref_count`,
+                [entity.person.mrid, entity.person.mrid]
+            )
+            if (!personRefs || Number(personRefs.ref_count) === 0) {
+                if (entity.personRole && entity.personRole.mrid) {
+                    await deletePersonRoleByIdTransaction(entity.personRole.mrid, db)
+                }
+                await deletePersonByIdTransaction(entity.person.mrid, db)
+                if (entity.electronicAddress && entity.electronicAddress.mrid) {
+                    await deleteElectronicAddressByIdTransaction(entity.electronicAddress.mrid, db)
+                }
+                if (entity.telephoneNumber && entity.telephoneNumber.mrid) {
+                    await deleteTelephoneNumberByIdTransaction(entity.telephoneNumber.mrid, db)
+                }
+            }
+        }
+
+        await runSQL('COMMIT')
+        if (entity.attachment && entity.attachment.id) deleteDirectory(null, plantId)
+        await writePowerPlantDeleteLog(entity)
+        return { success: true, message: 'Power Plant deleted successfully' }
+    } catch (error) {
+        try {
+            await runSQL('ROLLBACK')
+        } catch (rollbackError) {
+            console.error('Rollback Power Plant delete failed:', rollbackError)
+        }
+        return { success: false, error, message: error.message || 'Power Plant delete failed' }
     }
 }
 
