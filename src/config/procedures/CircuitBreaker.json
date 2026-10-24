@@ -20,6 +20,12 @@
       "kind": "test"
     },
     {
+      "mrid": "8dd47a3b-3f39-4bf7-82c1-2e6387d70f10",
+      "code": "PowerFrequencyVoltageWithstand",
+      "name": "Power-frequency voltage withstand test",
+      "kind": "test"
+    },
+    {
       "mrid": "f2c97d9a-8be5-42cf-a917-1c61ce8d52a4",
       "code": "ODynamicContactResistance",
       "name": "O Dynamic Contact Resistance",

@@ -3,6 +3,9 @@ import LicenseDto from "@/views/Dto/TestingEquipment/License"
 import RepairDto from "@/views/Dto/TestingEquipment/Repair"
 import * as Mapping from "@/views/Mapping/TestingEquipment"
 import uuid from "@/utils/uuid"
+import constant from '@/utils/constant'
+import * as TestingEquipmentAPI from '@/api/demo/TestingEquipment'
+import * as OrganisationAPI from '@/api/demo'
 /* eslint-disable */
 export default {
     data() {
@@ -12,6 +15,57 @@ export default {
         }
     },
     methods: {
+        async loadFromServer(mrid) {
+            try {
+                const data = await TestingEquipmentAPI.getTestingEquipmentById(mrid)
+                const dto = new TestingEquipmentDto()
+                const properties = Object.assign(dto.properties, data.properties || {})
+                Object.assign(dto, data)
+                dto.properties = properties
+                this.testingEquipmentDto = dto
+                this.oldTestingEquipmentDto = JSON.parse(JSON.stringify(dto))
+                return { success: true }
+            } catch (error) {
+                this.$message.error('Cannot load testing equipment from server: ' + error.message)
+                return { success: false, error }
+            }
+        },
+
+        async saveToServer() {
+            const dto = this.testingEquipmentDto
+            if (dto.attachments && dto.attachments.length) {
+                this.$message.warning('Server attachments are not supported yet. Remove attachments before saving online.')
+                return { success: false }
+            }
+            const errors = this.validateBeforeSave(dto)
+            if (errors.length) {
+                this.$message.error(errors.join('; '))
+                return { success: false, errors }
+            }
+            try {
+                await OrganisationAPI.getOrganisationById(dto.properties.owner_organisation_id)
+            } catch (error) {
+                this.$message.warning('Owner/Customer organisation is not on the server. Save cancelled.')
+                return { success: false, error }
+            }
+            try {
+                this.fillMrids(dto)
+                const serverDto = JSON.parse(JSON.stringify(dto))
+                delete serverDto.user
+                delete serverDto.userId
+                delete serverDto.userIdentifiedObjectId
+                const saved = await TestingEquipmentAPI.pushTestingEquipment(serverDto)
+                dto.mrid = String(saved.mrid || dto.mrid)
+                dto.properties.mrid = dto.mrid
+                this.oldTestingEquipmentDto = JSON.parse(JSON.stringify(dto))
+                this.$message.success('Testing equipment saved on server')
+                return { success: true, data: saved }
+            } catch (error) {
+                this.$message.error('Server save failed: ' + error.message)
+                return { success: false, error }
+            }
+        },
+
         // Sinh uuid cho các mrid còn trống (asset/testing_equipment + các bản ghi con)
         fillMrids(dto) {
             if (!dto.properties.mrid) dto.properties.mrid = uuid.newUuid()
@@ -116,6 +170,8 @@ export default {
             const empty = (v) => v == null || String(v).trim() === ''
 
             // ---- Bắt buộc ----
+            if (empty(p.owner_organisation_id) || String(p.owner_organisation_id) === String(constant.ROOT))
+                errors.push('Owner/Customer organisation is required')
             if (empty(p.serial_no)) errors.push('Serial number is required')
             if (empty(p.manufacturer)) errors.push('Manufacturer is required')
 
@@ -159,7 +215,8 @@ export default {
             try {
                 const errors = this.validateBeforeSave(this.testingEquipmentDto)
                 if (errors.length) {
-                    const msg = errors.length === 1 ? errors[0] : `${errors.length} fields need attention: ${errors[0]}`
+                    const msg = errors.length === 1 ? errors[0] :
+                        `${errors.length} fields need attention: ${errors.slice(0, 3).join('; ')}`
                     if (this.$message) this.$message.error(msg)
                     return { success: false, errors }
                 }

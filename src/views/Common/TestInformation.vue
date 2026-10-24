@@ -217,6 +217,7 @@ import CompareResultsPanel from '@/views/JobView/Common/CompareResultsPanel/inde
 import { notifyCompareOpened, notifyCompareClosed } from '@/utils/compareUiBus'
 import { UnitSymbol } from '@/views/Enum/UnitSymbol'
 import { JOB_TYPES } from '@/config/job-types'
+import { buildEmptyTestCondition } from '@/views/JobView/Common'
 export default {
     components: {
         Attachment,
@@ -256,6 +257,7 @@ export default {
         // Loại thiết bị, để panel tra cột mốc trong config/compare-keys
         compareAssetKind: { type: String, default: '' },
         showOilAndWindingTemperatures: { type: Boolean, default: false },
+        conditionColumns: { type: Array, default: () => [] },
         windingTemperatureLabel: { type: String, default: 'Winding temperature' }
     },
     data() {
@@ -266,6 +268,18 @@ export default {
         }
     },
     methods: {
+        ensureConditionFields() {
+            if (!this.data || !this.conditionColumns.length) return
+            if (!this.data.condition || typeof this.data.condition !== 'object') {
+                this.$set(this.data, 'condition', {})
+            }
+            const defaults = buildEmptyTestCondition(this.conditionColumns)
+            Object.keys(defaults).forEach((code) => {
+                if (!this.data.condition[code]) {
+                    this.$set(this.data.condition, code, defaults[code])
+                }
+            })
+        },
         ensureTestMetadata() {
             if (!this.data || typeof this.data !== 'object') return
             const job = this.jobProperties || {}
@@ -323,6 +337,7 @@ export default {
             immediate: true,
             handler() {
                 this.ensureTestMetadata()
+                this.ensureConditionFields()
             }
         },
         attachment: {

@@ -5,6 +5,7 @@
         <th style="width:130px;">Code</th>
         <th style="width:140px;">Category</th>
         <th>Feature</th>
+        <th style="width:68px;" title="Include the field's stored unit when exporting">Unit</th>
         <th style="width:190px;">Coordinates</th>
         <th style="width:50px;"><el-button @click="$emit('add-row')" size="mini" type="primary"><i class="fa-solid fa-plus"></i></el-button></th>
         <th style="width:50px;"><el-button @click="$emit('clear-all')" size="mini" type="danger"><i class="fa-solid fa-trash"></i></el-button></th>
@@ -26,6 +27,7 @@
               </el-select>
             </div>
           </td>
+          <td style="text-align:center;"><el-checkbox v-model="row.includeUnit" /></td>
           <td>
             <template v-if="row.coordinates && row.coordinates.length">
               <el-tag v-for="coord in row.coordinates" :key="coord" size="mini" type="info" style="margin:2px;font-size:11px;">{{ coord }}</el-tag>

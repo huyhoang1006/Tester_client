@@ -1641,10 +1641,10 @@ export const readWordForImport = () => {
                         tmplText   = tmplParas.length ? getParaText(tmplParas, pos.para) : ''
                     }
  
-                    // Tách prefix/suffix y hệt Excel (reuse extractValue đã có)
+                    // Word placeholders include braces; strip them with the surrounding label.
                     let extracted = filledText
                     if (tmplText && tmplText !== filledText) {
-                        try { extracted = extractValue(tmplText, filledText, code) } catch(e) { /* Fall back to the filled text. */ }
+                        try { extracted = extractValueWordTE(tmplText, filledText, code) } catch(e) { /* Fall back to the filled text. */ }
                     }
                     codeValueMap[code].push(extracted.trim())
                 }
@@ -1708,6 +1708,22 @@ function extractValueWordTE(templateStr, filledStr, code) {
     var prefix = null
     var suffix = null
 
+    // A cell may contain two fields, e.g. "{A12}/{A14}" for current/duration.
+    var placeholders = [...templateStr.matchAll(/\{([A-Za-z][A-Za-z0-9]*)\}/g)]
+    if (placeholders.length > 1 && placeholders.some(match => match[1] === code)) {
+        var escapeLiteral = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        var pattern = '^'
+        var offset = 0
+        placeholders.forEach(match => {
+            pattern += escapeLiteral(templateStr.substring(offset, match.index))
+            pattern += match[1] === code ? '([\\s\\S]*?)' : '[\\s\\S]*?'
+            offset = match.index + match[0].length
+        })
+        pattern += escapeLiteral(templateStr.substring(offset)) + '$'
+        var multiMatch = new RegExp(pattern).exec(filledStr)
+        if (multiMatch) return multiMatch[1]
+    }
+
     // Ưu tiên placeholder {code}
     var placeholder = '{' + code + '}'
     var idx = templateStr.indexOf(placeholder)
@@ -1732,6 +1748,10 @@ function extractValueWordTE(templateStr, filledStr, code) {
     // Strip mềm: bỏ prefix/suffix nếu khớp riêng lẻ (file điền lệch nhẹ)
     var value = filledStr
     if (prefix && value.startsWith(prefix)) value = value.substring(prefix.length)
+    else if (prefix && prefix.includes(':') && value.includes(':')) {
+        var label = text => text.substring(0, text.indexOf(':')).replace(/\([^)]*\)/g, '').trim()
+        if (label(prefix) === label(value)) value = value.substring(value.indexOf(':') + 1)
+    }
     if (suffix && value.endsWith(suffix)) value = value.substring(0, value.length - suffix.length)
     return value
 }

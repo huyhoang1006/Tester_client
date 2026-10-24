@@ -5,7 +5,7 @@
                 <i class="fa-solid fa-diagram-project"></i>
             </button>
 
-            <button v-if="clientSlide" type="button" class="rail-tab" :class="{ active: activeTab === 'testingEquipment' }" title="Testing Equipment" @click="handleShowEquipment">
+            <button type="button" class="rail-tab" :class="{ active: activeTab === 'testingEquipment' }" title="Testing Equipment" @click="handleShowEquipment">
                 <i class="fa-solid fa-screwdriver-wrench"></i>
             </button>
 

@@ -40,22 +40,22 @@
                 <div class="panel">
                     <div class="panel-header">Inventory & Status</div>
                     <div class="frow">
-                        <div class="flabel">Status</div>
+                        <div class="flabel">Owner/Customer <span class="req">*</span></div>
                         <div class="fvalue">
-                            <select class="inp" v-model="form.status">
-                                <option value="Available">Available</option>
-                                <option value="InUse">In use</option>
-                                <option value="UnderRepair">Under repair</option>
-                                <option value="Retired">Retired</option>
-                            </select>
+                            <organisation-tree-picker v-model="form.owner_organisation_id" title="Select owner/customer organisation"
+                                :allow-root="false" :server-mode="serverMode" />
                         </div>
                     </div>
                     <div class="frow">
-                        <div class="flabel">Equipment role</div>
+                        <div class="flabel">Status</div>
                         <div class="fvalue">
-                            <select class="inp" v-model.number="form.is_accessory">
-                                <option :value="0">Main equipment</option>
-                                <option :value="1">Accessory equipment</option>
+                            <select class="inp" v-model="form.status">
+                                <option v-for="status in equipmentStatuses" :key="status.value" :value="status.value">
+                                    {{ status.label }}
+                                </option>
+                                <option v-if="form.status && !isKnownStatus" :value="form.status">
+                                    {{ form.status }}
+                                </option>
                             </select>
                         </div>
                     </div>
@@ -85,10 +85,16 @@
 /* eslint-disable */
 import { country } from '@/views/ConstantAsset/index'
 import MANUFACTURER_MAP from '@/views/ConstantAsset/manufacturer.js'
+import OrganisationTreePicker from './organisationTreePicker.vue'
+import { equipmentStatuses } from '../statusOptions'
 
 export default {
     name: 'TeOverview',
-    props: { data: { type: Object, default: () => ({}) } },
+    components: { OrganisationTreePicker },
+    props: {
+        data: { type: Object, default: () => ({}) },
+        serverMode: { type: Boolean, default: false }
+    },
     data() {
         // local proxy referencing the same object so v-model doesn't
         // mutate the prop directly (avoids vue/no-mutating-props)
@@ -98,6 +104,8 @@ export default {
         data(val) { this.form = val }
     },
     computed: {
+        equipmentStatuses() { return equipmentStatuses },
+        isKnownStatus() { return equipmentStatuses.some(status => status.value === this.form.status) },
         countryList() { return country.default },
         manufacturerList() { return MANUFACTURER_MAP['TestingEquipmentDto'] || [] },
         // đảm bảo giá trị đang có (kể cả tự nhập/từ DB) luôn nằm trong option

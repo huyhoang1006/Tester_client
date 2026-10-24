@@ -92,6 +92,7 @@ export const updateDatabase = async () => {
         await databaseInitFunc.syncSchemaTables(db)
         await databaseInitFunc.ensureTransformerVectorGroupColumns(db)
         await databaseInitFunc.ensureSubstationOperatingDateColumn(db)
+        await databaseInitFunc.ensureTestingEquipmentOrganisationColumns(db)
         await databaseInitFunc.ensureCtCoreInfoClassRatingColumns(db)
         await databaseInitFunc.ensureWorkTaskMetadataColumns(db)
         const sfraMigration = await migrateLegacySfraTraces(db)
@@ -109,16 +110,14 @@ export const updateDatabase = async () => {
     }
 
     if (oldVersion) {
-        // These procedures were added after databases in the field had already
-        // advanced their user_version. Seed only this small, idempotent catalogue
-        // slice on every startup so procedure_asset can always satisfy its FKs.
+        // Seed later catalogue additions on existing databases without a full refresh.
         try {
             await runAsync('BEGIN TRANSACTION', db)
-            await procedureFunc.ensureDynamicContactResistanceProcedures(db)
+            await procedureFunc.ensureAdditionalTestProcedures(db)
             await runAsync('COMMIT', db)
         } catch (procedureError) {
             await runAsync('ROLLBACK', db).catch(() => {})
-            console.error('[DB] Dynamic Contact Resistance procedure sync failed:', procedureError)
+            console.error('[DB] Additional test procedure sync failed:', procedureError)
         }
 
         // PTM Transformer imports use measurement definitions that may have been

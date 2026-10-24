@@ -36,6 +36,7 @@
                                 <test-information
                                     :title="item.name"
                                     :data="item.testCondition"
+                                    :condition-columns="conditionColumnsOf(item.testTypeCode)"
                                     :job-properties="voltageTransformerJobDto.properties"
                                     :assetData="assetData"
                                     :attachment="item.testCondition.attachmentData"
@@ -50,6 +51,7 @@
                                 <component
                                     :is="item.testTypeCode"
                                     :data="item.data"
+                                    :definition="definitionFor(item.testTypeCode)"
                                     :asset="assetData"
                                     :testCondition="item.testCondition"
                                     :testAssessment="item.testAssessment"
@@ -74,8 +76,10 @@ import testingEquipment from './components/TestingEquipment/index.vue'
 import SelectTest from './components/SelectTest'
 import testInformation from '@/views/Common/TestInformation.vue'
 import voltageTransformerTestMap from '@/config/test-definitions/VoltageTransformer'
+import powerFrequencyCondition from '@/config/testing-condition/VoltageTransformer/PowerFrequencyVoltageWithstand.json'
 import DcWindingResistance from './components/DcWindingResistance.vue'
 import InsulationResistance from './components/InsulationResistance.vue'
+import PowerFrequencyVoltageWithstand from '@/views/JobView/Common/PowerFrequencyVoltageWithstand.vue'
 import GeneralInspection from './components/GeneralInspection.vue'
 import VTRatio from './components/VTRatio.vue'
 import VTDfcap from './components/VTDfcap.vue'
@@ -89,6 +93,7 @@ export default {
         testInformation,
         DcWindingResistance,
         InsulationResistance,
+        PowerFrequencyVoltageWithstand,
         GeneralInspection,
         VTDfcap,
         testingEquipment,
@@ -119,6 +124,12 @@ export default {
         }
     },
     methods: {
+        definitionFor(testTypeCode) {
+            return voltageTransformerTestMap[testTypeCode]
+        },
+        conditionColumnsOf(testTypeCode) {
+            return testTypeCode === 'PowerFrequencyVoltageWithstand' ? powerFrequencyCondition.columns : []
+        },
         updateAttachmentOverView(attachment) {
             this.voltageTransformerJobDto.attachmentData = attachment
         },

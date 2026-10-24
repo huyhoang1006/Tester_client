@@ -29,6 +29,7 @@ export const mapServerToDto = (s) => {
     p.manufacturer_year = lc.manufacturedDate || lc.manufactured_date || s.manufacturerYear || '';
     p.in_use_date = iud.inUseDate || iud.in_use_date || s.inUseDate || s.in_use_date || s.purchaseDate || '';
     p.asset_tag = s.assetTag || s.asset_tag || '';
+    p.owner_organisation_id = s.ownerOrganisationId || s.owner_organisation_id || s.customerOrganisationId || s.customer_organisation_id || s.organisationId || s.organisation_id || '';
     p.status = s.status || '';
     p.country_of_origin = s.countryOfOrigin || s.country_of_origin || '';
     p.type = s.type || '';

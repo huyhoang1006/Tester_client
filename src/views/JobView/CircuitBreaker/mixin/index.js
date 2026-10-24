@@ -6,6 +6,7 @@ import mixins from '../components/SelectTest/mixin'
 import { validateTestingEquipmentRows } from '@/views/JobView/Common/testingEquipmentValidation'
 import { validateTerminalRows } from '@/views/JobView/Common/terminalSelect'
 import { buildCircuitBreakerTerminals } from '@/views/JobView/Common/terminalOptions'
+import { validatePowerFrequencyTestRows } from '@/views/JobView/Common/powerFrequencyTest'
 
 export default {
     mixins: [mixins],
@@ -30,6 +31,11 @@ export default {
             if (!terminalValidation.valid) {
                 this.$message.warning(terminalValidation.message)
                 return { success: false, validation: true, message: terminalValidation.message }
+            }
+            const powerFrequencyValidation = validatePowerFrequencyTestRows(this.circuitBreakerJobDto.testList)
+            if (!powerFrequencyValidation.valid) {
+                this.$message.warning(powerFrequencyValidation.message)
+                return { success: false, validation: true, message: powerFrequencyValidation.message }
             }
             try {
                 if (!this.circuitBreakerJobDto.properties.name || this.circuitBreakerJobDto.properties.name === '') {

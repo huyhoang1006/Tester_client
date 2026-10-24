@@ -71,9 +71,14 @@
 
 <script>
 /* eslint-disable */
+import * as TestingEquipmentAPI from '@/api/demo/TestingEquipment'
 export default {
     name: 'TeAccessories',
-    props: { items: { type: Array, default: () => [] } },
+    props: {
+        items: { type: Array, default: () => [] },
+        serverMode: { type: Boolean, default: false },
+        organisationId: { type: [String, Number], default: '' }
+    },
     data() {
         return { pickerOpen: false, pickerSearch: '', pool: [], picked: [], loading: false }
     },
@@ -88,13 +93,23 @@ export default {
     },
     methods: {
         async openPicker() {
+            if (this.serverMode && !this.organisationId) {
+                this.$message.warning('Select Owner/Customer before adding an accessory')
+                return
+            }
             this.pickerOpen = true
             this.picked = []
             this.pickerSearch = ''
             this.loading = true
             try {
-                const rs = await window.electronAPI.getAllAccessories()
-                this.pool = (rs && rs.success && Array.isArray(rs.data)) ? rs.data : []
+                if (this.serverMode) {
+                    const rows = await TestingEquipmentAPI.getAccessories({ organisationId: this.organisationId })
+                    this.pool = Array.isArray(rows) ? rows.filter(row =>
+                        String(row.owner_organisation_id) === String(this.organisationId)) : []
+                } else {
+                    const rs = await window.electronAPI.getAllAccessories()
+                    this.pool = (rs && rs.success && Array.isArray(rs.data)) ? rs.data : []
+                }
             } catch (e) {
                 console.error('load accessories pool failed:', e)
                 this.pool = []

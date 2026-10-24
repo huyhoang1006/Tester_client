@@ -5,10 +5,28 @@
             <div class="tl-search">
                 <span class="tl-search-ico">⌕</span>
                 <input class="tl-search-input" v-model="keyword"
-                    placeholder="Search by name, model, serial no.…" />
+                    :placeholder="serverMode ? 'Search overview fields…' : 'Search by name, model, serial no.…'" />
                 <button v-if="keyword" class="tl-clear" @click="keyword = ''" title="Clear">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
+            </div>
+            <div class="tl-scope-row">
+                <div v-if="!serverMode" class="tl-scope-switch" role="group" aria-label="Equipment list scope">
+                    <button type="button" :class="{ active: scopeMode === 'user' }"
+                        :aria-pressed="scopeMode === 'user'" @click="setScope('user')">
+                        <i class="fa-solid fa-user" aria-hidden="true"></i> All mine
+                    </button>
+                    <button type="button" :class="{ active: scopeMode === 'organisation' }"
+                        :aria-pressed="scopeMode === 'organisation'" @click="setScope('organisation')">
+                        <i class="fa-solid fa-sitemap" aria-hidden="true"></i> Organisation tree
+                    </button>
+                </div>
+                <div v-if="serverMode || scopeMode === 'organisation'" class="tl-org-picker">
+                    <span>Owner/Customer</span>
+                    <OrganisationTreePicker :value="serverMode ? serverOrganisationId : organisationId"
+                        title="Select owner/customer organisation" :clearable="serverMode" :server-mode="serverMode"
+                        @input="selectOrganisation" />
+                </div>
             </div>
             <div class="tl-toolbar-right">
                 <button class="tl-new-btn" @click="$emit('create')" title="Create a new testing equipment">
@@ -19,7 +37,7 @@
                 </button>
 
                 <!-- Import dropdown -->
-                <div class="tl-dd">
+                <div v-if="!serverMode" class="tl-dd">
                     <button class="tl-icon-btn" :class="{ 'is-open': openMenu === 'import' }"
                         @click.stop="toggleMenu('import')" title="Import equipment list from a file">
                         <i class="fa-solid fa-file-import"></i> Import
@@ -42,7 +60,7 @@
                 </div>
 
                 <!-- Export dropdown -->
-                <div class="tl-dd">
+                <div v-if="!serverMode" class="tl-dd">
                     <button class="tl-icon-btn" :class="{ 'is-open': openMenu === 'export' }"
                         @click.stop="toggleMenu('export')" title="Export equipment list to a file">
                         <i class="fa-solid fa-file-export"></i> Export
@@ -60,13 +78,13 @@
                         </button>
                     </div>
                 </div>
-                <button class="tl-sync-btn" :disabled="syncing" @click="syncFromServer" title="Fetch the full list from server and download to this client">
-                    <span class="tl-sync-ico" :class="{ spin: syncing }">↓</span>
-                    {{ syncing ? 'Syncing…' : 'Sync from server' }}
+                <button v-if="serverMode" class="tl-sync-btn" :disabled="syncing || !selectedKey" @click="downloadSelected" title="Download selected equipment to this client">
+                    <i class="fa-solid fa-download" aria-hidden="true"></i>
+                    {{ syncing ? 'Downloading…' : 'Download selected' }}
                 </button>
-                <button class="tl-sync-btn" :disabled="pushing" @click="pushToServer" title="Push the local list to the server to update it">
-                    <span class="tl-sync-ico" :class="{ spin: pushing }">↑</span>
-                    {{ pushing ? 'Pushing…' : 'Push to server' }}
+                <button v-else class="tl-sync-btn" :disabled="pushing || !selectedKey" @click="pushSelected" title="Push selected equipment to server">
+                    <i class="fa-solid fa-upload" aria-hidden="true"></i>
+                    {{ pushing ? 'Pushing…' : 'Push selected' }}
                 </button>
                 <div class="tl-count">{{ filtered.length }} / {{ effectiveItems.length }} equipment</div>
             </div>
@@ -87,18 +105,23 @@
                 <tbody>
                     <tr v-if="!filtered.length">
                         <td colspan="5" class="tl-empty">
-                            {{ keyword ? 'No matching equipment' : 'No testing equipment yet — click “+ New” to create one' }}
+                            {{ loadingList ? 'Loading equipment…' : keyword ? 'No matching equipment' : 'No testing equipment in this view' }}
                         </td>
                     </tr>
                     <tr v-for="it in filtered" :key="it.mrid || it.id" class="tl-row"
-                        :class="{ 'is-acc': it.is_accessory }"
-                        @click="$emit('open', it)" title="Click to view details">
+                        :class="{ 'is-acc': it.is_accessory, 'is-selected': selectedKey === (it.mrid || it.id) }"
+                        :aria-selected="selectedKey === (it.mrid || it.id)"
+                        tabindex="0"
+                        @click="toggleSelection(it, $event)"
+                        @keydown.enter="toggleSelection(it)"
+                        @keydown.space.prevent="toggleSelection(it)"
+                        @dblclick="openEquipment(it)" title="Double-click to view details">
                         <td class="c-name">
                             <div class="tl-name">
                                 {{ it.name || '—' }}
                                 <span v-if="it.is_accessory" class="tl-acc-badge">Accessory</span>
                             </div>
-                            <div class="tl-sub">{{ it.manufacturer }}<span v-if="it.customer"> · {{ it.customer }}</span></div>
+                            <div class="tl-sub">{{ it.manufacturer }}<span v-if="it.organisation"> · {{ it.organisation }}</span></div>
                         </td>
                         <td class="c-model">{{ it.model || '—' }}</td>
                         <td class="c-serial">{{ it.serial || '—' }}</td>
@@ -144,7 +167,6 @@
 <script>
 /* eslint-disable */
 import * as TestingEquipmentAPI from '@/api/demo/TestingEquipment'
-import * as ServerMapper from '@/views/Mapping/ServerToDTO/TestingEquipment'
 import * as Mapper from '@/views/Mapping/TestingEquipment'
 import uuid from '@/utils/uuid'
 import ImportConflictDialog from './importConflictDialog.vue'
@@ -152,19 +174,27 @@ import TemplateImportExport from './templateImportExport.vue'
 import ColumnMappingImport from './columnMappingImport.vue'
 import ImportProgressDialog from '@/views/TreeNode/dialogs/ImportProgressDialog.vue'
 import { splitByDuplicate } from '../services/duplicateCheck'
+import { equipmentStatusTag } from '../statusOptions'
+import OrganisationTreePicker from './organisationTreePicker.vue'
+import constant from '@/utils/constant'
+import * as OrganisationAPI from '@/api/demo'
+import { toLocalMrid, toServerId } from '@/utils/serverId'
 
 const TE_JSON_VERSION = 'testing-equipment-json-v1'
 
 export default {
     name: 'TestingEquipmentList',
-    components: { ImportConflictDialog, TemplateImportExport, ColumnMappingImport, ImportProgressDialog },
+    components: { ImportConflictDialog, TemplateImportExport, ColumnMappingImport, ImportProgressDialog, OrganisationTreePicker },
     props: {
         // danh sách thiết bị; mặc định rỗng, dữ liệu lấy từ DB qua reload()
-        items: { type: Array, default: () => [] }
+        items: { type: Array, default: () => [] },
+        serverMode: { type: Boolean, default: false }
     },
     data() {
         return {
             keyword: '', syncing: false, pushing: false, refreshing: false, dbItems: null, openMenu: null,
+            selectedKey: null,
+            scopeMode: 'user', organisationId: constant.ROOT, serverOrganisationId: '', loadingList: false, reloadSequence: 0,
             // import JSON: xử lý trùng
             conflictVisible: false,
             conflictRows: [],
@@ -184,6 +214,13 @@ export default {
     created() {
         this.reload()
     },
+    watch: {
+        serverMode() {
+            this.selectedKey = null
+            this.keyword = ''
+            this.reload()
+        }
+    },
     beforeDestroy() {
         document.removeEventListener('click', this.closeMenu)
     },
@@ -196,13 +233,33 @@ export default {
             const k = this.keyword.trim().toLowerCase()
             if (!k) return this.effectiveItems
             return this.effectiveItems.filter(it =>
-                [it.name, it.model, it.serial, it.manufacturer, it.customer]
+                [it.name, it.model, it.serial, it.manufacturer, it.organisation,
+                    ...(this.serverMode ? [it.asset_tag, it.country_of_origin, it.manufacturer_year,
+                        it.in_use_date, it.status, it.comment, it.type] : [])]
                     .filter(Boolean)
                     .some(v => String(v).toLowerCase().includes(k))
             )
         }
     },
     methods: {
+        setScope(mode) {
+            this.scopeMode = mode
+            this.reload()
+        },
+        selectOrganisation(mrid) {
+            if (this.serverMode) this.serverOrganisationId = mrid || ''
+            else this.organisationId = mrid || constant.ROOT
+            this.reload()
+        },
+        toggleSelection(it, event) {
+            if (event && event.detail > 1) return
+            const key = it.mrid || it.id
+            this.selectedKey = this.selectedKey === key ? null : key
+        },
+        openEquipment(it) {
+            this.selectedKey = it.mrid || it.id
+            this.$emit('open', it)
+        },
         // ===== Import / Export dropdown (UI) =====
         toggleMenu(name) {
             this.openMenu = this.openMenu === name ? null : name
@@ -414,16 +471,38 @@ export default {
             }
         },
 
-        // Đọc danh sách từ DB local (theo user hiện tại)
+        // Đọc danh sách từ DB local theo chế độ đang chọn.
         async reload() {
+            const requestId = ++this.reloadSequence
+            const organisationId = this.scopeMode === 'organisation' ? this.organisationId : null
+            this.loadingList = true
+            this.dbItems = []
             try {
+                if (this.serverMode) {
+                    const rows = await TestingEquipmentAPI.getAllTestingEquipment(
+                        this.serverOrganisationId ? { organisationId: this.serverOrganisationId } : {})
+                    if (requestId !== this.reloadSequence) return false
+                    this.dbItems = Array.isArray(rows) ? rows : []
+                    if (!this.dbItems.some(it => String(it.mrid) === String(this.selectedKey))) this.selectedKey = null
+                    return true
+                }
                 const user = this.$store && this.$store.getters.getUser
                 const userId = user && user.user_id
-                const rs = await window.electronAPI.getAllTestingEquipmentList(userId)
-                this.dbItems = (rs && rs.success && Array.isArray(rs.data)) ? rs.data : []
+                const rs = await window.electronAPI.getAllTestingEquipmentList(userId, organisationId)
+                if (requestId !== this.reloadSequence) return false
+                if (!rs || !rs.success) throw new Error((rs && rs.message) || 'Cannot load equipment')
+                this.dbItems = Array.isArray(rs.data) ? rs.data : []
+                if (!this.dbItems.some(it => (it.mrid || it.id) === this.selectedKey)) this.selectedKey = null
+                return true
             } catch (e) {
+                if (requestId !== this.reloadSequence) return false
                 console.error('reload list failed:', e)
                 this.dbItems = []
+                if (this.$message) this.$message.error(
+                    (this.serverMode ? 'Cannot load server testing equipment: ' : 'Cannot load testing equipment: ') + e.message)
+                return false
+            } finally {
+                if (requestId === this.reloadSequence) this.loadingList = false
             }
         },
 
@@ -432,44 +511,115 @@ export default {
             if (this.refreshing) return
             this.refreshing = true
             try {
-                await this.reload()
-                if (this.$message) this.$message.success('List refreshed')
+                if (await this.reload() && this.$message) this.$message.success('List refreshed')
             } finally {
                 this.refreshing = false
             }
         },
 
-        // Nút Push: đẩy toàn bộ danh sách local lên server để cập nhật
-        async pushToServer() {
-            if (this.pushing) return
-            const rows = this.dbItems || []
-            if (!rows.length) {
-                if (this.$message) this.$message.info('No equipment to push')
-                return
+        selectedEquipment() {
+            return this.effectiveItems.find(it => String(it.mrid || it.id) === String(this.selectedKey))
+        },
+
+        async findServerParent(localOrganisationId) {
+            let serverId = toServerId(localOrganisationId)
+            if (!/^\d+$/.test(String(serverId)) && window.electronAPI.getSyncStateByMrid) {
+                const rs = await window.electronAPI.getSyncStateByMrid(localOrganisationId)
+                serverId = rs && rs.success && rs.data && rs.data.server_id
             }
+            if (!/^\d+$/.test(String(serverId))) return null
+            try {
+                const organisation = await OrganisationAPI.getOrganisationById(serverId)
+                return organisation && (organisation.id || organisation.mrid) ? String(serverId) : null
+            } catch (error) {
+                return null
+            }
+        },
+
+        async findLocalParent(serverOrganisationId, userId) {
+            if (!userId || !window.electronAPI.getIdentifiedObjectIdsByUser) return null
+            const ownership = await window.electronAPI.getIdentifiedObjectIdsByUser(userId)
+            if (!ownership || !ownership.success || !Array.isArray(ownership.data)) return null
+            const ownedIds = new Set(ownership.data.map(String))
+            const candidates = [
+                toLocalMrid(serverOrganisationId, { mode: 'organisation' }, userId),
+                toLocalMrid(serverOrganisationId, { mode: 'organisation' }),
+                String(serverOrganisationId)
+            ]
+            for (const id of new Set(candidates)) {
+                if (!ownedIds.has(String(id))) continue
+                const rs = await window.electronAPI.getOrganisationEntityByMrid(id)
+                if (rs && rs.success && rs.data) return id
+            }
+            return null
+        },
+
+        async pushSelected() {
+            const selected = this.selectedEquipment()
+            if (!selected || this.pushing) return
             this.pushing = true
             try {
-                let ok = 0, fail = 0
-                for (const r of rows) {
-                    try {
-                        // lấy entity đầy đủ từ DB rồi đẩy lên server
-                        const detail = await window.electronAPI.getTestingEquipmentEntityByMrid(r.mrid)
-                        if (!detail || !detail.success || !detail.data) { fail++; continue }
-                        await TestingEquipmentAPI.pushTestingEquipment(detail.data)
-                        ok++
-                    } catch (e) {
-                        console.error('push item failed:', r.mrid, e)
-                        fail++
-                    }
+                const detail = await window.electronAPI.getTestingEquipmentEntityByMrid(selected.mrid)
+                if (!detail || !detail.success || !detail.data) throw new Error('Cannot read local equipment')
+                const dto = Mapper.mapEntityToDto(detail.data)
+                if (dto.attachments && dto.attachments.length) {
+                    this.$message.warning('Cannot push equipment with attachments: server file upload is not available yet.')
+                    return
                 }
-                if (this.$message) {
-                    this.$message.success(`Pushed ${ok} equipment` + (fail ? `, ${fail} failed` : ''))
+                const parentId = await this.findServerParent(dto.properties.owner_organisation_id)
+                if (!parentId) {
+                    this.$message.warning('Cannot push: Owner/Customer organisation does not exist on the server.')
+                    return
                 }
+                dto.properties.owner_organisation_id = parentId
+                delete dto.user
+                delete dto.userId
+                delete dto.userIdentifiedObjectId
+                await TestingEquipmentAPI.pushTestingEquipment(dto)
+                this.$message.success('Testing equipment pushed to server')
             } catch (error) {
-                console.error('pushToServer error:', error)
-                if (this.$message) this.$message.error('Push failed: ' + (error.message || error))
+                this.$message.error('Push failed: ' + error.message)
             } finally {
                 this.pushing = false
+            }
+        },
+
+        async downloadSelected() {
+            const selected = this.selectedEquipment()
+            if (!selected || this.syncing) return
+            this.syncing = true
+            try {
+                const serverDto = await TestingEquipmentAPI.getTestingEquipmentById(selected.mrid)
+                const user = this.$store && this.$store.getters.getUser
+                const userId = user && user.user_id
+                const parentId = await this.findLocalParent(serverDto.properties.owner_organisation_id, userId)
+                if (!parentId) {
+                    this.$message.warning('Cannot download: Owner/Customer organisation does not exist on this client.')
+                    return
+                }
+                const dto = JSON.parse(JSON.stringify(serverDto))
+                dto.properties.owner_organisation_id = parentId
+                dto.userId = userId || ''
+                dto.user = user || null
+                const current = await window.electronAPI.getTestingEquipmentEntityByMrid(selected.mrid)
+                const oldEntity = current && current.success && current.data ? current.data : null
+                if (oldEntity) {
+                    const localDto = Mapper.mapEntityToDto(oldEntity)
+                    dto.productAssetModelId = localDto.productAssetModelId
+                    dto.lifecycleDateId = localDto.lifecycleDateId
+                    dto.inUseDateId = localDto.inUseDateId
+                    dto.attachmentId = localDto.attachmentId
+                    dto.userIdentifiedObjectId = localDto.userIdentifiedObjectId
+                }
+                this._fillMrids(dto)
+                const entity = Mapper.mapDtoToEntity(dto)
+                const rs = await window.electronAPI.insertTestingEquipmentEntity(oldEntity, entity)
+                if (!rs || !rs.success) throw new Error((rs && rs.message) || 'Local save failed')
+                this.$message.success('Testing equipment downloaded to this client')
+            } catch (error) {
+                this.$message.error('Download failed: ' + error.message)
+            } finally {
+                this.syncing = false
             }
         },
 
@@ -485,8 +635,10 @@ export default {
                 return // người dùng bấm Cancel
             }
             try {
-                const rs = await window.electronAPI.deleteTestingEquipmentEntity(it.mrid)
-                if (rs && rs.success) {
+                const rs = this.serverMode
+                    ? await TestingEquipmentAPI.deleteTestingEquipment(it.mrid)
+                    : await window.electronAPI.deleteTestingEquipmentEntity(it.mrid)
+                if (this.serverMode || (rs && rs.success)) {
                     if (this.$message) this.$message.success('Deleted')
                     await this.reload()
                 } else {
@@ -500,18 +652,7 @@ export default {
 
         // Status: DB dùng repair_count, mock dùng cột repair (text)
         statusOf(it) {
-            const map = {
-                Available: { label: 'Available', cls: 'green' },
-                InUse: { label: 'In use', cls: 'blue' },
-                UnderRepair: { label: 'Under repair', cls: 'orange' },
-                Retired: { label: 'Retired', cls: 'gray' }
-            }
-            if (it.status && map[it.status]) return map[it.status]
-            // repair mặc định là Completed -> chỉ Under repair khi còn bản ghi InProgress
-            const hasInProgressRepair = it.repair_in_progress_count > 0
-            return hasInProgressRepair
-                ? { label: 'Under repair', cls: 'orange' }
-                : { label: 'Available', cls: 'green' }
+            return equipmentStatusTag(it.status || 'Available')
         },
 
         // Sinh uuid cho các mrid còn trống trong 1 DTO (server có thể chưa cấp)
@@ -521,47 +662,15 @@ export default {
             if (!dto.productAssetModelId) dto.productAssetModelId = uuid.newUuid()
             if (!dto.lifecycleDateId) dto.lifecycleDateId = uuid.newUuid()
             if (!dto.inUseDateId) dto.inUseDateId = uuid.newUuid()
+            if (!dto.attachmentId) dto.attachmentId = uuid.newUuid()
+            if (!dto.userIdentifiedObjectId) dto.userIdentifiedObjectId = uuid.newUuid()
             for (const l of (dto.licenses || [])) if (!l.mrid) l.mrid = uuid.newUuid()
             for (const c of (dto.calibration || [])) if (!c.mrid) c.mrid = uuid.newUuid()
             for (const r of (dto.repairs || [])) if (!r.mrid) r.mrid = uuid.newUuid()
-        },
-
-        // Đồng bộ: lấy FULL danh sách trên server và download (insert/upsert) về DB client
-        async syncFromServer() {
-            if (this.syncing) return
-            this.syncing = true
-            try {
-                const list = await TestingEquipmentAPI.getAllTestingEquipment()
-                const rows = Array.isArray(list) ? list : (list && list.data) || []
-                if (!rows.length) {
-                    if (this.$message) this.$message.info('Server returned no testing equipment')
-                    return
-                }
-
-                let ok = 0, fail = 0
-                for (const serverItem of rows) {
-                    try {
-                        const dto = ServerMapper.mapServerToDto(serverItem)
-                        this._fillMrids(dto)
-                        const entity = Mapper.mapDtoToEntity(dto)
-                        const rs = await window.electronAPI.insertTestingEquipmentEntity(null, entity)
-                        rs && rs.success ? ok++ : fail++
-                    } catch (e) {
-                        console.error('sync item failed:', e)
-                        fail++
-                    }
-                }
-
-                if (this.$message) {
-                    this.$message.success(`Synced ${ok} equipment` + (fail ? `, ${fail} failed` : ''))
-                }
-                await this.reload()   // hiển thị lại từ DB sau khi download
-                this.$emit('synced', { ok, fail, total: rows.length })
-            } catch (error) {
-                console.error('syncFromServer error:', error)
-                if (this.$message) this.$message.error('Sync failed: ' + (error.message || error))
-            } finally {
-                this.syncing = false
+            for (const a of (dto.accessories || [])) {
+                if (!a.mrid) a.mrid = uuid.newUuid()
+                if (!a.pamId) a.pamId = uuid.newUuid()
+                if (!a.uioId) a.uioId = uuid.newUuid()
             }
         }
     }
@@ -577,6 +686,23 @@ export default {
     font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif; color: var(--gray-700);
 }
 .tl-toolbar { display: flex; flex-direction: column; align-items: stretch; gap: 10px; margin-bottom: 14px; }
+.tl-scope-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.tl-scope-switch { display: inline-flex; border: 1px solid var(--gray-300); border-radius: 6px; overflow: hidden; background: #fff; }
+.tl-scope-switch button { display: inline-flex; align-items: center; gap: 7px; border: 0; background: transparent; color: var(--gray-700); padding: 8px 12px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.tl-scope-switch button + button { border-left: 1px solid var(--gray-300); }
+.tl-scope-switch button:hover { background: var(--gray-100); }
+.tl-scope-switch button.active { background: var(--blue-900); color: #fff; }
+.tl-scope-switch button.active:hover { background: var(--blue-800); }
+.tl-scope-switch button:focus-visible { outline: 2px solid var(--blue-900); outline-offset: -2px; }
+.tl-org-picker { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.tl-org-picker > span { color: var(--gray-600); font-size: 12px; font-weight: 700; }
+.tl-org-picker > .org-picker { width: min(340px, 60vw); }
+@media (max-width: 640px) {
+    .tl-scope-switch { width: 100%; }
+    .tl-scope-switch button { flex: 1; justify-content: center; }
+    .tl-org-picker { width: 100%; }
+    .tl-org-picker > .org-picker { flex: 1; width: auto; }
+}
 .tl-search { position: relative; width: 100%; max-width: 420px; }
 .tl-search-ico { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--gray-400); font-size: 16px; }
 .tl-search-input {
@@ -691,6 +817,9 @@ export default {
 
 .tl-row { cursor: pointer; transition: background .12s; }
 .tl-row:hover { background: var(--blue-50); }
+.tl-row.is-selected, .tl-row.is-selected:hover { background: #dbeafe; }
+.tl-row.is-selected td:first-child { box-shadow: inset 3px 0 #1d4ed8; }
+.tl-row:focus-visible { outline: 2px solid #1d4ed8; outline-offset: -2px; }
 .tl-name { font-weight: 700; color: var(--gray-900); }
 .tl-sub { color: var(--gray-500); font-size: 11px; margin-top: 2px; }
 .tl-empty { text-align: center; color: var(--gray-400); padding: 26px; font-weight: 600; }
@@ -698,4 +827,8 @@ export default {
 .tag { display: inline-flex; align-items: center; border-radius: 999px; padding: 4px 11px; font-size: 12px; font-weight: 800; white-space: nowrap; }
 .tag.green { background: #dcfce7; color: #166534; }
 .tag.orange { background: #ffedd5; color: #9a3412; }
+.tag.blue { background: #dbeafe; color: #1e40af; }
+.tag.yellow { background: #fef9c3; color: #854d0e; }
+.tag.gray { background: #f3f4f6; color: #374151; }
+.tag.red { background: #fee2e2; color: #991b1b; }
 </style>

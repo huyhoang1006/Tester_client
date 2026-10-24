@@ -13,6 +13,12 @@
       "kind": "test"
     },
     {
+      "mrid": "8dd47a3b-3f39-4bf7-82c1-2e6387d70f11",
+      "code": "PowerFrequencyVoltageWithstand",
+      "name": "Power-frequency voltage withstand test",
+      "kind": "test"
+    },
+    {
       "mrid": "f6c60697-396c-4167-8000-fcf529434b29",
       "code": "CTRatio",
       "name": "CT ratio",

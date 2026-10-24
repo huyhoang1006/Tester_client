@@ -1,5 +1,10 @@
 <template>
     <div class="explorer">
+        <div v-if="initializingWorkspace || (clientSlide ? loadingClientTree : loadingServerTree)"
+            class="workspace-loading" role="status" aria-live="polite">
+            <i class="el-icon-loading workspace-loading-icon" aria-hidden="true"></i>
+            <span>{{ clientSlide ? 'Loading client workspace...' : 'Loading server workspace...' }}</span>
+        </div>
         <!-- Thanh công cụ -->
         <!-- Thanh điều hướng có thể kéo rộng/kéo hẹp -->
         <div class="resizable-sidebar" :class="{ 'full-height': activeWorkspaceTab !== 'tree' }">
@@ -124,13 +129,23 @@
             </div>
 
             <div v-show="activeWorkspaceTab === 'testingEquipment'" class="testing-equipment-workspace">
-                <div v-if="!testingEquipmentDetailVisible" class="testing-equipment-list-shell">
+                <div v-show="!testingEquipmentDetailVisible" class="testing-equipment-list-shell">
                     <TestingEquipmentList
-                        ref="testingEquipmentList"
+                        v-if="clientEquipmentOpened"
+                        v-show="clientSlide"
+                        ref="testingEquipmentClientList"
+                        :server-mode="false"
+                        @open="openTestingEquipment"
+                        @create="openTestingEquipment(null)" />
+                    <TestingEquipmentList
+                        v-if="serverEquipmentOpened"
+                        v-show="!clientSlide"
+                        ref="testingEquipmentServerList"
+                        :server-mode="true"
                         @open="openTestingEquipment"
                         @create="openTestingEquipment(null)" />
                 </div>
-                <div v-else class="testing-equipment-detail-shell">
+                <div v-if="testingEquipmentDetailVisible" class="testing-equipment-detail-shell">
                     <div class="testing-equipment-detail-bar">
                         <button type="button" class="testing-equipment-back" @click="closeTestingEquipmentDetail">
                             <i class="fa-solid fa-arrow-left"></i>
@@ -139,6 +154,7 @@
                     </div>
                     <TestingEquipmentView
                         ref="testingEquipmentView"
+                        :server-mode="!clientSlide"
                         :equipment="selectedTestingEquipment && !selectedTestingEquipment.mrid ? selectedTestingEquipment : null"
                         :equipmentMrid="selectedEquipmentMrid"
                         @saved="handleTestingEquipmentSaved" />
@@ -542,8 +558,14 @@ export default {
     },
     data() {
         return {
+            initializingWorkspace: true,
+            loadingClientTree: false,
+            loadingServerTree: false,
             activeWorkspaceTab: 'tree',
             clientWorkspaceTab: 'tree',
+            serverWorkspaceTab: 'tree',
+            clientEquipmentOpened: false,
+            serverEquipmentOpened: false,
             selectedEquipmentMrid: null,
             selectedTestingEquipment: null,
             testingEquipmentDetailVisible: false,
@@ -877,9 +899,13 @@ export default {
     mounted() {
         compareUiBus.$on(COMPARE_ACTIVE, this.handleCompareActive)
         this.$nextTick(async () => {
-            const restored = await this.restoreWorkspaceState();
-            if (!restored) {
-                await this.showLocationRoot();
+            try {
+                const restored = await this.restoreWorkspaceState();
+                if (!restored) {
+                    await this.showLocationRoot();
+                }
+            } finally {
+                this.initializingWorkspace = false
             }
         });
     },
@@ -888,15 +914,18 @@ export default {
     },
     watch: {
         clientSlide(value) {
+            this.testingEquipmentDetailVisible = false
+            this.selectedTestingEquipment = null
+            this.selectedEquipmentMrid = null
             if (value) {
                 this.activeWorkspaceTab = this.clientWorkspaceTab || 'tree'
                 this.$nextTick(() => {
                     if (this.$refs.treeToolBar) this.$refs.treeToolBar.activeTab = this.activeWorkspaceTab
                 })
             } else {
-                this.activeWorkspaceTab = 'tree'
+                this.activeWorkspaceTab = this.serverWorkspaceTab || 'tree'
                 this.$nextTick(() => {
-                    if (this.$refs.treeToolBar) this.$refs.treeToolBar.activeTab = 'explorer'
+                    if (this.$refs.treeToolBar) this.$refs.treeToolBar.activeTab = this.activeWorkspaceTab
                 })
             }
             this.persistWorkspaceState()
@@ -1108,6 +1137,7 @@ export default {
         handleExplorerTab() {
             this.activeWorkspaceTab = 'tree'
             if (this.clientSlide) this.clientWorkspaceTab = 'tree'
+            else this.serverWorkspaceTab = 'tree'
             if (this.$refs.treeToolBar) this.$refs.treeToolBar.activeTab = 'explorer'
             this.openImportDialog = false
             this.openExportDialog = false
@@ -1858,6 +1888,26 @@ export default {
     display: flex;
     flex-direction: column;
     height: 100%;
+    position: relative;
+}
+
+.workspace-loading {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.94);
+    color: #273446;
+    font-size: 14px;
+}
+
+.workspace-loading-icon {
+    color: #123e85;
+    font-size: 28px;
 }
 
 .resizable-sidebar {

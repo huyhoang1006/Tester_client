@@ -4,6 +4,7 @@ class TestingEquipmentInfo {
         this.mrid = '';
         this.work_id = null;
         this.asset_tag = '';
+        this.owner_organisation_id = null;
         this.is_accessory = 0;         // 1 = là phụ kiện (accessory), 0 = máy chính
     }
 }

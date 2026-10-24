@@ -2590,6 +2590,7 @@ CREATE TABLE IF NOT EXISTS "testing_equipment" (
 	"work_id"	TEXT,
 	"asset_tag"	TEXT,
 	"is_accessory"	INTEGER,
+	"owner_organisation_id"	TEXT,
 	PRIMARY KEY("mrid"),
 	FOREIGN KEY("mrid") REFERENCES "asset"("mrid") on delete cascade,
 	FOREIGN KEY("work_id") REFERENCES "work"("mrid")

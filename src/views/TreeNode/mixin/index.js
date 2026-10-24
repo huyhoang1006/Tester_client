@@ -1,20 +1,19 @@
 export default {
     methods: {
         async handleShowEquipment() {
+            if (this.clientSlide) this.clientEquipmentOpened = true
+            else this.serverEquipmentOpened = true
             this.activeWorkspaceTab = 'testingEquipment'
-            this.clientWorkspaceTab = 'testingEquipment'
+            if (this.clientSlide) this.clientWorkspaceTab = 'testingEquipment'
+            else this.serverWorkspaceTab = 'testingEquipment'
             if (this.$refs.treeToolBar) this.$refs.treeToolBar.activeTab = 'testingEquipment'
             this.openImportDialog = false
             this.openExportDialog = false
-            this.$nextTick(() => {
-                if (this.$refs.testingEquipmentList && this.$refs.testingEquipmentList.reload) {
-                    this.$refs.testingEquipmentList.reload()
-                }
-            })
         },
         openTestingEquipment(equipment = null) {
             this.activeWorkspaceTab = 'testingEquipment'
-            this.clientWorkspaceTab = 'testingEquipment'
+            if (this.clientSlide) this.clientWorkspaceTab = 'testingEquipment'
+            else this.serverWorkspaceTab = 'testingEquipment'
             this.selectedTestingEquipment = equipment
             this.selectedEquipmentMrid = equipment && equipment.mrid ? equipment.mrid : null
             this.testingEquipmentDetailVisible = true
@@ -23,15 +22,13 @@ export default {
             this.testingEquipmentDetailVisible = false
             this.selectedTestingEquipment = null
             this.selectedEquipmentMrid = null
-            this.$nextTick(() => {
-                if (this.$refs.testingEquipmentList && this.$refs.testingEquipmentList.reload) {
-                    this.$refs.testingEquipmentList.reload()
-                }
-            })
         },
         handleTestingEquipmentSaved() {
-            if (this.$refs.testingEquipmentList && this.$refs.testingEquipmentList.reload) {
-                this.$refs.testingEquipmentList.reload()
+            const list = this.clientSlide
+                ? this.$refs.testingEquipmentClientList
+                : this.$refs.testingEquipmentServerList
+            if (list && list.reload) {
+                list.reload()
             }
         },
     }

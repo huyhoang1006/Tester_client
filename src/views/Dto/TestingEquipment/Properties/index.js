@@ -10,10 +10,11 @@ class PropertiesDto {
         this.manufacturer_year = '';
         this.asset_tag = '';
         this.status = 'Available';
+        this.owner_organisation_id = '';
         this.country_of_origin = '';
         this.in_use_date = '';
         this.comment = '';
-        this.is_accessory = 0;      // 0 = máy chính, 1 = thiết bị đi kèm (accessory)
+        this.is_accessory = 0;      // Accessories are created from the parent equipment tab.
     }
 }
 

@@ -34,9 +34,9 @@ export const insertTestingEquipmentEntity = () => {
 
 // Danh sách rút gọn tất cả testing equipment (cho màn hình list)
 export const getAllTestingEquipmentList = () => {
-    ipcMain.handle('getAllTestingEquipmentList', async function (event, userId) {
+    ipcMain.handle('getAllTestingEquipmentList', async function (event, userId, organisationId) {
         try {
-            const rs = await entityFunc.testingEquipmentEntityFunc.getAllTestingEquipmentList(userId)
+            const rs = await entityFunc.testingEquipmentEntityFunc.getAllTestingEquipmentList(userId, organisationId)
             if (rs.success == true) {
                 return { success: true, message: "Success", data: rs.data }
             } else {

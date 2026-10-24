@@ -57,8 +57,7 @@ export const FEATURE_TREE = {
             status:            { label: 'Status',             value: 'status' },
             country_of_origin: { label: 'Country of origin',  value: 'country_of_origin' },
             in_use_date:       { label: 'In use date',        value: 'in_use_date' },
-            comment:           { label: 'Comment',            value: 'comment' },
-            is_accessory:      { label: 'Is accessory (0/1)', value: 'is_accessory' }
+            comment:           { label: 'Comment',            value: 'comment' }
         }},
         CalibrationDto: { label: 'Calibration', children: {
             calibration_date:   { label: 'Calibration date',   value: 'cal_calibration_date' },
@@ -1587,6 +1586,14 @@ export const FEATURE_TREE = {
             calibration_date: { label: 'Calibration date', value: 'te_calibration_date' }
         } },
         Tests: { label: 'Test results', children: {
+            PowerFrequencyVoltageWithstand: { label: 'Power-frequency voltage withstand test', children: {
+            measurement: { label: 'Measurement', value: 'PowerFrequencyVoltageWithstand_measurement' },
+            test_voltage: { label: 'Test voltage (kV)', value: 'PowerFrequencyVoltageWithstand_test_voltage' },
+            frequency: { label: 'Frequency (Hz)', value: 'PowerFrequencyVoltageWithstand_frequency' },
+            duration: { label: 'Test duration (min)', value: 'PowerFrequencyVoltageWithstand_duration' },
+            assessment: { label: 'Assessment', value: 'PowerFrequencyVoltageWithstand_assessment' },
+            condition_indicator: { label: 'Condition indicator', value: 'PowerFrequencyVoltageWithstand_condition_indicator' }
+            }},
             DcWindingResistance: { label: 'DC Winding resistance', children: {
             name: { label: 'Name', value: 'DcWindingResistance_name' },
             r_meas: { label: 'R meas', value: 'DcWindingResistance_r_meas' },
@@ -1686,6 +1693,14 @@ export const FEATURE_TREE = {
             calibration_date: { label: 'Calibration date', value: 'te_calibration_date' }
         } },
         Tests: { label: 'Test results', children: {
+            PowerFrequencyVoltageWithstand: { label: 'Power-frequency voltage withstand test', children: {
+            measurement: { label: 'Measurement', value: 'PowerFrequencyVoltageWithstand_measurement' },
+            test_voltage: { label: 'Test voltage (kV)', value: 'PowerFrequencyVoltageWithstand_test_voltage' },
+            frequency: { label: 'Frequency (Hz)', value: 'PowerFrequencyVoltageWithstand_frequency' },
+            duration: { label: 'Test duration (min)', value: 'PowerFrequencyVoltageWithstand_duration' },
+            assessment: { label: 'Assessment', value: 'PowerFrequencyVoltageWithstand_assessment' },
+            condition_indicator: { label: 'Condition indicator', value: 'PowerFrequencyVoltageWithstand_condition_indicator' }
+            }},
             CTDfcap: { label: 'CT DF & CAP', children: {
             measurement: { label: 'Measurement', value: 'CTDfcap_measurement' },
             test_mode: { label: 'Test mode', value: 'CTDfcap_test_mode' },
@@ -1797,6 +1812,8 @@ export const FEATURE_TREE = {
             calibration_date: { label: 'Calibration date', value: 'te_calibration_date' }
         } },
         Tests: { label: 'Test results', children: {
+            ReportTestingDate: { label: 'Testing date (all tests in report)', value: 'report_testing_date' },
+            ReportTestType: { label: 'Type (all tests in report)', value: 'report_test_type' },
             COCOTiming: { label: 'CO-CO Timing', children: {
             phase: { label: 'Phase', value: 'COCOTiming_phase' },
             trip_coil: { label: 'Trip coil', value: 'COCOTiming_trip_coil' },
@@ -1939,6 +1956,14 @@ export const FEATURE_TREE = {
             cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'GeneralInspection_cond_ambient_temp' },
             cond_humidity: { label: 'Humidity (cond.)', value: 'GeneralInspection_cond_humidity' },
             cond_weather: { label: 'Weather (cond.)', value: 'GeneralInspection_cond_weather' }
+            }},
+            PowerFrequencyVoltageWithstand: { label: 'Power-frequency voltage withstand test', children: {
+            measurement: { label: 'Object', value: 'PowerFrequencyVoltageWithstand_measurement' },
+            test_voltage: { label: 'UTN (kV AC)', value: 'PowerFrequencyVoltageWithstand_test_voltage' },
+            frequency: { label: 'Frequency (Hz)', value: 'PowerFrequencyVoltageWithstand_frequency' },
+            duration: { label: 'TTN (min)', value: 'PowerFrequencyVoltageWithstand_duration' },
+            assessment: { label: 'Assessment', value: 'PowerFrequencyVoltageWithstand_assessment' },
+            condition_indicator: { label: 'Condition indicator', value: 'PowerFrequencyVoltageWithstand_condition_indicator' }
             }},
             InsulationResistanceCircuit: { label: 'Insulation resistance of circuit breaker', children: {
             measurement: { label: 'Measurement', value: 'InsulationResistanceCircuit_measurement' },

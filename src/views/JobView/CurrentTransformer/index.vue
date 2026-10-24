@@ -35,6 +35,7 @@
                                 <test-information
                                     :title="item.name"
                                     :data="item.testCondition"
+                                    :condition-columns="conditionColumnsOf(item.testTypeCode)"
                                     :job-properties="currentTransformerJobDto.properties"
                                     :assetData="assetData"
                                     :attachment="item.testCondition.attachmentData"
@@ -49,6 +50,7 @@
                                 <component
                                     :is="item.testTypeCode" 
                                     :data="item.data" 
+                                    :definition="definitionFor(item.testTypeCode)"
                                     :asset="assetData"
                                     :testCondition="item.testCondition"
                                     :testAssessment="item.testAssessment"
@@ -71,7 +73,9 @@ import overview from './components/Overview'
 import SelectTest from './components/SelectTest'
 import testInformation from '@/views/Common/TestInformation.vue'
 import compareTestMap from '@/config/test-definitions/CurrentTransformer'
+import powerFrequencyCondition from '@/config/testing-condition/CurrentTransformer/PowerFrequencyVoltageWithstand.json'
 import InsulationResistance from './components/InsulationResistance.vue'
+import PowerFrequencyVoltageWithstand from '@/views/JobView/Common/PowerFrequencyVoltageWithstand.vue'
 import CTRatio from './components/CTRatio.vue'
 import CTExcitation from './components/CTExcitation.vue'
 import CTWindingRes from './components/CTWindingRes.vue'
@@ -88,6 +92,7 @@ export default {
         SelectTest,
         testInformation,
         InsulationResistance,
+        PowerFrequencyVoltageWithstand,
         CTDfcap,
         CTRatio,
         CTExcitation,
@@ -120,6 +125,12 @@ export default {
         }
     },
     methods: {
+        definitionFor(testTypeCode) {
+            return compareTestMap[testTypeCode]
+        },
+        conditionColumnsOf(testTypeCode) {
+            return testTypeCode === 'PowerFrequencyVoltageWithstand' ? powerFrequencyCondition.columns : []
+        },
         // ── So sánh với lần test trước ──────────────────────────────────
         // Bật cho mọi bài test có định nghĩa cột trong test-definitions.
         compareEnabled(testTypeCode) {

@@ -3,6 +3,7 @@ export default {
         handleClickFmeca() {
             this.activeWorkspaceTab = 'fmeca'
             if (this.clientSlide) this.clientWorkspaceTab = 'fmeca'
+            else this.serverWorkspaceTab = 'fmeca'
             this.openImportDialog = false
             this.openExportDialog = false
             this.$nextTick(() => {

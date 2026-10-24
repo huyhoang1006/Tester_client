@@ -48,7 +48,7 @@
         <!-- Tabs -->
         <div class="te-tabs-shell">
             <div class="te-tabs">
-                <div v-for="t in tabs" :key="t.key" class="te-tab"
+                <div v-for="t in visibleTabs" :key="t.key" class="te-tab"
                     :class="{ active: activeTab === t.key }" @click="activeTab = t.key">
                     {{ t.label }}
                 </div>
@@ -56,12 +56,12 @@
                 <button class="te-btn primary te-tab-save" @click="onSave">Save</button>
             </div>
             <div class="te-tab-body">
-                <overview v-if="activeTab === 'overview'" :data="testingEquipmentDto.properties" />
+                <overview v-if="activeTab === 'overview'" :data="testingEquipmentDto.properties" :server-mode="serverMode" />
                 <calibration v-else-if="activeTab === 'calibration'" :records="testingEquipmentDto.calibration" />
                 <software-license v-else-if="activeTab === 'license'" :licenses="testingEquipmentDto.licenses" />
                 <repair-history v-else-if="activeTab === 'repair'" :records="testingEquipmentDto.repairs" />
-                <usage-history v-else-if="activeTab === 'usage'" :records="testingEquipmentDto.usage" />
-                <accessories v-else-if="activeTab === 'accessories'" :items="testingEquipmentDto.accessories" />
+                <accessories v-else-if="activeTab === 'accessories'" :items="testingEquipmentDto.accessories" :server-mode="serverMode"
+                    :organisation-id="testingEquipmentDto.properties.owner_organisation_id" />
                 <attachment-common v-else-if="activeTab === 'attachments'"
                     :attachment_="testingEquipmentDto.attachments" height="240px"
                     @data-attachment="onAttachmentData" />
@@ -76,20 +76,21 @@ import overview from './components/overview.vue'
 import calibration from './components/calibration.vue'
 import softwareLicense from './components/softwareLicense.vue'
 import repairHistory from './components/repairHistory.vue'
-import usageHistory from './components/usageHistory.vue'
 import accessories from './components/accessories.vue'
 import attachmentCommon from '@/views/Common/Attachment.vue'
 import mixin from './mixin'
+import { equipmentStatusTag } from './statusOptions'
 
 export default {
     name: 'TestingEquipment',
     mixins: [mixin],
     components: {
         overview, calibration, softwareLicense,
-        repairHistory, usageHistory, accessories, attachmentCommon
+        repairHistory, accessories, attachmentCommon
     },
     props: {
         equipmentMrid: { type: String, default: null },
+        serverMode: { type: Boolean, default: false },
         // equipment selected from the list (one item of equipmentData)
         equipment: { type: Object, default: null }
     },
@@ -101,7 +102,6 @@ export default {
                 { key: 'calibration', label: 'Calibration' },
                 { key: 'license', label: 'Software License' },
                 { key: 'repair', label: 'Repair History' },
-                { key: 'usage', label: 'Usage History' },
                 { key: 'accessories', label: 'Accessories' },
                 { key: 'attachments', label: 'Attachments' }
             ]
@@ -113,37 +113,18 @@ export default {
     watch: {
         equipmentMrid() { this.initForm() },
         equipment() { this.initForm() },
-        // Đồng bộ trạng thái thiết bị theo repair history:
-        // còn bản ghi InProgress -> UnderRepair; hết InProgress -> trả về Available.
-        // Không đụng tới InUse/Retired do người dùng tự đặt.
-        'testingEquipmentDto.repairs': {
-            deep: true,
-            immediate: true,
-            handler(repairs) {
-                const p = this.testingEquipmentDto && this.testingEquipmentDto.properties
-                if (!p) return
-                const hasInProgress = (repairs || []).some(r => r && r.status === 'InProgress')
-                if (hasInProgress && (!p.status || p.status === 'Available')) {
-                    p.status = 'UnderRepair'
-                } else if (!hasInProgress && p.status === 'UnderRepair') {
-                    p.status = 'Available'
-                }
-            }
-        }
+        serverMode() { this.initForm() }
     },
     computed: {
+        visibleTabs() {
+            return this.serverMode ? this.tabs.filter(tab => tab.key !== 'attachments') : this.tabs
+        },
         initials() {
             const n = this.testingEquipmentDto.properties.name || 'TE'
             return n.split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase()
         },
         statusTag() {
-            const map = {
-                Available:   { label: 'Available',    cls: 'green' },
-                InUse:       { label: 'In use',        cls: 'blue' },
-                UnderRepair: { label: 'Under repair',  cls: 'orange' },
-                Retired:     { label: 'Retired',       cls: 'gray' }
-            }
-            return map[this.testingEquipmentDto.properties.status] || { label: '—', cls: 'gray' }
+            return equipmentStatusTag(this.testingEquipmentDto.properties.status)
         },
         enabledLicenses() { return this.testingEquipmentDto.licenses.filter(l => l.enabled).length },
         nextDue() {
@@ -164,7 +145,8 @@ export default {
         initForm() {
             this.activeTab = 'overview'
             if (this.equipmentMrid) {
-                this.loadFromDb(this.equipmentMrid)
+                if (this.serverMode) this.loadFromServer(this.equipmentMrid)
+                else this.loadFromDb(this.equipmentMrid)
             } else {
                 this.loadData(this.equipment)
             }
@@ -174,7 +156,7 @@ export default {
             this.testingEquipmentDto.attachments = Array.isArray(rows) ? rows : []
         },
         async onSave() {
-            const rs = await this.saveTestingEquipment()
+            const rs = this.serverMode ? await this.saveToServer() : await this.saveTestingEquipment()
             if (rs && rs.success) this.$emit('saved', this.testingEquipmentDto)
         }
     }

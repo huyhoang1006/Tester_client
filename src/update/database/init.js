@@ -142,6 +142,21 @@ export const ensureSubstationOperatingDateColumn = async (dbsql) => {
     }
 }
 
+export const ensureTestingEquipmentOrganisationColumns = async (dbsql) => {
+    const table = 'testing_equipment'
+    const columns = await getTableColumns(dbsql, table)
+    if (!columns.has('owner_organisation_id')) {
+        await run(dbsql, `ALTER TABLE "${table}" ADD COLUMN "owner_organisation_id" TEXT`)
+    }
+    if (columns.has('customer_organisation_id')) {
+        await run(dbsql, `UPDATE "${table}" SET owner_organisation_id = customer_organisation_id
+            WHERE (owner_organisation_id IS NULL OR owner_organisation_id = '')
+              AND customer_organisation_id IS NOT NULL AND customer_organisation_id <> ''`)
+    }
+    await run(dbsql, 'CREATE INDEX IF NOT EXISTS idx_te_owner_organisation ON testing_equipment(owner_organisation_id)')
+    await run(dbsql, 'CREATE INDEX IF NOT EXISTS idx_organisation_parent ON organisation(parent_organisation)')
+}
+
 export const ensureCtCoreInfoClassRatingColumns = async (dbsql) => {
     const table = 'ct_core_info'
     const columns = await getTableColumns(dbsql, table)
@@ -238,6 +253,7 @@ export const updateDatabaseFromSQL = async (dbsql, oldVersion, newVersion) => {
     await syncSchemaTables(dbsql)
     await ensureTransformerVectorGroupColumns(dbsql)
     await ensureSubstationOperatingDateColumn(dbsql)
+    await ensureTestingEquipmentOrganisationColumns(dbsql)
     await ensureCtCoreInfoClassRatingColumns(dbsql)
     await ensureWorkTaskMetadataColumns(dbsql)
 }

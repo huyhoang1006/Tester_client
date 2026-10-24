@@ -500,6 +500,9 @@ export default {
       this.tableData = (tmpl.variable || []).map(v => ({
         code: v.code||'', category: v.category||'',
         featureLevels: (v.featureLevels||[]).map(f => ({ key: f.key||'' })),
+        includeUnit: v.includeUnit === true,
+        format: v.format || '',
+        summaryOnly: v.summaryOnly === true,
         coordinates: v.coordinates||[]
       }))
     },
@@ -561,7 +564,8 @@ export default {
       }
       const variables = this.tableData.map(r => ({
         code: r.code, category: r.category,
-        featureLevels: r.featureLevels, coordinates: r.coordinates||[]
+        featureLevels: r.featureLevels, includeUnit: r.includeUnit === true, format: r.format || '', summaryOnly: r.summaryOnly === true,
+        coordinates: r.coordinates||[]
       }))
       try {
         const rs = await window.electronAPI.saveTemplateWithScan({
@@ -595,6 +599,9 @@ export default {
         this.tableData = variables.map(v => ({
           code: v.code||'', category: v.category||'',
           featureLevels: (v.featureLevels||[]).map(f => ({ key: f.key||'' })),
+          includeUnit: v.includeUnit === true,
+          format: v.format || '',
+          summaryOnly: v.summaryOnly === true,
           coordinates: v.coordinates||[]
         }))
         this.$message.success('Imported')
@@ -606,6 +613,9 @@ export default {
         const variables = this.tableData.map(v => ({
           code: v.code||'', category: v.category||'',
           featureLevels: (v.featureLevels||[]).map(f => ({ key: f.key||'' })),
+          includeUnit: v.includeUnit === true,
+          format: v.format || '',
+          summaryOnly: v.summaryOnly === true,
           coordinates: v.coordinates||[]
         }))
         const defaultFileName = (this.selectedTemplateName || 'template') + '-config.json'
@@ -802,8 +812,8 @@ export default {
           const matchingItems = this.getMatchingItems(cat)
           if (cat.key.startsWith('Asset_') || cat.key.startsWith('Job_')) {
             for (const item of matchingItems) {
-              const { flatMap, arrayMap } = await exportService.buildDtoForCat(cat, item.context)
-              const partial = exportService.extractFromMaps(cat, flatMap, arrayMap, this.tableData)
+              const { flatMap, arrayMap, unitMap } = await exportService.buildDtoForCat(cat, item.context)
+              const partial = exportService.extractFromMaps(cat, flatMap, arrayMap, this.tableData, unitMap)
               for (const code in partial) {
                 if (!codeMap[code]) codeMap[code] = []
                 const vals = partial[code]
@@ -812,8 +822,8 @@ export default {
             }
           } else {
             const firstItem = matchingItems[0]; if (!firstItem) continue
-            const { flatMap, arrayMap } = await exportService.buildDtoForCat(cat, firstItem.context)
-            const partial = exportService.extractFromMaps(cat, flatMap, arrayMap, this.tableData)
+            const { flatMap, arrayMap, unitMap } = await exportService.buildDtoForCat(cat, firstItem.context)
+            const partial = exportService.extractFromMaps(cat, flatMap, arrayMap, this.tableData, unitMap)
             for (const code in partial) { if (!codeMap[code]) codeMap[code] = partial[code] }
           }
         }
@@ -987,7 +997,7 @@ export default {
     // ── Table helpers ─────────────────────────────────────────────────────
     clearAll() { this.tableData = [] },
     addRow(index) {
-      const r = { code: '', category: '', featureLevels: [], coordinates: [] }
+      const r = { code: '', category: '', featureLevels: [], includeUnit: false, coordinates: [] }
       if (typeof index === 'number') this.tableData.splice(index + 1, 0, r); else this.tableData.push(r)
     },
     removeRow(index) { this.tableData.splice(index, 1) },

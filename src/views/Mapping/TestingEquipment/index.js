@@ -133,7 +133,8 @@ export const mapDtoToEntity = (dto) => {
     entity.testingEquipment.mrid = mrid;
     entity.testingEquipment.work_id = dto.work_id || null;
     entity.testingEquipment.asset_tag = p.asset_tag || null;
-    entity.testingEquipment.is_accessory = p.is_accessory ? 1 : 0;   // Main / Accessory theo lựa chọn ở Overview
+    entity.testingEquipment.owner_organisation_id = p.owner_organisation_id || null;
+    entity.testingEquipment.is_accessory = p.is_accessory ? 1 : 0;
 
     // --- attachment (1 record, path = JSON danh sách [{path}]) ---
     entity.attachment.id = dto.attachmentId || null;
@@ -275,6 +276,7 @@ export const mapEntityToDto = (entity) => {
     dto.properties.country_of_origin = a.country_of_origin || '';
     dto.properties.status = a.in_use_state || a.status || '';
     dto.properties.asset_tag = te.asset_tag || '';
+    dto.properties.owner_organisation_id = te.owner_organisation_id || te.customer_organisation_id || '';
     dto.properties.is_accessory = te.is_accessory != null ? te.is_accessory : 0;
     dto.work_id = te.work_id || '';
     // Overview từ product_asset_model / lifecycle_date
@@ -290,7 +292,8 @@ export const mapEntityToDto = (entity) => {
         enabled: l.enabled != null ? l.enabled : 1,
         description: l.description || '',
         activation_date: l.activation_date || '',
-        expiry_date: l.expiry_date || ''
+        expiry_date: l.expiry_date || '',
+        seat_count: l.seat_count != null ? l.seat_count : null
     }));
 
     dto.calibration = (entity.calibrations || []).map((c) => ({

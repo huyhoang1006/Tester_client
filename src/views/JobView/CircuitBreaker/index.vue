@@ -35,6 +35,7 @@
                                 <test-information
                                     :title="item.name"
                                     :data="item.testCondition"
+                                    :condition-columns="conditionColumnsOf(item.testTypeCode)"
                                     :job-properties="circuitBreakerJobDto.properties"
                                     :assetData="assetData"
                                     :attachment="item.testCondition.attachmentData"
@@ -49,6 +50,7 @@
                                 <component
                                     :is="item.testTypeCode" 
                                     :data="item.data" 
+                                    :definition="definitionFor(item.testTypeCode)"
                                     :work-task-id="item.mrid"
                                     :test-code="item.testTypeCode"
                                     :asset="assetData"
@@ -74,6 +76,7 @@ import overview from './components/Overview/index.vue'
 import SelectTest from './components/SelectTest'
 import testInformation from '@/views/Common/TestInformation.vue'
 import compareTestMap from '@/config/test-definitions/CircuitBreaker'
+import powerFrequencyCondition from '@/config/testing-condition/CircuitBreaker/PowerFrequencyVoltageWithstand.json'
 import testingEquipment from './components/TestingEquipment/index.vue'
 
 //circuit breaker
@@ -92,6 +95,7 @@ import DCWindingTripCoil from './components/DCWindingTripCoil.vue'
 import DCWindingCloseCoil from './components/DCWindingCloseCoil.vue'
 import DCWindingMotor from './components/DCWindingMotor.vue'
 import InsulationResistanceCircuit from './components/InsulationResistanceCircuit.vue'
+import PowerFrequencyVoltageWithstand from '@/views/JobView/Common/PowerFrequencyVoltageWithstand.vue'
 import InsulationResistanceTripCoil from './components/InsulationResistanceTripCoil.vue'
 import InsulationResistanceCloseCoil from './components/InsulationResistanceCloseCoil.vue'
 import InsulationResistanceMotor from './components/InsulationResistanceMotor.vue'
@@ -123,6 +127,7 @@ export default {
         DCWindingCloseCoil,
         DCWindingMotor,
         InsulationResistanceCircuit,
+        PowerFrequencyVoltageWithstand,
         InsulationResistanceTripCoil,
         InsulationResistanceCloseCoil,
         InsulationResistanceMotor,
@@ -162,6 +167,12 @@ export default {
     },
     mounted() { },
     methods: {
+        definitionFor(testTypeCode) {
+            return compareTestMap[testTypeCode]
+        },
+        conditionColumnsOf(testTypeCode) {
+            return testTypeCode === 'PowerFrequencyVoltageWithstand' ? powerFrequencyCondition.columns : []
+        },
         // ── So sánh với lần test trước ──────────────────────────────────
         // Bật cho mọi bài test có định nghĩa cột trong test-definitions.
         compareEnabled(testTypeCode) {

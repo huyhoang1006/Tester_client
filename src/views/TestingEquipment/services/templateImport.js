@@ -23,7 +23,7 @@ const INSERT_API = 'insertTestingEquipmentEntity'   // insertTestingEquipmentEnt
 
 // Field lá thuộc PropertiesDto — khớp FEATURE_TREE.TestingEquipmentDto.PropertiesDto
 const PROP_FIELDS = ['name', 'type', 'serial_no', 'manufacturer', 'model', 'manufacturer_year',
-    'asset_tag', 'status', 'country_of_origin', 'in_use_date', 'comment', 'is_accessory']
+    'asset_tag', 'status', 'country_of_origin', 'in_use_date', 'comment']
 const LEGACY_LEAF_ALIASES = {
     purchase_date: 'in_use_date'
 }
@@ -48,6 +48,13 @@ const DATE_NESTED_FIELDS = {
 }
 const STATUS_ALIASES = {
     available: 'Available',
+    deliveredtocustomer: 'DeliveredToCustomer',
+    'delivered to customer': 'DeliveredToCustomer',
+    undercalibration: 'UnderCalibration',
+    'under calibration': 'UnderCalibration',
+    instorage: 'InStorage',
+    'in storage': 'InStorage',
+    scrap: 'Scrap',
     inuse: 'InUse',
     in_use: 'InUse',
     'in use': 'InUse',
@@ -61,7 +68,6 @@ const STATUS_ALIASES = {
 // LƯU Ý: usage history KHÔNG import — nó là dữ liệu SUY RA từ job/test
 // (bảng <asset>_testing_equipment_test_type), chỉ có ở chiều export.
 
-const truthy = (v) => v === 1 || v === '1' || String(v).toLowerCase() === 'true'
 const MONTHS = {
     jan: 1, january: 1,
     feb: 2, february: 2,
@@ -248,9 +254,7 @@ export const templateImport = {
                     const value = SERIAL_AWARE_PROP_FIELDS.includes(f)
                         ? this.resolveSerialAwareText(arr[i], serial, serialValues)
                         : arr[i]
-                    dto.properties[f] = f === 'is_accessory'
-                        ? (truthy(value) ? 1 : 0)
-                        : (f === 'status' ? normalizeStatus(value) : value)
+                    dto.properties[f] = f === 'status' ? normalizeStatus(value) : value
                 })
                 dto.properties.serial_no = serial
 

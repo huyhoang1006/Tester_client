@@ -14,6 +14,12 @@
     "kind": "test"
   },
   {
+    "mrid": "8dd47a3b-3f39-4bf7-82c1-2e6387d70f12",
+    "code": "PowerFrequencyVoltageWithstand",
+    "name": "Power-frequency voltage withstand test",
+    "kind": "test"
+  },
+  {
     "mrid": "694a6ddb-ca9b-4948-8b14-6efdab7dd9ef",
     "code": "VTRatio",
     "name": "VT ratio",

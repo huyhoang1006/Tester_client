@@ -105,7 +105,7 @@ export const readSides = (row, terminals, options = {}) => {
         return { terminal1: left, terminal2: right }
     }
 
-    const text = str(row.measurement ? row.measurement.value : '')
+    const text = str(row.measurement ? row.measurement.value : '').replace(/\s+[–—]\s+/g, ' - ')
     // Dấu phân cách là ' - ' CÓ KHOẢNG TRẮNG hai bên. Không thể tách bằng '-' trơn: tên
     // cuộn dây và tên tap hoàn toàn có thể chứa dấu nối, ví dụ '1S1-1S3'.
     const at = text.indexOf(' - ')

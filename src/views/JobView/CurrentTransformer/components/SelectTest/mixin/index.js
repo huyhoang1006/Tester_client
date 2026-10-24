@@ -2,6 +2,7 @@ import CurrentTransformerTestMap from '@/config/test-definitions/CurrentTransfor
 import CurrentTransformerConditionMap from '@/config/testing-condition/CurrentTransformer'
 import currentTransformerAssessmentMap from '@/config/testing-assessment/CurrentTransformer'
 import * as common from '../../../../Common/index.js'
+import { createPowerFrequencyTest } from '@/views/JobView/Common/powerFrequencyTest'
 
 export default {
     methods: {
@@ -11,6 +12,9 @@ export default {
             switch (testTypeCode) {
                 case 'InsulationResistance':
                     data = await this.initInsulationResistance(testTypeCode, assetData)
+                    break
+                case 'PowerFrequencyVoltageWithstand':
+                    data = createPowerFrequencyTest(CurrentTransformerTestMap[testTypeCode], CurrentTransformerConditionMap[testTypeCode])
                     break
                 case 'CTRatio':
                     data = await this.initCTRatio(testTypeCode, assetData)

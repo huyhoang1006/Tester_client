@@ -90,9 +90,13 @@ export var deepImportService = {
       var values = codeValueMap[row.code] || []
       var nonEmpty = values.filter(function(v) { return v && v.trim() !== '' })
       if (!nonEmpty.length) continue
+      if (row.summaryOnly && levels[catKey][leafValue] !== undefined) continue
 
-      // Scalar: 1 giá trị. Array: giữ nguyên mảng
-      levels[catKey][leafValue] = nonEmpty.length === 1 ? nonEmpty[0] : nonEmpty
+      // Preserve blank positions only in multi-row test columns.
+      var isTestColumn = row.category === 'Job' && row.featureLevels &&
+        row.featureLevels[1] && row.featureLevels[1].key === 'Tests' && row.featureLevels.length > 3
+      levels[catKey][leafValue] = isTestColumn && values.length > 1
+        ? values : (nonEmpty.length === 1 ? nonEmpty[0] : nonEmpty)
     }
     return levels
   },
@@ -846,6 +850,13 @@ export var deepImportService = {
 
       // Breaker: nhiều info IDs
       if (catKey === 'Asset_CircuitBreakerDto') {
+        ['rated_voltage_ll', 'rated_current', 'rated_short_circuit_breaking_current',
+          'short_circuit_nominal_duration'].forEach(function(field) {
+          var value = this._getField(data, field)
+          if (value !== undefined && value !== '' && dto.ratings && dto.ratings[field]) {
+            dto.ratings[field].value = this._parseQuantity(value, dto.ratings[field].unit)
+          }
+        }, this)
         if (!dto.breakerRatingInfoId)          dto.breakerRatingInfoId          = uuid.newUuid()
         if (!dto.breakerContactSystemInfoId)   dto.breakerContactSystemInfoId   = uuid.newUuid()
         if (!dto.breakerOtherInfoId)           dto.breakerOtherInfoId           = uuid.newUuid()
@@ -1609,10 +1620,52 @@ export var deepImportService = {
     }
     return result
   },
+  _parseQuantity: function(raw, targetUnit) {
+    var text = String(raw).trim()
+    if (!text) return ''
+    var match = text.match(/^([+-]?(?:\d+(?:[.,]\d*)?|\.\d+)(?:[eE][+-]?\d+)?)\s*(.*?)$/u)
+    if (!match) throw new Error('Invalid measurement: ' + text)
+
+    var units = {
+      V: ['voltage', 1], kV: ['voltage', 1000],
+      A: ['current', 1], kA: ['current', 1000],
+      'Ω': ['resistance', 1], 'mΩ': ['resistance', 0.001],
+      'µΩ': ['resistance', 0.000001], 'MΩ': ['resistance', 1000000],
+      s: ['time', 1], ms: ['time', 0.001]
+    }
+    var source = match[2].replace(/\s+/g, '').replace(/μ/g, 'µ').replace(/Ω/g, 'Ω')
+    source = source.replace(/(?:AC|DC)$/i, '')
+    var target = String(targetUnit || '').replace('|', '')
+    if (!source) source = target
+    if (!units[source] || !units[target] || units[source][0] !== units[target][0]) {
+      throw new Error('Unsupported measurement unit: ' + text + ' (expected ' + target + ')')
+    }
+    var converted = Number(match[1].replace(',', '.')) * units[source][1] / units[target][1]
+    return String(Number(converted.toPrecision(12)))
+  },
   _buildJobTestList: function(lvm, catKey) {
     var testDefs = TEST_DEFINITIONS[catKey]
     if (!testDefs) return []
 
+    var self = this
+    var reportMetadata = {}
+    if (lvm.report_testing_date) {
+      var rawDate = String(lvm.report_testing_date).trim()
+      var dateParts = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(rawDate)
+      if (dateParts) {
+        var day = Number(dateParts[1])
+        var month = Number(dateParts[2])
+        var year = Number(dateParts[3])
+        var parsedDate = new Date(year, month - 1, day)
+        if (parsedDate.getFullYear() !== year || parsedDate.getMonth() !== month - 1 || parsedDate.getDate() !== day) {
+          throw new Error('Invalid report testing date: ' + rawDate)
+        }
+        reportMetadata.testing_date = String(month).padStart(2, '0') + '/' + String(day).padStart(2, '0') + '/' + year
+      } else {
+        reportMetadata.testing_date = rawDate
+      }
+    }
+    if (lvm.report_test_type) reportMetadata.type = String(lvm.report_test_type).trim()
     var multiTableConfig = (MULTI_TABLE_CONFIG[catKey]) || {}
     var testList = []
 
@@ -1700,6 +1753,7 @@ export var deepImportService = {
           },
           testCondition: {
             mrid:           uuid.newUuid(),
+            metadata:       Object.assign({}, reportMetadata),
             condition:      condRow,
             comment:        '',
             attachment:     { id: null, path: '[]', name: null, type: 'job', id_foreign: null },
@@ -1728,6 +1782,19 @@ export var deepImportService = {
             var vals = lvm[lkey]
             var val = ''
             if (vals) val = Array.isArray(vals) ? (vals[i] !== undefined ? vals[i] : '') : vals
+            if (col.code === 'assessment' && col.type === 'discrete') {
+              var assessment = String(val).trim()
+              if (/^(?:đạt(?:\s*\/\s*pass)?|pass|1)$/i.test(assessment)) val = 'Pass'
+              else if (/^(?:không\s*đạt(?:\s*\/\s*fail)?|fail|0)$/i.test(assessment)) val = 'Fail'
+            }
+            if (catKey === 'Job_CircuitBreakerJobDto' && col.type === 'analog' &&
+                (col.code === 'test_voltage' || col.code === 'contact_resistance') && val !== '') {
+              val = self._parseQuantity(val, col.unit)
+            }
+            if (catKey === 'Job_CircuitBreakerJobDto' && testCode === 'InsulationResistanceCircuit' &&
+                col.code === 'r60s' && /^\d{1,3}(?:\.\d{3})+$/.test(String(val).trim())) {
+              val = String(val).trim().replace(/\./g, '')
+            }
             row[col.code] = {
               mrid: uuid.newUuid(),
               value: String(val),
@@ -1760,6 +1827,7 @@ export var deepImportService = {
           },
           testCondition: {
             mrid:           uuid.newUuid(),
+            metadata:       Object.assign({}, reportMetadata),
             condition:      condRow,
             comment:        '',
             attachment:     { id: null, path: '[]', name: null, type: 'job', id_foreign: null },

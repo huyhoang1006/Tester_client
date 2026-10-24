@@ -23,9 +23,10 @@ export const updateProcedure = async (dbsql) => {
     await createProcedure(dbsql)
 }
 
-const DYNAMIC_CONTACT_RESISTANCE_CODES = [
+const CIRCUIT_BREAKER_STARTUP_CODES = [
     'ODynamicContactResistance',
     'CDynamicContactResistance',
+    'PowerFrequencyVoltageWithstand',
 ]
 
 const TRANSFORMER_PTM_IMPORT_CODES = [
@@ -54,31 +55,31 @@ const pickConfigEntries = (source, codes) => {
 }
 
 /**
- * Keep this small catalogue addition independent from the database version.
+ * Keep these circuit-breaker catalogue additions independent from the database version.
  * Existing installations may already carry a newer user_version while still
  * missing these config rows. Every insert in the procedure seeder is an upsert,
  * so this is safe to run at startup and does not touch job/result data.
  */
-export const ensureDynamicContactResistanceProcedures = async (dbsql) => {
+export const ensureAdditionalTestProcedures = async (dbsql) => {
     const circuitBreakerProcedures = procedureDataMap.CircuitBreaker || { procedure: [] }
     const selectedProcedureMap = {
         CircuitBreaker: {
             ...circuitBreakerProcedures,
             procedure: (circuitBreakerProcedures.procedure || []).filter(item => {
-                return DYNAMIC_CONTACT_RESISTANCE_CODES.includes(item.code)
+                return CIRCUIT_BREAKER_STARTUP_CODES.includes(item.code)
             }),
         },
     }
     const selectedTestMap = {
         CircuitBreaker: pickConfigEntries(
             testDataMap.CircuitBreaker,
-            DYNAMIC_CONTACT_RESISTANCE_CODES
+            CIRCUIT_BREAKER_STARTUP_CODES
         ),
     }
     const selectedConditionMap = {
         CircuitBreaker: pickConfigEntries(
             testConditionMap.CircuitBreaker,
-            DYNAMIC_CONTACT_RESISTANCE_CODES
+            CIRCUIT_BREAKER_STARTUP_CODES
         ),
     }
 
@@ -91,6 +92,23 @@ export const ensureDynamicContactResistanceProcedures = async (dbsql) => {
         getTestDefinitionInfo,
         getTestConditionInfo
     )
+
+    for (const [assetKind, seed] of [
+        ['CurrentTransformer', currentTransformerProcedureFunc.createProcedureCurrentTransformer],
+        ['VoltageTransformer', voltageTransformerProcedureFunc.createProcedureVoltageTransformer]
+    ]) {
+        const catalog = procedureDataMap[assetKind] || { procedure: [] }
+        const procedure = (catalog.procedure || []).filter(item => item.code === 'PowerFrequencyVoltageWithstand')
+        await seed(
+            dbsql,
+            { [assetKind]: { ...catalog, procedure } },
+            { [assetKind]: pickConfigEntries(testDataMap[assetKind], ['PowerFrequencyVoltageWithstand']) },
+            { [assetKind]: pickConfigEntries(testConditionMap[assetKind], ['PowerFrequencyVoltageWithstand']) },
+            getProcedureInfo,
+            getTestDefinitionInfo,
+            getTestConditionInfo
+        )
+    }
 }
 
 /**

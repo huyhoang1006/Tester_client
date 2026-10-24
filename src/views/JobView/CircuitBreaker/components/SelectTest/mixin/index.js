@@ -2,6 +2,7 @@
 import circuitBreakerTestMap from '@/config/test-definitions/CircuitBreaker'
 import circuitBreakerConditionMap from '@/config/testing-condition/CircuitBreaker/index.js'
 import * as common from '../../../../Common/index.js'
+import { createPowerFrequencyTest } from '@/views/JobView/Common/powerFrequencyTest'
 
 // Lấy mrid (measurement_id) của 1 cột theo testCode + col.code từ config.
 // Dùng cho các init build cell thủ công, tránh cell thiếu measurement_id.
@@ -61,6 +62,9 @@ export default {
                     break
                 case 'InsulationResistanceCircuit':
                     data = await this.initInsulationResistanceCircuit(testTypeCode, assetData)
+                    break
+                case 'PowerFrequencyVoltageWithstand':
+                    data = await this.initPowerFrequencyVoltageWithstand(testTypeCode)
                     break
                 case 'InsulationResistanceTripCoil':
                     data = await this.initInsulationResistanceTripCoil(testTypeCode, assetData)
@@ -746,6 +750,9 @@ export default {
                     table1: table
                 }
             }
+        },
+        async initPowerFrequencyVoltageWithstand(testTypeCode) {
+            return createPowerFrequencyTest(circuitBreakerTestMap[testTypeCode], circuitBreakerConditionMap[testTypeCode])
         },
         async initInsulationResistanceCircuit(testTypeCode, assetData) {
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)

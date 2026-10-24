@@ -58,18 +58,36 @@ const runAsync = (sql, params = []) => {
     })
 }
 
-// Danh sách rút gọn cho màn hình list (join asset + product_asset_model + đếm repair).
-// Lọc theo user hiện tại qua user_identified_object; loại phụ kiện.
-export const getAllTestingEquipmentList = async (userId) => {
+// Danh sách rút gọn: theo user hoặc theo toàn bộ nhánh Owner organisation.
+export const getAllTestingEquipmentList = async (userId, organisationId = null) => {
     await ensureActivityRecordSchema(db)
+    const byOrganisation = Boolean(organisationId)
+    const organisationTree = byOrganisation
+        ? `WITH RECURSIVE organisation_tree(mrid) AS (
+               SELECT mrid FROM organisation WHERE mrid = ?
+               UNION
+               SELECT child.mrid FROM organisation child
+               JOIN organisation_tree parent ON child.parent_organisation = parent.mrid
+           )`
+        : ''
+    const scopeFilter = byOrganisation
+        ? `te.owner_organisation_id IN (SELECT mrid FROM organisation_tree)
+           AND te.owner_organisation_id IN (
+               SELECT identified_object_id FROM user_identified_object WHERE user_id = ?
+           )`
+        : `te.mrid IN (
+               SELECT identified_object_id FROM user_identified_object WHERE user_id = ?
+           )`
     return new Promise((resolve, reject) => {
         db.all(
-            `SELECT te.mrid AS mrid,
+            `${organisationTree}
+             SELECT te.mrid AS mrid,
                     io.name AS name,
                     a.serial_number AS serial,
                     a.type AS type,
                     pam.manufacturer AS manufacturer,
                     pam.model_number AS model,
+                    owner_io.name AS organisation,
                     te.asset_tag AS asset_tag,
                     a.in_use_state AS status,
                     (SELECT cr.calibration_date FROM calibration_record cr
@@ -91,18 +109,11 @@ export const getAllTestingEquipmentList = async (userId) => {
              JOIN asset a ON a.mrid = te.mrid
              LEFT JOIN identified_object io ON io.mrid = te.mrid
              LEFT JOIN product_asset_model pam ON pam.mrid = a.product_asset_model
-             WHERE
-                -- máy chính thuộc user
-                te.mrid IN (SELECT identified_object_id FROM user_identified_object WHERE user_id = ?)
-                -- hoặc là phụ kiện của máy chính thuộc user (qua junction)
-                OR te.mrid IN (
-                    SELECT x.accessory FROM accessory_testing_equipment x
-                    WHERE x.equipment IN (
-                        SELECT identified_object_id FROM user_identified_object WHERE user_id = ?
-                    )
-                )
+             LEFT JOIN identified_object owner_io ON owner_io.mrid = te.owner_organisation_id
+             WHERE COALESCE(te.is_accessory, 0) = 0
+               AND ${scopeFilter}
              ORDER BY COALESCE(te.is_accessory, 0), io.name`,
-            [userId, userId],
+            byOrganisation ? [organisationId, userId] : [userId],
             (err, rows) => {
                 if (err) return reject({ success: false, err, message: 'Get testing equipment list failed' })
                 return resolve({ success: true, data: rows || [], message: 'Get testing equipment list completed' })
@@ -237,18 +248,20 @@ export const insertTestingEquipmentTransaction = async (testingEquipment, dbsql)
     return new Promise((resolve, reject) => {
         dbsql.run(
             `INSERT INTO testing_equipment(
-                mrid, work_id, asset_tag, is_accessory
-            ) VALUES (?, ?, ?, ?)
+                mrid, work_id, asset_tag, is_accessory, owner_organisation_id
+            ) VALUES (?, ?, ?, ?, ?)
             ON CONFLICT(mrid) DO UPDATE SET
                 work_id = excluded.work_id,
                 asset_tag = excluded.asset_tag,
-                is_accessory = excluded.is_accessory
+                is_accessory = excluded.is_accessory,
+                owner_organisation_id = excluded.owner_organisation_id
             `,
             [
                 testingEquipment.mrid,
                 testingEquipment.work_id,
                 testingEquipment.asset_tag,
-                testingEquipment.is_accessory != null ? testingEquipment.is_accessory : 0
+                testingEquipment.is_accessory != null ? testingEquipment.is_accessory : 0,
+                testingEquipment.owner_organisation_id || null
             ],
             function (err) {
                 if (err) return reject({ success: false, err, message: 'Insert testingEquipment failed' })
@@ -326,12 +339,14 @@ export const updateTestingEquipmentByIdTransaction = async (mrid, testingEquipme
     return new Promise((resolve, reject) => {
         dbsql.run(
             `UPDATE testing_equipment SET
-                asset_tag = ?, work_id = ?, is_accessory = ?
+                asset_tag = ?, work_id = ?, is_accessory = ?,
+                owner_organisation_id = ?
             WHERE mrid = ?`,
             [
                 testingEquipment.asset_tag,
                 testingEquipment.work_id,
                 testingEquipment.is_accessory != null ? testingEquipment.is_accessory : 0,
+                testingEquipment.owner_organisation_id || null,
                 mrid
             ],
             function (err) {

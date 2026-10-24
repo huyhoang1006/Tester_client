@@ -1,0 +1,258 @@
+[
+  [
+    {
+      "code": "A1",
+      "category": "Asset",
+      "featureLevels": [
+        { "key": "CircuitBreakerDto" },
+        { "key": "PropertiesDto" },
+        { "key": "manufacturer_type" }
+      ],
+      "coordinates": []
+    },
+    {
+      "code": "A2",
+      "category": "Asset",
+      "featureLevels": [
+        { "key": "CircuitBreakerDto" },
+        { "key": "PropertiesDto" },
+        { "key": "serial_no" }
+      ],
+      "coordinates": []
+    },
+    {
+      "code": "A3",
+      "category": "Asset",
+      "featureLevels": [
+        { "key": "CircuitBreakerDto" },
+        { "key": "PropertiesDto" },
+        { "key": "manufacturer" }
+      ],
+      "coordinates": []
+    },
+    {
+      "code": "A4",
+      "category": "Job",
+      "featureLevels": [
+        { "key": "Job_CircuitBreakerJobDto" },
+        { "key": "Tests" },
+        { "key": "GeneralInspection" },
+        { "key": "item" }
+      ],
+      "coordinates": []
+    },
+    {
+      "code": "A5",
+      "category": "Job",
+      "featureLevels": [
+        { "key": "Job_CircuitBreakerJobDto" },
+        { "key": "Tests" },
+        { "key": "InsulationResistanceCircuit" },
+        { "key": "measurement" }
+      ],
+      "coordinates": []
+    },
+    {
+      "code": "A6",
+      "category": "Job",
+      "featureLevels": [
+        { "key": "Job_CircuitBreakerJobDto" },
+        { "key": "Tests" },
+        { "key": "ContactResistance" },
+        { "key": "phase" }
+      ],
+      "coordinates": []
+    },
+    {
+      "code": "A7",
+      "category": "Job",
+      "includeUnit": true,
+      "featureLevels": [
+        { "key": "Job_CircuitBreakerJobDto" },
+        { "key": "Tests" },
+        { "key": "ContactResistance" },
+        { "key": "contact_resistance" }
+      ],
+      "coordinates": []
+    },
+    {
+      "code": "A8",
+      "category": "Job",
+      "includeUnit": true,
+      "featureLevels": [
+        { "key": "Job_CircuitBreakerJobDto" },
+        { "key": "Tests" },
+        { "key": "InsulationResistanceCircuit" },
+        { "key": "test_voltage" }
+      ],
+      "coordinates": []
+    },
+    {
+      "code": "A9",
+      "category": "Asset",
+      "featureLevels": [
+        { "key": "CircuitBreakerDto" },
+        { "key": "PropertiesDto" },
+        { "key": "manufacturer_year" }
+      ],
+      "coordinates": []
+    },
+    {
+      "code": "A10",
+      "category": "Asset",
+      "includeUnit": true,
+      "featureLevels": [
+        { "key": "CircuitBreakerDto" },
+        { "key": "RatingsDto" },
+        { "key": "rated_voltage_ll" }
+      ],
+      "coordinates": []
+    },
+    {
+      "code": "A11",
+      "category": "Asset",
+      "includeUnit": true,
+      "featureLevels": [
+        { "key": "CircuitBreakerDto" },
+        { "key": "RatingsDto" },
+        { "key": "rated_current" }
+      ],
+      "coordinates": []
+    },
+    {
+      "code": "A12",
+      "category": "Asset",
+      "includeUnit": true,
+      "featureLevels": [
+        { "key": "CircuitBreakerDto" },
+        { "key": "RatingsDto" },
+        { "key": "rated_short_circuit_breaking_current" }
+      ],
+      "coordinates": []
+    },
+    {
+      "code": "A13",
+      "category": "SubstationDto",
+      "featureLevels": [
+        { "key": "name" }
+      ],
+      "coordinates": []
+    },
+    {
+      "code": "A14",
+      "category": "Asset",
+      "includeUnit": true,
+      "featureLevels": [
+        { "key": "CircuitBreakerDto" },
+        { "key": "RatingsDto" },
+        { "key": "short_circuit_nominal_duration" }
+      ],
+      "coordinates": []
+    },
+    {
+      "code": "A15",
+      "category": "Job",
+      "featureLevels": [
+        { "key": "Job_CircuitBreakerJobDto" },
+        { "key": "Tests" },
+        { "key": "ReportTestingDate" }
+      ],
+      "coordinates": []
+    },
+    {
+      "code": "A16",
+      "category": "Job",
+      "featureLevels": [
+        { "key": "Job_CircuitBreakerJobDto" },
+        { "key": "Tests" },
+        { "key": "ReportTestType" }
+      ],
+      "coordinates": []
+    },
+    {
+      "code": "A17",
+      "category": "Job",
+      "format": "bilingual-assessment",
+      "featureLevels": [
+        { "key": "Job_CircuitBreakerJobDto" },
+        { "key": "Tests" },
+        { "key": "GeneralInspection" },
+        { "key": "assessment" }
+      ],
+      "coordinates": []
+    },
+    {
+      "code": "A18",
+      "category": "Job",
+      "format": "bilingual-assessment",
+      "featureLevels": [
+        { "key": "Job_CircuitBreakerJobDto" },
+        { "key": "Tests" },
+        { "key": "InsulationResistanceCircuit" },
+        { "key": "assessment" }
+      ],
+      "coordinates": []
+    },
+    {
+      "code": "A19",
+      "category": "Job",
+      "format": "bilingual-assessment",
+      "featureLevels": [
+        { "key": "Job_CircuitBreakerJobDto" },
+        { "key": "Tests" },
+        { "key": "ContactResistance" },
+        { "key": "assessment" }
+      ],
+      "coordinates": []
+    },
+    {
+      "code": "A20",
+      "category": "Job",
+      "format": "vi-thousands",
+      "featureLevels": [
+        { "key": "Job_CircuitBreakerJobDto" },
+        { "key": "Tests" },
+        { "key": "InsulationResistanceCircuit" },
+        { "key": "r60s" }
+      ],
+      "coordinates": []
+    },
+    {
+      "code": "A21",
+      "category": "Job",
+      "featureLevels": [
+        { "key": "Job_CircuitBreakerJobDto" }, { "key": "Tests" },
+        { "key": "PowerFrequencyVoltageWithstand" }, { "key": "measurement" }
+      ],
+      "coordinates": []
+    },
+    {
+      "code": "A22",
+      "category": "Job",
+      "featureLevels": [
+        { "key": "Job_CircuitBreakerJobDto" }, { "key": "Tests" },
+        { "key": "PowerFrequencyVoltageWithstand" }, { "key": "test_voltage" }
+      ],
+      "coordinates": []
+    },
+    {
+      "code": "A23",
+      "category": "Job",
+      "featureLevels": [
+        { "key": "Job_CircuitBreakerJobDto" }, { "key": "Tests" },
+        { "key": "PowerFrequencyVoltageWithstand" }, { "key": "duration" }
+      ],
+      "coordinates": []
+    },
+    {
+      "code": "A24",
+      "category": "Job",
+      "format": "bilingual-assessment",
+      "featureLevels": [
+        { "key": "Job_CircuitBreakerJobDto" }, { "key": "Tests" },
+        { "key": "PowerFrequencyVoltageWithstand" }, { "key": "assessment" }
+      ],
+      "coordinates": []
+    }
+  ]
+]

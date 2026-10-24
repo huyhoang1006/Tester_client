@@ -27,6 +27,31 @@ import { JobEntityToDto as bushingJobEntityToDto }        from '@/views/Mapping/
 import {ASSET_TYPE_TO_KEY, FEATURE_TREE } from '../../Common/constants'
 
 const v = (obj) => (obj && obj.value !== undefined) ? String(obj.value ?? '') : String(obj ?? '')
+const unitText = (unit) => String(unit || '').replace('|', '')
+const withUnit = (value, unit) => {
+  const text = String(value ?? '').trim()
+  const symbol = unitText(unit)
+  return text && symbol ? `${text} ${symbol}` : text
+}
+const sharedTestMetadata = (testList, field) => {
+  if (!testList?.length) return ''
+  const values = testList.map(test => String(test.testCondition?.metadata?.[field] || '').trim())
+  return values[0] && values.every(value => value === values[0]) ? values[0] : ''
+}
+const reportDate = value => {
+  const parts = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(value)
+  return parts ? `${parts[2].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${parts[3]}` : value
+}
+const assessmentLabel = value => {
+  const text = String(value ?? '').trim()
+  if (text === 'Pass' || text === '1') return 'Đạt/ Pass'
+  if (text === 'Fail' || text === '0') return 'Không đạt/ Fail'
+  return text
+}
+const reportThousands = value => {
+  const text = String(value ?? '').trim()
+  return /^\d{4,}$/.test(text) ? text.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : text
+}
 
 // Empty result dùng khi không có data — nhất quán để destructure không bị undefined
 const EMPTY_RESULT = { flatMap: {}, arrayMap: null }
@@ -37,7 +62,7 @@ export const exportService = {
     return { type: p.type||'', kind: p.kind||'', serial_no: p.serial_no||'', manufacturer: p.manufacturer||'', manufacturer_type: p.manufacturer_type||'', manufacturer_year: p.manufacturer_year||'', model: p.model||'', country_of_origin: p.country_of_origin||'', apparatus_id: p.apparatus_id||'', comment: p.comment||'' }
   },
 
-  buildTestArrayMap(testList) {
+  buildTestArrayMap(testList, unitMap = {}) {
     const arrayMap = {}
     if (!testList) return arrayMap
 
@@ -71,6 +96,7 @@ export const exportService = {
             }
             return String(cell)
           })
+          unitMap[key] = rows.map(row => row[col]?.unit || '')
         })
       }
 
@@ -84,6 +110,7 @@ export const exportService = {
             : String(condCell)
         }
         arrayMap[key] = [val]
+        unitMap[key] = [condCell?.unit || '']
       }
     }
     return arrayMap
@@ -124,6 +151,7 @@ export const exportService = {
     try {
       let flatMap = {}
       let arrayMap = null
+      const unitMap = {}
       if (cat.key === 'OrgEntityToOrgDto') {
         const rs = await window.electronAPI.getOrganisationEntityByMrid(nodeId); if (!rs?.success || !rs.data) return EMPTY_RESULT
         const dto = OrgEntityToOrgDto(rs.data)
@@ -394,6 +422,15 @@ export const exportService = {
           cc_power:         (op.close_coil_component||[]).map(x => x.power||''),
           cc_frequency:     (op.close_coil_component||[]).map(x => v(x.frequency)),
         }
+        const storedUnit = (records, field) => {
+          const measurement = (Array.isArray(records) ? records : []).find(item => item.mrid === r[field]?.mrid)
+          if (!measurement?.unit) return r[field]?.unit || ''
+          return measurement.multiplier ? `${measurement.multiplier}|${measurement.unit}` : measurement.unit
+        }
+        unitMap.rated_voltage_ll = storedUnit(rs.data.voltage, 'rated_voltage_ll')
+        unitMap.rated_current = storedUnit(rs.data.currentFlow, 'rated_current')
+        unitMap.rated_short_circuit_breaking_current = storedUnit(rs.data.currentFlow, 'rated_short_circuit_breaking_current')
+        unitMap.short_circuit_nominal_duration = storedUnit(rs.data.second, 'short_circuit_nominal_duration')
       }
       else if (cat.key === 'Asset_PowerCableDTO') {
         const rs = await window.electronAPI.getPowerCableEntityByMrid(nodeId); if (!rs?.success || !rs.data) return EMPTY_RESULT
@@ -521,18 +558,22 @@ export const exportService = {
           summary:       p.summary || p.description || ''
         }
         // TestingEquipment — lấy item đầu tiên nếu có (multi-equipment dùng arrayMap)
-        arrayMap = this.buildTestArrayMap(dto.testList)
+        arrayMap = this.buildTestArrayMap(dto.testList, unitMap)
+        if (jobKey === 'Job_CircuitBreakerJobDto') {
+          flatMap.report_testing_date = reportDate(sharedTestMetadata(dto.testList, 'testing_date'))
+          flatMap.report_test_type = sharedTestMetadata(dto.testList, 'type')
+        }
         if (dto.testingEquipmentData && dto.testingEquipmentData.length > 0) {
           arrayMap['te_model']            = dto.testingEquipmentData.map(x => x.model            || '')
           arrayMap['te_serial_number']    = dto.testingEquipmentData.map(x => x.serial_number    || '')
           arrayMap['te_calibration_date'] = dto.testingEquipmentData.map(x => x.calibration_date || '')
         }
       }
-      return { flatMap, arrayMap }
+      return { flatMap, arrayMap, unitMap }
     } catch(e) { console.error('buildDtoForCat error:', cat.key, e); return EMPTY_RESULT }
   },
 
-  extractFromMaps(cat, flatMap, arrayMap, tableData) {
+  extractFromMaps(cat, flatMap, arrayMap, tableData, unitMap = {}) {
     const result = {}
     // FIX: guard undefined flatMap/arrayMap (khi buildDtoForCat trả EMPTY_RESULT)
     if (!flatMap) flatMap = {}
@@ -543,10 +584,19 @@ export const exportService = {
       if (!leafValue) continue
 
       if (arrayMap && leafValue in arrayMap) {
-        result[row.code] = arrayMap[leafValue].map(v => (v !== undefined && v !== null) ? String(v) : '')
+        const values = arrayMap[leafValue]
+        const outputValues = row.format === 'bilingual-assessment' && row.coordinates?.length === 1 &&
+          values.length > 1 && !values.every(value => value === values[0]) ? [''] : values
+        result[row.code] = outputValues.map((v, index) => {
+          const value = row.format === 'bilingual-assessment' ? assessmentLabel(v)
+            : row.format === 'vi-thousands' ? reportThousands(v) : v
+          return row.includeUnit
+            ? withUnit(value, Array.isArray(unitMap[leafValue]) ? unitMap[leafValue][index] : unitMap[leafValue])
+            : (value !== undefined && value !== null ? String(value) : '')
+        })
       } else if (flatMap && leafValue in flatMap) {
         const val = flatMap[leafValue]
-        result[row.code] = [(val !== undefined && val !== null) ? String(val) : '']
+        result[row.code] = [row.includeUnit ? withUnit(val, unitMap[leafValue]) : (val !== undefined && val !== null ? String(val) : '')]
       }
     }
     return result

@@ -248,7 +248,7 @@ export default {
       const tmpl = this.templateList.find(t => t.name === name)
       if (!tmpl) return
       this.currentFilePath = tmpl.path || ''
-      this.tableData = (tmpl.variable || []).map(v => ({ code: v.code||'', category: v.category||'', featureLevels: (v.featureLevels||[]).map(f => ({ key: f.key||'' })), coordinates: v.coordinates||[] }))
+      this.tableData = (tmpl.variable || []).map(v => ({ code: v.code||'', category: v.category||'', featureLevels: (v.featureLevels||[]).map(f => ({ key: f.key||'' })), includeUnit: v.includeUnit === true, format: v.format || '', summaryOnly: v.summaryOnly === true, coordinates: v.coordinates||[] }))
     },
     openAddTemplateDialog() { this.resetAddDialog(); this.showAddDialog = true },
     resetAddDialog() { this.addForm = { name: '', filePath: '' }; this.addLoading = false },
@@ -302,7 +302,7 @@ export default {
     async handleSave() { await this.saveWithScan() },
     async saveWithScan() {
       if (!this.selectedTemplateName || !this.currentFilePath) { this.$message.warning('Please upload an Template file first'); return }
-      const variables = this.tableData.map(r => ({ code: r.code, category: r.category, featureLevels: r.featureLevels, coordinates: r.coordinates||[] }))
+      const variables = this.tableData.map(r => ({ code: r.code, category: r.category, featureLevels: r.featureLevels, includeUnit: r.includeUnit === true, format: r.format || '', summaryOnly: r.summaryOnly === true, coordinates: r.coordinates||[] }))
       try {
         const rs = await window.electronAPI.saveTemplateWithScan({ name: this.selectedTemplateName, filePath: this.currentFilePath, variables, type: this.exportType, category: 'export'})
         if (rs?.success) { this.$message.success('Saved'); await this.loadTemplates(); this.onTemplateChange(this.selectedTemplateName) }
@@ -322,7 +322,7 @@ export default {
         if (!rs?.success || !rs.data) return
         const variables = Array.isArray(rs.data) ? rs.data[0] : rs.data
         if (!Array.isArray(variables)) { this.$message.error('Invalid template config file'); return }
-        this.tableData = variables.map(v => ({ code: v.code||'', category: v.category||'', featureLevels: (v.featureLevels||[]).map(f => ({ key: f.key||'' })), coordinates: v.coordinates||[] }))
+        this.tableData = variables.map(v => ({ code: v.code||'', category: v.category||'', featureLevels: (v.featureLevels||[]).map(f => ({ key: f.key||'' })), includeUnit: v.includeUnit === true, format: v.format || '', summaryOnly: v.summaryOnly === true, coordinates: v.coordinates||[] }))
         this.$message.success('Imported')
       } catch(e) { this.$message.error(e.message) }
     },
@@ -332,6 +332,9 @@ export default {
         const variables = this.tableData.map(v => ({
           code: v.code||'', category: v.category||'',
           featureLevels: (v.featureLevels||[]).map(f => ({ key: f.key||'' })),
+          includeUnit: v.includeUnit === true,
+          format: v.format || '',
+          summaryOnly: v.summaryOnly === true,
           coordinates: v.coordinates||[]
         }))
         const defaultFileName = (this.selectedTemplateName || 'template') + '-config.json'
@@ -533,8 +536,8 @@ export default {
           const matchingItems = this.getMatchingItems(cat)
           if (cat.key.startsWith('Asset_') || cat.key.startsWith('Job_')) {
             for (const item of matchingItems) {
-              const { flatMap, arrayMap } = await exportService.buildDtoForCat(cat, item.context)
-              const partial = exportService.extractFromMaps(cat, flatMap, arrayMap, this.tableData)
+              const { flatMap, arrayMap, unitMap } = await exportService.buildDtoForCat(cat, item.context)
+              const partial = exportService.extractFromMaps(cat, flatMap, arrayMap, this.tableData, unitMap)
               for (const code in partial) {
                 if (!codeMap[code]) codeMap[code] = []
                 const vals = partial[code]
@@ -544,8 +547,8 @@ export default {
           } else {
             const firstItem = matchingItems[0]
             if (!firstItem) continue
-            const { flatMap, arrayMap } = await exportService.buildDtoForCat(cat, firstItem.context)
-            const partial = exportService.extractFromMaps(cat, flatMap, arrayMap, this.tableData)
+            const { flatMap, arrayMap, unitMap } = await exportService.buildDtoForCat(cat, firstItem.context)
+            const partial = exportService.extractFromMaps(cat, flatMap, arrayMap, this.tableData, unitMap)
             for (const code in partial) {
               if (!codeMap[code]) codeMap[code] = partial[code]
             }
@@ -581,7 +584,7 @@ export default {
     },
     clearAll() { this.tableData = [] },
     addRow(index) {
-      const r = { code: '', category: '', featureLevels: [], coordinates: [] }
+      const r = { code: '', category: '', featureLevels: [], includeUnit: false, coordinates: [] }
       if (typeof index === 'number') this.tableData.splice(index + 1, 0, r); else this.tableData.push(r)
     },
     removeRow(index) { this.tableData.splice(index, 1) },

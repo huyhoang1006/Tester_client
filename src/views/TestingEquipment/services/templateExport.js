@@ -43,7 +43,6 @@ export const templateExport = {
             manufacturer_year: s(p.manufacturer_year), asset_tag: s(p.asset_tag),
             status: s(p.status), country_of_origin: s(p.country_of_origin),
             in_use_date: s(p.in_use_date), comment: s(p.comment),
-            is_accessory: s(p.is_accessory != null ? p.is_accessory : 0)
         }
         const cal = dto.calibration || []
         const lic = dto.licenses || []

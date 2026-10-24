@@ -3,6 +3,7 @@ import voltageTransformerTestMap from '@/config/test-definitions/VoltageTransfor
 import voltageTransformerConditionMap from '@/config/testing-condition/VoltageTransformer'
 import voltageTransformerAssessmentMap from '@/config/testing-assessment/VoltageTransformer'
 import * as common from '../../../../Common/index.js'
+import { createPowerFrequencyTest } from '@/views/JobView/Common/powerFrequencyTest'
 import { readVTRatioProfile } from '../../vtRatioProfile'
 
 /**
@@ -46,6 +47,9 @@ export default {
             switch (testTypeCode) {
                 case 'InsulationResistance':
                     data = this.initInsulationResistance(testTypeCode, assetData)
+                    break
+                case 'PowerFrequencyVoltageWithstand':
+                    data = createPowerFrequencyTest(voltageTransformerTestMap[testTypeCode], voltageTransformerConditionMap[testTypeCode])
                     break
                 case 'VTRatio':
                     data = await this.initVTRatio(testTypeCode, assetData)
