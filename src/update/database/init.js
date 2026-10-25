@@ -234,10 +234,8 @@ export const ensureWorkTaskMetadataColumns = async (dbsql) => {
             ))
     `)
 
-    if (columns.has('job_type')) {
-        await run(dbsql, 'ALTER TABLE work_task DROP COLUMN job_type')
-    }
-
+    // Keep the legacy job_type column: bundled SQLCipher uses SQLite 3.33,
+    // which cannot DROP COLUMN. Readers use the backfilled type column.
     await new Promise((resolve, reject) => {
         dbsql.run(
             `INSERT INTO app_settings(key, value) VALUES(?, '1')

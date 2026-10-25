@@ -1,4 +1,4 @@
-import client from '@/utils/client'
+import client from './jobClient'
 import { toServerId } from '@/utils/serverId'
 
 const prefix = 'api/job'

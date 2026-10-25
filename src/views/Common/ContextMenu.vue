@@ -2,7 +2,7 @@
     <div 
         v-if="visible"
         class="context-menu"
-        :style="{ top: `${position.y}px`, left: `${position.x}px` }"
+        :style="{ top: `${position.y}px`, left: `${position.x}px`, visibility: positioning ? 'hidden' : 'visible' }"
     >
         <!-- Menu chuột phải -->
         <transition name="fade">
@@ -163,6 +163,7 @@ export default {
         return {
             maintenanceFailureEnabled: MAINTENANCE_FAILURE_ENABLED,
             visible: false,
+            positioning: false,
             position: { x: 0, y: 0 },
             selectedNode: null, // Lưu trữ node đang mở menu
             sign : '',
@@ -185,81 +186,38 @@ export default {
     },
     methods: {
         getPowerPlantIcon,
-        openContextMenu(event, node, { top, left } = {}) {
+        openContextMenu(event, node) {
             event.preventDefault();
-            
-            // Sử dụng tọa độ từ mouse event để đặt menu ngay tại vị trí con trỏ chuột
-            let x = event.clientX;
-            let y = event.clientY;
-            
-            // Nếu có tọa độ custom được truyền vào, sử dụng chúng
-            if (top !== undefined && left !== undefined) {
-                x = left;
-                y = top;
-            }
-            
-            // Kiểm tra và điều chỉnh để menu không bị cắt khỏi viewport
-            const menuWidth = 200; // Ước tính chiều rộng menu
-            const menuHeight = 400; // Ước tính chiều cao menu tối đa
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
-            
-            // Điều chỉnh x nếu menu bị tràn ra ngoài bên phải
-            if (x + menuWidth > viewportWidth) {
-                x = viewportWidth - menuWidth - 10; // Trừ 10px để có khoảng cách
-            }
-            
-            // Điều chỉnh y nếu menu bị tràn ra ngoài bên dưới
-            if (y + menuHeight > viewportHeight) {
-                y = viewportHeight - menuHeight - 10; // Trừ 10px để có khoảng cách
-            }
-            
-            // Đảm bảo menu không bị âm (ra ngoài bên trái hoặc bên trên)
-            x = Math.max(5, x);
-            y = Math.max(5, y);
-            
-            this.position = { x, y };
+            const { clientX, clientY } = event;
             this.selectedNode = node;
+            this.sign = '';
+            this.positioning = true;
             this.visible = true;
-
-            // Đóng menu khi click ra ngoài
-            document.addEventListener("click", this.closeContextMenu);
+            this.placeAtPointer(clientX, clientY);
         },
 
         openContextMenuSubstation(event, organisationId) {
             event.preventDefault();
-            
-            // Sử dụng tọa độ từ mouse event để đặt menu ngay tại vị trí con trỏ chuột
-            let x = event.clientX;
-            let y = event.clientY;
-            
-            // Kiểm tra và điều chỉnh để menu không bị cắt khỏi viewport
-            const menuWidth = 200; // Ước tính chiều rộng menu
-            const menuHeight = 100; // Menu substation nhỏ hơn
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
-            
-            // Điều chỉnh x nếu menu bị tràn ra ngoài bên phải
-            if (x + menuWidth > viewportWidth) {
-                x = viewportWidth - menuWidth - 10;
-            }
-            
-            // Điều chỉnh y nếu menu bị tràn ra ngoài bên dưới
-            if (y + menuHeight > viewportHeight) {
-                y = viewportHeight - menuHeight - 10;
-            }
-            
-            // Đảm bảo menu không bị âm
-            x = Math.max(5, x);
-            y = Math.max(5, y);
-            
-            this.position = { x, y };
+            const { clientX, clientY } = event;
             this.sign = 'onlysubs';
             this.organisationId = organisationId;
+            this.positioning = true;
             this.visible = true;
-            
-            // Đóng menu khi click ra ngoài
-            document.addEventListener("click", this.closeContextMenu);
+            this.placeAtPointer(clientX, clientY);
+        },
+
+        placeAtPointer(x, y) {
+            this.$nextTick(() => {
+                if (!this.visible) return;
+                const menu = this.$el;
+                const margin = 8;
+                this.position = {
+                    x: Math.max(margin, Math.min(x, window.innerWidth - menu.offsetWidth - margin)),
+                    y: Math.max(margin, Math.min(y, window.innerHeight - menu.offsetHeight - margin))
+                };
+                this.positioning = false;
+                document.addEventListener('click', this.closeContextMenu);
+            });
         },
 
         closeContextMenu() {
