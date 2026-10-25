@@ -174,6 +174,12 @@
       "code": "SFRA",
       "name": "Sweep Frequency Response Analysis",
       "kind": "test"
+    },
+    {
+      "mrid": "a9057b10-c4a8-45de-b48f-4f806a000001",
+      "code": "Dirana",
+      "name": "DIRANA dielectric response analysis",
+      "kind": "test"
     }
   ]
 }

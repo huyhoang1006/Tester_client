@@ -39,6 +39,7 @@
         @show-addOrganisation="$emit('show-addOrganisation', $event)"
         @show-addVoltageLevel="$emit('show-addVoltageLevel', $event)"
         @show-addTransformer="$emit('show-addTransformer', $event)" @show-addJob="$emit('show-addJob', $event)"
+        @maintenance-failure="$emit('maintenance-failure', $event)"
         @show-addBushing="$emit('show-addBushing', $event)"
         @show-addSurgeArrester="$emit('show-addSurgeArrester', $event)"
         @show-addCircuit="$emit('show-addCircuit', $event)" @show-addVt="$emit('show-addVt', $event)"

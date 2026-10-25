@@ -5,7 +5,11 @@
             <div class="te-title">
                 <div class="te-avatar">{{ initials }}</div>
                 <div>
-                    <h2>{{ testingEquipmentDto.properties.name || 'New testing equipment' }}</h2>
+                    <h2>{{ testingEquipmentDto.properties.name || 'New testing equipment' }}<span
+                        v-if="!serverMode && testingEquipmentSyncStatus && testingEquipmentSyncStatus !== 'synced'"
+                        class="te-sync-dot" :class="`sync-${testingEquipmentSyncStatus}`"
+                        :title="testingEquipmentSyncStatus === 'failed' ? 'Sync failed' : testingEquipmentSyncStatus === 'syncing' ? 'Syncing with server' : 'Changed locally, not synced to server'"
+                        role="img" aria-label="Not synced to server"></span></h2>
                     <div class="te-subtitle">
                         <span>{{ testingEquipmentDto.properties.manufacturer || '—' }}</span>
                         <span class="dot-sep">S/N {{ testingEquipmentDto.properties.serial_no || '—' }}</span>
@@ -97,6 +101,7 @@ export default {
     data() {
         return {
             activeTab: 'overview',
+            testingEquipmentSyncStatus: '',
             tabs: [
                 { key: 'overview', label: 'Overview' },
                 { key: 'calibration', label: 'Calibration' },
@@ -144,6 +149,7 @@ export default {
         // Nạp form: ưu tiên mrid (đọc DB) -> bản ghi Excel -> form trống (create)
         initForm() {
             this.activeTab = 'overview'
+            this.testingEquipmentSyncStatus = ''
             if (this.equipmentMrid) {
                 if (this.serverMode) this.loadFromServer(this.equipmentMrid)
                 else this.loadFromDb(this.equipmentMrid)
@@ -183,6 +189,9 @@ export default {
     color: var(--blue-900); display: grid; place-items: center; font-size: 20px; font-weight: 900; flex-shrink: 0;
 }
 .te-title h2 { margin: 0 0 6px; font-size: 21px; color: var(--gray-900); }
+.te-sync-dot { display: inline-block; width: 7px; height: 7px; margin-left: 9px; border-radius: 50%; vertical-align: middle; background: #f59e0b; }
+.te-sync-dot.sync-syncing { background: #146ebe; }
+.te-sync-dot.sync-failed { background: #d7001b; }
 .te-subtitle { color: var(--gray-600); display: flex; flex-wrap: wrap; gap: 8px; font-size: 13px; }
 .dot-sep::before { content: "•"; margin-right: 8px; color: var(--gray-400); }
 .te-header-side { display: grid; gap: 8px; justify-items: end; align-content: start; }

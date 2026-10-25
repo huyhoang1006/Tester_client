@@ -33,12 +33,13 @@ export const selectTestDto = (jobDto, testId, linkKey) => {
     for (const key of SERIES_MAPS) {
         if (dto[key]) dto[key] = selectSeriesMap(dto[key], ownerIds)
     }
-    const links = (dto[linkKey] || []).filter(link => sameTestId(link.work_task_id, testId))
+    const allLinks = dto[linkKey] || []
+    const links = allLinks.filter(link => sameTestId(link.work_task_id, testId))
     dto[linkKey] = links
     const equipmentIds = new Set(links.map(link => String(toServerId(link.testing_equipment_id))))
     dto.testingEquipmentData = (dto.testingEquipmentData || []).filter(equipment =>
         equipmentIds.has(String(toServerId(equipment.mrid))) ||
-        (equipment.work_task_ids || []).some(id => sameTestId(id, testId))
+        (!allLinks.length && (equipment.work_task_ids || []).some(id => sameTestId(id, testId)))
     ).map(equipment => ({ ...equipment, work_task_ids: [test.mrid] }))
     return dto
 }

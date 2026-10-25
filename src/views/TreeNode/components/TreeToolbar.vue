@@ -9,6 +9,14 @@
                 <i class="fa-solid fa-screwdriver-wrench"></i>
             </button>
 
+            <button v-if="maintenanceFailureEnabled && clientSlide" type="button" class="rail-tab"
+                :class="{ active: activeTab === 'maintenanceFailure' }"
+                :disabled="selectedMode !== 'asset'"
+                :title="selectedMode === 'asset' ? 'Maintenance & Failure Record' : 'Select an asset to open Maintenance & Failure Record'"
+                aria-label="Maintenance & Failure Record" @click="handleMaintenanceFailure">
+                <i class="fa-solid fa-clipboard-check"></i>
+            </button>
+
             <button type="button" class="rail-tab" :class="{ active: activeTab === 'fmeca' }" title="FMECA" @click="handleFmeca">
                 <i class="fa-solid fa-table"></i>
             </button>
@@ -113,6 +121,7 @@
 <script>
 import Icon from '@/views/Common/Icon.vue'
 import TreeSearchPanel from '@/views/TreeNode/components/TreeSearchPanel.vue'
+import { MAINTENANCE_FAILURE_ENABLED } from '@/config/featureFlags'
 
 const COLLAPSE_KEY = 'treeToolbarCollapsed'
 
@@ -152,6 +161,7 @@ export default {
     },
     data() {
         return {
+            maintenanceFailureEnabled: MAINTENANCE_FAILURE_ENABLED,
             activeTab: 'explorer',
             collapsed: localStorage.getItem(getCollapseKey()) === '1',
             searchOpen: false
@@ -191,6 +201,11 @@ export default {
         handleShowEquipment() {
             this.activeTab = 'testingEquipment'
             this.$emit('show-equipment')
+        },
+        handleMaintenanceFailure() {
+            if (this.selectedMode !== 'asset') return
+            this.activeTab = 'maintenanceFailure'
+            this.$emit('maintenance-failure')
         },
         showDownloadDropdown() {}
     }
@@ -253,6 +268,17 @@ export default {
     background: rgba(255, 255, 255, 0.12);
     border-left-color: #ffffff;
     color: #ffffff;
+}
+
+.rail-tab:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.rail-tab:disabled:hover {
+    background: transparent;
+    border-left-color: transparent;
+    color: rgba(255, 255, 255, 0.72);
 }
 
 .rail-collapse {

@@ -1,5 +1,6 @@
 import fs from 'fs'
 import PizZip from 'pizzip'
+import { gunzipSync } from 'zlib'
 import { parseXml, childrenNamed, child, textOf, unitOf } from './xmlLite'
 import {
     readPtmChannelConfiguration,
@@ -497,6 +498,74 @@ const readFraTest = (node, type) => {
             }
         })
         .filter(measurement => measurement.points.length > 0)
+    return base
+}
+
+const readDraFrequencySweep = encoded => {
+    if (!encoded) return []
+    const buffer = Buffer.from(encoded, 'base64')
+    if (buffer.length < 4 || (buffer.length - 4) % 25 !== 0) {
+        throw new Error('Invalid DIRANA frequency sweep payload')
+    }
+    const points = []
+    for (let offset = 4; offset < buffer.length; offset += 25) {
+        const frequency = buffer.readDoubleLE(offset)
+        const resistance = buffer.readDoubleLE(offset + 8)
+        const reactance = buffer.readDoubleLE(offset + 16)
+        const denominator = 2 * Math.PI * frequency * (resistance ** 2 + reactance ** 2)
+        const capacitanceReal = denominator ? -reactance / denominator : null
+        const capacitanceImag = denominator ? -resistance / denominator : null
+        const tangentDelta = capacitanceReal ? Math.abs(capacitanceImag / capacitanceReal) * 100 : null
+        const powerFactor = capacitanceReal !== null && capacitanceImag !== null
+            ? Math.abs(capacitanceImag) / Math.hypot(capacitanceReal, capacitanceImag) * 100
+            : null
+        points.push({ frequency, resistance, reactance, tangentDelta, powerFactor, capacitanceReal, capacitanceImag })
+    }
+    return points
+}
+
+const readDraPolarizationSweep = encoded => {
+    if (!encoded) return []
+    const buffer = Buffer.from(encoded, 'base64')
+    if (buffer.length < 10 || buffer[8] !== 0x1f || buffer[9] !== 0x8b) {
+        throw new Error('Invalid DIRANA polarization sweep payload')
+    }
+    const data = gunzipSync(buffer.subarray(8))
+    if (data.length % 16 !== 0) throw new Error('Invalid DIRANA polarization sweep points')
+    const points = []
+    for (let offset = 0; offset < data.length; offset += 16) {
+        points.push({ time: data.readDoubleLE(offset), current: data.readDoubleLE(offset + 8) })
+    }
+    return points
+}
+
+const readDraTest = (node, type) => {
+    const base = readTestCommon(node, type)
+    const measurements = child(node, 'Measurements')
+    base.comment = cleanValue(textOf(node, 'Comment'))
+    base.uniqueId = cleanValue(textOf(node, 'UniqueId'))
+    base.insulationMedium = cleanValue(textOf(node, 'InsulationMediumId'))
+    base.fdsVoltage = measure(node, 'FdsVoltage')
+    base.pdcVoltage = measure(node, 'PdcVoltage')
+    base.epsilonR = cleanValue(textOf(node, 'EpsilonR'))
+    base.firmwareVersion = cleanValue(textOf(node, 'TestSetFirmwareVersion'))
+    base.measurements = childrenNamed(measurements || { children: [] }, 'DRAMeasurement').map(measurement => {
+        const metadata = cleanValue(textOf(measurement, 'MetaData'))
+        const originalTestId = metadata.match(/<OriginalTest>\s*<UniqueId>([^<]+)<\/UniqueId>/)
+        return {
+            name: cleanValue(textOf(measurement, 'Name')),
+            measuredDate: cleanValue(textOf(measurement, 'MeasuredDate')),
+            measurementId: cleanValue(textOf(measurement, 'UniqueMeasurementDataId')),
+            parentTestId: originalTestId ? originalTestId[1] : base.uniqueId,
+            color: cleanValue(textOf(measurement, 'Color')),
+            temperature: measure(measurement, 'Temperature').value,
+            channel: cleanValue(textOf(measurement, 'Channel')),
+            epsilonR: base.epsilonR,
+            copiedForComparison: cleanValue(textOf(measurement, 'IsCopy')) === 'true',
+            frequencyPoints: readDraFrequencySweep(cleanValue(textOf(measurement, 'FrequencySweepSerialized'))),
+            polarizationPoints: readDraPolarizationSweep(cleanValue(textOf(measurement, 'PolarizationSweepSerialized'))),
+        }
+    })
     return base
 }
 
@@ -1394,6 +1463,7 @@ const TEST_READERS = {
     LeakageReactanceTest: readLeakageReactanceTest,
     TransformerWindingResistanceTest: readTransformerWindingResistanceTest,
     FRATest: readFraTest,
+    DRATest: readDraTest,
 }
 
 // ─── Điểm vào ────────────────────────────────────────────────────────────────

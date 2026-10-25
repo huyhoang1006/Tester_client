@@ -4,6 +4,24 @@
     "Calculated/reference fields are not sourced from CPXpert unless the client already stores them as test results.",
     "Explicit PTM Pass/Fail results are preserved; unassessed or indeterminate results remain blank."
   ],
+  "Dirana": {
+    "ptmType": "DRATest",
+    "columns": {
+      "temperature": { "from": "temperature" },
+      "epsilon_r": { "from": "epsilonR" }
+    },
+    "plainColumns": {
+      "name": { "from": "name" },
+      "measured_date": { "from": "measuredDate" },
+      "channel": { "from": "channel" },
+      "color": { "from": "color" },
+      "measurement_id": { "from": "measurementId" },
+      "parent_test_id": { "from": "parentTestId" },
+      "copied_for_comparison": { "from": "copiedForComparison" },
+      "frequency_points_json": { "from": "frequencyPoints", "serialize": "json" },
+      "polarization_points_json": { "from": "polarizationPoints", "serialize": "json" }
+    }
+  },
   "SFRA": {
     "ptmType": "FRATest",
     "columns": {

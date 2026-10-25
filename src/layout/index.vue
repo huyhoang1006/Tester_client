@@ -1,6 +1,6 @@
 <template>
     <div id="windows" :class="{ 'logged-in': user }">
-        <top-bar id="top-bar"></top-bar>
+        <top-bar id="top-bar" @server-config-changed="handleServerConfigChanged"></top-bar>
         <section id="main-windows">
             <router-view ref="mainWindows"></router-view>
         </section>
@@ -46,6 +46,12 @@ export default {
         this.restoreWorkspaceSide()
     },
     methods: {
+        async handleServerConfigChanged() {
+            const view = this.$refs.mainWindows
+            if (view && typeof view.handleServerConfigChanged === 'function') {
+                await view.handleServerConfigChanged()
+            }
+        },
         restoreWorkspaceSide() {
             const state = loadWorkspaceState()
             if (state && state.side) {

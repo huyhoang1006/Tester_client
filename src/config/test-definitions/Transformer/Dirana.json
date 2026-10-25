@@ -1,0 +1,18 @@
+{
+  "testId": "a9057b10-c4a8-45de-b48f-4f806a000001",
+  "testCode": "Dirana",
+  "testName": "DIRANA dielectric response analysis",
+  "columns": [
+    { "mrid": "a9057b10-c4a8-45de-b48f-4f806a000002", "code": "name", "name": "Measurement", "type": "string" },
+    { "mrid": "a9057b10-c4a8-45de-b48f-4f806a000003", "code": "measured_date", "name": "Measured date", "type": "string" },
+    { "mrid": "a9057b10-c4a8-45de-b48f-4f806a000004", "code": "temperature", "name": "Temperature", "type": "analog", "unit": "°C" },
+    { "mrid": "a9057b10-c4a8-45de-b48f-4f806a000005", "code": "channel", "name": "Channel", "type": "string" },
+    { "mrid": "a9057b10-c4a8-45de-b48f-4f806a000006", "code": "epsilon_r", "name": "Epsilon R", "type": "analog" },
+    { "mrid": "a9057b10-c4a8-45de-b48f-4f806a000007", "code": "color", "name": "Color", "type": "string" },
+    { "mrid": "a9057b10-c4a8-45de-b48f-4f806a000008", "code": "measurement_id", "name": "Source measurement ID", "type": "string" },
+    { "mrid": "a9057b10-c4a8-45de-b48f-4f806a000009", "code": "parent_test_id", "name": "Source test ID", "type": "string" },
+    { "mrid": "a9057b10-c4a8-45de-b48f-4f806a000010", "code": "copied_for_comparison", "name": "Copy for comparison", "type": "string" },
+    { "mrid": "a9057b10-c4a8-45de-b48f-4f806a000011", "code": "frequency_points_json", "name": "Frequency sweep", "type": "string" },
+    { "mrid": "a9057b10-c4a8-45de-b48f-4f806a000012", "code": "polarization_points_json", "name": "Polarization sweep", "type": "string" }
+  ]
+}

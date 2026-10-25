@@ -67,6 +67,9 @@
                 <li @click="addJob" v-if="isClient && this.selectedNode && this.selectedNode.mode == 'asset'">
                     <i class="fa-solid fa-plus"></i> Add test
                 </li>
+                <li v-if="maintenanceFailureEnabled && isClient && selectedNode && selectedNode.mode === 'asset'" @click="showMaintenanceFailure">
+                    <i class="fa-solid fa-clipboard-check"></i> Failure & Maintenance Record
+                </li>
                 <li v-if="this.selectedNode && this.selectedNode.mode == 'substation'" @click="showZeroDiagram">
                     <i class="fa-solid fa-project-diagram"></i> Zero diagram
                 </li>
@@ -143,6 +146,7 @@
 /* eslint-disable */
 import { getPowerPlantIcon } from '@/views/Common/powerPlantIcons'
 import icon from '@/views/Common/Icon.vue'
+import { MAINTENANCE_FAILURE_ENABLED } from '@/config/featureFlags'
 
 export default {
     components: {
@@ -157,6 +161,7 @@ export default {
     },
     data() {
         return {
+            maintenanceFailureEnabled: MAINTENANCE_FAILURE_ENABLED,
             visible: false,
             position: { x: 0, y: 0 },
             selectedNode: null, // Lưu trữ node đang mở menu
@@ -425,6 +430,10 @@ export default {
         },
         showEquipment() {
             this.$emit("show-equipment")
+            this.closeContextMenu()
+        },
+        showMaintenanceFailure() {
+            this.$emit('maintenance-failure', this.selectedNode)
             this.closeContextMenu()
         },
         exportJSONCIM() {

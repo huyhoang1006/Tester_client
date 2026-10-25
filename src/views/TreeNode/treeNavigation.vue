@@ -19,7 +19,8 @@
                 @explorer-tab="handleExplorerTab"
                 @search-select="handleSearchSelect"
                 @search-preview="handleSearchPreview"
-                @show-equipment="handleShowEquipment" />
+                @show-equipment="handleShowEquipment"
+                @maintenance-failure="openClientMaintenanceFailure" />
 
             <div v-show="activeWorkspaceTab === 'tree'" class="tree-workspace">
                 <div v-show="clientSlide" class="toolbar">
@@ -54,6 +55,7 @@
                 @duplicate-node="handleDuplicateFromContext"
                 @move-node="handleMoveFromContext" @import-json="handleImportJSONFromContext"
                 @show-zero-diagram="handleShowZeroDiagram"
+                @maintenance-failure="openClientMaintenanceFailure"
                 @upload-node="handleUploadFromContext"
                 @upload-full-tree="handleUploadFullTreeFromContext"
                 @upload-path-node="handleUploadPathNodeFromContext"
@@ -163,6 +165,9 @@
 
             <div v-show="activeWorkspaceTab === 'fmeca'" class="fmeca-workspace">
                 <Fmeca ref="fmecaWorkspace" />
+            </div>
+            <div v-if="maintenanceFailureEnabled && clientSlide && activeWorkspaceTab === 'maintenanceFailure' && maintenanceFailureAsset" class="maintenance-failure-workspace">
+                <MaintenanceFailure :asset="maintenanceFailureAsset" />
             </div>
         </div>
 
@@ -429,6 +434,8 @@ import mixin from './Common'
 import mainMixin from './mixin/index.js'
 import Icon from '@/views/Common/Icon.vue'
 import Fmeca from '@/views/Fmeca'
+import MaintenanceFailure from '@/views/MaintenanceFailure'
+import { MAINTENANCE_FAILURE_ENABLED } from '@/config/featureFlags'
 import Export from '@/views/Export/index.vue'
 import TestingEquipmentView from '@/views/TestingEquipment/index.vue'
 import TestingEquipmentList from '@/views/TestingEquipment/components/list.vue'
@@ -525,6 +532,7 @@ export default {
         JobTransformer,
         Icon,
         Fmeca,
+        MaintenanceFailure,
         Export,
         TestingEquipmentView,
         TestingEquipmentList,
@@ -561,11 +569,15 @@ export default {
             initializingWorkspace: true,
             loadingClientTree: false,
             loadingServerTree: false,
+            ownerLocationRequestId: 0,
+            serverRootLoadId: 0,
             activeWorkspaceTab: 'tree',
             clientWorkspaceTab: 'tree',
             serverWorkspaceTab: 'tree',
             clientEquipmentOpened: false,
             serverEquipmentOpened: false,
+            maintenanceFailureAsset: null,
+            maintenanceFailureEnabled: MAINTENANCE_FAILURE_ENABLED,
             selectedEquipmentMrid: null,
             selectedTestingEquipment: null,
             testingEquipmentDetailVisible: false,
@@ -918,6 +930,12 @@ export default {
             this.selectedTestingEquipment = null
             this.selectedEquipmentMrid = null
             if (value) {
+                if (this.maintenanceFailureEnabled && this.clientWorkspaceTab === 'maintenanceFailure') {
+                    if (this.maintenanceFailureAsset) this.selectedNodes = [this.maintenanceFailureAsset]
+                    else this.clientWorkspaceTab = 'tree'
+                } else if (this.clientWorkspaceTab === 'maintenanceFailure') {
+                    this.clientWorkspaceTab = 'tree'
+                }
                 this.activeWorkspaceTab = this.clientWorkspaceTab || 'tree'
                 this.$nextTick(() => {
                     if (this.$refs.treeToolBar) this.$refs.treeToolBar.activeTab = this.activeWorkspaceTab
@@ -974,6 +992,27 @@ export default {
         }
     },
     methods: {
+        async handleServerConfigChanged() {
+            this.ownerLocationRequestId += 1
+            this.serverRootLoadId += 1
+            this.ownerServerList = []
+            this.tabs = []
+            this.activeTab = {}
+            this.pathMapServer = []
+            this.serverEquipmentOpened = false
+            this.serverWorkspaceTab = 'tree'
+
+            if (!this.clientSlide) {
+                this.testingEquipmentDetailVisible = false
+                this.selectedTestingEquipment = null
+                this.selectedEquipmentMrid = null
+                this.activeWorkspaceTab = 'tree'
+                if (this.$refs.treeToolBar) this.$refs.treeToolBar.activeTab = 'explorer'
+                await this.resetAllServer()
+                await this.showOwnerServerRoot()
+            }
+            this.persistWorkspaceState()
+        },
         showConfiguredSubstationWizard(node) {
             if (!this.clientSlide) {
                 this.$message.warning('Predefined substation creation is available on Client')
@@ -1139,6 +1178,18 @@ export default {
             if (this.clientSlide) this.clientWorkspaceTab = 'tree'
             else this.serverWorkspaceTab = 'tree'
             if (this.$refs.treeToolBar) this.$refs.treeToolBar.activeTab = 'explorer'
+            this.openImportDialog = false
+            this.openExportDialog = false
+        },
+        openClientMaintenanceFailure(node = null) {
+            if (!this.maintenanceFailureEnabled || !this.clientSlide) return
+            const asset = node || this.selectedNodes[this.selectedNodes.length - 1]
+            if (!asset || asset.mode !== 'asset') return
+            if (node) this.selectedNodes = [node]
+            this.maintenanceFailureAsset = asset
+            this.activeWorkspaceTab = 'maintenanceFailure'
+            this.clientWorkspaceTab = 'maintenanceFailure'
+            if (this.$refs.treeToolBar) this.$refs.treeToolBar.activeTab = 'maintenanceFailure'
             this.openImportDialog = false
             this.openExportDialog = false
         },
@@ -1955,6 +2006,13 @@ export default {
     box-sizing: border-box;
     background: #fff;
     overflow: auto;
+}
+
+.maintenance-failure-workspace {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    overflow: hidden;
 }
 
 .testing-equipment-list-shell,

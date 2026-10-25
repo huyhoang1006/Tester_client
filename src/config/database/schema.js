@@ -1999,6 +1999,28 @@ CREATE TABLE IF NOT EXISTS "procedure" (
 	PRIMARY KEY("mrid"),
 	FOREIGN KEY("mrid") REFERENCES "document"("mrid") ON DELETE CASCADE
 );
+CREATE TABLE IF NOT EXISTS "maintenance_procedure" (
+	"mrid" TEXT NOT NULL PRIMARY KEY,
+	"library_key" TEXT NOT NULL,
+	"library_label" TEXT NOT NULL,
+	"library_order" INTEGER NOT NULL,
+	"component" TEXT NOT NULL,
+	"activity_type" TEXT NOT NULL,
+	"requirement" TEXT NOT NULL,
+	"form_schema" TEXT NOT NULL,
+	"linked_test_label" TEXT,
+	"sequence_number" INTEGER NOT NULL,
+	FOREIGN KEY("mrid") REFERENCES "procedure"("mrid") ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS "idx_maintenance_procedure_library"
+	ON "maintenance_procedure"("library_key", "sequence_number");
+CREATE TABLE IF NOT EXISTS "maintenance_test_link" (
+	"maintenance_procedure_mrid" TEXT NOT NULL,
+	"test_procedure_mrid" TEXT NOT NULL,
+	PRIMARY KEY("maintenance_procedure_mrid", "test_procedure_mrid"),
+	FOREIGN KEY("maintenance_procedure_mrid") REFERENCES "maintenance_procedure"("mrid") ON DELETE CASCADE,
+	FOREIGN KEY("test_procedure_mrid") REFERENCES "procedure"("mrid") ON DELETE CASCADE
+);
 CREATE TABLE IF NOT EXISTS "procedure_asset" (
 	"procedure_id"	TEXT NOT NULL,
 	"asset_id"	TEXT NOT NULL,

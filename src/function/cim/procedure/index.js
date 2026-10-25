@@ -46,7 +46,7 @@ export const getProcedureByAssetId = async (mrid) => {
     }
 }
 
-export const getProcedureByGenericAssetModel = async (generic_asset_model) => {
+export const getProcedureByGenericAssetModel = async (generic_asset_model, kind = 'test') => {
     try {
         // Warning: generic_asset_model column might not exist in current schema
         return new Promise((resolve, reject) => {
@@ -55,8 +55,9 @@ export const getProcedureByGenericAssetModel = async (generic_asset_model) => {
                  FROM procedure p
                  JOIN document d ON p.mrid = d.mrid
                  JOIN identified_object io ON p.mrid = io.mrid
-                 WHERE p.generic_asset_model = ?`,
-                [generic_asset_model],
+                 WHERE p.generic_asset_model = ?
+                   AND COALESCE(NULLIF(p.kind, ''), 'test') = ?`,
+                [generic_asset_model, kind],
                 (err, rows) => {
                     if (err) return reject({ success: false, err, message: 'Get procedure by generic asset model failed (schema mismatch)' })
                     return resolve({ success: true, data: rows, message: 'Get procedure by generic asset model completed' })
@@ -66,6 +67,30 @@ export const getProcedureByGenericAssetModel = async (generic_asset_model) => {
     } catch (err) {
         return { success: false, err, message: 'Get procedure by generic asset model failed' }
     }
+}
+
+export const getMaintenanceActivityLibrary = async () => {
+    return new Promise((resolve, reject) => {
+        db.all(
+            `SELECT mp.library_key AS libraryKey, mp.library_label AS libraryLabel,
+                    p.mrid, io.alias_name AS code, io.name, mp.component,
+                    mp.activity_type AS type, mp.requirement,
+                    mp.form_schema AS schema, mp.linked_test_label AS linkedTest,
+                    mp.sequence_number AS sequenceNumber,
+                    (SELECT GROUP_CONCAT(mtl.test_procedure_mrid)
+                     FROM maintenance_test_link mtl
+                     WHERE mtl.maintenance_procedure_mrid = mp.mrid) AS linkedTestProcedureMrids
+             FROM maintenance_procedure mp
+             JOIN procedure p ON p.mrid = mp.mrid AND p.kind = 'maintenance'
+             JOIN identified_object io ON io.mrid = p.mrid
+             ORDER BY mp.library_order, mp.sequence_number`,
+            [],
+            (err, rows) => {
+                if (err) return reject({ success: false, err, message: 'Get maintenance library failed' })
+                resolve({ success: true, data: rows, message: 'Get maintenance library completed' })
+            }
+        )
+    })
 }
 
 // Thêm mới procedure

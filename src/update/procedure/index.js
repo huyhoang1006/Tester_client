@@ -45,6 +45,7 @@ const TRANSFORMER_PTM_IMPORT_CODES = [
     'DCWindingPrim',
     'DCWindingSec',
     'SFRA',
+    'Dirana',
 ]
 
 const pickConfigEntries = (source, codes) => {
@@ -193,6 +194,7 @@ export const getProcedureInfo = async (assetProcedure) => {
         procedure.alias_name = procedureData.code
         procedure.mrid = procedureData.mrid
         procedure.kind = procedureData.kind
+        procedure.instruction = procedureData.instruction || null
         procedures.push(procedure)
     }
     return procedures

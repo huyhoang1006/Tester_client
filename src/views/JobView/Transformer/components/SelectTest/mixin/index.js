@@ -128,6 +128,9 @@ export default {
                 case 'SFRA':
                     data = await this.initSfra(testTypeCode)
                     break
+                case 'Dirana':
+                    data = await this.initSfra(testTypeCode)
+                    break
             }
             common.markInitialTestValues(data && data.table)
             return data

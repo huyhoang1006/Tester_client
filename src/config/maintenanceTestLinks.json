@@ -1,0 +1,19 @@
+{
+  "Pressure gauge": ["PressureGauge"],
+  "DC winding resistance of trip coil; DC winding resistance of close coil": ["DCWindingTripCoil", "DCWindingCloseCoil"],
+  "Insulation resistance of trip coil; Insulation resistance of close coil": ["InsulationResistanceTripCoil", "InsulationResistanceCloseCoil"],
+  "SF6 leak detection": [],
+  "SF6 gas analysis; SF6 gas moisture and purity": ["SF6GasAnalysis", "SF6MoiturePurity"],
+  "Insulation resistance of circuit breaker (Before)": ["InsulationResistanceCircuit"],
+  "Insulation resistance of circuit breaker (After)": ["InsulationResistanceCircuit"],
+  "Contact resistance (Before)": ["ContactResistance"],
+  "Contact resistance (After)": ["ContactResistance"],
+  "C/O/CO/O-CO Timing (Before)": ["CTiming", "OTiming", "COTiming", "OCOTiming"],
+  "C/O/CO/O-CO Timing (After)": ["CTiming", "OTiming", "COTiming", "OCOTiming"],
+  "C/O/CO Timing (Before)": ["CTiming", "OTiming", "COTiming"],
+  "C/O/CO Timing (After)": ["CTiming", "OTiming", "COTiming"],
+  "DC winding resistance of trip/close coil": ["DCWindingTripCoil", "DCWindingCloseCoil"],
+  "Insulation resistance of trip/close coil": ["InsulationResistanceTripCoil", "InsulationResistanceCloseCoil"],
+  "Vacuum bottle integrity test": [],
+  "Contact resistance (earthing switch)": []
+}

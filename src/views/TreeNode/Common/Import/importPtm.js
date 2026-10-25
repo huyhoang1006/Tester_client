@@ -571,6 +571,24 @@ export default {
                             return sum
                         }
                     }, 0)
+                    const diranaSweeps = t.testTypeCode === 'Dirana'
+                        ? rows.reduce((result, row) => {
+                            for (const key of ['frequency_points_json', 'polarization_points_json']) {
+                                const value = row && row[key] && row[key].value
+                                if (!value) continue
+                                try {
+                                    const parsed = JSON.parse(String(value))
+                                    if (Array.isArray(parsed) && parsed.length) {
+                                        result.series += 1
+                                        result.points += parsed.length
+                                    }
+                                } catch (error) {
+                                    // An invalid payload still fails the import validation later.
+                                }
+                            }
+                            return result
+                        }, { series: 0, points: 0 })
+                        : { series: 0, points: 0 }
                     return {
                         importIndex,
                         importedMrid: t.mrid,
@@ -584,8 +602,8 @@ export default {
                         waveformPoints,
                         traces,
                         tracePoints,
-                        series: curves + waveforms + traces + sfraSeries,
-                        dataPoints: points + waveformPoints + tracePoints + sfraPoints,
+                        series: curves + waveforms + traces + sfraSeries + diranaSweeps.series,
+                        dataPoints: points + waveformPoints + tracePoints + sfraPoints + diranaSweeps.points,
                     }
                 }),
             }

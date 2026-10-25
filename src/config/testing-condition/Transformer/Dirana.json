@@ -1,0 +1,12 @@
+{
+  "testId": "a9057b10-c4a8-45de-b48f-4f806a000001",
+  "testCode": "Dirana",
+  "testName": "DIRANA dielectric response analysis",
+  "columns": [
+    { "mrid": "a9057b10-c4a8-45de-b48f-4f806a000101", "code": "fds_voltage", "name": "FDS voltage", "type": "analog", "unit": "V" },
+    { "mrid": "a9057b10-c4a8-45de-b48f-4f806a000102", "code": "pdc_voltage", "name": "PDC voltage", "type": "analog", "unit": "V" },
+    { "mrid": "a9057b10-c4a8-45de-b48f-4f806a000103", "code": "insulation_medium", "name": "Insulation medium", "type": "string" },
+    { "mrid": "a9057b10-c4a8-45de-b48f-4f806a000104", "code": "firmware_version", "name": "Firmware version", "type": "string" },
+    { "mrid": "a9057b10-c4a8-45de-b48f-4f806a000105", "code": "source_test_id", "name": "Source test ID", "type": "string" }
+  ]
+}

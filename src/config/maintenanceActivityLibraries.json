@@ -1,0 +1,1313 @@
+{
+  "SF6_OUTDOOR": {
+    "label": "Outdoor SF6 CB (110kV & 40.5kV)",
+    "activities": [
+      {
+        "code": "MCSF6-A1",
+        "component": "General Inspection",
+        "name": "Record SF6 pressure/density and ambient temperature",
+        "type": "SL",
+        "schema": "SF6_PRESS",
+        "requirement": "Mandatory",
+        "linkedTest": "Pressure gauge"
+      },
+      {
+        "code": "MCSF6-A2",
+        "component": "General Inspection",
+        "name": "Record operating counter reading",
+        "type": "SL",
+        "schema": "OP_COUNT",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-A3",
+        "component": "General Inspection",
+        "name": "Inspect SF6 copper piping clearance from breaker frame",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-A4",
+        "component": "General Inspection",
+        "name": "Inspect support frame, operating rods, shafts & locking pins",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-A5",
+        "component": "General Inspection",
+        "name": "Inspect porcelain/composite insulators for cracks or contamination",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-A6",
+        "component": "General Inspection",
+        "name": "Inspect all primary and grounding connections for looseness",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-A7",
+        "component": "General Inspection",
+        "name": "Visual check of close/trip coils, charging motor & springs",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-B1",
+        "component": "Control Cabinet",
+        "name": "Visual inspection (tracking, moisture ingress, ozone odor)",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-B2",
+        "component": "Control Cabinet",
+        "name": "Take as-found photos (wiring, nameplate, anomalies)",
+        "type": "ANH",
+        "schema": "PHOTO_BEFORE",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-B3",
+        "component": "Control Cabinet",
+        "name": "Check & retighten terminal blocks, MCBs and auxiliary relays",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-B4",
+        "component": "Control Cabinet",
+        "name": "Inspect anticondensation heater and cabinet lighting",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-B5",
+        "component": "Control Cabinet",
+        "name": "Clean terminal blocks and cabinet interior (brush/vacuum only)",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-B6",
+        "component": "Control Cabinet",
+        "name": "Re-terminate lugs, relabel sleeves & dress secondary wiring",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Optional",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-B7",
+        "component": "Control Cabinet",
+        "name": "Check and retighten cabinet mounting bolts and latches",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-B8",
+        "component": "Control Cabinet",
+        "name": "Verify mechanical position & spring charge indicators",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-B9",
+        "component": "Control Cabinet",
+        "name": "Clean and lubricate mechanism gears, springs & linkages",
+        "type": "TT",
+        "schema": "WORK_GREASE",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-B10",
+        "component": "Control Cabinet",
+        "name": "Inspect control panel & dashpot/damper; adjust if needed",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Optional",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-B11",
+        "component": "Control Cabinet",
+        "name": "Measure close/trip coil DC winding resistance",
+        "type": "TN",
+        "schema": "TEST_LINK",
+        "requirement": "Mandatory",
+        "linkedTest": "DC winding resistance of trip coil; DC winding resistance of close coil"
+      },
+      {
+        "code": "MCSF6-B12",
+        "component": "Control Cabinet",
+        "name": "Measure close/trip coil insulation resistance (500 VDC)",
+        "type": "TN",
+        "schema": "TEST_LINK",
+        "requirement": "Mandatory",
+        "linkedTest": "Insulation resistance of trip coil; Insulation resistance of close coil"
+      },
+      {
+        "code": "MCSF6-B13",
+        "component": "Control Cabinet",
+        "name": "Take as-left photos after maintenance",
+        "type": "ANH",
+        "schema": "PHOTO_AFTER",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-C1",
+        "component": "Circuit Breaker Unit",
+        "name": "Inspect support insulators (carbon tracks, leaks, cracks)",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-C2",
+        "component": "Circuit Breaker Unit",
+        "name": "Take as-found photos of pole units",
+        "type": "ANH",
+        "schema": "PHOTO_BEFORE",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-C3",
+        "component": "Circuit Breaker Unit",
+        "name": "Torque-tighten primary terminal bolts to specification",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-C4",
+        "component": "Circuit Breaker Unit",
+        "name": "Clean insulator sheds with approved solvent/water",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-C5",
+        "component": "Circuit Breaker Unit",
+        "name": "Clean support structure & touch up corroded spots",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-C6",
+        "component": "Circuit Breaker Unit",
+        "name": "Repaint phase identification markings",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Optional",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-C7",
+        "component": "Circuit Breaker Unit",
+        "name": "Inspect operating rods, cranks, locknuts & bearings",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-C8",
+        "component": "Circuit Breaker Unit",
+        "name": "Inspect linkage pins and bearings for wear or binding",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-C9",
+        "component": "Circuit Breaker Unit",
+        "name": "Perform SF6 leak detection on flanges, valves & welds",
+        "type": "TN",
+        "schema": "SF6_LEAK",
+        "requirement": "Mandatory",
+        "linkedTest": "SF6 leak detection"
+      },
+      {
+        "code": "MCSF6-C10",
+        "component": "Circuit Breaker Unit",
+        "name": "Top up SF6 gas to rated pressure",
+        "type": "TT",
+        "schema": "SF6_TOPUP",
+        "requirement": "Optional",
+        "linkedTest": "Pressure gauge"
+      },
+      {
+        "code": "MCSF6-C11",
+        "component": "Circuit Breaker Unit",
+        "name": "Perform local mechanical close/open check",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-C12",
+        "component": "Circuit Breaker Unit",
+        "name": "Perform local electrical close/open & anti-pumping check",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-C13",
+        "component": "Circuit Breaker Unit",
+        "name": "Perform SF6 gas purity, dew point & decomposition analysis",
+        "type": "TN",
+        "schema": "TEST_LINK",
+        "requirement": "Optional",
+        "linkedTest": "SF6 gas analysis; SF6 gas moisture and purity"
+      },
+      {
+        "code": "MCSF6-C14",
+        "component": "Circuit Breaker Unit",
+        "name": "Check main contact wear / overtravel per phase",
+        "type": "SL",
+        "schema": "CONTACT_WEAR",
+        "requirement": "Optional",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-D1",
+        "component": "Diagnostic Testing",
+        "name": "Measure primary insulation resistance (As-Found)",
+        "type": "TN",
+        "schema": "TEST_LINK",
+        "requirement": "Mandatory",
+        "linkedTest": "Insulation resistance of circuit breaker (Before)"
+      },
+      {
+        "code": "MCSF6-D2",
+        "component": "Diagnostic Testing",
+        "name": "Measure main contact resistance (As-Found)",
+        "type": "TN",
+        "schema": "TEST_LINK",
+        "requirement": "Mandatory",
+        "linkedTest": "Contact resistance (Before)"
+      },
+      {
+        "code": "MCSF6-D3",
+        "component": "Diagnostic Testing",
+        "name": "Measure operating timing C/O/CO/O-CO (As-Found)",
+        "type": "TN",
+        "schema": "TEST_LINK",
+        "requirement": "Mandatory",
+        "linkedTest": "C/O/CO/O-CO Timing (Before)"
+      },
+      {
+        "code": "MCSF6-D4",
+        "component": "Diagnostic Testing",
+        "name": "Measure main contact resistance (As-Left)",
+        "type": "TN",
+        "schema": "TEST_LINK",
+        "requirement": "Mandatory",
+        "linkedTest": "Contact resistance (After)"
+      },
+      {
+        "code": "MCSF6-D5",
+        "component": "Diagnostic Testing",
+        "name": "Measure primary insulation resistance (As-Left)",
+        "type": "TN",
+        "schema": "TEST_LINK",
+        "requirement": "Mandatory",
+        "linkedTest": "Insulation resistance of circuit breaker (After)"
+      },
+      {
+        "code": "MCSF6-D6",
+        "component": "Diagnostic Testing",
+        "name": "Measure operating timing C/O/CO/O-CO (As-Left)",
+        "type": "TN",
+        "schema": "TEST_LINK",
+        "requirement": "Mandatory",
+        "linkedTest": "C/O/CO/O-CO Timing (After)"
+      },
+      {
+        "code": "MCSF6-E1",
+        "component": "Pre-Commissioning",
+        "name": "Verify no foreign objects remain in moving parts",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-E2",
+        "component": "Pre-Commissioning",
+        "name": "Perform industrial housekeeping of work area",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCSF6-E3",
+        "component": "Pre-Commissioning",
+        "name": "Clear all personnel, tools and test leads from bay",
+        "type": "DK",
+        "schema": "SAFETY_CONFIRM",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      }
+    ]
+  },
+  "VCB_OUTDOOR": {
+    "label": "Outdoor Vacuum CB (40.5kV)",
+    "activities": [
+      {
+        "code": "MCCK-A1",
+        "component": "General Inspection",
+        "name": "Record operating counter reading",
+        "type": "SL",
+        "schema": "OP_COUNT",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-A2",
+        "component": "General Inspection",
+        "name": "Inspect support frame, operating rods, shafts & locking pins",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-A3",
+        "component": "General Inspection",
+        "name": "Inspect porcelain/composite insulators for cracks or contamination",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-A4",
+        "component": "General Inspection",
+        "name": "Inspect all primary and grounding connections for looseness",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-A5",
+        "component": "General Inspection",
+        "name": "Visual check of close/trip coils, charging motor & springs",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-A6",
+        "component": "General Inspection",
+        "name": "Inspect cabinet hinges, latches, locks & door gaskets",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Optional",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-B1",
+        "component": "Control Cabinet",
+        "name": "Visual inspection (tracking, moisture, ozone odor, springs)",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-B2",
+        "component": "Control Cabinet",
+        "name": "Take as-found photos (wiring, nameplate, anomalies)",
+        "type": "ANH",
+        "schema": "PHOTO_BEFORE",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-B3",
+        "component": "Control Cabinet",
+        "name": "Check & retighten terminal blocks, MCBs and auxiliary contacts",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-B4",
+        "component": "Control Cabinet",
+        "name": "Inspect anticondensation heater and cabinet lighting",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-B5",
+        "component": "Control Cabinet",
+        "name": "Clean terminal blocks and cabinet interior (brush/vacuum only)",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-B6",
+        "component": "Control Cabinet",
+        "name": "Clean terminal blocks & secondary wiring with contact cleaner",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-B7",
+        "component": "Control Cabinet",
+        "name": "Re-terminate lugs, relabel sleeves & dress secondary wiring",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Optional",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-B8",
+        "component": "Control Cabinet",
+        "name": "Inspect operating mechanism springs for fatigue, cracks or rust",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-B9",
+        "component": "Control Cabinet",
+        "name": "Check and retighten cabinet mounting bolts and latches",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-B10",
+        "component": "Control Cabinet",
+        "name": "Verify mechanical position & spring charge indicators",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-B11",
+        "component": "Control Cabinet",
+        "name": "Clean and lubricate mechanism gears, springs & linkages",
+        "type": "TT",
+        "schema": "WORK_GREASE",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-B12",
+        "component": "Control Cabinet",
+        "name": "Inspect control panel & dashpot/damper; adjust if needed",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Optional",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-B13",
+        "component": "Control Cabinet",
+        "name": "Measure close/trip coil DC winding resistance",
+        "type": "TN",
+        "schema": "TEST_LINK",
+        "requirement": "Mandatory",
+        "linkedTest": "DC winding resistance of trip/close coil"
+      },
+      {
+        "code": "MCCK-B14",
+        "component": "Control Cabinet",
+        "name": "Measure close/trip coil insulation resistance (500 VDC)",
+        "type": "TN",
+        "schema": "TEST_LINK",
+        "requirement": "Mandatory",
+        "linkedTest": "Insulation resistance of trip/close coil"
+      },
+      {
+        "code": "MCCK-B15",
+        "component": "Control Cabinet",
+        "name": "Take as-left photos after maintenance",
+        "type": "ANH",
+        "schema": "PHOTO_AFTER",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-C1",
+        "component": "Circuit Breaker Unit",
+        "name": "Inspect support insulators (carbon tracks, leaks, cracks)",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-C2",
+        "component": "Circuit Breaker Unit",
+        "name": "Take as-found photos of pole units",
+        "type": "ANH",
+        "schema": "PHOTO_BEFORE",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-C3",
+        "component": "Circuit Breaker Unit",
+        "name": "Torque-tighten primary terminal bolts to specification",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-C4",
+        "component": "Circuit Breaker Unit",
+        "name": "Clean insulator sheds with approved solvent/water",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-C5",
+        "component": "Circuit Breaker Unit",
+        "name": "Inspect vacuum interrupters for overheating, damage & connections",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-C6",
+        "component": "Circuit Breaker Unit",
+        "name": "Clean support structure & touch up corroded spots",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-C7",
+        "component": "Circuit Breaker Unit",
+        "name": "Repaint phase identification markings",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Optional",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-C8",
+        "component": "Circuit Breaker Unit",
+        "name": "Inspect operating rods, cranks, locknuts & bearings",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-C9",
+        "component": "Circuit Breaker Unit",
+        "name": "Inspect linkage pins and bearings for wear or binding",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-C10",
+        "component": "Circuit Breaker Unit",
+        "name": "Perform vacuum bottle integrity & dielectric withstand test",
+        "type": "TN",
+        "schema": "TEST_LINK",
+        "requirement": "Mandatory",
+        "linkedTest": "Vacuum bottle integrity test"
+      },
+      {
+        "code": "MCCK-C11",
+        "component": "Circuit Breaker Unit",
+        "name": "Inspect bushing insulators for surface tracking or cracks",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Optional",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-C12",
+        "component": "Circuit Breaker Unit",
+        "name": "Check main contact wear indicator per phase",
+        "type": "SL",
+        "schema": "CONTACT_WEAR",
+        "requirement": "Optional",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-C13",
+        "component": "Circuit Breaker Unit",
+        "name": "Perform local electrical close/open test with operations team",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-D1",
+        "component": "Diagnostic Testing",
+        "name": "Measure primary insulation resistance (As-Found)",
+        "type": "TN",
+        "schema": "TEST_LINK",
+        "requirement": "Mandatory",
+        "linkedTest": "Insulation resistance of circuit breaker (Before)"
+      },
+      {
+        "code": "MCCK-D2",
+        "component": "Diagnostic Testing",
+        "name": "Measure main contact resistance (As-Found)",
+        "type": "TN",
+        "schema": "TEST_LINK",
+        "requirement": "Mandatory",
+        "linkedTest": "Contact resistance (Before)"
+      },
+      {
+        "code": "MCCK-D3",
+        "component": "Diagnostic Testing",
+        "name": "Measure main contact resistance (As-Left)",
+        "type": "TN",
+        "schema": "TEST_LINK",
+        "requirement": "Mandatory",
+        "linkedTest": "Contact resistance (After)"
+      },
+      {
+        "code": "MCCK-D4",
+        "component": "Diagnostic Testing",
+        "name": "Measure primary insulation resistance (As-Left)",
+        "type": "TN",
+        "schema": "TEST_LINK",
+        "requirement": "Mandatory",
+        "linkedTest": "Insulation resistance of circuit breaker (After)"
+      },
+      {
+        "code": "MCCK-D5",
+        "component": "Diagnostic Testing",
+        "name": "Measure operating timing C/O/CO (As-Left)",
+        "type": "TN",
+        "schema": "TEST_LINK",
+        "requirement": "Mandatory",
+        "linkedTest": "C/O/CO Timing (After)"
+      },
+      {
+        "code": "MCCK-E1",
+        "component": "Pre-Commissioning",
+        "name": "Verify no foreign objects remain in moving parts",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-E2",
+        "component": "Pre-Commissioning",
+        "name": "Perform industrial housekeeping of work area",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "MCCK-E3",
+        "component": "Pre-Commissioning",
+        "name": "Clear all personnel, tools and test leads from bay",
+        "type": "DK",
+        "schema": "SAFETY_CONFIRM",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      }
+    ]
+  },
+  "MV_SWGR": {
+    "label": "MV Metal-Clad Switchgear",
+    "activities": [
+      {
+        "code": "THB-A1",
+        "component": "LV Control Compartment",
+        "name": "Verify equipment power isolation and LOTO",
+        "type": "DK",
+        "schema": "SAFETY_CONFIRM",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-A2",
+        "component": "LV Control Compartment",
+        "name": "Visual inspection (tracking, moisture ingress, ozone odor)",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-A3",
+        "component": "LV Control Compartment",
+        "name": "Take as-found photos of LV compartment",
+        "type": "ANH",
+        "schema": "PHOTO_BEFORE",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-A4",
+        "component": "LV Control Compartment",
+        "name": "Check & retighten terminal blocks, MCBs and auxiliary relays",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-A5",
+        "component": "LV Control Compartment",
+        "name": "Inspect anticondensation heater and cabinet lighting",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-A6",
+        "component": "LV Control Compartment",
+        "name": "Clean terminal blocks and panel interior (brush/vacuum only)",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-A7",
+        "component": "LV Control Compartment",
+        "name": "Re-terminate lugs, relabel sleeves & dress secondary wiring",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Optional",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-A8",
+        "component": "LV Control Compartment",
+        "name": "Verify auxiliary power supply restoration after service",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-A9",
+        "component": "LV Control Compartment",
+        "name": "Verify auxiliary supply voltage within 85\u2013110% Un",
+        "type": "SL",
+        "schema": "AUX_VOLT",
+        "requirement": "Optional",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-A10",
+        "component": "LV Control Compartment",
+        "name": "Take as-left photos of LV compartment",
+        "type": "ANH",
+        "schema": "PHOTO_AFTER",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-B1",
+        "component": "Breaker Compartment",
+        "name": "Verify busbar and feeder earthing",
+        "type": "DK",
+        "schema": "SAFETY_CONFIRM",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-B2",
+        "component": "Breaker Compartment",
+        "name": "Verify zero voltage on upper and lower spout contacts",
+        "type": "DK",
+        "schema": "SAFETY_CONFIRM",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-B3",
+        "component": "Breaker Compartment",
+        "name": "Visual inspection (tracking, moisture, ozone odor)",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-B4",
+        "component": "Breaker Compartment",
+        "name": "Take as-found photos of breaker compartment",
+        "type": "ANH",
+        "schema": "PHOTO_BEFORE",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-B5",
+        "component": "Breaker Compartment",
+        "name": "Clean compartment interior with soft cloth and vacuum",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-B6",
+        "component": "Breaker Compartment",
+        "name": "Apply contact grease to sliding primary tulip contacts",
+        "type": "TT",
+        "schema": "WORK_GREASE",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-B7",
+        "component": "Breaker Compartment",
+        "name": "Apply neutral grease to shutter linkages, rails & guides",
+        "type": "TT",
+        "schema": "WORK_GREASE",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-B8",
+        "component": "Breaker Compartment",
+        "name": "Take as-left photos of breaker compartment",
+        "type": "ANH",
+        "schema": "PHOTO_AFTER",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-C1",
+        "component": "Power Cable Compartment",
+        "name": "Verify feeder earthing status",
+        "type": "DK",
+        "schema": "SAFETY_CONFIRM",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-C2",
+        "component": "Power Cable Compartment",
+        "name": "Verify zero voltage on power cable terminations",
+        "type": "DK",
+        "schema": "SAFETY_CONFIRM",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-C3",
+        "component": "Power Cable Compartment",
+        "name": "Visual inspection (tracking, moisture, ozone odor)",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-C4",
+        "component": "Power Cable Compartment",
+        "name": "Take as-found photos of cable compartment",
+        "type": "ANH",
+        "schema": "PHOTO_BEFORE",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-C5",
+        "component": "Power Cable Compartment",
+        "name": "Inspect space heater in cable compartment",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-C6",
+        "component": "Power Cable Compartment",
+        "name": "Check & torque-tighten cable lugs, CT/VT & bus connections",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-C7",
+        "component": "Power Cable Compartment",
+        "name": "Clean cable compartment with soft brush and vacuum",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-C8",
+        "component": "Power Cable Compartment",
+        "name": "Lubricate earthing switch linkages and guide rails",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-C9",
+        "component": "Power Cable Compartment",
+        "name": "Take as-left photos of cable compartment",
+        "type": "ANH",
+        "schema": "PHOTO_AFTER",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-C10",
+        "component": "Power Cable Compartment",
+        "name": "Test mechanical operation of feeder earthing switch",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-C11",
+        "component": "Power Cable Compartment",
+        "name": "Measure earthing switch contact resistance",
+        "type": "TN",
+        "schema": "TEST_LINK",
+        "requirement": "Optional",
+        "linkedTest": "Contact resistance (earthing switch)"
+      },
+      {
+        "code": "THB-D1",
+        "component": "Circuit Breaker Unit",
+        "name": "Verify circuit breaker truck is racked out to maintenance position",
+        "type": "DK",
+        "schema": "SAFETY_CONFIRM",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-D2",
+        "component": "CB \u2013 General Inspection",
+        "name": "Take as-found photos of withdrawable breaker truck",
+        "type": "ANH",
+        "schema": "PHOTO_BEFORE",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-D3",
+        "component": "CB \u2013 General Inspection",
+        "name": "Perform general visual inspection of breaker truck",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-D4",
+        "component": "CB \u2013 General Inspection",
+        "name": "Inspect position indicators, gauges & operation counter",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-D5",
+        "component": "CB \u2013 General Inspection",
+        "name": "Perform mechanical C/O and check for abnormal noise/vibration",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-D6",
+        "component": "CB \u2013 General Inspection",
+        "name": "Inspect pole surface for moisture or ozone odor",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-D7",
+        "component": "CB \u2013 General Inspection",
+        "name": "Record operating counter reading",
+        "type": "SL",
+        "schema": "OP_COUNT",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-D8",
+        "component": "CB \u2013 General Inspection",
+        "name": "Perform vacuum interrupter integrity test",
+        "type": "TN",
+        "schema": "TEST_LINK",
+        "requirement": "Optional",
+        "linkedTest": "Vacuum bottle integrity test"
+      },
+      {
+        "code": "THB-D9",
+        "component": "CB \u2013 General Inspection",
+        "name": "Inspect mechanical interlocks for corrosion or binding",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Optional",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-D10",
+        "component": "CB \u2013 Maintenance",
+        "name": "Retighten secondary control plug and terminal screws",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-D11",
+        "component": "CB \u2013 Maintenance",
+        "name": "Retighten breaker frame bolts and locking pins",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-D12",
+        "component": "CB \u2013 Maintenance",
+        "name": "Clean breaker truck assemblies with soft cloth & vacuum",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-D13",
+        "component": "CB \u2013 Maintenance",
+        "name": "Dry out breaker assembly if moisture is detected",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Optional",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-D14",
+        "component": "CB \u2013 Maintenance",
+        "name": "Clean & lubricate latches, shafts and bearings",
+        "type": "TT",
+        "schema": "WORK_GREASE",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-D15",
+        "component": "CB \u2013 Maintenance",
+        "name": "Inspect control wiring for wear/damage and replace if needed",
+        "type": "TT",
+        "schema": "WORK_SPARE",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-D16",
+        "component": "CB \u2013 Maintenance",
+        "name": "Measure close/trip coil DC winding resistance",
+        "type": "TN",
+        "schema": "TEST_LINK",
+        "requirement": "Mandatory",
+        "linkedTest": "DC winding resistance of trip/close coil"
+      },
+      {
+        "code": "THB-D17",
+        "component": "CB \u2013 Maintenance",
+        "name": "Measure close/trip coil insulation resistance (500 VDC)",
+        "type": "TN",
+        "schema": "TEST_LINK",
+        "requirement": "Mandatory",
+        "linkedTest": "Insulation resistance of trip/close coil"
+      },
+      {
+        "code": "THB-D18",
+        "component": "CB \u2013 Maintenance",
+        "name": "Test manual spring charging mechanism",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-D19",
+        "component": "CB \u2013 Diagnostic Testing",
+        "name": "Measure primary circuit insulation resistance (As-Found)",
+        "type": "TN",
+        "schema": "TEST_LINK",
+        "requirement": "Mandatory",
+        "linkedTest": "Insulation resistance of circuit breaker (Before)"
+      },
+      {
+        "code": "THB-D20",
+        "component": "CB \u2013 Diagnostic Testing",
+        "name": "Measure main contact resistance (As-Found)",
+        "type": "TN",
+        "schema": "TEST_LINK",
+        "requirement": "Mandatory",
+        "linkedTest": "Contact resistance (Before)"
+      },
+      {
+        "code": "THB-D21",
+        "component": "CB \u2013 Diagnostic Testing",
+        "name": "Measure operating timing C/O/CO (As-Found)",
+        "type": "TN",
+        "schema": "TEST_LINK",
+        "requirement": "Mandatory",
+        "linkedTest": "C/O/CO Timing (Before)"
+      },
+      {
+        "code": "THB-D22",
+        "component": "CB \u2013 Diagnostic Testing",
+        "name": "Measure primary circuit insulation resistance (As-Left)",
+        "type": "TN",
+        "schema": "TEST_LINK",
+        "requirement": "Mandatory",
+        "linkedTest": "Insulation resistance of circuit breaker (After)"
+      },
+      {
+        "code": "THB-D23",
+        "component": "CB \u2013 Diagnostic Testing",
+        "name": "Measure main contact resistance (As-Left)",
+        "type": "TN",
+        "schema": "TEST_LINK",
+        "requirement": "Mandatory",
+        "linkedTest": "Contact resistance (After)"
+      },
+      {
+        "code": "THB-D24",
+        "component": "CB \u2013 Diagnostic Testing",
+        "name": "Measure operating timing C/O/CO (As-Left)",
+        "type": "TN",
+        "schema": "TEST_LINK",
+        "requirement": "Mandatory",
+        "linkedTest": "C/O/CO Timing (After)"
+      },
+      {
+        "code": "THB-E1",
+        "component": "Pre-Commissioning",
+        "name": "Verify no foreign objects remain in moving parts",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-E2",
+        "component": "Pre-Commissioning",
+        "name": "Perform mechanical close/open check on breaker",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-E3",
+        "component": "Pre-Commissioning",
+        "name": "Rack into Test position and verify electrical close/open",
+        "type": "KT",
+        "schema": "CHECKLIST",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-E4",
+        "component": "Pre-Commissioning",
+        "name": "Rack truck between Test and Service positions 3 times",
+        "type": "KT",
+        "schema": "CHECKLIST_3X",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-E5",
+        "component": "Pre-Commissioning",
+        "name": "Perform industrial housekeeping of work area",
+        "type": "TT",
+        "schema": "WORK_STD",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      },
+      {
+        "code": "THB-E6",
+        "component": "Pre-Commissioning",
+        "name": "Clear all personnel, tools and test leads from bay",
+        "type": "DK",
+        "schema": "SAFETY_CONFIRM",
+        "requirement": "Mandatory",
+        "linkedTest": ""
+      }
+    ]
+  }
+}

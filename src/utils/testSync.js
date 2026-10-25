@@ -6,6 +6,7 @@ import { scopeDownloadedId } from '@/views/TreeNode/Server/mixin/Download/id-sco
 import { testYearOf } from '@/views/TreeNode/Common/Fetch/testDate'
 import { normaliseUnitsDeep } from '@/utils/unitNormalise'
 import { mergeJob, applyJobResolution } from '@/utils/jobConflict'
+import { resolveServerEquipmentList } from '@/utils/testEquipmentSync'
 import { showJobConflictDialog } from '@/views/TreeNode/dialogs/showJobConflictDialog'
 import uuid from '@/utils/uuid'
 import {
@@ -127,6 +128,7 @@ export const uploadTestDto = async (assetType, assetId, testId, jobDto, baseVers
     normaliseUnitsDeep(dto, 'upload')
     const payload = strategy.server.mapDtoToServer(dto)
     payload.job = { assetId: toServerId(assetId) }
+    payload.testingEquipmentList = await resolveServerEquipmentList(payload.testingEquipmentList)
     payload.testList[0].testCondition.attachmentData = await encodeAttachments(dto.testList[0].testCondition)
     payload.baseVersion = baseVersion
     prepareTestUploadPayload(payload)

@@ -47,6 +47,7 @@ import {
 } from '@/function/entity/userIdentifiedObject'
 import { insertUserTransaction } from '@/function/entity/user'
 import { rollbackQuietly } from '@/function/datacontext/rollback'
+import { markSyncStateTransaction } from '@/function/entity/syncState'
 
 // Chạy 1 câu lệnh SQL trực tiếp trên connection chính (dùng cho BEGIN/COMMIT/ROLLBACK)
 const runAsync = (sql, params = []) => {
@@ -90,6 +91,7 @@ export const getAllTestingEquipmentList = async (userId, organisationId = null) 
                     owner_io.name AS organisation,
                     te.asset_tag AS asset_tag,
                     a.in_use_state AS status,
+                    ss.sync_status AS sync_status,
                     (SELECT cr.calibration_date FROM calibration_record cr
                      WHERE cr.testing_equipment = te.mrid
                      ORDER BY substr(cr.calibration_date,7,4)||substr(cr.calibration_date,1,2)||substr(cr.calibration_date,4,2) DESC
@@ -110,6 +112,7 @@ export const getAllTestingEquipmentList = async (userId, organisationId = null) 
              LEFT JOIN identified_object io ON io.mrid = te.mrid
              LEFT JOIN product_asset_model pam ON pam.mrid = a.product_asset_model
              LEFT JOIN identified_object owner_io ON owner_io.mrid = te.owner_organisation_id
+             LEFT JOIN sync_state ss ON ss.node_mrid = te.mrid
              WHERE COALESCE(te.is_accessory, 0) = 0
                AND ${scopeFilter}
              ORDER BY COALESCE(te.is_accessory, 0), io.name`,
@@ -532,6 +535,13 @@ export const insertTestingEquipmentEntity = async (old_entity, entity) => {
             entity.userIdentifiedObject.identified_object_id = teMrid
             await insertUserIdentifiedObjectTransaction(entity.userIdentifiedObject, db)
         }
+
+        await markSyncStateTransaction(teMrid, {
+            node_type: 'testingEquipment',
+            sync_status: 'dirty',
+            last_modified_at: new Date().toISOString(),
+            last_error: null
+        }, db)
 
         await runAsync('COMMIT')
         return { success: true, data: entity, message: 'Testing equipment entity saved successfully' }

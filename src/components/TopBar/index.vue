@@ -405,12 +405,14 @@ export default {
                     this.formConfig.serviceDomain = cleanServiceDomain
 
                     try {
+                        const configChanged = cleanLoginDomain !== this.loginAddr || cleanServiceDomain !== this.serviceAddr
                         await this.$helper.setServerAddr({
                             loginDomain: this.formConfig.loginDomain,
                             serviceDomain: this.formConfig.serviceDomain
                         })
 
                         this.dialogConfig = false
+                        if (configChanged) this.$emit('server-config-changed')
                         this.$message.success('Config successfully')
                     } catch (error) {
                         this.$message.error(error.message || 'Unable to save server configuration')

@@ -1,5 +1,6 @@
 import * as rootOrganisationFunc from './organisationRoot/index'
 import * as procedureFunc from './procedure/index'
+import { seedMaintenanceLibrary } from './maintenanceLibrary/index'
 import * as databaseInitFunc from './database/init'
 import { normalizeServerMrids } from '@/function/entity/mRIDCheck/normalizeServerMrid'
 import { entityFunc } from '@/function'
@@ -139,6 +140,15 @@ export const updateDatabase = async () => {
             await runAsync('ROLLBACK', db).catch(() => {})
             console.error('[DB] Rotating Machine procedure sync failed:', procedureError)
         }
+
+        try {
+            await runAsync('BEGIN TRANSACTION', db)
+            await seedMaintenanceLibrary(db)
+            await runAsync('COMMIT', db)
+        } catch (libraryError) {
+            await runAsync('ROLLBACK', db).catch(() => {})
+            console.error('[DB] Maintenance library seed failed:', libraryError)
+        }
     }
 
     if(!oldVersion) {
@@ -147,6 +157,7 @@ export const updateDatabase = async () => {
             await runAsync('BEGIN TRANSACTION', db);
             await databaseInitFunc.initializeDatabaseFromSQL(db)
             await procedureFunc.createProcedure(db)
+            await seedMaintenanceLibrary(db)
             await databaseInitFunc.setDbVersion(db, LATEST_DB_VERSION) // Lưu version vào database
             return runAsync('COMMIT', db);
         } catch (err) {

@@ -4,9 +4,9 @@
         <div class="tl-toolbar">
             <div class="tl-search">
                 <span class="tl-search-ico">⌕</span>
-                <input class="tl-search-input" v-model="keyword"
+                <input class="tl-search-input" v-model="keyword" @input="onKeywordInput"
                     :placeholder="serverMode ? 'Search overview fields…' : 'Search by name, model, serial no.…'" />
-                <button v-if="keyword" class="tl-clear" @click="keyword = ''" title="Clear">
+                <button v-if="keyword" class="tl-clear" @click="clearKeyword" title="Clear">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
@@ -32,7 +32,7 @@
                 <button class="tl-new-btn" @click="$emit('create')" title="Create a new testing equipment">
                     + New
                 </button>
-                <button class="tl-icon-btn" :disabled="refreshing" @click="refresh" title="Reload the list from database">
+                <button class="tl-icon-btn" :disabled="refreshing || (serverMode && !serverOrganisationId && !keyword.trim())" @click="refresh" title="Reload the list from database">
                     <span class="tl-sync-ico" :class="{ spin: refreshing }">⟳</span> Refresh
                 </button>
 
@@ -105,7 +105,7 @@
                 <tbody>
                     <tr v-if="!filtered.length">
                         <td colspan="5" class="tl-empty">
-                            {{ loadingList ? 'Loading equipment…' : keyword ? 'No matching equipment' : 'No testing equipment in this view' }}
+                            {{ loadingList ? 'Loading equipment…' : serverMode && !serverOrganisationId && !keyword.trim() ? 'Select an Owner/Customer organisation or search for equipment' : keyword ? 'No matching equipment' : 'No testing equipment in this view' }}
                         </td>
                     </tr>
                     <tr v-for="it in filtered" :key="it.mrid || it.id" class="tl-row"
@@ -119,6 +119,11 @@
                         <td class="c-name">
                             <div class="tl-name">
                                 {{ it.name || '—' }}
+                                <span v-if="!serverMode && it.sync_status !== 'synced'"
+                                    class="tl-sync-dot"
+                                    :class="`sync-${it.sync_status || 'dirty'}`"
+                                    :title="it.sync_status === 'failed' ? 'Sync failed' : it.sync_status === 'syncing' ? 'Syncing with server' : 'Changed locally, not synced to server'"
+                                    role="img" aria-label="Not synced to server"></span>
                                 <span v-if="it.is_accessory" class="tl-acc-badge">Accessory</span>
                             </div>
                             <div class="tl-sub">{{ it.manufacturer }}<span v-if="it.organisation"> · {{ it.organisation }}</span></div>
@@ -195,6 +200,7 @@ export default {
             keyword: '', syncing: false, pushing: false, refreshing: false, dbItems: null, openMenu: null,
             selectedKey: null,
             scopeMode: 'user', organisationId: constant.ROOT, serverOrganisationId: '', loadingList: false, reloadSequence: 0,
+            serverSearchLoaded: false, searchTimer: null,
             // import JSON: xử lý trùng
             conflictVisible: false,
             conflictRows: [],
@@ -218,10 +224,13 @@ export default {
         serverMode() {
             this.selectedKey = null
             this.keyword = ''
+            this.serverSearchLoaded = false
+            clearTimeout(this.searchTimer)
             this.reload()
         }
     },
     beforeDestroy() {
+        clearTimeout(this.searchTimer)
         document.removeEventListener('click', this.closeMenu)
     },
     computed: {
@@ -242,12 +251,32 @@ export default {
         }
     },
     methods: {
+        onKeywordInput() {
+            if (!this.serverMode || this.serverOrganisationId) return
+            clearTimeout(this.searchTimer)
+            if (!this.keyword.trim()) {
+                this.reload()
+                return
+            }
+            if (this.serverSearchLoaded || this.loadingList) return
+            this.searchTimer = setTimeout(() => {
+                if (this.serverMode && !this.serverOrganisationId && this.keyword.trim() && !this.loadingList) this.reload()
+            }, 300)
+        },
+        clearKeyword() {
+            this.keyword = ''
+            this.onKeywordInput()
+        },
         setScope(mode) {
             this.scopeMode = mode
             this.reload()
         },
         selectOrganisation(mrid) {
-            if (this.serverMode) this.serverOrganisationId = mrid || ''
+            if (this.serverMode) {
+                this.serverOrganisationId = mrid || ''
+                this.serverSearchLoaded = false
+                clearTimeout(this.searchTimer)
+            }
             else this.organisationId = mrid || constant.ROOT
             this.reload()
         },
@@ -479,10 +508,16 @@ export default {
             this.dbItems = []
             try {
                 if (this.serverMode) {
-                    const rows = await TestingEquipmentAPI.getAllTestingEquipment(
-                        this.serverOrganisationId ? { organisationId: this.serverOrganisationId } : {})
+                    if (!this.serverOrganisationId && !this.keyword.trim()) {
+                        this.selectedKey = null
+                        this.serverSearchLoaded = false
+                        return false
+                    }
+                    const params = this.serverOrganisationId ? { organisationId: this.serverOrganisationId } : {}
+                    const rows = await TestingEquipmentAPI.getAllTestingEquipment(params)
                     if (requestId !== this.reloadSequence) return false
                     this.dbItems = Array.isArray(rows) ? rows : []
+                    this.serverSearchLoaded = !this.serverOrganisationId
                     if (!this.dbItems.some(it => String(it.mrid) === String(this.selectedKey))) this.selectedKey = null
                     return true
                 }
@@ -530,7 +565,8 @@ export default {
             if (!/^\d+$/.test(String(serverId))) return null
             try {
                 const organisation = await OrganisationAPI.getOrganisationById(serverId)
-                return organisation && (organisation.id || organisation.mrid) ? String(serverId) : null
+                const returnedId = organisation && (organisation.mRID || organisation.mrid || organisation.id)
+                return String(returnedId) === String(serverId) ? String(serverId) : null
             } catch (error) {
                 return null
             }
@@ -554,10 +590,33 @@ export default {
             return null
         },
 
+        async syncLocalEquipmentId(localId, serverId, userId, recordSync = true) {
+            if (!serverId) throw new Error('Server did not return a testing equipment MRID')
+            if (String(localId) !== String(serverId)) {
+                const replaced = await window.electronAPI.replaceLocalMrid(localId, serverId)
+                if (!replaced || !replaced.success) {
+                    throw new Error((replaced && replaced.message) || 'Cannot update local testing equipment MRID')
+                }
+            }
+            if (recordSync && userId && window.electronAPI.ensureUserOwnership) {
+                const ownership = await window.electronAPI.ensureUserOwnership(userId, serverId)
+                if (!ownership || !ownership.success) {
+                    throw new Error((ownership && ownership.message) || 'Cannot link equipment to this user')
+                }
+            }
+            if (recordSync && window.electronAPI.markNodeSynced) {
+                const synced = await window.electronAPI.markNodeSynced(serverId, 'testingEquipment', serverId)
+                if (!synced || !synced.success) {
+                    throw new Error((synced && synced.message) || 'Cannot record equipment sync state')
+                }
+            }
+        },
+
         async pushSelected() {
             const selected = this.selectedEquipment()
             if (!selected || this.pushing) return
             this.pushing = true
+            let serverSaved = false
             try {
                 const detail = await window.electronAPI.getTestingEquipmentEntityByMrid(selected.mrid)
                 if (!detail || !detail.success || !detail.data) throw new Error('Cannot read local equipment')
@@ -575,10 +634,16 @@ export default {
                 delete dto.user
                 delete dto.userId
                 delete dto.userIdentifiedObjectId
-                await TestingEquipmentAPI.pushTestingEquipment(dto)
+                const saved = await TestingEquipmentAPI.pushTestingEquipment(dto)
+                serverSaved = true
+                const serverId = saved && (saved.mrid || (saved.properties && saved.properties.mrid))
+                const user = this.$store && this.$store.getters.getUser
+                await this.syncLocalEquipmentId(selected.mrid, serverId, user && user.user_id)
+                this.selectedKey = serverId
+                await this.reload()
                 this.$message.success('Testing equipment pushed to server')
             } catch (error) {
-                this.$message.error('Push failed: ' + error.message)
+                this.$message.error((serverSaved ? 'Server saved, but local ID sync failed: ' : 'Push failed: ') + error.message)
             } finally {
                 this.pushing = false
             }
@@ -601,8 +666,28 @@ export default {
                 dto.properties.owner_organisation_id = parentId
                 dto.userId = userId || ''
                 dto.user = user || null
-                const current = await window.electronAPI.getTestingEquipmentEntityByMrid(selected.mrid)
-                const oldEntity = current && current.success && current.data ? current.data : null
+                const serverId = serverDto.mrid || (serverDto.properties && serverDto.properties.mrid)
+                if (!serverId) throw new Error('Server equipment has no MRID')
+                let current = await window.electronAPI.getTestingEquipmentEntityByMrid(serverId)
+                let oldEntity = current && current.success && current.data ? current.data : null
+                if (!oldEntity && userId) {
+                    const localList = await window.electronAPI.getAllTestingEquipmentList(userId)
+                    if (!localList || !localList.success) throw new Error('Cannot check local equipment duplicates')
+                    const normalize = value => String(value || '').trim().toLowerCase()
+                    const serial = normalize(serverDto.properties.serial_no)
+                    const manufacturer = normalize(serverDto.properties.manufacturer)
+                    if (serial && manufacturer) {
+                        const matches = (localList.data || []).filter(item =>
+                            normalize(item.serial) === serial && normalize(item.manufacturer) === manufacturer)
+                        if (matches.length > 1) throw new Error('Multiple local equipment records have the same serial number and manufacturer')
+                        if (matches.length === 1) {
+                            await this.syncLocalEquipmentId(matches[0].mrid, serverId, userId, false)
+                            current = await window.electronAPI.getTestingEquipmentEntityByMrid(serverId)
+                            oldEntity = current && current.success && current.data ? current.data : null
+                            if (!oldEntity) throw new Error('Cannot read equipment after synchronizing its MRID')
+                        }
+                    }
+                }
                 if (oldEntity) {
                     const localDto = Mapper.mapEntityToDto(oldEntity)
                     dto.productAssetModelId = localDto.productAssetModelId
@@ -615,6 +700,7 @@ export default {
                 const entity = Mapper.mapDtoToEntity(dto)
                 const rs = await window.electronAPI.insertTestingEquipmentEntity(oldEntity, entity)
                 if (!rs || !rs.success) throw new Error((rs && rs.message) || 'Local save failed')
+                await this.syncLocalEquipmentId(serverId, serverId, userId)
                 this.$message.success('Testing equipment downloaded to this client')
             } catch (error) {
                 this.$message.error('Download failed: ' + error.message)
@@ -821,6 +907,9 @@ export default {
 .tl-row.is-selected td:first-child { box-shadow: inset 3px 0 #1d4ed8; }
 .tl-row:focus-visible { outline: 2px solid #1d4ed8; outline-offset: -2px; }
 .tl-name { font-weight: 700; color: var(--gray-900); }
+.tl-sync-dot { display: inline-block; width: 7px; height: 7px; margin-left: 7px; border-radius: 50%; vertical-align: 1px; background: #f59e0b; }
+.tl-sync-dot.sync-syncing { background: #146ebe; }
+.tl-sync-dot.sync-failed { background: #d7001b; }
 .tl-sub { color: var(--gray-500); font-size: 11px; margin-top: 2px; }
 .tl-empty { text-align: center; color: var(--gray-400); padding: 26px; font-weight: 600; }
 

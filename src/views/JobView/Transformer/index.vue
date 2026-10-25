@@ -118,6 +118,7 @@ import ShortCircuitImpedanceTert from './components/ShortCircuitImpedanceTert'
 import GasChromatography from './components/GasChromatography/index.vue'
 import Dga from './components/Dga'
 import SFRA from './components/SFRA'
+import Dirana from './components/Dirana'
 
 
 import TestSummary from './components/TestSummary/index.vue'
@@ -160,6 +161,7 @@ export default {
         BushingTertC2,
         Dga,
         SFRA,
+        Dirana,
         GasChromatography,
         InsulationResistanceYokeCore,
         ShortCircuitImpedancePrim,

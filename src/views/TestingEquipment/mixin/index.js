@@ -24,6 +24,7 @@ export default {
                 dto.properties = properties
                 this.testingEquipmentDto = dto
                 this.oldTestingEquipmentDto = JSON.parse(JSON.stringify(dto))
+                this.testingEquipmentSyncStatus = 'synced'
                 return { success: true }
             } catch (error) {
                 this.$message.error('Cannot load testing equipment from server: ' + error.message)
@@ -101,6 +102,14 @@ export default {
                     }
                     this.testingEquipmentDto = dto
                     this.oldTestingEquipmentDto = JSON.parse(JSON.stringify(dto))
+                    let syncState = null
+                    try {
+                        syncState = await window.electronAPI.getSyncStateByMrid(mrid)
+                    } catch (error) {
+                        console.warn('Cannot read testing equipment sync state:', error)
+                    }
+                    this.testingEquipmentSyncStatus = syncState && syncState.success && syncState.data
+                        ? syncState.data.sync_status : 'dirty'
                     return { success: true }
                 }
                 this.loadData(null)
@@ -242,6 +251,7 @@ export default {
                 if (rs && rs.success) {
                     // Đồng bộ bản gốc để lần lưu sau tính diff xóa chính xác
                     this.oldTestingEquipmentDto = JSON.parse(JSON.stringify(this.testingEquipmentDto))
+                    this.testingEquipmentSyncStatus = 'dirty'
                     if (this.$message) this.$message.success('Testing equipment saved')
                     return { success: true, data: rs.data }
                 } else {

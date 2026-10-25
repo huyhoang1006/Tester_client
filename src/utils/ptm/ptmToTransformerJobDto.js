@@ -180,6 +180,13 @@ const buildTest = (ptmTest, testCode, config, jobConditions) => {
 
     if (testCode.indexOf('DCWinding') === 0) calculateWindingDeviation(rows)
     applyConditions(condition, ptmTest, jobConditions)
+    if (testCode === 'Dirana') {
+        fillCondition(condition, 'fds_voltage', ptmTest.fdsVoltage)
+        fillCondition(condition, 'pdc_voltage', ptmTest.pdcVoltage)
+        fillCondition(condition, 'insulation_medium', ptmTest.insulationMedium)
+        fillCondition(condition, 'firmware_version', ptmTest.firmwareVersion)
+        fillCondition(condition, 'source_test_id', ptmTest.uniqueId)
+    }
     ensureCellMrids(condition)
 
     const testMrid = uuid.newUuid()
@@ -197,7 +204,7 @@ const buildTest = (ptmTest, testCode, config, jobConditions) => {
         testCondition: {
             mrid: uuid.newUuid(),
             condition,
-            comment: '',
+            comment: ptmTest.comment || '',
             attachment: new Attachment(),
         },
         testAssessment: { testStandard, assessment },
