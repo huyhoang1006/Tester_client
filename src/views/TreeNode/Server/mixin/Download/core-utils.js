@@ -80,8 +80,8 @@ export async function buildOrgAncestors(node) {
             chain.push({
                 id: ancestorId,
                 mrid: ancestorId,
-                name: ancestor.name || '',
-                aliasName: ancestor.aliasName || '',
+                name: ancestor.name || ancestor.parent || '',
+                aliasName: ancestor.aliasName || ancestor.parent || '',
                 parentId: String(prevParentId),
                 _type: ancestor.mode,
                 asset: ancestor.asset || null, // Thêm thông tin asset nếu có
@@ -161,7 +161,9 @@ export async function fetchFullInfoForChain(chain) {
             strategy = strategies[node._type]
         }
         if (strategy) {
-            const fullInfo = await strategy(node.id || node.mrid, node.parentId)
+            const fullInfo = node._type === 'organisation'
+                ? await strategy(node.id || node.mrid, node.parentId, node)
+                : await strategy(node.id || node.mrid, node.parentId)
             fullInfoChain.push(fullInfo)
         } else {
             // KHÔNG bỏ qua im lặng.

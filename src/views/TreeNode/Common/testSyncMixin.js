@@ -6,11 +6,20 @@ const errorMessage = error => {
     if (error && error.response && error.response.status === 409) {
         return 'This test has changed on the server. Download and merge it before uploading again.'
     }
+    if (data && Array.isArray(data.violations) && data.violations.length) {
+        return data.violations.map(violation => {
+            const field = violation.path || 'Payload'
+            const reason = violation.message || violation.code || 'Invalid value'
+            const value = violation.rejectedValue
+            return `${field}: ${reason}${value == null ? '' : ` (${value})`}`
+        }).join('; ')
+    }
     return (data && (data.message || data.error)) || (error && error.message) || 'Test synchronization failed'
 }
 
 export default {
     methods: {
+        formatTestSyncError: errorMessage,
         async processUploadTest(node) {
             try {
                 const result = await uploadSingleTest(node)

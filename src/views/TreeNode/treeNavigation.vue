@@ -1721,7 +1721,9 @@ export default {
                 }
             } catch (error) {
                 console.error('Error saving server tab:', error)
-                this.$message.error(error.message || 'Save failed')
+                this.$message.error(tab.mode === 'test'
+                    ? this.formatTestSyncError(error)
+                    : (error.message || 'Save failed'))
             } finally {
                 this.parentOrganization = previousParent
                 this.serverSaveInProgress = false

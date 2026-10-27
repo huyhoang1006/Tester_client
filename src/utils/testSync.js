@@ -11,7 +11,7 @@ import { showJobConflictDialog } from '@/views/TreeNode/dialogs/showJobConflictD
 import uuid from '@/utils/uuid'
 import {
     sameTestId, selectTestDto, mergeTestIntoJobDto, prepareTestUploadPayload,
-    testSnapshotDto, emptyEntityArrays
+    testSnapshotDto, emptyEntityArrays, validateTestMeasurementValues
 } from './testSyncPayload'
 
 const STRATEGIES = {
@@ -127,6 +127,7 @@ export const uploadTestDto = async (assetType, assetId, testId, jobDto, baseVers
     if (metadataName) dto.testList[0].name = metadataName
     normaliseUnitsDeep(dto, 'upload')
     const payload = strategy.server.mapDtoToServer(dto)
+    validateTestMeasurementValues(payload)
     payload.job = { assetId: toServerId(assetId) }
     payload.testingEquipmentList = await resolveServerEquipmentList(payload.testingEquipmentList)
     payload.testList[0].testCondition.attachmentData = await encodeAttachments(dto.testList[0].testCondition)

@@ -62,6 +62,9 @@ export async function executeDownloadChainWithResults(chain, ctx, reporter = nul
                     row.status = 'skipped'
                     row.message = 'No download strategy for this node type'
                 } else {
+                    if (ref._type === 'organisation') {
+                        row.name = fullInfoChain[0].aliasName || fullInfoChain[0].name || row.name
+                    }
                     await coreUtils.downloadChainInfo(fullInfoChain, ctx)
                 }
             }

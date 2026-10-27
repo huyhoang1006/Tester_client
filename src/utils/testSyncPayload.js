@@ -3,6 +3,30 @@ import { parseTestDate } from '@/views/TreeNode/Common/Fetch/testDate'
 
 export const sameTestId = (left, right) => String(toServerId(left)) === String(toServerId(right))
 const clone = value => JSON.parse(JSON.stringify(value))
+const validateNumericCell = (cell, path) => {
+    if (!cell || !['analog', 'discrete'].includes(cell.type)) return
+    const value = cell.value
+    if (value === null || value === undefined || String(value).trim() === '') return
+    if (typeof value === 'boolean' || !Number.isFinite(Number(value))) {
+        throw new Error(`${path} must be a number; current value: ${String(value)}`)
+    }
+}
+
+export const validateTestMeasurementValues = payload => {
+    for (const test of (payload.testList || [])) {
+        const label = test.testTypeName || test.name || 'Test'
+        for (const [field, cell] of Object.entries(test.testCondition?.condition || {})) {
+            validateNumericCell(cell, `${label} / testing conditions / ${field}`)
+        }
+        for (const [table, rows] of Object.entries(test.data || {})) {
+            for (const [index, row] of (rows || []).entries()) {
+                for (const [field, cell] of Object.entries(row || {})) {
+                    validateNumericCell(cell, `${label} / ${table} row ${index + 1} / ${field}`)
+                }
+            }
+        }
+    }
+}
 const SERIES_MAPS = ['sfraTraces', 'ctExcitationPoints', 'ctExcitationKneePoints', 'cbMotorCurrentPoints', 'cbTimingTraces']
 const ownedSeriesIds = test => {
     if (!test) return new Set()

@@ -20,9 +20,14 @@ const scopeOrganisationDtoForUser = (dto, userId) => {
     return dto
 }
 
-export async function getOrganisationChain(id, parentId) {
+export async function getOrganisationChain(id, parentId, summary = {}) {
     try {
         const data = await fetchWithRetry(() => demoAPI.getOrganisationById(id))
+        const name = [data?.name, data?.organisation?.name, summary.name, summary.aliasName]
+            .find(value => typeof value === 'string' && value.trim())?.trim() || ''
+        if (!name) {
+            throw new Error(`Organisation ${id} has no name in the server response or tree`)
+        }
         return {
             // GIỮ NGUYÊN `id` ĐÃ TRUYỀN VÀO, không lấy lại từ phản hồi server.
             //
@@ -38,8 +43,8 @@ export async function getOrganisationChain(id, parentId) {
             // một cấp thì không bao giờ gặp.
             id:          String(id),
             mrid:        String(id),
-            name:        data.name || '',
-            aliasName:   data.shortName || data.aliasName || '',
+            name,
+            aliasName:   data?.shortName || data?.aliasName || summary.aliasName || name,
             parentId:    parentId != null ? String(parentId) : null,
             _type:       'organisation',
             _serverData: data || { id, name: '' }
@@ -226,6 +231,10 @@ export async function downloadOrganisationChain(org, ctx) {
             : null
     }
  
+    // A previous download may have persisted a nameless organisation; repair it on retry.
+    if (!mergedDto.name || !mergedDto.name.trim()) mergedDto.name = serverDto.name
+    if (!mergedDto.aliasName || !mergedDto.aliasName.trim()) mergedDto.aliasName = serverDto.aliasName
+
     // 5. Set context IDs
     mergedDto.organisationId = org.mrid
     mergedDto.parentId       = resolveParentId(org.parentId, clientDto)
@@ -260,8 +269,8 @@ export async function downloadOrganisationChain(org, ctx) {
 
         const newNode = {
             mrid:      org.mrid,
-            name:      org.name,
-            aliasName: org.aliasName,
+            name:      mergedDto.name,
+            aliasName: mergedDto.aliasName,
             parentId:  mergedDto.parentId,
             mode:      'organisation',
         }
