@@ -40,15 +40,15 @@
                         </el-select>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive"
+                        <el-input :measurement="item.trip_coil_no" size="mini" type="text" number="positive"
                             disabled v-model="item.trip_coil_no.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive"
+                        <el-input :measurement="item.close_coil_no" size="mini" type="text" number="positive"
                             disabled v-model="item.close_coil_no.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.v_pickup.value"></el-input>
+                        <el-input :measurement="item.v_pickup" size="mini" type="text" number="positive" v-model="item.v_pickup.value"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -105,38 +105,38 @@
                     <tr>
                         <td>Close</td>
                         <td v-if="assetData.assessmentLimits.limits === 'Absolute'">
-                            <el-input size="mini" type="text" number="positive"
+                            <el-input :measurement="assetData.assessmentLimits.pickup_voltage.abs.min_pickup_voltage_close.v_min" size="mini" type="text" number="positive"
                                 v-model="assetData.assessmentLimits.pickup_voltage.abs.min_pickup_voltage_close.v_min.value" />
                         </td>
                         <td v-if="assetData.assessmentLimits.limits === 'Absolute'">
-                            <el-input size="mini" type="text" number="positive"
+                            <el-input :measurement="assetData.assessmentLimits.pickup_voltage.abs.min_pickup_voltage_close.v_max" size="mini" type="text" number="positive"
                                 v-model="assetData.assessmentLimits.pickup_voltage.abs.min_pickup_voltage_close.v_max.value" />
                         </td>
                         <td v-if="assetData.assessmentLimits.limits !== 'Absolute'">
-                            <el-input size="mini" type="text" number="positive"
+                            <el-input :measurement="assetData.assessmentLimits.pickup_voltage.rel.min_pickup_voltage_close.v_ref" size="mini" type="text" number="positive"
                                 v-model="assetData.assessmentLimits.pickup_voltage.rel.min_pickup_voltage_close.v_ref.value" />
                         </td>
                         <td v-if="assetData.assessmentLimits.limits !== 'Absolute'">
-                            <el-input size="mini" type="text" number="positive"
+                            <el-input :measurement="assetData.assessmentLimits.pickup_voltage.rel.min_pickup_voltage_close.v_dev" size="mini" type="text" number="positive"
                                 v-model="assetData.assessmentLimits.pickup_voltage.rel.min_pickup_voltage_close.v_dev.value" />
                         </td>
                     </tr>
                     <tr>
                         <td>Trip</td>
                         <td v-if="assetData.assessmentLimits.limits === 'Absolute'">
-                            <el-input size="mini" type="text" number="positive"
+                            <el-input :measurement="assetData.assessmentLimits.pickup_voltage.abs.min_pickup_voltage_trip.v_min" size="mini" type="text" number="positive"
                                 v-model="assetData.assessmentLimits.pickup_voltage.abs.min_pickup_voltage_trip.v_min.value" />
                         </td>
                         <td v-if="assetData.assessmentLimits.limits === 'Absolute'">
-                            <el-input size="mini" type="text" number="positive"
+                            <el-input :measurement="assetData.assessmentLimits.pickup_voltage.abs.min_pickup_voltage_trip.v_max" size="mini" type="text" number="positive"
                                 v-model="assetData.assessmentLimits.pickup_voltage.abs.min_pickup_voltage_trip.v_max.value" />
                         </td>
                         <td v-if="assetData.assessmentLimits.limits !== 'Absolute'">
-                            <el-input size="mini" type="text" number="positive"
+                            <el-input :measurement="assetData.assessmentLimits.pickup_voltage.rel.min_pickup_voltage_trip.v_ref" size="mini" type="text" number="positive"
                                 v-model="assetData.assessmentLimits.pickup_voltage.rel.min_pickup_voltage_trip.v_ref.value" />
                         </td>
                         <td v-if="assetData.assessmentLimits.limits !== 'Absolute'">
-                            <el-input size="mini" type="text" number="positive"
+                            <el-input :measurement="assetData.assessmentLimits.pickup_voltage.rel.min_pickup_voltage_trip.v_dev" size="mini" type="text" number="positive"
                                 v-model="assetData.assessmentLimits.pickup_voltage.rel.min_pickup_voltage_trip.v_dev.value" />
                         </td>
                     </tr>

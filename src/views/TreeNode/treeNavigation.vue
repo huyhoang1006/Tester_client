@@ -399,6 +399,7 @@ import compareUiBus, { COMPARE_ACTIVE } from '@/utils/compareUiBus'
 // Import Mappers
 import mapClientProperties from '@/utils/MapperClient/mapClientProperties'
 import mapClientAssetProperties from '@/utils/MapperClient/mapClientAssetProperties'
+import { displaySerialNumber, isUnknownSerial } from '@/utils/unknownSerial'
 import mapClientJobProperties from '@/utils/MapperClient/mapClientJobProperties'
 import mapProperties from '@/utils/MapperServer/mapProperties'
 import mapAssetProperties from '@/utils/MapperServer/mapAssetProperties'
@@ -1278,7 +1279,7 @@ export default {
                 const assetRows = rows([
                     ['Asset', value(source.asset, result.assetType, result.typeLabel)],
                     ['Asset type', value(source.asset_type, source.type)],
-                    ['Serial number', value(source.serial_number, source.serial_no)],
+                    ['Serial number', displaySerialNumber(value(source.serial_number, source.serial_no))],
                     ['Manufacturer', value(source.manufacturer)],
                     ['Manufacturer type', value(source.manufacturer_type, source.asset_info_manufacturer_type)],
                     ['Manufacturing year', value(source.manufacturing_year, source.manufacturer_year)],
@@ -1475,13 +1476,13 @@ export default {
 
                 if (mode === 'asset') {
                     // Update asset node - Robust mapping for both DTO and raw Entity
-                    const apparatusId = data.properties?.apparatus_id || data.apparatus_id || data.name
+                    const apparatusId = data.properties?.apparatus_id || data.apparatus_id || (isUnknownSerial(data.name) ? '' : data.name)
                     const serialNumber = data.properties?.serial_no || data.serial_number || data.serial_no
                     const manufacturer = data.properties?.manufacturer || data.manufacturer
                     const assetTypeField = data.properties?.type || data.type || assetType
 
                     this.$set(treeNode, 'apparatus_id', apparatusId)
-                    this.$set(treeNode, 'name', apparatusId)
+                    this.$set(treeNode, 'name', apparatusId || displaySerialNumber(serialNumber) || '')
                     this.$set(treeNode, 'serial_number', serialNumber)
                     this.$set(treeNode, 'manufacturer', manufacturer)
                     this.$set(treeNode, 'type', assetTypeField)

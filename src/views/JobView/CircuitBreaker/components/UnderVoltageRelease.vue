@@ -33,11 +33,11 @@
                             {{ index + 1 }}
                         </td>
                         <td>
-                            <el-input size="mini" type="text" number="positive" disabled
+                            <el-input :measurement="item.trip_coil_no" size="mini" type="text" number="positive" disabled
                                 v-model="item.trip_coil_no.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" number="positive"
+                            <el-input :measurement="item.trip_voltage" size="mini" type="text" number="positive"
                                 v-model="item.trip_voltage.value"></el-input>
                         </td>
                         <td>
@@ -85,21 +85,21 @@
             <el-form size="small" label-position="left" label-width="160px">
                 <template v-if="assetData.assessmentLimits.limits === 'Absolute'">
                     <el-form-item label="Min trip voltage (V)">
-                        <el-input type="text" number="positive"
+                        <el-input :measurement="assetData.assessmentLimits.under_voltage_release.abs.uv_coil_trip_voltage.min" type="text" number="positive"
                             v-model="assetData.assessmentLimits.under_voltage_release.abs.uv_coil_trip_voltage.min.value" />
                     </el-form-item>
                     <el-form-item label="Max trip voltage (V)">
-                        <el-input type="text" number="positive"
+                        <el-input :measurement="assetData.assessmentLimits.under_voltage_release.abs.uv_coil_trip_voltage.max" type="text" number="positive"
                             v-model="assetData.assessmentLimits.under_voltage_release.abs.uv_coil_trip_voltage.max.value" />
                     </el-form-item>
                 </template>
                 <template v-else>
                     <el-form-item label="Ref trip voltage (V)">
-                        <el-input type="text" number="positive"
+                        <el-input :measurement="assetData.assessmentLimits.under_voltage_release.rel.uv_coil_trip_voltage.ref" type="text" number="positive"
                             v-model="assetData.assessmentLimits.under_voltage_release.rel.uv_coil_trip_voltage.ref.value" />
                     </el-form-item>
                     <el-form-item label="Dev trip voltage (V)">
-                        <el-input type="text" number="positive"
+                        <el-input :measurement="assetData.assessmentLimits.under_voltage_release.rel.uv_coil_trip_voltage.dev" type="text" number="positive"
                             v-model="assetData.assessmentLimits.under_voltage_release.rel.uv_coil_trip_voltage.dev.value" />
                     </el-form-item>
                 </template>

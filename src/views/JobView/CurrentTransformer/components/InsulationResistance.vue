@@ -46,28 +46,22 @@
                         {{ index + 1 }}
                     </td>
                     <td>
-                        <el-select class="terminal-select" style="width: 100%;" size="mini" multiple
-                            :value="terminalValues(item, 'terminal1')" placeholder="Select terminal"
-                            @change="updateTerminalSide(item, 'terminal1', $event)">
-                            <el-option v-for="t in availableTerminalOptions(item, 'terminal1')"
-                                :key="'l-' + t" :label="t" :value="t"></el-option>
-                        </el-select>
+                        <winding-terminal-picker :selected="terminalValues(item, 'terminal1')"
+                            :options="availableTerminalOptions(item, 'terminal1')"
+                            @change="updateTerminalSide(item, 'terminal1', $event)" />
                     </td>
                     <td class="terminal-link-cell"><i class="fa-solid fa-arrows-left-right"></i></td>
                     <td>
-                        <el-select class="terminal-select" style="width: 100%;" size="mini" multiple
-                            :value="terminalValues(item, 'terminal2')" placeholder="Select terminal"
-                            @change="updateTerminalSide(item, 'terminal2', $event)">
-                            <el-option v-for="t in availableTerminalOptions(item, 'terminal2')"
-                                :key="'r-' + t" :label="t" :value="t"></el-option>
-                        </el-select>
+                        <winding-terminal-picker :selected="terminalValues(item, 'terminal2')"
+                            :options="availableTerminalOptions(item, 'terminal2')"
+                            @change="updateTerminalSide(item, 'terminal2', $event)" />
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive"
+                        <el-input :measurement="item.test_voltage" size="mini" type="text" number="positive"
                             v-model="item.test_voltage.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.r60s.value"></el-input>
+                        <el-input :measurement="item.r60s" size="mini" type="text" number="positive" v-model="item.r60s.value"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -142,6 +136,7 @@
 import currentTransformerTestMap from '@/config/test-definitions/CurrentTransformer'
 import * as common from '../../Common/index'
 import GroupNode from '../../Common/GroupNode.vue'
+import WindingTerminalPicker from '../../Common/WindingTerminalPicker.vue'
 import { changeTestStandard } from '../../Common'
 import { readSides, writeSides } from '../../Common/terminalSelect'
 import { buildCurrentTransformerTerminals } from '../../Common/terminalOptions'
@@ -149,7 +144,8 @@ import { buildCurrentTransformerTerminals } from '../../Common/terminalOptions'
 export default {
     name: "InsulationResistance",
     components: {
-        GroupNode
+        GroupNode,
+        WindingTerminalPicker
     },
     data() {
         return {
@@ -561,11 +557,7 @@ export default {
 .fail { color: #F56C6C; font-weight: bold; }
 
 /* ─── Chọn đầu cực bằng hai dropdown ───────────────────────────────────── */
-.terminal-col { min-width: 170px; }
+.terminal-col { min-width: 250px; }
 .terminal-link-col { width: 34px; text-align: center; }
 .terminal-link-cell { text-align: center; color: #c0c4cc; }
-.terminal-select { width: 100%; }
-/* Thẻ đã chọn dễ dài hơn ô — cho xuống dòng thay vì tràn ra ngoài bảng. */
-.terminal-select >>> .el-select__tags { flex-wrap: wrap; max-width: 100%; }
-.phase-dot { margin-right: 6px; font-size: 8px; vertical-align: middle; }
 </style>

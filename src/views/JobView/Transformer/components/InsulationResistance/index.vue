@@ -42,38 +42,28 @@
                         {{ index + 1 }}
                     </td>
                     <td>
-                        <div class="terminal-select-wrap">
-                            <el-select class="terminal-select" style="width: 100%; min-width: 100%; max-width: 100%;"
-                                size="mini" multiple :value="terminalValues(item, 'terminal1')"
-                                placeholder="Select terminal" @change="updateTerminalSide(item, 'terminal1', $event)">
-                                <el-option v-for="terminal in availableTerminalOptions(item, 'terminal1')"
-                                    :key="'left-' + terminal" :label="terminal" :value="terminal"></el-option>
-                            </el-select>
-                        </div>
+                        <winding-terminal-picker :selected="terminalValues(item, 'terminal1')"
+                            :options="availableTerminalOptions(item, 'terminal1')"
+                            @change="updateTerminalSide(item, 'terminal1', $event)" />
                     </td>
                     <td class="terminal-link-cell"><i class="fa-solid fa-arrows-left-right"></i></td>
                     <td>
-                        <div class="terminal-select-wrap">
-                            <el-select class="terminal-select" style="width: 100%; min-width: 100%; max-width: 100%;"
-                                size="mini" multiple :value="terminalValues(item, 'terminal2')"
-                                placeholder="Select terminal" @change="updateTerminalSide(item, 'terminal2', $event)">
-                                <el-option v-for="terminal in availableTerminalOptions(item, 'terminal2')"
-                                    :key="'right-' + terminal" :label="terminal" :value="terminal"></el-option>
-                            </el-select>
-                        </div>
+                        <winding-terminal-picker :selected="terminalValues(item, 'terminal2')"
+                            :options="availableTerminalOptions(item, 'terminal2')"
+                            @change="updateTerminalSide(item, 'terminal2', $event)" />
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.r15s.value"> </el-input>
+                        <el-input :measurement="item.r15s" size="mini" type="text" number="positive" v-model="item.r15s.value"> </el-input>
                     </td>
-                    <td><el-input size="mini" type="text" number="positive" v-model="item.r60s.value"> </el-input></td>
+                    <td><el-input :measurement="item.r60s" size="mini" type="text" number="positive" v-model="item.r60s.value"> </el-input></td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.r_10m.value"></el-input>
-                    </td>
-                    <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.dar.value"></el-input>
+                        <el-input :measurement="item.r_10m" size="mini" type="text" number="positive" v-model="item.r_10m.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.pi.value"></el-input>
+                        <el-input :measurement="item.dar" size="mini" type="text" number="positive" v-model="item.dar.value"></el-input>
+                    </td>
+                    <td>
+                        <el-input :measurement="item.pi" size="mini" type="text" number="positive" v-model="item.pi.value"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -162,7 +152,7 @@
                             </div>
                         </td>
                         <td class="good">Good</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.good.score.value"></el-input></td>
+                        <td><el-input :measurement="conditionIndicatorSetting.good.score" size="mini" v-model="conditionIndicatorSetting.good.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
@@ -176,7 +166,7 @@
                             </div>
                         </td>
                         <td class="fair">Fair</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.fair.score.value"></el-input></td>
+                        <td><el-input :measurement="conditionIndicatorSetting.fair.score" size="mini" v-model="conditionIndicatorSetting.fair.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
@@ -190,7 +180,7 @@
                             </div>
                         </td>
                         <td class="poor">Poor</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.poor.score.value"></el-input></td>
+                        <td><el-input :measurement="conditionIndicatorSetting.poor.score" size="mini" v-model="conditionIndicatorSetting.poor.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
@@ -201,7 +191,7 @@
                             </div>
                         </td>
                         <td class="bad">Bad</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.bad.score.value"></el-input></td>
+                        <td><el-input :measurement="conditionIndicatorSetting.bad.score" size="mini" v-model="conditionIndicatorSetting.bad.score.value"></el-input></td>
                     </tr>
                 </tbody>
             </table>
@@ -215,6 +205,7 @@
 import transformerTestMap from '@/config/test-definitions/Transformer'
 import * as common from '../../../Common/index.js'
 import GroupNode from '../../../Common/GroupNode.vue'
+import WindingTerminalPicker from '../../../Common/WindingTerminalPicker.vue'
 import { changeTestStandard } from '../../../Common'
 import conditionIndicatorMixin from '../MixinCommon/MixinConditionIndicator'
 import transformerAssessmentMap from '@/config/testing-assessment/Transformer/index.js'
@@ -227,7 +218,7 @@ import {
 export default {
     mixins: [conditionIndicatorMixin],
     name: "InsulationResistance",
-    components: { GroupNode },
+    components: { GroupNode, WindingTerminalPicker },
     data() {
         return {
             openAssessmentDialog: false,
@@ -397,40 +388,6 @@ div.el-divider.el-divider--horizontal {
 .terminal-col { width: 264px; min-width: 264px; }
 .terminal-link-col { width: 42px; min-width: 42px; }
 .terminal-link-cell { text-align: center; color: #606266; }
-.terminal-select-wrap {
-    width: 250px;
-    min-width: 250px;
-    max-width: 250px;
-}
-::v-deep(.terminal-select .el-input) {
-    width: 100% !important;
-    min-width: 0 !important;
-    max-width: none !important;
-}
-::v-deep(.terminal-select .el-select__tags) {
-    width: calc(100% - 32px);
-    flex-wrap: nowrap;
-    max-width: calc(100% - 32px) !important;
-    overflow: hidden;
-}
-::v-deep(.terminal-select .el-select__tags > span) {
-    display: flex;
-    min-width: 0;
-    max-width: 100%;
-    overflow: hidden;
-}
-::v-deep(.terminal-select .el-tag) {
-    flex: 0 1 auto;
-    min-width: 0;
-    max-width: 72px;
-}
-::v-deep(.terminal-select .el-tag .el-select__tags-text) {
-    display: inline-block;
-    max-width: 42px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    vertical-align: middle;
-}
 
 .assessment-container { width: 75%; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 16px; overflow: hidden; }
 .assessment-header { display: flex; background: #f5f7fa; font-weight: bold; padding: 8px; }

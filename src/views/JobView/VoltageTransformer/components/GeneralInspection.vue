@@ -42,7 +42,7 @@
                         {{ index + 1 }}
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.item.value"
+                        <el-input :measurement="item.item" size="mini" type="text" v-model="item.item.value"
                             :placeholder="`Item ${index + 1}`"></el-input>
                     </td>
                     <td>

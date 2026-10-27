@@ -43,12 +43,12 @@
                         </td>
                         <td><el-input size="mini" :value="cellValue(row.interrupter)" disabled /></td>
                         <td>
-                            <el-input size="mini" v-model="row.i_test.value">
+                            <el-input :measurement="row.i_test" size="mini" v-model="row.i_test.value">
                                 <template slot="append">A</template>
                             </el-input>
                         </td>
                         <td>
-                            <el-input size="mini" v-model="row[timeField].value" @input="calculateTimingSynchronism">
+                            <el-input :measurement="row[timeField]" size="mini" v-model="row[timeField].value" @input="calculateTimingSynchronism">
                                 <template slot="append">ms</template>
                             </el-input>
                         </td>

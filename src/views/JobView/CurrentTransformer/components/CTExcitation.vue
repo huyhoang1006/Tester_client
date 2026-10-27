@@ -44,7 +44,7 @@
             <tbody>
                 <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td>
-                        <el-input size="mini" type="text" v-model="item.name.value"></el-input>
+                        <el-input :measurement="item.name" size="mini" type="text" v-model="item.name.value"></el-input>
                     </td>
                     <td>
                         <el-input class="ratio-input" size="mini" type="text"

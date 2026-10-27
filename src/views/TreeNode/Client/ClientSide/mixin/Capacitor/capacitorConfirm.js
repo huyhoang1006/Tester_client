@@ -1,4 +1,5 @@
 import Vue from "vue"
+import { displaySerialNumber } from '@/utils/unknownSerial'
 import { startLoading } from '@/utils/loading'
 import * as CapacitorMapping from '@/views/Mapping/Capacitor/index'
 export default {
@@ -86,7 +87,7 @@ export default {
                                 const newRow = {
                                     mrid: assetData.mrid,
                                     apparatus_id: apparatusId,
-                                    name: apparatusId || assetData.serial_number || 'Unnamed Capacitor',
+                                    name: apparatusId || displaySerialNumber(assetData.serial_number) || 'Unnamed Capacitor',
                                     serial_number: assetData.serial_number,
                                     parentId: this.parentOrganization.mrid,
                                     parentName: this.parentOrganization.name,

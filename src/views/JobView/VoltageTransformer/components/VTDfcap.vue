@@ -49,7 +49,7 @@
                         {{ index + 1 }}
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.measurement.value"></el-input>
+                        <el-input :measurement="item.measurement" size="mini" type="text" v-model="item.measurement.value"></el-input>
                     </td>
                     <td>
                         <el-select size="mini" v-model="item.test_mode.value">
@@ -63,25 +63,25 @@
                         </el-select>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive"
+                        <el-input :measurement="item.test_voltage" size="mini" type="text" number="positive"
                             v-model="item.test_voltage.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.df_ref.value"></el-input>
+                        <el-input :measurement="item.df_ref" size="mini" type="text" number="positive" v-model="item.df_ref.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.c_ref.value"
+                        <el-input :measurement="item.c_ref" size="mini" type="text" number="positive" v-model="item.c_ref.value"
                             @input="calcRowDeltaC(item)"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.df_meas.value"></el-input>
+                        <el-input :measurement="item.df_meas" size="mini" type="text" number="positive" v-model="item.df_meas.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.c_meas.value"
+                        <el-input :measurement="item.c_meas" size="mini" type="text" number="positive" v-model="item.c_meas.value"
                             @input="calcRowDeltaC(item)"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive"
+                        <el-input :measurement="item.delta_c_percent" size="mini" type="text" number="positive"
                             v-model="item.delta_c_percent.value" readonly></el-input>
                     </td>
                     <td>

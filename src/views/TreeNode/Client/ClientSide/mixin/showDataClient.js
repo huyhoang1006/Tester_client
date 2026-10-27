@@ -1,6 +1,7 @@
 
 import * as SubstationMapping from '@/views/Mapping/Substation/index'
 import * as PowerPlantMapping from '@/views/Mapping/PowerPlant/index'
+import { displaySerialNumber } from '@/utils/unknownSerial'
 
 
 export default {
@@ -175,7 +176,7 @@ export default {
                 }
                 await this.loadPathMapClient(node)
                 // Với asset: ưu tiên apparatus_id trước serial_number/serial_no, nếu không có thì dùng name
-                const assetName = node.apparatus_id || node.serial_number || node.serial_no || node.name || 'Unknown'
+                const assetName = node.apparatus_id || displaySerialNumber(node.serial_number || node.serial_no) || node.name || 'Unknown'
                 this.pathMapClient.push({
                     id: node.id || node.mrid,
                     mrid: node.mrid,

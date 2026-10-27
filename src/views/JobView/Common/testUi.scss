@@ -65,6 +65,7 @@
     /* Co theo nội dung: KHÔNG ép min-width 100% — bảng ít cột sẽ gọn,
        bảng nhiều cột vẫn cuộn ngang trong .table-scroll */
     width: max-content;
+    min-width: max-content;
     overflow: hidden;
     border: 1px solid #e4e7ed !important;
     border-radius: 4px;
@@ -122,7 +123,7 @@
     align-items: stretch;
     gap: 4px;
     width: 100%;
-    min-width: 0;
+    min-width: 132px;
     box-sizing: border-box;
 }
 
@@ -170,8 +171,15 @@
    layouts the table scrolls horizontally instead of collapsing this column. */
 .test-table th.phase-col,
 .test-table td.phase-col {
-    width: 108px;
-    min-width: 108px;
+    width: 148px;
+    min-width: 148px;
+    box-sizing: border-box;
+}
+
+.test-table th.tap-col,
+.test-table td.tap-col {
+    width: 140px;
+    min-width: 140px;
     box-sizing: border-box;
 }
 

@@ -31,7 +31,7 @@
                         {{ index + 1 }}
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.r_meas.value"></el-input>
+                        <el-input :measurement="item.r_meas" size="mini" type="text" number="positive" v-model="item.r_meas.value"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">

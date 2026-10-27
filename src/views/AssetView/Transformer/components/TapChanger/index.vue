@@ -15,7 +15,7 @@
                     <el-col :span="24" class="col-content">
                         <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                             <el-form-item label="Serial no.">
-                                <el-input v-model="tapChangersData.serial_no"></el-input>
+                                <serial-number-field v-model="tapChangersData.serial_no" />
                             </el-form-item>
                             <el-form-item label="Manufacturer">
                                 <el-select class="w-100" clearable filterable placeholder="Select"
@@ -136,7 +136,7 @@
                     <el-col :span="24" class="col-content">
                         <el-form :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
                             <el-form-item label="Serial no.">
-                                <el-input v-model="tapChangersData.serial_no"></el-input>
+                                <serial-number-field v-model="tapChangersData.serial_no" />
                             </el-form-item>
                             <el-form-item label="Manufacturer">
                                 <el-select class="w-100" clearable filterable placeholder="Select"

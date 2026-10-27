@@ -38,17 +38,17 @@
                     </td>
                     <td>
                         <div class="cell-flex">
-                        <el-input size="mini" type="text" v-model="item.measurement.value"></el-input>
+                        <el-input :measurement="item.measurement" size="mini" type="text" v-model="item.measurement.value"></el-input>
                         <div
                             :class="{ colorTableRed: index % 3 == 0, colorTableYellow: index % 3 == 1, colorTableBlue: index % 3 == 2 }">
                         </div>
                     </div>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.r60s_ref.value"></el-input>
+                        <el-input :measurement="item.r60s_ref" size="mini" type="text" number="positive" v-model="item.r60s_ref.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.r60s.value"></el-input>
+                        <el-input :measurement="item.r60s" size="mini" type="text" number="positive" v-model="item.r60s.value"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -134,7 +134,7 @@
                             </div>
                         </td>
                         <td class="good">Good</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.good.score.value"></el-input></td>
+                        <td><el-input :measurement="conditionIndicatorSetting.good.score" size="mini" v-model="conditionIndicatorSetting.good.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
@@ -145,7 +145,7 @@
                             </div>
                         </td>
                         <td class="fair">Fair</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.fair.score.value"></el-input></td>
+                        <td><el-input :measurement="conditionIndicatorSetting.fair.score" size="mini" v-model="conditionIndicatorSetting.fair.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
@@ -156,7 +156,7 @@
                             </div>
                         </td>
                         <td class="poor">Poor</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.poor.score.value"></el-input></td>
+                        <td><el-input :measurement="conditionIndicatorSetting.poor.score" size="mini" v-model="conditionIndicatorSetting.poor.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
@@ -165,7 +165,7 @@
                             </div>
                         </td>
                         <td class="bad">Bad</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.bad.score.value"></el-input></td>
+                        <td><el-input :measurement="conditionIndicatorSetting.bad.score" size="mini" v-model="conditionIndicatorSetting.bad.score.value"></el-input></td>
                     </tr>
                 </tbody>
             </table>

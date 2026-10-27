@@ -38,9 +38,9 @@
         <table class="table-strip-input-data test-table">
             <colgroup>
                 <col style="width: 46px" />
-                <col style="width: 190px" />
+                <col style="width: 250px" />
                 <col style="width: 34px" />
-                <col style="width: 190px" />
+                <col style="width: 250px" />
                 <col style="width: 140px" />
                 <col style="width: 140px" />
                 <col style="width: 150px" />
@@ -70,28 +70,22 @@
                         {{ index + 1 }}
                     </td>
                     <td>
-                        <el-select class="terminal-select" style="width: 100%;" size="mini" multiple
-                            :value="terminalValues(item, 'terminal1')" placeholder="Select terminal"
-                            @change="updateTerminalSide(item, 'terminal1', $event)">
-                            <el-option v-for="t in availableTerminalOptions(item, 'terminal1')"
-                                :key="'l-' + t" :label="t" :value="t"></el-option>
-                        </el-select>
+                        <winding-terminal-picker :selected="terminalValues(item, 'terminal1')"
+                            :options="availableTerminalOptions(item, 'terminal1')"
+                            @change="updateTerminalSide(item, 'terminal1', $event)" />
                     </td>
                     <td class="terminal-link-cell"><i class="fa-solid fa-arrows-left-right"></i></td>
                     <td>
-                        <el-select class="terminal-select" style="width: 100%;" size="mini" multiple
-                            :value="terminalValues(item, 'terminal2')" placeholder="Select terminal"
-                            @change="updateTerminalSide(item, 'terminal2', $event)">
-                            <el-option v-for="t in availableTerminalOptions(item, 'terminal2')"
-                                :key="'r-' + t" :label="t" :value="t"></el-option>
-                        </el-select>
+                        <winding-terminal-picker :selected="terminalValues(item, 'terminal2')"
+                            :options="availableTerminalOptions(item, 'terminal2')"
+                            @change="updateTerminalSide(item, 'terminal2', $event)" />
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive"
+                        <el-input :measurement="item.test_voltage" size="mini" type="text" number="positive"
                             v-model="item.test_voltage.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.r60s.value"></el-input>
+                        <el-input :measurement="item.r60s" size="mini" type="text" number="positive" v-model="item.r60s.value"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -191,6 +185,7 @@
 import voltageTransformerTestMap from '@/config/test-definitions/VoltageTransformer'
 import * as common from '@/views/JobView/Common/index'
 import GroupNode from '../../Common/GroupNode.vue'
+import WindingTerminalPicker from '../../Common/WindingTerminalPicker.vue'
 import { changeTestStandard } from '../../Common'
 import { readSides, writeSides } from '../../Common/terminalSelect'
 import { buildVoltageTransformerTerminals, renameVtWinding } from '../../Common/terminalOptions'
@@ -198,7 +193,8 @@ import { buildVoltageTransformerTerminals, renameVtWinding } from '../../Common/
 export default {
     name: "InsulationResistance",
     components: {
-        GroupNode
+        GroupNode,
+        WindingTerminalPicker
     },
     data() {
         return {
@@ -645,13 +641,9 @@ export default {
 .fail { color: #F56C6C; font-weight: bold; }
 
 /* ─── Chọn đầu cực bằng hai dropdown ───────────────────────────────────── */
-.terminal-col { min-width: 170px; }
+.terminal-col { min-width: 250px; }
 .terminal-link-col { width: 34px; text-align: center; }
 .terminal-link-cell { text-align: center; color: #c0c4cc; }
-.terminal-select { width: 100%; }
-/* Thẻ đã chọn dễ dài hơn ô — cho xuống dòng thay vì tràn ra ngoài bảng. */
-.terminal-select >>> .el-select__tags { flex-wrap: wrap; max-width: 100%; }
-.phase-dot { margin-right: 6px; font-size: 8px; vertical-align: middle; }
 /* Hộp thoại đổi tên cuộn dây. */
 .winding-note { margin-top: 8px; font-size: 12px; color: #909399; line-height: 1.5; }
 .winding-empty { padding: 16px 4px; font-size: 12px; color: #909399; text-align: center; }

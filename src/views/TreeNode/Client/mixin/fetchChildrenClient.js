@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import { displaySerialNumber } from '@/utils/unknownSerial'
 
 const ASSET_TYPES = [
     'Transformer',
@@ -78,7 +79,7 @@ export default {
                     if (['organisation', 'substation', 'powerPlant', 'voltageLevel', 'bay'].includes(node.mode)) {
                         parentDisplayName = node.aliasName || node.name;
                     } else if (node.mode === 'asset') {
-                        parentDisplayName = node.apparatus_id || node.serial_number || node.name;
+                        parentDisplayName = node.apparatus_id || displaySerialNumber(node.serial_number) || node.name;
                     }
                     if (node.mode == 'asset') {
                         const clickedRow = node
@@ -822,6 +823,9 @@ export default {
                     }
                     // Merge với children hiện có (nếu có) để không mất asset đã add trước đó
                     newRows = await this.filterRowsByCurrentUserOwnership(newRows)
+                    newRows.forEach((row) => {
+                        if (row.mode === 'asset') row.name = displaySerialNumber(row.name || row.serial_number)
+                    })
                     if (existingChildren.length > 0) {
                         // Tạo map của mrid để tránh duplicate
                         const existingMrids = new Set(existingChildren.map((c) => c.mrid))

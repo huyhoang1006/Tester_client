@@ -18,7 +18,7 @@
                             </el-select>
                         </el-form-item>
                         <el-form-item label="Serial no.">
-                            <el-input v-model="operatingData.serial_no"></el-input>
+                            <serial-number-field v-model="operatingData.serial_no" />
                         </el-form-item>
                         <el-form-item label="Manufacturer">
                             <el-input v-model="operatingData.manufacturer"></el-input>

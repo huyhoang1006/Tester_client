@@ -64,10 +64,10 @@
                         {{ item.unit_no.value }}
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.test_voltage.value"></el-input>
+                        <el-input :measurement="item.test_voltage" size="mini" type="text" number="positive" v-model="item.test_voltage.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.i_meas.value"></el-input>
+                        <el-input :measurement="item.i_meas" size="mini" type="text" number="positive" v-model="item.i_meas.value"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -357,7 +357,7 @@ export default {
 
 .test-table {
     width: max-content;
-    min-width: 100%;
+    min-width: max(100%, 888px);
     table-layout: fixed;
     overflow: hidden;
     border: 1px solid #e4e7ed !important;
@@ -458,17 +458,21 @@ export default {
 }
 
 .phase-cell {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 5px;
+    align-items: stretch;
+    gap: 4px;
     width: 100%;
+    min-width: 108px;
 }
 
 .phase-input {
-    width: 58px;
+    width: 100%;
+    min-width: 0;
 }
 
 .phase-color {
+    width: 5px;
     min-height: 30px;
 }
 

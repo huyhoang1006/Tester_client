@@ -57,20 +57,20 @@
                         {{ index + 1 }}
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.measurement.value"></el-input>
+                        <el-input :measurement="item.measurement" size="mini" type="text" v-model="item.measurement.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive"
+                        <el-input :measurement="item.test_voltage" size="mini" type="text" number="positive"
                             v-model="item.test_voltage.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.frequency.value"></el-input>
+                        <el-input :measurement="item.frequency" size="mini" type="text" number="positive" v-model="item.frequency.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.duration.value"></el-input>
+                        <el-input :measurement="item.duration" size="mini" type="text" number="positive" v-model="item.duration.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.tan_delta.value"></el-input>
+                        <el-input :measurement="item.tan_delta" size="mini" type="text" number="positive" v-model="item.tan_delta.value"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">

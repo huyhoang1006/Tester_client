@@ -23,7 +23,7 @@
                 <br v-if="Object.keys(testData.table).length > 1" />
                 <div class="table-scroll"><table class="table-strip-input-data test-table" style="width: 100%; font-size: 12px;">
                     <thead>
-                        <th>Phase</th>
+                        <th class="phase-col">Phase</th>
                         <th>Opening (ms)</th>
                         <th>Opening sync. between phase (ms)</th>
                         <th>Open-Close time (ms)</th>
@@ -32,7 +32,7 @@
                     </thead>
                     <tbody>
                         <tr v-for="(item, index) in tableData" :key="index">
-                            <td>
+                            <td class="phase-col">
                                 <div class="phase-select-cell">
                                     <el-select size="mini" v-model="item.phase.value" placeholder="Phase"><el-option label="A" value="A"></el-option><el-option label="B" value="B"></el-option><el-option label="C" value="C"></el-option></el-select>
                                     <div
@@ -41,17 +41,17 @@
                                 </div>
                             </td>
                             <td>
-                                <el-input type="text" number="positive" size="mini"
+                                <el-input :measurement="item.opening_time" type="text" number="positive" size="mini"
                                     v-model="item.opening_time.value" @input="calculateTimingSynchronism"></el-input>
                             </td>
                             <td v-if="index % (getInterruptersPerPhase() * getNumberOfPhases()) === 0"
                                 :rowspan="getInterruptersPerPhase() * getNumberOfPhases()">
-                                <el-input :rows="getInterruptersPerPhase() * getNumberOfPhases()" type="textarea"
+                                <el-input :measurement="item.opening_sync_between_phase" :rows="getInterruptersPerPhase() * getNumberOfPhases()" type="textarea"
                                     number="positive" size="mini"
                                     v-model="item.opening_sync_between_phase.value" readonly></el-input>
                             </td>
                             <td>
-                                <el-input size="mini" type="text" number="positive"
+                                <el-input :measurement="item.open_close_time" size="mini" type="text" number="positive"
                                     v-model="item.open_close_time.value"></el-input>
                             </td>
                             <td>
@@ -88,7 +88,7 @@
                 <br v-if="Object.keys(testData.table).length > 1" />
                 <div class="table-scroll"><table class="table-strip-input-data test-table" style="width: 100%; font-size: 12px;">
                     <thead class="test">
-                        <th>Phase</th>
+                        <th class="phase-col">Phase</th>
                         <th>Interrupter no.</th>
                         <th>Opening time (ms)</th>
                         <th>Opening sync. between phase (ms)</th>
@@ -99,7 +99,7 @@
                     </thead>
                     <tbody>
                         <tr v-for="(item, index) in tableData" :key="index">
-                            <td v-if="index % getInterruptersPerPhase() === 0" :rowspan="getInterruptersPerPhase()">
+                            <td class="phase-col" v-if="index % getInterruptersPerPhase() === 0" :rowspan="getInterruptersPerPhase()">
                                 <div class="phase-select-cell">
                                     <el-select size="mini" v-model="item.phase.value" placeholder="Phase"><el-option label="A" value="A"></el-option><el-option label="B" value="B"></el-option><el-option label="C" value="C"></el-option></el-select>
                                     <div
@@ -109,23 +109,23 @@
 
                             </td>
                             <td>
-                                <el-input size="mini" disabled v-model="item.interrupter.value"></el-input>
+                                <el-input :measurement="item.interrupter" size="mini" disabled v-model="item.interrupter.value"></el-input>
                             </td>
                             <td>
-                                <el-input type="text" number="positive" size="mini"
+                                <el-input :measurement="item.opening_time" type="text" number="positive" size="mini"
                                     v-model="item.opening_time.value" @input="calculateTimingSynchronism"></el-input>
                             </td>
                             <td v-if="index % getInterruptersPerPhase() === 0" :rowspan="getInterruptersPerPhase()">
-                                <el-input :rows="getInterruptersPerPhase()" type="textarea" number="positive"
+                                <el-input :measurement="item.opening_sync_between_phase" :rows="getInterruptersPerPhase()" type="textarea" number="positive"
                                     v-model="item.opening_sync_between_phase.value" readonly></el-input>
                             </td>
                             <td v-if="index % (getInterruptersPerPhase() * getNumberOfPhases()) === 0"
                                 :rowspan="getInterruptersPerPhase() * getNumberOfPhases()">
-                                <el-input :rows="getInterruptersPerPhase() * getNumberOfPhases()" type="textarea"
+                                <el-input :measurement="item.opening_sync_between_interrupter" :rows="getInterruptersPerPhase() * getNumberOfPhases()" type="textarea"
                                     number="positive" v-model="item.opening_sync_between_interrupter.value" readonly></el-input>
                             </td>
                             <td>
-                                <el-input size="mini" type="text" number="positive"
+                                <el-input :measurement="item.open_close_time" size="mini" type="text" number="positive"
                                     v-model="item.open_close_time.value"></el-input>
                             </td>
                             <td>

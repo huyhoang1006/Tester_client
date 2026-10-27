@@ -49,7 +49,7 @@
                 <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td>{{ index + 1 }}</td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.measurement.value"></el-input>
+                        <el-input :measurement="item.measurement" size="mini" type="text" v-model="item.measurement.value"></el-input>
                     </td>
                     <td>
                         <el-select size="mini" v-model="item.test_mode.value">
@@ -63,25 +63,25 @@
                         </el-select>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.test_voltage.value"></el-input>
+                        <el-input :measurement="item.test_voltage" size="mini" type="text" number="positive" v-model="item.test_voltage.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.df_ref.value" @input="computeFields"></el-input>
+                        <el-input :measurement="item.df_ref" size="mini" type="text" number="positive" v-model="item.df_ref.value" @input="computeFields"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.c_ref.value" @input="computeFields"></el-input>
+                        <el-input :measurement="item.c_ref" size="mini" type="text" number="positive" v-model="item.c_ref.value" @input="computeFields"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.df_meas.value" @input="computeFields"></el-input>
+                        <el-input :measurement="item.df_meas" size="mini" type="text" number="positive" v-model="item.df_meas.value" @input="computeFields"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.c_meas.value" @input="computeFields"></el-input>
+                        <el-input :measurement="item.c_meas" size="mini" type="text" number="positive" v-model="item.c_meas.value" @input="computeFields"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.df_change.value" readonly></el-input>
+                        <el-input :measurement="item.df_change" size="mini" type="text" v-model="item.df_change.value" readonly></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.delta_c_percent.value" readonly></el-input>
+                        <el-input :measurement="item.delta_c_percent" size="mini" type="text" v-model="item.delta_c_percent.value" readonly></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">

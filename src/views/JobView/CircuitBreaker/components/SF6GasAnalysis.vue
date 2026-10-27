@@ -34,7 +34,7 @@
                         {{ index + 1 }}
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.decom_sf6.value"></el-input>
+                        <el-input :measurement="item.decom_sf6" size="mini" type="text" number="positive" v-model="item.decom_sf6.value"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -89,7 +89,7 @@
                         {{ index + 1 }}
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.so2_sof2.value"></el-input>
+                        <el-input :measurement="item.so2_sof2" size="mini" type="text" number="positive" v-model="item.so2_sof2.value"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -143,7 +143,7 @@
                         {{ index + 1 }}
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.hf.value"></el-input>
+                        <el-input :measurement="item.hf" size="mini" type="text" number="positive" v-model="item.hf.value"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">

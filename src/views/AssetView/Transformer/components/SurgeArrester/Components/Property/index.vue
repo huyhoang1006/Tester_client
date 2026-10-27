@@ -6,7 +6,7 @@
             <el-row :gutter="20">
                 <el-col :xs="24" :sm="12" :md="6">
                     <el-form-item label="Serial number">
-                        <el-input v-model="propertiesData.serial_no" placeholder="Serial number"></el-input>
+                        <serial-number-field v-model="propertiesData.serial_no" placeholder="Serial number" />
                     </el-form-item>
                 </el-col>
                 <el-col :xs="24" :sm="12" :md="6">

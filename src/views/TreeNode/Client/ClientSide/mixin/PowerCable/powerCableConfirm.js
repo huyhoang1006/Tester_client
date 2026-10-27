@@ -1,4 +1,5 @@
 import Vue from "vue"
+import { displaySerialNumber } from '@/utils/unknownSerial'
 import { startLoading } from '@/utils/loading'
 import * as PowerCableMapping from '@/views/Mapping/PowerCable/index'
 export default {
@@ -83,7 +84,7 @@ export default {
                             const newRow = {
                                 mrid: assetData.mrid,
                                 apparatus_id: apparatusId,
-                                name: apparatusId || assetData.serial_number || 'Unnamed Power Cable',
+                                name: apparatusId || displaySerialNumber(assetData.serial_number) || 'Unnamed Power Cable',
                                 serial_number: assetData.serial_number,
                                 parentId: this.clientSlide ? this.parentOrganization.mrid : this.parentOrganization.id,
                                 parentName: this.parentOrganization.name,

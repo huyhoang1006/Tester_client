@@ -30,24 +30,24 @@
             </div>
             <label v-if="conditions.correction_factor" class="setting-field">
                 <span>Correction factor</span>
-                <el-input size="mini" number="positive" :disabled="!temperatureCorrectionEnabled"
+                <el-input :measurement="conditions.correction_factor" size="mini" number="positive" :disabled="!temperatureCorrectionEnabled"
                     v-model="conditions.correction_factor.value" @input="computeDerived"></el-input>
             </label>
             <template v-if="isDfCap && conditions.maximum_test_voltage && conditions.frequency && conditions.step">
                 <label class="setting-field">
                     <span>Maximum test voltage</span>
-                    <el-input size="mini" number="positive" v-model="conditions.maximum_test_voltage.value"
+                    <el-input :measurement="conditions.maximum_test_voltage" size="mini" number="positive" v-model="conditions.maximum_test_voltage.value"
                         @change="generateVoltageSteps"><template slot="append">kV</template></el-input>
                 </label>
                 <label class="setting-field">
                     <span>Frequency</span>
-                    <el-input size="mini" number="positive" v-model="conditions.frequency.value">
+                    <el-input :measurement="conditions.frequency" size="mini" number="positive" v-model="conditions.frequency.value">
                         <template slot="append">Hz</template>
                     </el-input>
                 </label>
                 <label class="setting-field">
                     <span>Step</span>
-                    <el-input size="mini" number="positive" v-model="conditions.step.value"
+                    <el-input :measurement="conditions.step" size="mini" number="positive" v-model="conditions.step.value"
                         @change="generateVoltageSteps"></el-input>
                 </label>
                 <el-button size="mini" class="generate-button" @click="generateVoltageSteps">
@@ -74,7 +74,7 @@
                     <tr v-for="(row, index) in rows" :key="row.mrid || index">
                         <td>{{ index + 1 }}</td>
                         <td v-for="column in dataColumns" :key="column.code">
-                            <el-input size="mini" :type="column.type === 'analog' ? 'text' : 'text'"
+                            <el-input :measurement="row[column.code]" size="mini" :type="column.type === 'analog' ? 'text' : 'text'"
                                 :number="column.type === 'analog' ? 'positive' : undefined"
                                 :readonly="isReadOnly(column.code)"
                                 v-model="row[column.code].value"

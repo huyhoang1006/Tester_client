@@ -25,10 +25,10 @@
                         {{ index + 1 }}
                     </td>
                     <td>
-                        <el-input size="mini" v-model="item.item.value"> </el-input>
+                        <el-input :measurement="item.item" size="mini" v-model="item.item.value"> </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" v-model="item.type.value"> </el-input>
+                        <el-input :measurement="item.type" size="mini" v-model="item.type.value"> </el-input>
                     </td>
                     <td>
                         <el-button size="mini" type="primary" class="row-btn" title="Insert row below" @click="addTest(index)">

@@ -1,4 +1,5 @@
 import Vue from "vue"
+import { displaySerialNumber } from '@/utils/unknownSerial'
 import { startLoading } from '@/utils/loading'
 import * as BushingMapping from '@/views/Mapping/Bushing/index'
 
@@ -87,7 +88,7 @@ export default {
                             const newRow = {
                                 mrid: bushingData.mrid,
                                 apparatus_id: apparatusId,
-                                name: apparatusId || bushingData.serial_number || 'Unnamed Bushing',
+                                name: apparatusId || displaySerialNumber(bushingData.serial_number) || 'Unnamed Bushing',
                                 serial_number: bushingData.serial_number,
                                 parentId: this.clientSlide ? this.parentOrganization.mrid : this.parentOrganization.id,
                                 parentName: this.parentOrganization.name,

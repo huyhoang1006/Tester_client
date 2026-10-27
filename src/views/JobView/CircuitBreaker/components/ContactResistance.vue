@@ -35,7 +35,7 @@
             <br />
             <div class="table-scroll"><table class="table-strip-input-data test-table" style="width: 100%; font-size: 12px;">
                 <thead class="test">
-                    <th>Phase</th>
+                    <th class="phase-col">Phase</th>
                     <th>I test (A)</th>
                     <th>Contact resistance (&#181;&#8486;)</th>
                     <th class="assessment-col">Assessment</th>
@@ -43,7 +43,7 @@
                 </thead>
                 <tbody>
                     <tr v-for="(item, index) in testData.table.table1" :key="index">
-                        <td>
+                        <td class="phase-col">
                             <div class="phase-select-cell">
                                 <el-select size="mini" v-model="item.phase.value" placeholder="Phase"><el-option label="A" value="A"></el-option><el-option label="B" value="B"></el-option><el-option label="C" value="C"></el-option></el-select>
                                 <div
@@ -52,10 +52,10 @@
                             </div>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" number="positive" v-model="item.i_test.value"></el-input>
+                            <el-input :measurement="item.i_test" size="mini" type="text" number="positive" v-model="item.i_test.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" type="text" number="positive"
+                            <el-input :measurement="item.contact_resistance" size="mini" type="text" number="positive"
                                 v-model="item.contact_resistance.value"></el-input>
                         </td>
                         <td>
@@ -86,7 +86,7 @@
             <br />
             <div class="table-scroll"><table class="table-strip-input-data test-table" style="width: 100%; font-size: 12px;">
                 <thead class="test">
-                    <th>Phase</th>
+                    <th class="phase-col">Phase</th>
                     <th>Interrupter no.</th>
                     <th>I test (A)</th>
                     <th>Contact resistance (&#181;&#8486;)</th>
@@ -95,7 +95,7 @@
                 </thead>
                 <tbody>
                     <tr v-for="(item, index) in testData.table.table1" :key="index">
-                        <td v-if="index % interruptersPerPhase === 0"
+                        <td class="phase-col" v-if="index % interruptersPerPhase === 0"
                             :rowspan="interruptersPerPhase">
                             <div class="phase-select-cell">
                                 <el-select size="mini" v-model="item.phase.value" placeholder="Phase"><el-option label="A" value="A"></el-option><el-option label="B" value="B"></el-option><el-option label="C" value="C"></el-option></el-select>
@@ -105,13 +105,13 @@
                             </div>
                         </td>
                         <td>
-                            <el-input size="mini" disabled v-model="item.interrupter.value"></el-input>
+                            <el-input :measurement="item.interrupter" size="mini" disabled v-model="item.interrupter.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" v-model="item.i_test.value"></el-input>
+                            <el-input :measurement="item.i_test" size="mini" v-model="item.i_test.value"></el-input>
                         </td>
                         <td>
-                            <el-input size="mini" v-model="item.contact_resistance.value"></el-input>
+                            <el-input :measurement="item.contact_resistance" size="mini" v-model="item.contact_resistance.value"></el-input>
                         </td>
                         <td>
                             <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -148,21 +148,21 @@
             <el-form size="small" label-position="left" label-width="120px">
                 <template v-if="assetData.assessmentLimits.limits === 'Absolute'">
                     <el-form-item label="R min (μΩ)">
-                        <el-input type="text" number="positive"
+                        <el-input :measurement="assetData.assessmentLimits.contact_resistance.abs.r_min" type="text" number="positive"
                             v-model="assetData.assessmentLimits.contact_resistance.abs.r_min.value" />
                     </el-form-item>
                     <el-form-item label="R max (μΩ)">
-                        <el-input type="text" number="positive"
+                        <el-input :measurement="assetData.assessmentLimits.contact_resistance.abs.r_max" type="text" number="positive"
                             v-model="assetData.assessmentLimits.contact_resistance.abs.r_max.value" />
                     </el-form-item>
                 </template>
                 <template v-else>
                     <el-form-item label="R ref (μΩ)">
-                        <el-input type="text" number="positive"
+                        <el-input :measurement="assetData.assessmentLimits.contact_resistance.rel.r_ref" type="text" number="positive"
                             v-model="assetData.assessmentLimits.contact_resistance.rel.r_ref.value" />
                     </el-form-item>
                     <el-form-item label="R dev (μΩ)">
-                        <el-input type="text" number="positive"
+                        <el-input :measurement="assetData.assessmentLimits.contact_resistance.rel.r_dev" type="text" number="positive"
                             v-model="assetData.assessmentLimits.contact_resistance.rel.r_dev.value" />
                     </el-form-item>
                 </template>

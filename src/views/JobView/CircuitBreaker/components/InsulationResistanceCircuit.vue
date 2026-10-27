@@ -75,11 +75,11 @@
                         </el-select>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive"
+                        <el-input :measurement="item.test_voltage" size="mini" type="text" number="positive"
                             v-model="item.test_voltage.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.r60s.value"></el-input>
+                        <el-input :measurement="item.r60s" size="mini" type="text" number="positive" v-model="item.r60s.value"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">

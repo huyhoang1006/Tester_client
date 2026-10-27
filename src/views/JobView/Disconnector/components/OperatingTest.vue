@@ -39,8 +39,8 @@
             </thead>
             <tbody>
                 <tr v-for="(item, index) in testData.table.table1" :key="index">
-                    <td><el-input size="mini" type="text" v-model="item.measurement.value" v-if="item.measurement"/></td>
-                    <td><el-input size="mini" type="text" number="positive" v-model="item.working_time.value" v-if="item.working_time"/></td>
+                    <td><el-input :measurement="item.measurement" size="mini" type="text" v-model="item.measurement.value" v-if="item.measurement"/></td>
+                    <td><el-input :measurement="item.working_time" size="mini" type="text" number="positive" v-model="item.working_time.value" v-if="item.working_time"/></td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value" v-if="item.assessment">
                             <el-option value="Pass"><i class="fa-solid fa-square-check pass"></i> Pass</el-option>

@@ -1,4 +1,5 @@
 import Vue from "vue"
+import { displaySerialNumber } from '@/utils/unknownSerial'
 import { startLoading } from '@/utils/loading'
 import * as RotatingMapping from '@/views/Mapping/RotatingMachine/index'
 export default {
@@ -86,7 +87,7 @@ export default {
                                 const newRow = {
                                     mrid: assetData.mrid,
                                     apparatus_id: apparatusId,
-                                    name: apparatusId || assetData.serial_number || 'Unnamed Rotating Machine',
+                                    name: apparatusId || displaySerialNumber(assetData.serial_number) || 'Unnamed Rotating Machine',
                                     serial_number: assetData.serial_number,
                                     parentId: this.parentOrganization.mrid,
                                     parentName: this.parentOrganization.name,

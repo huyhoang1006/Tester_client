@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import { displaySerialNumber } from '@/utils/unknownSerial'
 import * as demoAPI from '@/api/demo'
 import * as jobAPI from '@/api/demo/Job.js'
 
@@ -247,6 +248,12 @@ export default {
                         }
                     }
 
+                    newRows.forEach((row) => {
+                        if (row.mode === 'asset') {
+                            row.name = displaySerialNumber(row.name || row.serial_number)
+                            row.aliasName = displaySerialNumber(row.aliasName || row.name)
+                        }
+                    })
                     Vue.set(node, 'childrenLoadError', failed)
                     Vue.set(node, 'children', newRows)
                 } catch (error) {

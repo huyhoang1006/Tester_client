@@ -1,4 +1,5 @@
 import Vue from "vue"
+import { displaySerialNumber } from '@/utils/unknownSerial'
 import { startLoading } from '@/utils/loading'
 import * as TransformerMapping from '@/views/Mapping/Transformer/index'
 
@@ -89,7 +90,7 @@ export default {
                             const newRow = {
                                 mrid: data.asset.mrid,
                                 apparatus_id: apparatusId,
-                                name: apparatusId || data.asset.serial_number || 'Unnamed Transformer',
+                                name: apparatusId || displaySerialNumber(data.asset.serial_number) || 'Unnamed Transformer',
                                 serial_number: data.asset.serial_number,
                                 parentId: this.clientSlide ? this.parentOrganization.mrid : this.parentOrganization.id,
                                 parentName: this.parentOrganization.name,

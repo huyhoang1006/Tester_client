@@ -42,7 +42,7 @@
             <tbody>
                 <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td>
-                        <el-input size="mini" type="text" v-model="item.name.value"></el-input>
+                        <el-input :measurement="item.name" size="mini" type="text" v-model="item.name.value"></el-input>
                     </td>
                     <td>
                         <el-input size="mini" type="text" :value="uprDisplay(index)" readonly></el-input>
@@ -51,11 +51,11 @@
                         <el-input size="mini" type="text" :value="usrDisplay(index)" readonly></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.ratio_meas.value"
+                        <el-input :measurement="item.ratio_meas" size="mini" type="text" number="positive" v-model="item.ratio_meas.value"
                             @input="calcRatioDev(item, index)"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.ratio_dev.value" readonly></el-input>
+                        <el-input :measurement="item.ratio_dev" size="mini" type="text" v-model="item.ratio_dev.value" readonly></el-input>
                     </td>
                     <td>
                         <el-select size="mini" v-model="item.polarity.value">

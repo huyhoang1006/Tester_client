@@ -28,13 +28,13 @@
             <div class="settings-grid">
                 <div class="settings-field">
                     <div class="settings-label">Frequency</div>
-                    <el-input size="mini" type="text" number="positive" v-model="vlfFrequency.value">
+                    <el-input :measurement="vlfFrequency" size="mini" type="text" number="positive" v-model="vlfFrequency.value">
                         <template slot="append">Hz</template>
                     </el-input>
                 </div>
                 <div class="settings-field">
                     <div class="settings-label">Test duration</div>
-                    <el-input size="mini" type="text" number="positive" v-model="vlfTestDuration.value">
+                    <el-input :measurement="vlfTestDuration" size="mini" type="text" number="positive" v-model="vlfTestDuration.value">
                         <template slot="append">min</template>
                     </el-input>
                 </div>
@@ -95,28 +95,28 @@
                         {{ index / 3 + 1 }}
                     </td>
                     <td v-if="index % 3 == 0" rowspan="3">
-                        <el-input size="mini" type="text" v-model="item.measurement.value"></el-input>
+                        <el-input :measurement="item.measurement" size="mini" type="text" v-model="item.measurement.value"></el-input>
                     </td>
                     <td>
                         {{ item.test_voltage_label && item.test_voltage_label.value }} U<sub>0</sub>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.test_voltage.value"></el-input>
+                        <el-input :measurement="item.test_voltage" size="mini" type="text" number="positive" v-model="item.test_voltage.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.capacitance.value"></el-input>
+                        <el-input :measurement="item.capacitance" size="mini" type="text" number="positive" v-model="item.capacitance.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.mtd.value"></el-input>
+                        <el-input :measurement="item.mtd" size="mini" type="text" number="positive" v-model="item.mtd.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.delta_td_each_step.value"></el-input>
+                        <el-input :measurement="item.delta_td_each_step" size="mini" type="text" number="positive" v-model="item.delta_td_each_step.value"></el-input>
                     </td>
                     <td v-if="index % 3 == 0" rowspan="3">
-                        <el-input size="mini" type="text" number="positive" v-model="item.tan_delta_dtd.value"></el-input>
+                        <el-input :measurement="item.tan_delta_dtd" size="mini" type="text" number="positive" v-model="item.tan_delta_dtd.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.tan_delta_tdts.value"></el-input>
+                        <el-input :measurement="item.tan_delta_tdts" size="mini" type="text" number="positive" v-model="item.tan_delta_tdts.value"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">

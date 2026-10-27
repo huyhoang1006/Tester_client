@@ -44,7 +44,7 @@
                 <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td>
                         <div style="display: flex;width: 100%;">
-                            <el-input style="width: 100x;" size="mini" type="text" v-model="item.measurement.value"
+                            <el-input :measurement="item.measurement" style="width: 100x;" size="mini" type="text" v-model="item.measurement.value"
                                 v-if="item.measurement"></el-input>
                             <div
                                 :class="{ colorTableRed: index % 3 == 0, colorTableYellow: index % 3 == 1, colorTableBlue: index % 3 == 2 }">
@@ -52,10 +52,10 @@
                         </div>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.i_test.value" v-if="item.i_test"></el-input>
+                        <el-input :measurement="item.i_test" size="mini" type="text" number="positive" v-model="item.i_test.value" v-if="item.i_test"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.contact_resistance.value"
+                        <el-input :measurement="item.contact_resistance" size="mini" type="text" number="positive" v-model="item.contact_resistance.value"
                             v-if="item.contact_resistance"></el-input>
                     </td>
                     <td>

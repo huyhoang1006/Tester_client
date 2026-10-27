@@ -41,17 +41,17 @@
                         </div>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" disabled v-model="item.trip_coil.value"></el-input>
+                        <el-input :measurement="item.trip_coil" size="mini" type="text" number="positive" disabled v-model="item.trip_coil.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" disabled v-model="item.interrupter.value"></el-input>
+                        <el-input :measurement="item.interrupter" size="mini" type="text" number="positive" disabled v-model="item.interrupter.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive"
+                        <el-input :measurement="item.opening_time" size="mini" type="text" number="positive"
                             v-model="item.opening_time.value" @input="calculateTimingSynchronism"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive"
+                        <el-input :measurement="item.opening_sync_between_phase" size="mini" type="text" number="positive"
                             v-model="item.opening_sync_between_phase.value" readonly></el-input>
                     </td>
                     <td>

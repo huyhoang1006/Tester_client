@@ -30,6 +30,7 @@ export default {
     props: {
         value: [String, Number],
         number: [String, Boolean], // Hỗ trợ: 'positive', 'negative', hoặc true/tồn tại
+        measurement: { default: null },
         text: [String, Boolean],
         type: String
     },
@@ -47,6 +48,15 @@ export default {
     },
 
     methods: {
+        normalizeAnalogDraft(value) {
+            const candidate = String(value).replace(/,/g, '.')
+            const validDraft = /^[-+]?(?:(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d*)?|\.)?$/
+            if (validDraft.test(candidate) && (Number.isFinite(Number(candidate)) ||
+                /[eE][-+]?$/.test(candidate) || /^[-+.]$/.test(candidate) || /^[-+]?\.$/.test(candidate))) {
+                return candidate
+            }
+            return this.value === null || this.value === undefined ? '' : String(this.value)
+        },
         roundToFourDecimals(value) {
             const isNumberInput = this.number !== undefined
                 && this.number !== false
@@ -76,7 +86,10 @@ export default {
             let strVal = val === null || val === undefined ? '' : String(val)
             let newVal = strVal
 
-            if (this.text !== undefined && this.text !== false) {
+            if (this.measurement && this.measurement.type === 'analog'
+                && (this.number === undefined || this.number === false)) {
+                newVal = this.normalizeAnalogDraft(strVal)
+            } else if (this.text !== undefined && this.text !== false) {
                 newVal = newVal.replace(/[^a-zA-ZÀ-ỹđĐ.,\s]/g, '')
             } else if (this.number === 'year') {
                 newVal = newVal.replace(/[^\d]/g, '')

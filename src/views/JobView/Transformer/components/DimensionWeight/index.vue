@@ -27,13 +27,13 @@
             </thead>
             <tbody>
                 <tr v-for="(item, index) in testData.table.table1" :key="index">
-                    <td><el-input size="mini" type="text" number="positive" v-model="item.a.value"></el-input></td>
-                    <td><el-input size="mini" type="text" number="positive" v-model="item.b.value"></el-input></td>
-                    <td><el-input size="mini" type="text" number="positive" v-model="item.c.value"></el-input></td>
-                    <td><el-input size="mini" type="text" number="positive" v-model="item.n.value"></el-input></td>
-                    <td><el-input size="mini" type="text" number="positive" v-model="item.oil.value"></el-input></td>
-                    <td><el-input size="mini" type="text" number="positive" v-model="item.active_part.value"></el-input></td>
-                    <td><el-input size="mini" type="text" number="positive" v-model="item.total.value"></el-input></td>
+                    <td><el-input :measurement="item.a" size="mini" type="text" number="positive" v-model="item.a.value"></el-input></td>
+                    <td><el-input :measurement="item.b" size="mini" type="text" number="positive" v-model="item.b.value"></el-input></td>
+                    <td><el-input :measurement="item.c" size="mini" type="text" number="positive" v-model="item.c.value"></el-input></td>
+                    <td><el-input :measurement="item.n" size="mini" type="text" number="positive" v-model="item.n.value"></el-input></td>
+                    <td><el-input :measurement="item.oil" size="mini" type="text" number="positive" v-model="item.oil.value"></el-input></td>
+                    <td><el-input :measurement="item.active_part" size="mini" type="text" number="positive" v-model="item.active_part.value"></el-input></td>
+                    <td><el-input :measurement="item.total" size="mini" type="text" number="positive" v-model="item.total.value"></el-input></td>
                 </tr>
             </tbody>
         </table>

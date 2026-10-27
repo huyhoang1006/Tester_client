@@ -33,11 +33,11 @@
                         {{ index + 1 }}
                     </td>
                     <td>
-                        <el-input size="mini" style="width: 100px;" type="text" number="positive" disabled
+                        <el-input :measurement="item.trip_coil_no" size="mini" style="width: 100px;" type="text" number="positive" disabled
                             v-model="item.trip_coil_no.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive"
+                        <el-input :measurement="item.trip_current" size="mini" type="text" number="positive"
                             v-model="item.trip_current.value"></el-input>
                     </td>
                     <td>
@@ -84,21 +84,21 @@
             <el-form size="small" label-position="left" label-width="160px">
                 <template v-if="assetData.assessmentLimits.limits === 'Absolute'">
                     <el-form-item label="Min trip current (A)">
-                        <el-input type="text" number="positive"
+                        <el-input :measurement="assetData.assessmentLimits.overcurrent_release.abs.oc_replay_trip_current.min" type="text" number="positive"
                             v-model="assetData.assessmentLimits.overcurrent_release.abs.oc_replay_trip_current.min.value" />
                     </el-form-item>
                     <el-form-item label="Max trip current (A)">
-                        <el-input type="text" number="positive"
+                        <el-input :measurement="assetData.assessmentLimits.overcurrent_release.abs.oc_replay_trip_current.max" type="text" number="positive"
                             v-model="assetData.assessmentLimits.overcurrent_release.abs.oc_replay_trip_current.max.value" />
                     </el-form-item>
                 </template>
                 <template v-else>
                     <el-form-item label="Ref trip current (A)">
-                        <el-input type="text" number="positive"
+                        <el-input :measurement="assetData.assessmentLimits.overcurrent_release.rel.oc_replay_trip_current.ref" type="text" number="positive"
                             v-model="assetData.assessmentLimits.overcurrent_release.rel.oc_replay_trip_current.ref.value" />
                     </el-form-item>
                     <el-form-item label="Dev trip current (A)">
-                        <el-input type="text" number="positive"
+                        <el-input :measurement="assetData.assessmentLimits.overcurrent_release.rel.oc_replay_trip_current.dev" type="text" number="positive"
                             v-model="assetData.assessmentLimits.overcurrent_release.rel.oc_replay_trip_current.dev.value" />
                     </el-form-item>
                 </template>

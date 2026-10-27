@@ -33,11 +33,11 @@
                         {{ index + 1 }}
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive"
+                        <el-input :measurement="item.trip_coil_no" size="mini" type="text" number="positive"
                             disabled v-model="item.trip_coil_no.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.r_meas.value"></el-input>
+                        <el-input :measurement="item.r_meas" size="mini" type="text" number="positive" v-model="item.r_meas.value"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -83,25 +83,25 @@
             <el-form size="small" label-position="left" label-width="140px">
                 <template v-if="assetData.assessmentLimits.limits === 'Absolute'">
                     <el-form-item label="Minimum (Ω)">
-                        <el-input type="text" number="positive"
+                        <el-input :measurement="assetData.assessmentLimits.coil_characteristics.abs.trip_coil_resistance.min" type="text" number="positive"
                             v-model="assetData.assessmentLimits.coil_characteristics.abs.trip_coil_resistance.min.value" />
                     </el-form-item>
                     <el-form-item label="Maximum (Ω)">
-                        <el-input type="text" number="positive"
+                        <el-input :measurement="assetData.assessmentLimits.coil_characteristics.abs.trip_coil_resistance.max" type="text" number="positive"
                             v-model="assetData.assessmentLimits.coil_characteristics.abs.trip_coil_resistance.max.value" />
                     </el-form-item>
                 </template>
                 <template v-else>
                     <el-form-item label="Reference (Ω)">
-                        <el-input type="text" number="positive"
+                        <el-input :measurement="assetData.assessmentLimits.coil_characteristics.rel.trip_coil_resistance.ref" type="text" number="positive"
                             v-model="assetData.assessmentLimits.coil_characteristics.rel.trip_coil_resistance.ref.value" />
                     </el-form-item>
                     <el-form-item label="- Deviation (Ω)">
-                        <el-input type="text" number="positive"
+                        <el-input :measurement="assetData.assessmentLimits.coil_characteristics.rel.trip_coil_resistance.minus_dev" type="text" number="positive"
                             v-model="assetData.assessmentLimits.coil_characteristics.rel.trip_coil_resistance.minus_dev.value" />
                     </el-form-item>
                     <el-form-item label="+ Deviation (Ω)">
-                        <el-input type="text" number="positive"
+                        <el-input :measurement="assetData.assessmentLimits.coil_characteristics.rel.trip_coil_resistance.plus_dev" type="text" number="positive"
                             v-model="assetData.assessmentLimits.coil_characteristics.rel.trip_coil_resistance.plus_dev.value" />
                     </el-form-item>
                 </template>

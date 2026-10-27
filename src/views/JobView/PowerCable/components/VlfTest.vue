@@ -28,13 +28,13 @@
             <div class="settings-grid">
                 <div class="settings-field">
                     <div class="settings-label">Frequency</div>
-                    <el-input size="mini" type="text" number="positive" v-model="vlfFrequency.value">
+                    <el-input :measurement="vlfFrequency" size="mini" type="text" number="positive" v-model="vlfFrequency.value">
                         <template slot="append">Hz</template>
                     </el-input>
                 </div>
                 <div class="settings-field">
                     <div class="settings-label">Test duration</div>
-                    <el-input size="mini" type="text" number="positive" v-model="vlfTestDuration.value">
+                    <el-input :measurement="vlfTestDuration" size="mini" type="text" number="positive" v-model="vlfTestDuration.value">
                         <template slot="append">min</template>
                     </el-input>
                 </div>
@@ -85,13 +85,13 @@
                         {{ index + 1 }}
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.measurement.value"></el-input>
+                        <el-input :measurement="item.measurement" size="mini" type="text" v-model="item.measurement.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.test_voltage.value"></el-input>
+                        <el-input :measurement="item.test_voltage" size="mini" type="text" number="positive" v-model="item.test_voltage.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.leakage_current.value"></el-input>
+                        <el-input :measurement="item.leakage_current" size="mini" type="text" number="positive" v-model="item.leakage_current.value"></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">

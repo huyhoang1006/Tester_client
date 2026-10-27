@@ -25,7 +25,7 @@
         <table class="table-strip-input-data test-table">
             <thead>
                 <tr>
-                    <th class="no-col">Tap</th>
+                    <th class="tap-col">Tap</th>
                     <th class="phase-col">Phase</th>
                     <th>I out</th>
                     <th>Watt losses</th>
@@ -37,8 +37,8 @@
             </thead>
             <tbody>
                 <tr v-for="(item, index) in testData.table.table1" :key="index">
-                    <td>{{ item.tap.value }}</td>
-                    <td>
+                    <td class="tap-col">{{ item.tap.value }}</td>
+                    <td class="phase-col">
                         <div class="col-phase">
                             <div class="phase">
                                 <el-select size="mini" v-model="item.phase.value" placeholder="Phase"><el-option label="A" value="A"></el-option><el-option label="B" value="B"></el-option><el-option label="C" value="C"></el-option></el-select>
@@ -49,19 +49,19 @@
                         </div>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.i_out.value" @input="computeFields"><template
+                        <el-input :measurement="item.i_out" size="mini" type="text" number="positive" v-model="item.i_out.value" @input="computeFields"><template
                                 slot="append">mA</template>
                         </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.watt_losses.value"><template
+                        <el-input :measurement="item.watt_losses" size="mini" type="text" number="positive" v-model="item.watt_losses.value"><template
                                 slot="append">W</template> </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.i_ref.value" @input="computeFields"></el-input>
+                        <el-input :measurement="item.i_ref" size="mini" type="text" number="positive" v-model="item.i_ref.value" @input="computeFields"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.i_dev.value" readonly></el-input>
+                        <el-input :measurement="item.i_dev" size="mini" type="text" v-model="item.i_dev.value" readonly></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -102,36 +102,36 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>Dev (%) ≤ <el-input size="mini" class="w-100px"
+                        <td>Dev (%) ≤ <el-input :measurement="conditionIndicatorSetting.good.dev_per[0]" size="mini" class="w-100px"
                                 v-model="conditionIndicatorSetting.good.dev_per[0].value"></el-input></td>
                         <td class="good">Good</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.good.score.value"></el-input></td>
+                        <td><el-input :measurement="conditionIndicatorSetting.good.score" size="mini" v-model="conditionIndicatorSetting.good.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            <el-input size="mini" class="w-100px"
+                            <el-input :measurement="conditionIndicatorSetting.fair.dev_per[0]" size="mini" class="w-100px"
                                 v-model="conditionIndicatorSetting.fair.dev_per[0].value"></el-input> &lt; Dev (%) ≤
-                            <el-input size="mini" class="w-100px"
+                            <el-input :measurement="conditionIndicatorSetting.fair.dev_per[1]" size="mini" class="w-100px"
                                 v-model="conditionIndicatorSetting.fair.dev_per[1].value"></el-input>
                         </td>
                         <td class="fair">Fair</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.fair.score.value"></el-input></td>
+                        <td><el-input :measurement="conditionIndicatorSetting.fair.score" size="mini" v-model="conditionIndicatorSetting.fair.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            <el-input size="mini" class="w-100px"
+                            <el-input :measurement="conditionIndicatorSetting.poor.dev_per[0]" size="mini" class="w-100px"
                                 v-model="conditionIndicatorSetting.poor.dev_per[0].value"></el-input> &lt; Dev (%) ≤
-                            <el-input size="mini" class="w-100px"
+                            <el-input :measurement="conditionIndicatorSetting.poor.dev_per[1]" size="mini" class="w-100px"
                                 v-model="conditionIndicatorSetting.poor.dev_per[1].value"></el-input>
                         </td>
                         <td class="poor">Poor</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.poor.score.value"></el-input></td>
+                        <td><el-input :measurement="conditionIndicatorSetting.poor.score" size="mini" v-model="conditionIndicatorSetting.poor.score.value"></el-input></td>
                     </tr>
                     <tr>
-                        <td>Dev (%) > <el-input size="mini" class="w-100px"
+                        <td>Dev (%) > <el-input :measurement="conditionIndicatorSetting.bad.dev_per[1]" size="mini" class="w-100px"
                                 v-model="conditionIndicatorSetting.bad.dev_per[1].value"></el-input></td>
                         <td class="bad">Bad</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.bad.score.value"></el-input></td>
+                        <td><el-input :measurement="conditionIndicatorSetting.bad.score" size="mini" v-model="conditionIndicatorSetting.bad.score.value"></el-input></td>
                     </tr>
                 </tbody>
             </table>

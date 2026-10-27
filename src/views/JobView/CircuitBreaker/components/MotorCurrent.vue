@@ -34,18 +34,18 @@
             <tbody>
                 <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td>
-                        <el-input size="mini" type="text" number="positive"
+                        <el-input :measurement="item.inrush_current" size="mini" type="text" number="positive"
                             v-model="item.inrush_current.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.charging.value"></el-input>
+                        <el-input :measurement="item.charging" size="mini" type="text" number="positive" v-model="item.charging.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive"
+                        <el-input :measurement="item.charging_current" size="mini" type="text" number="positive"
                             v-model="item.charging_current.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive"
+                        <el-input :measurement="item.mini_voltage" size="mini" type="text" number="positive"
                             v-model="item.mini_voltage.value"></el-input>
                     </td>
                     <td>
@@ -109,13 +109,13 @@
                         <tbody>
                             <tr v-for="item in motorCharacteristics" :key="item.key">
                                 <td>{{ item.label }}</td>
-                                <td><el-input size="mini" type="text"
+                                <td><el-input :measurement="assetData.assessmentLimits.motor_characteristics.abs[item.key].min" size="mini" type="text"
                                         number="positive"
                                         v-model="assetData.assessmentLimits.motor_characteristics.abs[item.key].min.value">
                                         <template slot="append">{{ item.unit }}</template>
                                     </el-input>
                                 </td>
-                                <td><el-input size="mini" type="text"
+                                <td><el-input :measurement="assetData.assessmentLimits.motor_characteristics.abs[item.key].max" size="mini" type="text"
                                         number="positive"
                                         v-model="assetData.assessmentLimits.motor_characteristics.abs[item.key].max.value">
                                         <template slot="append">{{ item.unit }}</template>
@@ -135,13 +135,13 @@
                         <tbody>
                             <tr v-for="item in motorCharacteristics" :key="item.key">
                                 <td>{{ item.label }}</td>
-                                <td><el-input size="mini" type="text"
+                                <td><el-input :measurement="assetData.assessmentLimits.motor_characteristics.rel[item.key].ref" size="mini" type="text"
                                         number="positive"
                                         v-model="assetData.assessmentLimits.motor_characteristics.rel[item.key].ref.value">
                                         <template slot="append">{{ item.unit }}</template>
                                     </el-input>
                                 </td>
-                                <td><el-input size="mini" type="text"
+                                <td><el-input :measurement="assetData.assessmentLimits.motor_characteristics.rel[item.key].dev" size="mini" type="text"
                                         number="positive"
                                         v-model="assetData.assessmentLimits.motor_characteristics.rel[item.key].dev.value">
                                         <template slot="append">{{ item.unit }}</template>

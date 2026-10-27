@@ -22,7 +22,7 @@
         <table class="table-strip-input-data test-table">
             <thead>
                 <tr>
-                    <th class="no-col" v-if="assetData.tap_changers.winding === $constant.SEC">Tap</th>
+                    <th class="tap-col" v-if="assetData.tap_changers.winding === $constant.SEC">Tap</th>
                     <th class="phase-col">Name</th>
                     <th>R meas</th>
                     <th>R ref</th>
@@ -36,8 +36,8 @@
             </thead>
             <tbody>
                 <tr v-for="(item, index) in testData.table.table1" :key="index">
-                    <td v-if="assetData.tap_changers.winding === $constant.SEC">{{ item.tap.value }}</td>
-                    <td style="width: 100px">
+                    <td class="tap-col" v-if="assetData.tap_changers.winding === $constant.SEC">{{ item.tap.value }}</td>
+                    <td class="phase-col">
                         <div class="col-phase">
                             <div class="phase">
                                 <el-select size="mini" v-model="item.name.value" placeholder="Phase">
@@ -52,23 +52,23 @@
                         </div>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.r_meas.value" @input="computeFields"><template
+                        <el-input :measurement="item.r_meas" size="mini" type="text" number="positive" v-model="item.r_meas.value" @input="computeFields"><template
                                 slot="append">Ω</template></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.r_ref.value" @input="computeFields"><template
+                        <el-input :measurement="item.r_ref" size="mini" type="text" number="positive" v-model="item.r_ref.value" @input="computeFields"><template
                                 slot="append">Ω</template></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.r_corr.value"><template
+                        <el-input :measurement="item.r_corr" size="mini" type="text" number="positive" v-model="item.r_corr.value"><template
                                 slot="append">Ω</template></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.dev_r_ref.value" readonly></el-input>
+                        <el-input :measurement="item.dev_r_ref" size="mini" type="text" v-model="item.dev_r_ref.value" readonly></el-input>
                     </td>
                     <template v-if="index % 3 == 0 && assetData.tap_changers.winding === $constant.SEC">
                         <td rowspan="3">
-                            <el-input size="mini" type="text" v-model="item.dev_phase.value" readonly></el-input>
+                            <el-input :measurement="item.dev_phase" size="mini" type="text" v-model="item.dev_phase.value" readonly></el-input>
                         </td>
 
                         <!-- <td rowspan="3">
@@ -77,7 +77,7 @@
                     </template>
                     <template v-else-if="index % 3 == 0 && assetData.tap_changers.winding !== $constant.SEC">
                         <td rowspan="3">
-                            <el-input size="mini" type="text" v-model="item.dev_phase.value" readonly></el-input>
+                            <el-input :measurement="item.dev_phase" size="mini" type="text" v-model="item.dev_phase.value" readonly></el-input>
                         </td>
                     </template>
                     <td>
@@ -151,44 +151,44 @@
                     <tr>
                         <td>
                             % Error between phase or Error with R ref % ≤
-                            <el-input size="mini" class="size"
+                            <el-input :measurement="conditionIndicatorSetting.good.error_between_phase[0]" size="mini" class="size"
                                 v-model="conditionIndicatorSetting.good.error_between_phase[0].value"></el-input>
                         </td>
                         <td class="Good">Good</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.good.score.value"></el-input></td>
+                        <td><el-input :measurement="conditionIndicatorSetting.good.score" size="mini" v-model="conditionIndicatorSetting.good.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            <el-input size="mini" class="size"
+                            <el-input :measurement="conditionIndicatorSetting.fair.error_between_phase[0]" size="mini" class="size"
                                 v-model="conditionIndicatorSetting.fair.error_between_phase[0].value"></el-input> &lt; %
                             Error
                             between phase or Error with R ref % ≤
-                            <el-input size="mini" class="size"
+                            <el-input :measurement="conditionIndicatorSetting.fair.error_between_phase[1]" size="mini" class="size"
                                 v-model="conditionIndicatorSetting.fair.error_between_phase[1].value"></el-input>
                         </td>
                         <td class="Fair">Fair</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.fair.score.value"></el-input></td>
+                        <td><el-input :measurement="conditionIndicatorSetting.fair.score" size="mini" v-model="conditionIndicatorSetting.fair.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            <el-input size="mini" class="size"
+                            <el-input :measurement="conditionIndicatorSetting.poor.error_between_phase[0]" size="mini" class="size"
                                 v-model="conditionIndicatorSetting.poor.error_between_phase[0].value"></el-input> &lt; %
                             Error
                             between phase or Error with R ref % ≤
-                            <el-input size="mini" class="size"
+                            <el-input :measurement="conditionIndicatorSetting.poor.error_between_phase[1]" size="mini" class="size"
                                 v-model="conditionIndicatorSetting.poor.error_between_phase[1].value"></el-input>
                         </td>
                         <td class="Poor">Poor</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.poor.score.value"></el-input></td>
+                        <td><el-input :measurement="conditionIndicatorSetting.poor.score" size="mini" v-model="conditionIndicatorSetting.poor.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
                             % Error between phase or Error with R ref % >
-                            <el-input size="mini" class="size"
+                            <el-input :measurement="conditionIndicatorSetting.bad.error_between_phase[1]" size="mini" class="size"
                                 v-model="conditionIndicatorSetting.bad.error_between_phase[1].value"></el-input>
                         </td>
                         <td class="Bad">Bad</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.bad.score.value"></el-input></td>
+                        <td><el-input :measurement="conditionIndicatorSetting.bad.score" size="mini" v-model="conditionIndicatorSetting.bad.score.value"></el-input></td>
                     </tr>
                 </tbody>
             </table>

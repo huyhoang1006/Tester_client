@@ -49,7 +49,7 @@
                     <td>{{ index + 1 }}</td>
                     <td>
                         <div class="cell-flex">
-                        <el-input size="mini" type="text" v-model="item.measurement.value"></el-input>
+                        <el-input :measurement="item.measurement" size="mini" type="text" v-model="item.measurement.value"></el-input>
                         <div
                             :class="{ colorTableRed: index % 3 == 0, colorTableYellow: index % 3 == 1, colorTableBlue: index % 3 == 2 }">
                         </div>
@@ -67,25 +67,25 @@
                         </el-select>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.test_voltage.value"></el-input>
+                        <el-input :measurement="item.test_voltage" size="mini" type="text" number="positive" v-model="item.test_voltage.value"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.df_ref.value" @input="computeFields"></el-input>
+                        <el-input :measurement="item.df_ref" size="mini" type="text" number="positive" v-model="item.df_ref.value" @input="computeFields"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.c_ref.value" @input="computeFields"></el-input>
+                        <el-input :measurement="item.c_ref" size="mini" type="text" number="positive" v-model="item.c_ref.value" @input="computeFields"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.df_meas.value" @input="computeFields"></el-input>
+                        <el-input :measurement="item.df_meas" size="mini" type="text" number="positive" v-model="item.df_meas.value" @input="computeFields"></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.c_meas.value" @input="computeFields"></el-input>
+                        <el-input :measurement="item.c_meas" size="mini" type="text" number="positive" v-model="item.c_meas.value" @input="computeFields"></el-input>
                     </td>
                     <td>
                         <el-input size="mini" type="text" :value="derivedValue(item, 'df_change')" readonly></el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" v-model="item.delta_c_percent.value" readonly></el-input>
+                        <el-input :measurement="item.delta_c_percent" size="mini" type="text" v-model="item.delta_c_percent.value" readonly></el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -175,36 +175,36 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>DF meas ≤ <el-input size="mini" class="w-100px"
+                        <td>DF meas ≤ <el-input :measurement="conditionIndicatorDf.good.df_meas[0]" size="mini" class="w-100px"
                                 v-model="conditionIndicatorDf.good.df_meas[0].value"></el-input></td>
                         <td class="Good">Good</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorDf.good.score.value"></el-input></td>
+                        <td><el-input :measurement="conditionIndicatorDf.good.score" size="mini" v-model="conditionIndicatorDf.good.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            <el-input size="mini" class="w-100px"
+                            <el-input :measurement="conditionIndicatorDf.fair.df_meas[0]" size="mini" class="w-100px"
                                 v-model="conditionIndicatorDf.fair.df_meas[0].value"></el-input> &lt; DF meas ≤
-                            <el-input size="mini" class="w-100px"
+                            <el-input :measurement="conditionIndicatorDf.fair.df_meas[1]" size="mini" class="w-100px"
                                 v-model="conditionIndicatorDf.fair.df_meas[1].value"></el-input>
                         </td>
                         <td class="Fair">Fair</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorDf.fair.score.value"></el-input></td>
+                        <td><el-input :measurement="conditionIndicatorDf.fair.score" size="mini" v-model="conditionIndicatorDf.fair.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            <el-input size="mini" class="w-100px"
+                            <el-input :measurement="conditionIndicatorDf.poor.df_meas[0]" size="mini" class="w-100px"
                                 v-model="conditionIndicatorDf.poor.df_meas[0].value"></el-input> &lt; DF meas ≤
-                            <el-input size="mini" class="w-100px"
+                            <el-input :measurement="conditionIndicatorDf.poor.df_meas[1]" size="mini" class="w-100px"
                                 v-model="conditionIndicatorDf.poor.df_meas[1].value"></el-input>
                         </td>
                         <td class="Poor">Poor</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorDf.poor.score.value"></el-input></td>
+                        <td><el-input :measurement="conditionIndicatorDf.poor.score" size="mini" v-model="conditionIndicatorDf.poor.score.value"></el-input></td>
                     </tr>
                     <tr>
-                        <td>DF meas > <el-input size="mini" class="w-100px"
+                        <td>DF meas > <el-input :measurement="conditionIndicatorDf.bad.df_meas[1]" size="mini" class="w-100px"
                                 v-model="conditionIndicatorDf.bad.df_meas[1].value"></el-input></td>
                         <td class="Bad">Bad</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorDf.bad.score.value"></el-input></td>
+                        <td><el-input :measurement="conditionIndicatorDf.bad.score" size="mini" v-model="conditionIndicatorDf.bad.score.value"></el-input></td>
                     </tr>
                 </tbody>
             </table>
@@ -221,36 +221,36 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>ΔC cal ≤ <el-input size="mini" class="w-100px"
+                        <td>ΔC cal ≤ <el-input :measurement="conditionIndicatorC.good.tri_c_meas[0]" size="mini" class="w-100px"
                                 v-model="conditionIndicatorC.good.tri_c_meas[0].value"></el-input></td>
                         <td class="Good">Good</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorC.good.score.value"></el-input></td>
+                        <td><el-input :measurement="conditionIndicatorC.good.score" size="mini" v-model="conditionIndicatorC.good.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            <el-input size="mini" class="w-100px"
+                            <el-input :measurement="conditionIndicatorC.fair.tri_c_meas[0]" size="mini" class="w-100px"
                                 v-model="conditionIndicatorC.fair.tri_c_meas[0].value"></el-input> &lt; ΔC cal ≤
-                            <el-input size="mini" class="w-100px"
+                            <el-input :measurement="conditionIndicatorC.fair.tri_c_meas[1]" size="mini" class="w-100px"
                                 v-model="conditionIndicatorC.fair.tri_c_meas[1].value"></el-input>
                         </td>
                         <td class="Fair">Fair</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorC.fair.score.value"></el-input></td>
+                        <td><el-input :measurement="conditionIndicatorC.fair.score" size="mini" v-model="conditionIndicatorC.fair.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            <el-input size="mini" class="w-100px"
+                            <el-input :measurement="conditionIndicatorC.poor.tri_c_meas[0]" size="mini" class="w-100px"
                                 v-model="conditionIndicatorC.poor.tri_c_meas[0].value"></el-input> &lt; ΔC cal ≤
-                            <el-input size="mini" class="w-100px"
+                            <el-input :measurement="conditionIndicatorC.poor.tri_c_meas[1]" size="mini" class="w-100px"
                                 v-model="conditionIndicatorC.poor.tri_c_meas[1].value"></el-input>
                         </td>
                         <td class="Poor">Poor</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorC.poor.score.value"></el-input></td>
+                        <td><el-input :measurement="conditionIndicatorC.poor.score" size="mini" v-model="conditionIndicatorC.poor.score.value"></el-input></td>
                     </tr>
                     <tr>
-                        <td>ΔC cal > <el-input size="mini" class="w-100px"
+                        <td>ΔC cal > <el-input :measurement="conditionIndicatorC.bad.tri_c_meas[1]" size="mini" class="w-100px"
                                 v-model="conditionIndicatorC.bad.tri_c_meas[1].value"></el-input></td>
                         <td class="Bad">Bad</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorC.bad.score.value"></el-input></td>
+                        <td><el-input :measurement="conditionIndicatorC.bad.score" size="mini" v-model="conditionIndicatorC.bad.score.value"></el-input></td>
                     </tr>
                 </tbody>
             </table>

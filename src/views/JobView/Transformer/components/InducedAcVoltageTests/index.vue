@@ -53,22 +53,22 @@
             <tbody>
                 <tr v-for="(item, index) in testData.table.table1" :key="index">
                     <td>
-                        <el-input size="mini" v-model="item.applied_terminal.value"> </el-input>
+                        <el-input :measurement="item.applied_terminal" size="mini" v-model="item.applied_terminal.value"> </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.rated_voltage.value"> </el-input>
+                        <el-input :measurement="item.rated_voltage" size="mini" type="text" number="positive" v-model="item.rated_voltage.value"> </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" v-model="item.lv_terminal.value"> </el-input>
+                        <el-input :measurement="item.lv_terminal" size="mini" v-model="item.lv_terminal.value"> </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.lv_tested_voltage.value"> </el-input>
+                        <el-input :measurement="item.lv_tested_voltage" size="mini" type="text" number="positive" v-model="item.lv_tested_voltage.value"> </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" v-model="item.hv_terminal.value"> </el-input>
+                        <el-input :measurement="item.hv_terminal" size="mini" v-model="item.hv_terminal.value"> </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.hv_tested_voltage.value"> </el-input>
+                        <el-input :measurement="item.hv_tested_voltage" size="mini" type="text" number="positive" v-model="item.hv_tested_voltage.value"> </el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">

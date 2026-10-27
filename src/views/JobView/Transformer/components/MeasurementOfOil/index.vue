@@ -46,10 +46,10 @@
                         </el-select>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.electrode_gap_spacing.value"> </el-input>
+                        <el-input :measurement="item.electrode_gap_spacing" size="mini" type="text" number="positive" v-model="item.electrode_gap_spacing.value"> </el-input>
                     </td>
                     <td>
-                        <el-input size="mini" type="text" number="positive" v-model="item.result.value"> </el-input>
+                        <el-input :measurement="item.result" size="mini" type="text" number="positive" v-model="item.result.value"> </el-input>
                     </td>
                     <td>
                         <el-select class="assessment" size="mini" v-model="item.assessment.value">
@@ -120,36 +120,36 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>≥ <el-input size="mini" class="w-100px"
+                        <td>≥ <el-input :measurement="conditionIndicatorSetting.good.breakdown_voltage[1]" size="mini" class="w-100px"
                                 v-model="conditionIndicatorSetting.good.breakdown_voltage[1].value"></el-input></td>
                         <td class="Good">Good</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.good.score.value"></el-input></td>
+                        <td><el-input :measurement="conditionIndicatorSetting.good.score" size="mini" v-model="conditionIndicatorSetting.good.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            <el-input size="mini" class="w-100px"
+                            <el-input :measurement="conditionIndicatorSetting.fair.breakdown_voltage[0]" size="mini" class="w-100px"
                                 v-model="conditionIndicatorSetting.fair.breakdown_voltage[0].value"></el-input> to
-                            <el-input size="mini" class="w-100px"
+                            <el-input :measurement="conditionIndicatorSetting.fair.breakdown_voltage[1]" size="mini" class="w-100px"
                                 v-model="conditionIndicatorSetting.fair.breakdown_voltage[1].value"></el-input>
                         </td>
                         <td class="Fair">Fair</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.fair.score.value"></el-input></td>
+                        <td><el-input :measurement="conditionIndicatorSetting.fair.score" size="mini" v-model="conditionIndicatorSetting.fair.score.value"></el-input></td>
                     </tr>
                     <tr>
                         <td>
-                            <el-input size="mini" class="w-100px"
+                            <el-input :measurement="conditionIndicatorSetting.poor.breakdown_voltage[0]" size="mini" class="w-100px"
                                 v-model="conditionIndicatorSetting.poor.breakdown_voltage[0].value"></el-input> to
-                            <el-input size="mini" class="w-100px"
+                            <el-input :measurement="conditionIndicatorSetting.poor.breakdown_voltage[1]" size="mini" class="w-100px"
                                 v-model="conditionIndicatorSetting.poor.breakdown_voltage[1].value"></el-input>
                         </td>
                         <td class="Poor">Poor</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.poor.score.value"></el-input></td>
+                        <td><el-input :measurement="conditionIndicatorSetting.poor.score" size="mini" v-model="conditionIndicatorSetting.poor.score.value"></el-input></td>
                     </tr>
                     <tr>
-                        <td>&lt; <el-input size="mini" class="w-100px"
+                        <td>&lt; <el-input :measurement="conditionIndicatorSetting.bad.breakdown_voltage[0]" size="mini" class="w-100px"
                                 v-model="conditionIndicatorSetting.bad.breakdown_voltage[0].value"></el-input></td>
                         <td class="Bad">Bad</td>
-                        <td><el-input size="mini" v-model="conditionIndicatorSetting.bad.score.value"></el-input></td>
+                        <td><el-input :measurement="conditionIndicatorSetting.bad.score" size="mini" v-model="conditionIndicatorSetting.bad.score.value"></el-input></td>
                     </tr>
                 </tbody>
             </table>

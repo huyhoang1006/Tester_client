@@ -9,7 +9,7 @@
                         <colgroup>
                             <col style="width: 48px" />
                             <col style="width: 200px" />
-                            <col style="width: 150px" />
+                            <col style="width: 190px" />
                             <col style="width: 160px" />
                             <col style="width: 160px" />
                             <col style="width: 120px" />
@@ -57,7 +57,7 @@
                                     </el-select>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="item.serial_no"></el-input>
+                                    <serial-number-field v-model="item.serial_no" size="mini" compact />
                                 </td>
                                 <td>
                                     <el-select class="w-100" clearable filterable placeholder="Select" size="mini"
@@ -154,7 +154,7 @@
                         <colgroup>
                             <col style="width: 48px" />
                             <col style="width: 200px" />
-                            <col style="width: 150px" />
+                            <col style="width: 190px" />
                             <col style="width: 160px" />
                             <col style="width: 160px" />
                             <col style="width: 120px" />
@@ -202,7 +202,7 @@
                                     </el-select>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="item.serial_no"></el-input>
+                                    <serial-number-field v-model="item.serial_no" size="mini" compact />
                                 </td>
                                 <td>
                                     <el-select class="w-100" clearable filterable placeholder="Select" size="mini"
@@ -298,7 +298,7 @@
                         <colgroup>
                             <col style="width: 48px" />
                             <col style="width: 200px" />
-                            <col style="width: 150px" />
+                            <col style="width: 190px" />
                             <col style="width: 160px" />
                             <col style="width: 160px" />
                             <col style="width: 120px" />
@@ -346,7 +346,7 @@
                                     </el-select>
                                 </td>
                                 <td>
-                                    <el-input size="mini" v-model="item.serial_no"></el-input>
+                                    <serial-number-field v-model="item.serial_no" size="mini" compact />
                                 </td>
                                 <td>
                                     <el-select class="w-100" clearable filterable placeholder="Select" size="mini"
