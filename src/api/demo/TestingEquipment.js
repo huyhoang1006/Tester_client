@@ -10,8 +10,8 @@ export const getAccessories = (params = {}) => {
     return client.get('/api/testing-equipment/accessories', { params })
 }
 
-export const getTestingEquipmentById = (id) => {
-    return client.get(`/api/testing-equipment/${encodeURIComponent(toServerId(id))}`)
+export const getTestingEquipmentById = (id, config = {}) => {
+    return client.get(`/api/testing-equipment/${encodeURIComponent(toServerId(id))}`, config)
 }
 
 export const findMatchingTestingEquipment = (serial, manufacturer) => {
@@ -22,7 +22,7 @@ export const pushTestingEquipment = async (data) => {
     let id = data && (data.mrid || (data.properties && data.properties.mrid))
     if (id) {
         try {
-            await getTestingEquipmentById(id)
+            await getTestingEquipmentById(id, { suppressGlobalApiError: true })
             return client.put(`/api/testing-equipment/${encodeURIComponent(toServerId(id))}`, data)
         } catch (error) {
             if (!error.response || error.response.status !== 404) throw error

@@ -1,4 +1,5 @@
 import * as demoAPI from '@/api/demo'
+import { formatApiError } from '@/utils/apiError'
 
 export default {
     methods: {
@@ -37,7 +38,7 @@ export default {
                 }
             } catch (error) {
                 if (requestId !== this.ownerLocationRequestId) return false
-                this.$message.error('An error occurred while retrieving the list of owning organizations.')
+                if (!error.apiFailureKind) this.$message.error(formatApiError(error))
                 console.error('getOwnerLocation error:', error)
                 this.ownerServerList = []
                 return false

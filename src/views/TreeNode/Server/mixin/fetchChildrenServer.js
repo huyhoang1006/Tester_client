@@ -1,18 +1,35 @@
 import Vue from 'vue'
 import * as demoAPI from '@/api/demo'
 import * as jobAPI from '@/api/demo/Job.js'
+
+const expectRows = (rows, endpoint) => {
+    if (!Array.isArray(rows)) {
+        throw new Error(`${endpoint} returned an invalid response: expected a list of nodes.`)
+    }
+    return rows
+}
+
 export default {
     methods: {
         async fetchChildrenServer(node) {
-            if (!node.children) {
+            if (!node.children || node.childrenLoadError) {
                 try {
                     let newRows = []
+                    let failed = false
+                    const reportFailure = error => {
+                        if (error.response && error.response.status === 403) return
+                        failed = true
+                        console.error('Failed to load server tree children:', error)
+                        if (!error.apiFailureNotified && !error.apiFailureKind) {
+                            this.$message.error(error.message || 'Invalid response from server')
+                        }
+                    }
                     if (node.mode == 'organisation') {
                         // Mỗi lệnh gọi một try/catch riêng, giống các nhánh bên dưới. Trước đây hai lệnh
                         // dùng chung khối try ngoài cùng: thiếu quyền xem trạm (403) là văng ra ngoài, bỏ
                         // luôn danh sách tổ chức con vừa lấy được, node không mở ra được nữa.
                         try {
-                            const newRowsOwner = await demoAPI.getChildOrganisation(node.id)
+                            const newRowsOwner = expectRows(await demoAPI.getChildOrganisation(node.id), 'Child organisations')
                             console.log('Fetched child organisations:', newRowsOwner)
                             if (newRowsOwner && newRowsOwner.length > 0) {
                                 newRowsOwner.forEach((row) => {
@@ -34,11 +51,11 @@ export default {
                                 newRows.push(...newRowsOwner)
                             }
                         } catch (error) {
-                            console.log(error)
+                            reportFailure(error)
                         }
                         // Thiếu quyền SUBSTATION_LIST thì máy chủ trả 403: coi như không có trạm.
                         try {
-                            const newRowsSubstation = await demoAPI.getChildSubstation(node.id)
+                            const newRowsSubstation = expectRows(await demoAPI.getChildSubstation(node.id), 'Child substations')
                             console.log('Fetched child substations:', newRowsSubstation)
                             if (newRowsSubstation && newRowsSubstation.length > 0) {
                                 newRowsSubstation.forEach((row) => {
@@ -60,11 +77,11 @@ export default {
                                 newRows.push(...newRowsSubstation)
                             }
                         } catch (error) {
-                            console.log(error)
+                            reportFailure(error)
                         }
                     } else if (node.mode == 'substation') {
                         try {
-                            const newRowsBay = await demoAPI.getChildBay(node.id)
+                            const newRowsBay = expectRows(await demoAPI.getChildBay(node.id), 'Child bays')
                             console.log('Fetched child bays:', newRowsBay)
                             if (newRowsBay && newRowsBay.length > 0) {
                                 newRowsBay.forEach((row) => {
@@ -86,10 +103,10 @@ export default {
                                 newRows.push(...newRowsBay)
                             }
                         } catch (error) {
-                            console.log(error)
+                            reportFailure(error)
                         }
                         try {
-                            const newRowsVoltageLevel = await demoAPI.getVoltageLevelBySubstationId(node.id)
+                            const newRowsVoltageLevel = expectRows(await demoAPI.getVoltageLevelBySubstationId(node.id), 'Child voltage levels')
                             console.log('Fetched child voltage levels:', newRowsVoltageLevel)
                             if (newRowsVoltageLevel && newRowsVoltageLevel.length > 0) {
                                 newRowsVoltageLevel.forEach((row) => {
@@ -111,11 +128,11 @@ export default {
                                 newRows.push(...newRowsVoltageLevel)
                             }
                         } catch (error) {
-                            console.log(error)
+                            reportFailure(error)
                         }
 
                         try {
-                            const newRowsAsset = await demoAPI.getAssetByOwner(node.mrid, 'Substation')
+                            const newRowsAsset = expectRows(await demoAPI.getAssetByOwner(node.mrid, 'Substation'), 'Substation assets')
                             console.log('Fetched child assets of substation:', newRowsAsset)
                             if (newRowsAsset && newRowsAsset.length > 0) {
                                 newRowsAsset.forEach((row) => {
@@ -140,11 +157,11 @@ export default {
                                 newRows.push(...newRowsAsset)
                             }
                         } catch (error) {
-                            console.log(error)
+                            reportFailure(error)
                         }
                     } else if (node.mode == 'voltageLevel') {
                         try {
-                            const newRowsBay = await demoAPI.getBayByVoltageLevel(node.id)
+                            const newRowsBay = expectRows(await demoAPI.getBayByVoltageLevel(node.id), 'Voltage-level bays')
                             console.log('Fetched child bays of voltage level:', newRowsBay)
                             if (newRowsBay && newRowsBay.length > 0) {
                                 newRowsBay.forEach((row) => {
@@ -166,11 +183,11 @@ export default {
                                 newRows.push(...newRowsBay)
                             }
                         } catch (error) {
-                            console.log(error)
+                            reportFailure(error)
                         }
                     } else if (node.mode == 'bay') {
                         try {
-                            const newRowsAsset = await demoAPI.getAssetByOwner(node.mrid, 'Bay')
+                            const newRowsAsset = expectRows(await demoAPI.getAssetByOwner(node.mrid, 'Bay'), 'Bay assets')
                             console.log('Fetched child assets of bay:', newRowsAsset)
                             if (newRowsAsset && newRowsAsset.length > 0) {
                                 newRowsAsset.forEach((row) => {
@@ -195,12 +212,12 @@ export default {
                                 newRows.push(...newRowsAsset)
                             }
                         } catch (error) {
-                            console.log(error)
+                            reportFailure(error)
                         }
                     } else if (node.mode == 'asset') {
                         // Tests are direct asset children; hidden work containers are not tree nodes.
                         try {
-                            const tests = await jobAPI.getTestsByAsset(node.asset, node.mrid || node.id)
+                            const tests = expectRows(await jobAPI.getTestsByAsset(node.asset, node.mrid || node.id), 'Asset tests')
                             if (tests && tests.length > 0) {
                                 tests.forEach((row) => {
                                     row.id = row.mrid || row.id || ''
@@ -226,13 +243,18 @@ export default {
                                 newRows.push(...tests)
                             }
                         } catch (error) {
-                            console.log(error)
+                            reportFailure(error)
                         }
                     }
 
+                    Vue.set(node, 'childrenLoadError', failed)
                     Vue.set(node, 'children', newRows)
                 } catch (error) {
                     console.error('Lỗi khi lấy dữ liệu:', error)
+                    Vue.set(node, 'childrenLoadError', true)
+                    if (!error.apiFailureNotified && !error.apiFailureKind) {
+                        this.$message.error(error.message || 'Failed to load server tree')
+                    }
                 }
             }
         },

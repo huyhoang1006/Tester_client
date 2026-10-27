@@ -6,6 +6,7 @@ import { markRestoreAfterLogin } from '@/utils/workspaceRestore'
 import { Loading, Message } from 'element-ui'
 import { stripServerIdsDeep } from '@/utils/serverId'
 import { markAuthExpiredError } from '@/utils/authError'
+import { classifyApiError, formatApiError } from '@/utils/apiError'
 import {
     getSsoApiBase,
     getStoredAccessToken,
@@ -15,6 +16,29 @@ import {
 } from '@/utils/sso'
 
 const REFRESH_TIMEOUT_MS = 15000
+const API_NOTICE_INTERVAL_MS = 8000
+const recentApiNotices = new Map()
+
+const reportApiFailure = error => {
+    const failure = classifyApiError(error)
+    if (!failure) return
+    error.apiFailureKind = failure.kind
+    error.message = failure.message
+    if (error.config && error.config.suppressGlobalApiError && failure.kind === 'not-found') return
+
+    const config = error.config || {}
+    const key = `${failure.kind}:${config.serviceName || 'Server asset'}:${config.baseURL || client.defaults.baseURL || ''}:${failure.kind === 'not-found' ? config.url : ''}`
+    const now = Date.now()
+    if (now - (recentApiNotices.get(key) || 0) < API_NOTICE_INTERVAL_MS) return
+    if (recentApiNotices.size > 100) {
+        for (const [oldKey, time] of recentApiNotices) {
+            if (now - time >= API_NOTICE_INTERVAL_MS) recentApiNotices.delete(oldKey)
+        }
+    }
+    recentApiNotices.set(key, now)
+    error.apiFailureNotified = true
+    Message.error({ message: failure.message, showClose: true, duration: 7000 })
+}
 
 const client = axios.create({
     withCredentials: false
@@ -74,7 +98,8 @@ const refreshToken = () => {
 
     return axios.get(`${apiBase}/auth/sso/refresh-token`, {
         params: {refreshToken: refreshTokenValue},
-        timeout: REFRESH_TIMEOUT_MS
+        timeout: REFRESH_TIMEOUT_MS,
+        serviceName: 'Login server'
     }).then(response => {
         const body = response.data || {}
         if (body.code !== 1 || !body.data || !body.data.accessToken) {
@@ -130,9 +155,9 @@ const retryRequestWithFreshToken = (originalRequest, sourceError) => {
         .catch(error => {
             const authError = markAuthExpiredError(error)
             processQueue(authError, null)
-            const isTimeout = error && (error.code === 'ECONNABORTED' || /timeout/i.test(error.message || ''))
-            logoutExpiredSession(isTimeout
-                ? 'Session renewal timed out. Please sign in again.'
+            const networkFailure = classifyApiError(error)
+            logoutExpiredSession(networkFailure
+                ? `${formatApiError(error)} Please sign in again.`
                 : 'Session expired. Please sign in again.')
             return Promise.reject(authError)
         })
@@ -145,9 +170,14 @@ const retryRequestWithFreshToken = (originalRequest, sourceError) => {
 // --- 1. REQUEST INTERCEPTOR (Gửi đi) ---
 client.interceptors.request.use(
     function (config) {
+        config.serviceName = config.serviceName || 'Server asset'
         // Logic cũ: Kiểm tra server address (giữ nguyên nếu bạn cần)
         if (!store.state.serviceAddr && !(config.url || '').startsWith('http')) {
-            return Promise.reject(new Error('Server address not configured'))
+            const error = new Error('Server address not configured')
+            error.code = 'ERR_SERVER_NOT_CONFIGURED'
+            error.config = config
+            reportApiFailure(error)
+            return Promise.reject(error)
         }
 
         // --- ĐOẠN MỚI THÊM VÀO: Tự động gắn Token ---
@@ -237,12 +267,13 @@ client.interceptors.response.use(
             }
 
             // Lỗi code backend (có message)
-            if (error.response.data && error.response.data.message) {
+            if (error.response.data && error.response.data.message && error.response.status < 500 && error.response.status !== 404) {
                 console.error(error.response.data.message)
                 error.message = error.response.data.message
                 return Promise.reject(error)
             }
         }
+        reportApiFailure(error)
         return Promise.reject(error)
     }
 )

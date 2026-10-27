@@ -2,6 +2,7 @@
 import axios from 'axios'
 import client from "@/utils/client"
 import store from '@/store'
+import { formatApiError } from '@/utils/apiError'
 import {
     getSsoApiBase,
     getStoredAccessToken,
@@ -27,32 +28,40 @@ const requireSsoApiBase = () => {
     return baseUrl
 }
 
+const ssoGet = (url, config) => axios.get(url, {
+    ...config,
+    serviceName: 'Login server'
+}).then(response => response.data).catch(error => {
+    error.message = formatApiError(error)
+    throw error
+})
+
 export const getSsoLoginUrl = (redirectUri, options = {}) => {
     const params = {redirectUri}
     if (options.forceLogin) {
         params.prompt = 'login'
         params.maxAge = 0
     }
-    return axios.get(`${requireSsoApiBase()}/auth/sso/login_url`, {
+    return ssoGet(`${requireSsoApiBase()}/auth/sso/login_url`, {
         params,
         timeout: options.timeout || LOGIN_TIMEOUT_MS
-    }).then(response => response.data)
+    })
 }
 
 export const exchangeSsoCode = (code, options = {}) => {
-    return axios.get(`${requireSsoApiBase()}/auth/sso/access-token`, {
+    return ssoGet(`${requireSsoApiBase()}/auth/sso/access-token`, {
         params: {code},
         timeout: options.timeout || LOGIN_TIMEOUT_MS
-    }).then(response => response.data)
+    })
 }
 
 export const getSsoLogoutUrl = (redirectUri, options = {}) => {
     const accessToken = getStoredAccessToken()
-    return axios.get(`${requireSsoApiBase()}/auth/sso/logout_url`, {
+    return ssoGet(`${requireSsoApiBase()}/auth/sso/logout_url`, {
         params: {redirectUri},
         headers: accessToken ? {[SSO_TOKEN_HEADER]: accessToken} : {},
         timeout: options.timeout || LOGIN_TIMEOUT_MS
-    }).then(response => response.data)
+    })
 }
 
 // --- CÁC HÀM KHÁC DÙNG CLIENT (Đã tự nhận baseURL ở trên) ---

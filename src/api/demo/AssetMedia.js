@@ -15,16 +15,19 @@ const genericMediaPath = (assetType, assetId) =>
 
 const requestWithGenericFallback = async (assetType, request) => {
     try {
-        return await request(mediaPath(assetType.assetType, assetType.assetId))
+        return await request(mediaPath(assetType.assetType, assetType.assetId), true)
     } catch (error) {
-        if (!['organisation', 'substation'].includes(assetType.assetType)) throw error
+        if (!['organisation', 'substation'].includes(assetType.assetType)
+            || !error.response || error.response.status !== 404) throw error
         return request(genericMediaPath(assetType.assetType, assetType.assetId))
     }
 }
 
 export const getAssetMedia = (assetType, assetId) => requestWithGenericFallback(
     { assetType, assetId },
-    path => client.get(`/${path}`)
+    (path, fallbackCandidate) => client.get(`/${path}`, {
+        suppressGlobalApiError: fallbackCandidate && ['organisation', 'substation'].includes(assetType)
+    })
 )
 
 export const uploadAssetMedia = (assetType, assetId, formData, options = {}) => {
@@ -41,8 +44,9 @@ export const uploadAssetMedia = (assetType, assetId, formData, options = {}) => 
 
 export const downloadAssetMedia = (assetType, assetId, mediaId) => requestWithGenericFallback(
     { assetType, assetId },
-    path => client.get(`/${path}/${toServerId(mediaId)}/download`, {
+    (path, fallbackCandidate) => client.get(`/${path}/${toServerId(mediaId)}/download`, {
         responseType: 'arraybuffer',
+        suppressGlobalApiError: fallbackCandidate && ['organisation', 'substation'].includes(assetType)
     })
 )
 

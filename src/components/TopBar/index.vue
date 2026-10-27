@@ -218,6 +218,7 @@
 import { mapState } from 'vuex'
 import * as userApi from '@/api/user'
 import { createSsoRedirectUri } from '@/utils/sso'
+import { formatApiError } from '@/utils/apiError'
 
 export default {
     name: 'TopBar',
@@ -355,7 +356,10 @@ export default {
                                 }
                                 return null
                             })
-                            .catch(error => console.warn('SSO logout failed:', error))
+                            .catch(error => {
+                                console.warn('SSO logout failed:', error)
+                                this.$message.warning(formatApiError(error))
+                            })
 
                         this.$helper.afterLogout()
                         await this.$router.push({ path: '/login' })

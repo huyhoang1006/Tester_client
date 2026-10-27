@@ -42,6 +42,7 @@
 import constant from '@/utils/constant'
 import * as organisationApi from '@/api/demo'
 import { toServerId } from '@/utils/serverId'
+import { formatApiError } from '@/utils/apiError'
 
 export default {
     name: 'OrganisationTreePicker',
@@ -129,7 +130,9 @@ export default {
                 resolve(node.level === 0 || !this.ownedIds
                     ? rows : rows.filter(row => this.ownedIds.has(row.mrid)))
             } catch (error) {
-                this.$message.error('Cannot load organisations')
+                if (!this.serverMode || !error.apiFailureKind) {
+                    this.$message.error(this.serverMode ? formatApiError(error) : 'Cannot load organisations')
+                }
                 resolve([])
             } finally {
                 if (node.level === 0) this.loadingRoot = false

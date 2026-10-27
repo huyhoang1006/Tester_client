@@ -64,8 +64,9 @@ export const getAssetById = async (assetId, mode) => {
         if (mode == 'PowerCable') {
             const serverId = toServerId(assetId)
             try {
-                return await client.get(`/api/cim/power-cable/${serverId}`)
+                return await client.get(`/api/cim/power-cable/${serverId}`, { suppressGlobalApiError: true })
             } catch (error) {
+                if (!error.response || error.response.status !== 404) throw error
                 return client.get(`/api/power-cable/${serverId}`)
             }
         } else if (mode == 'SurgeArrester') {
