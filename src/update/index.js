@@ -7,6 +7,7 @@ import { entityFunc } from '@/function'
 import db from '@/function/datacontext/index'
 import { app } from 'electron'
 import { migrateLegacySfraTraces } from '@/function/cim/sfraTrace'
+import { ensureDefaultWordTemplate } from '@/ipcmain/entity/template/index'
 
 export const createRootOrganisation = async () => {
     try {
@@ -192,6 +193,11 @@ export const updateDatabase = async () => {
  */
 export const active = async () => {
     await updateDatabase()
+    try {
+        await ensureDefaultWordTemplate()
+    } catch (error) {
+        console.error('[DB] Default Word template seed failed:', error)
+    }
     await createRootOrganisation()
     await normalizeMridOnce()
 }

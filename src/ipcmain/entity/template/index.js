@@ -1,6 +1,8 @@
 'use strict'
 import { ipcMain, dialog, app } from 'electron'
 import { entityFunc } from "@/function"
+import db from '@/function/datacontext/index'
+import vcbImportConfig from '../../../../import-templates/VCB-import-config.json'
 const path = require('path')
 const fs = require('fs')
 
@@ -320,6 +322,68 @@ function decodeWordCoord(coord) {
     const pm = coord.match(/^Word!p(\d+)$/)
     if (pm) return { para: +pm[1] }
     return null
+}
+
+const DEFAULT_VCB_TEMPLATES = [
+    {
+        name: 'SBM - BB kiểm định máy cắt trung thế (VCB)',
+        key: 'default-word-import-vcb-v1',
+        file: 'VCB-import-template.docx',
+        category: 'import'
+    },
+    {
+        name: 'SBM - BB kiểm định máy cắt trung thế (VCB) - Export',
+        key: 'default-word-export-vcb-v1',
+        file: 'VCB-export-template.docx',
+        category: 'export'
+    }
+]
+
+export const ensureDefaultWordTemplate = async () => {
+    const source = isDev
+        ? path.join(__dirname, '../import-templates/VCB-import-template.docx')
+        : path.join(process.resourcesPath, 'import-templates/VCB-import-template.docx')
+
+    for (const template of DEFAULT_VCB_TEMPLATES) {
+        const seeded = await new Promise((resolve, reject) => {
+            db.get('SELECT value FROM app_settings WHERE key = ?', [template.key], (err, row) => {
+                if (err) return reject(err)
+                resolve(!!row)
+            })
+        })
+        if (seeded) continue
+
+        const existing = await entityFunc.templateFunc.getTemplateByName(template.name)
+        if (!existing.success) {
+            if (!fs.existsSync(source)) throw new Error(`Default Word template not found: ${source}`)
+
+            const target = path.join(TEMPLATE_DIR, template.file)
+            if (!fs.existsSync(target)) fs.copyFileSync(source, target)
+
+            const { cells, paras } = parseDocxContent(fs.readFileSync(target))
+            const positions = cells.concat(paras)
+            const variables = vcbImportConfig[0].map(variable => {
+                const code = variable.code
+                const coordinates = positions
+                    .filter(pos => pos.text.includes(`{${code}}`) || pos.text === code)
+                    .map(encodeWordCoord)
+                if (!coordinates.length) throw new Error(`Missing ${code} in default Word template`)
+                return { ...variable, coordinates }
+            })
+            await entityFunc.templateFunc.insertTemplate({
+                name: template.name,
+                path: target,
+                variable: JSON.stringify(variables),
+                type: 'word',
+                category: template.category
+            })
+        }
+
+        await new Promise((resolve, reject) => {
+            db.run('INSERT OR IGNORE INTO app_settings(key, value) VALUES(?, ?)',
+                [template.key, '1'], err => err ? reject(err) : resolve())
+        })
+    }
 }
 
 // ═════════════════════════════════════════════════════════════════════════════

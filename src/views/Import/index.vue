@@ -489,7 +489,16 @@ export default {
     async loadTemplates() {
       try {
         const rs = await window.electronAPI.getAllTemplatesByType(this.importType, 'import')
-        if (rs?.success) this.templateList = rs.data.map(t => ({ ...t, variable: t.variable ? JSON.parse(t.variable) : [] }))
+        if (rs?.success) {
+          this.templateList = rs.data.map(t => ({ ...t, variable: t.variable ? JSON.parse(t.variable) : [] }))
+          if (this.importType === 'word' && !this.selectedTemplateName) {
+            const defaultTemplate = this.templateList.find(t => t.name === 'SBM - BB kiểm định máy cắt trung thế (VCB)')
+            if (defaultTemplate) {
+              this.selectedTemplateName = defaultTemplate.name
+              this.onTemplateChange(defaultTemplate.name)
+            }
+          }
+        }
       } catch(e) { console.error(e) }
     },
     onTemplateChange(name) {

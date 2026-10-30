@@ -13,7 +13,10 @@ module.exports = {
                     // Runtime checks replace this with the configured service domain.
                     url: updateMetadataUrl
                 },
-                extraResources: ['./icon/**', './attachment/**', './etrc-icon/**', './template/**', './extra_binaries/**'],
+                extraResources: [
+                    './icon/**', './attachment/**', './etrc-icon/**', './template/**', './extra_binaries/**',
+                    { from: './import-templates/VCB-import-template.docx', to: 'import-templates/VCB-import-template.docx' }
+                ],
                 win: {
                     target: ['nsis'],
                     icon: 'icon/icon.ico'
