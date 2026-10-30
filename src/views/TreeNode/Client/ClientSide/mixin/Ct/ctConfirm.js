@@ -8,11 +8,13 @@ export default {
             if (this.isSaving) return;
             this.isSaving = true;
 
-            const licenseCheck = await window.electronAPI.checkLicense('Current transformer');
-            if (licenseCheck.success && !licenseCheck.allowed) {
-                this.$message.error(licenseCheck.message);
-                this.isSaving = false;
-                return;
+            if (this.clientSlide) {
+                const licenseCheck = await window.electronAPI.checkLicense('Current transformer');
+                if (licenseCheck.success && !licenseCheck.allowed) {
+                    this.$message.error(licenseCheck.message);
+                    this.isSaving = false;
+                    return;
+                }
             }
             const { close, timeoutValue } = startLoading(this, {
                 action: 'add',
@@ -96,7 +98,11 @@ export default {
                                 asset: 'Current transformer'
                             }
                             if (!this.clientSlide) {
-                                await this.refreshServerParentAfterCreate(newRow)
+                                try {
+                                    await this.refreshServerParentAfterCreate(newRow)
+                                } catch (error) {
+                                    this.$message.warning(`Current transformer saved, but the tree could not refresh: ${error.message || 'unknown error'}`)
+                                }
                             } else if (this.organisationClientList && this.organisationClientList.length > 0) {
                                 let newRows = []
                                 newRows.push(newRow)
@@ -112,7 +118,7 @@ export default {
             } catch (error) {
                 this.$message = originalMessage;
                 await close();
-                this.$message.error(error.message === 'Timeout' ? 'Save timed out' : 'Some error occur');
+                this.$message.error(error.message === 'Timeout' ? 'Save timed out' : (error.message || 'Could not save current transformer'));
                 console.error(error);
                 this.isSaving = false;
                 return;

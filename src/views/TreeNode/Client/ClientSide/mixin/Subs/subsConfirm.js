@@ -11,11 +11,13 @@ export default {
             if (this.isSaving) return;
             this.isSaving = true;
 
-            const licenseCheck = await window.electronAPI.checkLicense('Substation');
-            if (licenseCheck.success && !licenseCheck.allowed) {
-                this.$message.error(licenseCheck.message);
-                this.isSaving = false;
-                return;
+            if (this.clientSlide) {
+                const licenseCheck = await window.electronAPI.checkLicense('Substation');
+                if (licenseCheck.success && !licenseCheck.allowed) {
+                    this.$message.error(licenseCheck.message);
+                    this.isSaving = false;
+                    return;
+                }
             }
             const { close, timeoutValue } = startLoading(this, {
                 action: 'add',
@@ -42,7 +44,9 @@ export default {
                 const subs = dialogRef ? dialogRef.getSubstationRef() : null
                 if (subs) {
                     subsRef = subs;
-                    const savePromise = subs.saveSubstation();
+                    const savePromise = this.clientSlide
+                        ? subs.saveSubstation()
+                        : this.saveSubstationToServer(subs);
 
                     let result;
                     if (timeoutValue > 0) {
@@ -68,7 +72,11 @@ export default {
                             mode: 'substation'
                         }
                         if (!this.clientSlide) {
-                            await this.processCreatedNodeOnServer(newRow, this.processUploadSubstation)
+                            try {
+                                await this.refreshServerParentAfterCreate(newRow)
+                            } catch (error) {
+                                this.$message.warning(`Substation saved, but the tree could not refresh: ${error.message || 'unknown error'}`)
+                            }
                         } else if (this.organisationClientList && this.organisationClientList.length > 0) {
                             let newRows = []
                             newRows.push(newRow)
@@ -83,7 +91,7 @@ export default {
             } catch (error) {
                 this.$message = originalMessage;
                 await close();
-                this.$message.error(error.message === 'Timeout' ? 'Save timed out' : 'Some error occur');
+                this.$message.error(error.message === 'Timeout' ? 'Save timed out' : (error.message || 'Could not save substation'));
                 console.error(error);
                 this.isSaving = false;
                 return;
@@ -159,12 +167,16 @@ export default {
                 throw new Error('Server did not return the substation ID')
             }
 
-            await uploadAssetMediaFromAttachmentData(
-                'Substation',
-                savedServerId,
-                currentAttachments,
-                previousAttachments
-            )
+            try {
+                await uploadAssetMediaFromAttachmentData(
+                    'Substation',
+                    savedServerId,
+                    currentAttachments,
+                    previousAttachments
+                )
+            } catch (error) {
+                this.$message.warning(`Substation saved, but media upload failed: ${error.message || 'unknown error'}`)
+            }
             const refreshedAttachments = await downloadAssetMediaToAttachmentData('Substation', savedServerId)
             substation.attachmentData = refreshedAttachments
             if (!properties.attachment) properties.attachment = {}
