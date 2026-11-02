@@ -13,7 +13,8 @@ export default {
                 const loaded = await this.getOwnerLocation()
                 if (!loaded || loadId !== this.serverRootLoadId) return
                 if (this.ownerServerList && this.ownerServerList.length > 0) {
-                    const rootNode = this.ownerServerList[0]
+                    const rootNode = this.ownerServerList.find(node => node.name === 'Root' && !node.parentId)
+                        || this.ownerServerList[0]
                     await this.fetchChildrenServer(rootNode)
                     if (loadId !== this.serverRootLoadId) return
                     this.$set(rootNode, 'expanded', true)

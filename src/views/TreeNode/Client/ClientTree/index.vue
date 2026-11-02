@@ -15,7 +15,7 @@
 
     <div class="child-nav" >
       <ul>
-        <TreeNode v-for="item in organisationClientList" :key="getItemUniqueKey(item)" :node="item" :selectedNodes="selectedNodes"
+        <TreeNode v-for="item in visibleOrganisations" :key="getItemUniqueKey(item)" :node="item" :selectedNodes="selectedNodes"
           :draggableNodes="true"
           @drop-node="$emit('drop-node', $event)"
           @update:selectedNodes="$emit('update:selectedNodes', $event)"
@@ -80,6 +80,15 @@ export default {
     selectedNodes: {
       type: Array,
       default: () => []
+    }
+  },
+  computed: {
+    visibleOrganisations() {
+      return this.organisationClientList.flatMap(item =>
+        item.mrid === this.$constant.ROOT ? (item.children || []) : [item]
+      ).sort((a, b) => (a.name || a.aliasName || '').localeCompare(
+        b.name || b.aliasName || '', 'en', { numeric: true, sensitivity: 'base' }
+      ))
     }
   },
   methods: {

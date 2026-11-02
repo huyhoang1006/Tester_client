@@ -8,7 +8,7 @@
 
         <div class="child-nav" >
             <ul>
-                <TreeNode v-for="item in ownerServerList" :key="getItemUniqueKey(item)" :node="item" :selectedNodes="selectedNodes"
+                <TreeNode v-for="item in visibleOrganisations" :key="getItemUniqueKey(item)" :node="item" :selectedNodes="selectedNodes"
                     @update:selectedNodes="$emit('update:selectedNodes', $event)"
                     @fetch-children="$emit('fetch-children-server', $event)"
                     @show-properties="$emit('show-properties', $event)"
@@ -68,6 +68,15 @@ export default {
         selectedNodes: {
             type: Array,
             default: () => []
+        }
+    },
+    computed: {
+        visibleOrganisations() {
+            return this.ownerServerList.flatMap(item =>
+                item.name === 'Root' && !item.parentId ? (item.children || []) : [item]
+            ).sort((a, b) => (a.name || a.aliasName || '').localeCompare(
+                b.name || b.aliasName || '', 'en', { numeric: true, sensitivity: 'base' }
+            ))
         }
     },
     methods: {
