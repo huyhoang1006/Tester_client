@@ -28,6 +28,18 @@
 
         <div class="table-scroll">
         <table class="table-strip-input-data test-table">
+            <colgroup>
+                <col style="width: 46px" />
+                <col style="width: 250px" />
+                <col style="width: 34px" />
+                <col style="width: 250px" />
+                <col style="width: 110px" />
+                <col style="width: 110px" />
+                <col style="width: 150px" />
+                <col style="width: 150px" />
+                <col style="width: 44px" />
+                <col style="width: 44px" />
+            </colgroup>
             <thead>
                 <tr>
                     <th>No.</th>
@@ -48,31 +60,45 @@
                         {{ index + 1 }}
                     </td>
                     <td>
-                        <el-select class="terminal-select" style="width: 100%;" size="mini" multiple
-                            :value="terminalValues(item, 'terminal1')" placeholder="Select terminal"
-                            @change="updateTerminalSide(item, 'terminal1', $event)">
-                            <el-option v-for="t in availableTerminalOptions(item, 'terminal1')" :key="'l-' + t"
-                                :label="t" :value="t">
-                                <span :style="terminalStyle(t)">
-                                    <i v-if="terminalColor(t)" class="fa-solid fa-circle phase-dot"
-                                       :style="{ color: terminalColor(t) }"></i>{{ t }}
-                                </span>
-                            </el-option>
-                        </el-select>
+                        <div class="terminal-picker" :title="terminalValues(item, 'terminal1').join(', ')">
+                            <el-select class="terminal-select" size="mini" multiple
+                                :value="terminalValues(item, 'terminal1')" placeholder=""
+                                @change="updateTerminalSide(item, 'terminal1', $event)">
+                                <el-option v-for="t in availableTerminalOptions(item, 'terminal1')" :key="'l-' + t"
+                                    :label="t" :value="t">
+                                    <span :style="terminalStyle(t)">
+                                        <i v-if="terminalColor(t)" class="fa-solid fa-circle phase-dot"
+                                           :style="{ color: terminalColor(t) }"></i>{{ t }}
+                                    </span>
+                                </el-option>
+                            </el-select>
+                            <div class="terminal-chips" aria-hidden="true">
+                                <span v-for="t in terminalValues(item, 'terminal1')" :key="t"
+                                    class="terminal-chip" :style="chipStyle(t)">{{ t }}</span>
+                                <span v-if="!terminalValues(item, 'terminal1').length" class="terminal-placeholder">Select terminal</span>
+                            </div>
+                        </div>
                     </td>
                     <td class="terminal-link-cell"><i class="fa-solid fa-arrows-left-right"></i></td>
                     <td>
-                        <el-select class="terminal-select" style="width: 100%;" size="mini" multiple
-                            :value="terminalValues(item, 'terminal2')" placeholder="Select terminal"
-                            @change="updateTerminalSide(item, 'terminal2', $event)">
-                            <el-option v-for="t in availableTerminalOptions(item, 'terminal2')" :key="'r-' + t"
-                                :label="t" :value="t">
-                                <span :style="terminalStyle(t)">
-                                    <i v-if="terminalColor(t)" class="fa-solid fa-circle phase-dot"
-                                       :style="{ color: terminalColor(t) }"></i>{{ t }}
-                                </span>
-                            </el-option>
-                        </el-select>
+                        <div class="terminal-picker" :title="terminalValues(item, 'terminal2').join(', ')">
+                            <el-select class="terminal-select" size="mini" multiple
+                                :value="terminalValues(item, 'terminal2')" placeholder=""
+                                @change="updateTerminalSide(item, 'terminal2', $event)">
+                                <el-option v-for="t in availableTerminalOptions(item, 'terminal2')" :key="'r-' + t"
+                                    :label="t" :value="t">
+                                    <span :style="terminalStyle(t)">
+                                        <i v-if="terminalColor(t)" class="fa-solid fa-circle phase-dot"
+                                           :style="{ color: terminalColor(t) }"></i>{{ t }}
+                                    </span>
+                                </el-option>
+                            </el-select>
+                            <div class="terminal-chips" aria-hidden="true">
+                                <span v-for="t in terminalValues(item, 'terminal2')" :key="t"
+                                    class="terminal-chip" :style="chipStyle(t)">{{ t }}</span>
+                                <span v-if="!terminalValues(item, 'terminal2').length" class="terminal-placeholder">Select terminal</span>
+                            </div>
+                        </div>
                     </td>
                     <td>
                         <el-input :measurement="item.test_voltage" size="mini" type="text" number="positive"
@@ -225,6 +251,11 @@ export default {
         terminalStyle(t) {
             const color = this.terminalColor(t)
             return color ? { color, fontWeight: 600 } : {}
+        },
+        chipStyle(t) {
+            const color = this.terminalColor(t)
+            const backgrounds = { A: '#fff0f0', B: '#fff8df', C: '#edf8ef' }
+            return color ? { color, borderColor: color, backgroundColor: backgrounds[t] } : {}
         },
         terminalValues(row, side) {
             return readSides(row, this.terminalOptions)[side]
@@ -507,11 +538,14 @@ export default {
 .fail { color: #F56C6C; font-weight: bold; }
 
 /* ─── Chọn đầu cực bằng hai dropdown ───────────────────────────────────── */
-.terminal-col { min-width: 170px; }
+.terminal-col { min-width: 250px; }
 .terminal-link-col { width: 34px; text-align: center; }
 .terminal-link-cell { text-align: center; color: #c0c4cc; }
-.terminal-select { width: 100%; }
-/* Thẻ đã chọn dễ dài hơn ô — cho xuống dòng thay vì tràn ra ngoài bảng. */
-.terminal-select >>> .el-select__tags { flex-wrap: wrap; max-width: 100%; }
+.terminal-picker { position: relative; width: 100%; min-width: 0; height: 28px; }
+.terminal-select { width: 100%; min-width: 0; }
+::v-deep(.terminal-select .el-select__tags) { display: none; }
+.terminal-chips { position: absolute; top: 0; bottom: 0; left: 8px; right: 25px; display: flex; align-items: center; gap: 4px; overflow: hidden; white-space: nowrap; pointer-events: none; }
+.terminal-chip { display: inline-flex; flex: 0 0 auto; align-items: center; height: 20px; padding: 0 6px; border: 1px solid #d5dae1; border-radius: 3px; background: #f5f7fa; color: #606266; font-size: 11px; font-weight: 600; line-height: 1; }
+.terminal-placeholder { color: #b7bec9; }
 .phase-dot { margin-right: 6px; font-size: 8px; vertical-align: middle; }
 </style>

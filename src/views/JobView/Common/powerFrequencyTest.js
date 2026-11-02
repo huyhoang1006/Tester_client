@@ -38,8 +38,10 @@ export const validatePowerFrequencyTestRows = testList => {
                 ['test_voltage', 'Test voltage'], ['frequency', 'Frequency'], ['duration', 'Test duration']
             ]) {
                 const raw = rows[i][code]?.value
+                // A test can be saved as a draft before all measurements are entered.
+                if (raw === null || raw === undefined || (typeof raw === 'string' && raw.trim() === '')) continue
                 const value = Number(raw)
-                if (raw === '' || raw === null || raw === undefined || !Number.isFinite(value) || value <= 0) {
+                if (!Number.isFinite(value) || value <= 0) {
                     return { valid: false, message: `${label} in row ${i + 1} must be a positive number.` }
                 }
             }
