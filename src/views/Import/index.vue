@@ -446,6 +446,8 @@ export default {
       nodePickerVisible: false,
       pickerTempSelected: null,
       pickerTreeKey: 0,
+      pickerOwnershipPromise: null,
+      pickerOwnershipUserId: null,
       selectedItems: [],
       categoryOptions: CATEGORY_OPTION,
       FEATURE_TREE: FEATURE_TREE,
@@ -681,6 +683,7 @@ export default {
 
     refreshImportPickerTree() {
       this.importPickerTemp = null
+      this.pickerOwnershipPromise = null
       this.pickerTreeKey++
     },
 
@@ -882,7 +885,26 @@ export default {
       if (ctx.bay)   return 'el-icon-set-up'
       return 'el-icon-office-building'
     },
-    refreshPickerTree() { this.pickerTempSelected = null; this.pickerTreeKey++ },
+    refreshPickerTree() {
+      this.pickerTempSelected = null
+      this.pickerOwnershipPromise = null
+      this.pickerTreeKey++
+    },
+    async getPickerOwnedIds() {
+      const userId = this.$store?.state?.user?.user_id
+      if (!userId) throw new Error('Sign in to view your Organisation tree')
+      if (!this.pickerOwnershipPromise || this.pickerOwnershipUserId !== userId) {
+        this.pickerOwnershipUserId = userId
+        this.pickerOwnershipPromise = window.electronAPI.getIdentifiedObjectIdsByUser(userId)
+          .then(rs => {
+            if (!rs?.success || !Array.isArray(rs.data)) {
+              throw new Error(rs?.message || 'Cannot load your Organisation access')
+            }
+            return new Set(rs.data)
+          })
+      }
+      return this.pickerOwnershipPromise
+    },
     addPickerSelectionToList() {
       if (!this.pickerTempSelected) return
       const node = this.pickerTempSelected
@@ -944,8 +966,13 @@ export default {
           const rs = await window.electronAPI.getOldWorkByAssetId(data.mrid)
           ;(rs?.data || []).forEach(j => rows.push({ mrid: j.mrid, displayName: j.name || j.job_name || j.mrid, mode: 'job', assetType: data.assetType, pickerIsLeaf: true, parentArr: nextParentArr }))
         }
-        resolve(rows)
-      } catch(e) { console.error('loadPickerNode error:', e); resolve([]) }
+        const ownedIds = await this.getPickerOwnedIds()
+        resolve(rows.filter(row => row.mode === 'job' || ownedIds.has(row.mrid)))
+      } catch(e) {
+        console.error('loadPickerNode error:', e)
+        this.$message.error(e.message || 'Cannot load Organisation tree')
+        resolve([])
+      }
     },
     async pickerFetchAssets(psrId, parentArr) {
       const results = await Promise.all([
