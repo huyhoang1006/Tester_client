@@ -20,7 +20,8 @@
                 @search-select="handleSearchSelect"
                 @search-preview="handleSearchPreview"
                 @show-equipment="handleShowEquipment"
-                @maintenance-failure="openClientMaintenanceFailure" />
+                @maintenance-failure="openClientMaintenanceFailure"
+                @import-test-report="handleImportTestReport" />
 
             <div v-show="activeWorkspaceTab === 'tree'" class="tree-workspace">
                 <div v-show="clientSlide" class="toolbar">
@@ -495,7 +496,7 @@ export default {
         TreeToolbar,
         ContextDataClient,
         ServerTreePanel,
-        ClientTreePanel,
+        ClientTreePanel,        
         mapJobProperties,
         mapAssetProperties,
         mapProperties, mapClientProperties,
@@ -1181,6 +1182,9 @@ export default {
             if (this.$refs.treeToolBar) this.$refs.treeToolBar.activeTab = 'explorer'
             this.openImportDialog = false
             this.openExportDialog = false
+        },
+        handleImportTestReport() {
+            this.$message.info('Feature Import Test Report (TES-278) is under development.')
         },
         openClientMaintenanceFailure(node = null) {
             if (!this.maintenanceFailureEnabled || !this.clientSlide) return
