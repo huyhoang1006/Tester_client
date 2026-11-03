@@ -2,6 +2,7 @@ import CurrentTransformerDto from "@/views/Dto/CurrentTransformer";
 import FullTapDto from "@/views/Dto/CurrentTransformer/CTConfiguration/FullTapDto";
 import uuid from "@/utils/uuid";
 import { applyServerAssetFields, buildServerAssetFields } from "@/utils/assetServerSync";
+import { prepareCurrentTransformerTapRows } from '@/utils/currentTransformerTapRows'
 
 // ─── Download maps (server → client) ─────────────────────────────────────────
 
@@ -490,6 +491,7 @@ export const mapDtoToServer = (dto, ownerType) => {
     })
 
     void taps
+    const preparedCores = prepareCurrentTransformerTapRows(ctConfig.dataCT || [])
     if (dto) return {
         CurrentTransformer: {
             properties: {
@@ -538,7 +540,7 @@ export const mapDtoToServer = (dto, ownerType) => {
             },
             ctConfiguration: {
                 cores: str(ctConfig.cores),
-                dataCT: (ctConfig.dataCT || []).map((core, coreIndex) => {
+                dataCT: preparedCores.map((core, coreIndex) => {
                     const ft   = core.fullTap?.table       || {}
                     const ftCR = core.fullTap?.classRating || {}
                     const coreNumber = coreIndex + 1

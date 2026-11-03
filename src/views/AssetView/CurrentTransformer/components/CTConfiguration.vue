@@ -1181,10 +1181,10 @@ export default {
         },
         changeTap(data, index) {
             this.configsData.dataCT[index].commonTap = '1'
-            const lengthData = this.configsData.dataCT[index].mainTap.data.length
-            if ((parseInt(data) - 2) > lengthData) {
-                for (let i = 0; i < (parseInt(data) - lengthData - 2); i++) {
-                    this.configsData.dataCT[index].mainTap.data.push({
+            const mainTaps = this.configsData.dataCT[index].mainTap.data
+            const mainTapCount = Math.max(0, parseInt(data, 10) - 2)
+            while (mainTaps.length < mainTapCount) {
+                mainTaps.push({
 
                         table: {
                             mrid: '',
@@ -1204,15 +1204,13 @@ export default {
                             burdenCos: '',
                             operatingBurden: { mrid: '', value: '', unit: UnitSymbol.VA },
                             operatingBurdenCos: '',
-                            core_index: i + 1
+                            core_index: index + 1
 
                         }
 
-                    })
-                }
-            } else if ((parseInt(data) - 2) < lengthData) {
-                this.configsData.dataCT[index].mainTap.data.splice(1, lengthData - (parseInt(data) - 2))
+                })
             }
+            mainTaps.splice(mainTapCount)
             this.changeCommonTap(data, index)
             this.chooseCommonTap(data, this.configsData.dataCT[index].commonTap, index)
             this.chosenCommonTap(data, this.configsData.dataCT[index].commonTap, index)
