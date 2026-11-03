@@ -1091,6 +1091,8 @@ export default {
                     const response = await demoAPI.getAssetById(tab.mrid, 'PowerCable');
                     if (response) {
                         const dto = PowerCableServerMapper.mapServerToDto(response);
+                        dto.mrid = tab.mrid;
+                        dto.properties.mrid = tab.mrid;
                         await this.attachServerAssetMedia(dto, 'Power cable', tab.mrid)
                         this.$set(tab, 'apparatus_id', dto.properties?.apparatus_id);
                         this.$set(tab, 'serial_number', dto.properties?.serial_no || tab.serial_number);

@@ -1,5 +1,6 @@
 /* eslint-disable */
 import * as AssetMediaAPI from '@/api/demo/AssetMedia.js'
+import { toServerId } from '@/utils/serverId'
 
 export const ASSET_MEDIA_TYPES = {
     Organisation: 'organisation',
@@ -77,6 +78,8 @@ export const uploadAssetMediaFromAttachmentData = async (assetTypeLabel, assetId
 
 export const downloadAssetMediaToAttachmentData = async (assetTypeLabel, assetId) => {
     if (!assetId) return []
+    if (resolveAssetMediaType(assetTypeLabel) === 'power-cable'
+        && !/^\d+$/.test(String(toServerId(assetId)))) return []
 
     const { assetType, media } = await getAssetMediaWithFallback(assetTypeLabel, assetId)
     if (!assetType) return []

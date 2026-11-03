@@ -1,4 +1,5 @@
 import PowerCableDTO from "@/views/Dto/PowerCable";
+import uuid from '@/utils/uuid'
 import { toServerId } from '@/utils/serverId'
 import {
     applyServerAssetFields,
@@ -255,7 +256,7 @@ export const mapServerToDto = (serverData) => {
         return mapCimServerToDto(data)
     }
     const assetInfo = pickSection(data, 'assetInfo', 'assetInfoResponseDTO')
-    const core = pickSection(data, 'powerCableCore', 'powerCableCoreResponseDTO')
+    const core = pickSection(data, 'powerCable', 'powerCableCore', 'powerCableCoreResponseDTO')
     const rating = pickSection(data, 'powerCableRating', 'powerCableRatingResponseDTO')
     const other = pickSection(data, 'powerCableOtherInfo', 'powerCableOtherInfoResponseDTO')
     const conductor = pickSection(data, 'powerCableConductor', 'powerCableConductorResponseDTO')
@@ -276,12 +277,12 @@ export const mapServerToDto = (serverData) => {
     dto.properties.type = core.assetType || ''
     dto.properties.kind = 'Power cable'
     dto.properties.serial_no = assetInfo.serialNo || ''
-    dto.properties.manufacturer = assetInfo.manufacturer || ''
+    dto.properties.manufacturer = assetInfo.manufacturerName || assetInfo.manufacturer || ''
     dto.properties.manufacturer_type = assetInfo.manufacturerType || ''
     dto.properties.manufacturer_year = assetInfo.manufacturingYear !== null && assetInfo.manufacturingYear !== undefined
         ? String(assetInfo.manufacturingYear)
         : ''
-    dto.properties.country_of_origin = assetInfo.country || ''
+    dto.properties.country_of_origin = assetInfo.countryName || assetInfo.country || ''
     dto.properties.apparatus_id = assetInfo.apparatusId || assetInfo.assetName || ''
     dto.properties.comment = assetInfo.description || ''
     applyServerAssetFields(dto.properties, assetInfo)
@@ -662,7 +663,7 @@ export const mapDtoToCimServer = (dto) => {
     const o = dto.othersData || {}
     const d = dto.datasData || {}
     const name = textT(p.apparatus_id) || textT(p.serial_no) || 'Unnamed Cable'
-    const powerCableMrid = textT(p.mrid || dto.mrid)
+    const powerCableMrid = textT(toServerId(p.mrid || dto.mrid)) || uuid.newUuid()
 
     return {
         name,

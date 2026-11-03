@@ -1,6 +1,7 @@
 /* eslint-disable */
 import client from '@/utils/client'
 import { toServerId } from '@/utils/serverId'
+import * as powerCableAPI from './PowerCable'
 
 export const getOwnerOrganisation = () => {
     // API cũ có số 1 cứng ở cuối, giữ nguyên logic
@@ -62,13 +63,7 @@ export const getAssetById = async (assetId, mode) => {
         return Promise.reject(new Error('assetId is required'))
     } else {
         if (mode == 'PowerCable') {
-            const serverId = toServerId(assetId)
-            try {
-                return await client.get(`/api/cim/power-cable/${serverId}`, { suppressGlobalApiError: true })
-            } catch (error) {
-                if (!error.response || error.response.status !== 404) throw error
-                return client.get(`/api/power-cable/${serverId}`)
-            }
+            return powerCableAPI.getPowerCableById(assetId)
         } else if (mode == 'SurgeArrester') {
             return client.get(`/api/surge-arrester/${toServerId(assetId)}`)
         } else if (mode == 'Disconnector') {
@@ -161,5 +156,5 @@ export const deleteBay = (id) => {
 }
 
 export const deletePowerCable = (id) => {
-    return client.delete(`/api/power-cable/${toServerId(id)}`)
+    return powerCableAPI.deletePowerCable(id)
 }

@@ -4,24 +4,23 @@ import { toServerId } from '@/utils/serverId'
 const prefix = 'api/power-cable'
 export const getPowerCableById = async (id) => {
     const serverId = toServerId(id)
-    try {
-        return await client.get(`/api/cim/power-cable/${serverId}`, { suppressGlobalApiError: true })
-    } catch (error) {
-        if (!error.response || error.response.status !== 404) throw error
-        return client.get(`/${prefix}/${serverId}`)
-    }
+    return /^\d+$/.test(String(serverId))
+        ? client.get(`/${prefix}/${serverId}`)
+        : client.get(`/api/cim/power-cable/${serverId}`)
 }
 
 export const createPowerCable = (data, ownerId, ownerType) => {
-    console.log('createPowerCable', JSON.stringify(data))
-    return client.post('/api/cim/power-cable/create', data, {
-        params: {
-            ownerId: toServerId(ownerId),
-            ownerType
-        }
-    })
+    if (data?.assetData) {
+        return client.post('/api/cim/power-cable/create', data, {
+            params: { ownerId: toServerId(ownerId), ownerType }
+        })
+    }
+    return client.post(`/${prefix}/create`, data)
 }
 
 export const deletePowerCable = (id) => {
-    return client.delete(`/${prefix}/${toServerId(id)}`)
+    const serverId = toServerId(id)
+    return /^\d+$/.test(String(serverId))
+        ? client.delete(`/${prefix}/${serverId}`)
+        : client.delete(`/api/cim/power-cable/${serverId}`)
 }

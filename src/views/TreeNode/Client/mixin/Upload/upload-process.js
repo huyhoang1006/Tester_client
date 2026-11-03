@@ -244,7 +244,7 @@ export default {
                 // (mapEntityToDto trả về psr_id local nên bắt buộc ghi đè)
                 dto.psrId = node.parentId
 
-                const serverPayload = PowerCableServerMapper.mapDtoToCimServer(this._normaliseUnits(dto))
+                const serverPayload = PowerCableServerMapper.mapDtoToServer(this._normaliseUnits(dto), ownerType)
                 const response = await powerCableAPI.createPowerCable(serverPayload, node.parentId, ownerType)
 
                 await this.syncUploadedAssetAndMedia(node, response, 'Power cable', dto)
@@ -842,6 +842,7 @@ export default {
             payload.id = serverId
             payload.mrid = serverId
             payload.mRID = serverId
+            if (payload.assetData) payload.assetData.mRID = serverId
             if (payload.assetInfo) payload.assetInfo.id = payload.assetInfo.id || null
             if (payload.assetInfoResponseDTO) payload.assetInfoResponseDTO.id = payload.assetInfoResponseDTO.id || null
 
@@ -894,7 +895,11 @@ export default {
                 return response
             }
             if (assetType === 'Power cable') {
-                const payload = this.applyServerTabIdToPayload(PowerCableServerMapper.mapDtoToCimServer(this._normaliseUnits(dto)), serverTab)
+                const serverId = toServerId(serverTab?.id || serverTab?.mrid)
+                const isExistingCim = serverId && !/^\d+$/.test(String(serverId))
+                const payload = isExistingCim
+                    ? this.applyServerTabIdToPayload(PowerCableServerMapper.mapDtoToCimServer(this._normaliseUnits(dto)), serverTab)
+                    : PowerCableServerMapper.mapDtoToServer(this._normaliseUnits(dto), ownerType)
                 const response = await powerCableAPI.createPowerCable(payload, parentId, ownerType)
                 await this.uploadAssetMedia(assetType, dto, this.extractUploadedServerId(response) || serverTab?.id || serverTab?.mrid || dto?.properties?.mrid)
                 return response
