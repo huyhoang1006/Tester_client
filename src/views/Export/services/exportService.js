@@ -544,6 +544,9 @@ export const exportService = {
         const rs = await entry.api()
         if (!rs?.success || !rs.data) return EMPTY_RESULT
         const dto = entry.map(rs.data)
+        const testList = ctx.test?.mrid
+          ? (dto.testList || []).filter(test => String(test.mrid) === String(ctx.test.mrid))
+          : dto.testList
         const p = dto.properties || {}
         flatMap = {
           job_name:      p.name           || '',
@@ -558,10 +561,10 @@ export const exportService = {
           summary:       p.summary || p.description || ''
         }
         // TestingEquipment — lấy item đầu tiên nếu có (multi-equipment dùng arrayMap)
-        arrayMap = this.buildTestArrayMap(dto.testList, unitMap)
+        arrayMap = this.buildTestArrayMap(testList, unitMap)
         if (jobKey === 'Job_CircuitBreakerJobDto') {
-          flatMap.report_testing_date = reportDate(sharedTestMetadata(dto.testList, 'testing_date'))
-          flatMap.report_test_type = sharedTestMetadata(dto.testList, 'type')
+          flatMap.report_testing_date = reportDate(sharedTestMetadata(testList, 'testing_date'))
+          flatMap.report_test_type = sharedTestMetadata(testList, 'type')
         }
         if (dto.testingEquipmentData && dto.testingEquipmentData.length > 0) {
           arrayMap['te_model']            = dto.testingEquipmentData.map(x => x.model            || '')

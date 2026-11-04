@@ -36,6 +36,7 @@ export default {
             immediate: true,
             handler() {
                 this.changeDataBushing()
+                if (this.hasConfiguredPhase) this.phaseValidationError = false
             }
         },
 
@@ -83,6 +84,16 @@ export default {
         async saveAsset() {
             try {
                 if (this.transformerDto.properties.type && this.transformerDto.properties.kind && this.transformerDto.properties.serial_no) {
+                    if (!this.hasConfiguredPhase) {
+                        this.phaseValidationError = true
+                        this.switch = 'Transformer'
+                        this.$nextTick(() => {
+                            const field = this.$refs.windingConfiguration && this.$refs.windingConfiguration.$el
+                            if (field && field.scrollIntoView) field.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                        })
+                        this.$message.error('Select Number of Phase (1 or 3) before saving.')
+                        return { success: false, validation: true }
+                    }
                     const data = JSON.parse(JSON.stringify(this.transformerDto));
                     if (!(await ensureUniqueAssetBeforeSave(this, data))) return { success: false, duplicate: true };
                     const result = this.checkTransformerDto(data);
@@ -128,6 +139,7 @@ export default {
         },
 
         loadData(data) {
+            this.phaseValidationError = false
             this.repairStructuredVectorGroup(data)
             this.oldTransformerDto = JSON.parse(JSON.stringify(data));
             const surgeArresterTemp = JSON.parse(JSON.stringify(data.surge_arrester))
@@ -197,12 +209,13 @@ export default {
                 }
                 this.$message.success("Asset saved successfully")
                 this.$emit('reload', { savedData: this.transformerDto, changed: data.changed === true })
-            } else {
+            } else if (!data || (!data.validation && !data.duplicate)) {
                 this.$message.error("Failed to save asset")
             }
         },
 
         async resetForm() {
+            this.phaseValidationError = false
             this.transformerDto = new TransformerDataDto(),
                 this.oldTransformerDto = new TransformerDataDto(),
                 this.attachmentData = []

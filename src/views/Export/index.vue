@@ -1,5 +1,72 @@
 <template>
 <div>
+  <div v-if="managerMode" class="export-template-manager">
+    <aside class="export-manager-sidebar">
+      <div class="export-manager-tools">
+        <el-button type="primary" size="small" icon="el-icon-plus" @click="openAddTemplateDialog">New Template</el-button>
+      </div>
+      <el-input v-model="managerSearch" size="small" clearable prefix-icon="el-icon-search" placeholder="Search templates..." />
+      <el-select v-model="managerAssetFilter" size="small" aria-label="Filter asset type">
+        <el-option label="All asset types" value="" />
+        <el-option v-for="type in managerAssetOptions" :key="type" :label="type" :value="type" />
+      </el-select>
+      <div class="export-manager-list">
+        <section v-for="group in managerGroups" :key="group.label">
+          <h3>{{ group.label }} ({{ group.templates.length }})</h3>
+          <button v-for="template in group.templates" :key="template.name" type="button"
+            :class="{active: selectedTemplateName === template.name}" :title="template.name"
+            @click="selectManagerTemplate(template.name)">
+            <strong>{{ template.name }}</strong><small>{{ template.variable.length }} field mappings</small>
+          </button>
+        </section>
+        <p v-if="!managerGroups.length">No templates found</p>
+      </div>
+    </aside>
+    <section class="export-manager-detail">
+      <template v-if="selectedTemplateName">
+        <div class="export-manager-scroll">
+          <div class="export-manager-title"><div><small>{{ managerAssetType(selectedTemplate) }}</small><h2>{{ selectedTemplateName }}</h2></div>
+            <el-button size="small" icon="el-icon-refresh" @click="loadTemplates">Refresh</el-button></div>
+          <h3>Word Template (.docx)</h3>
+          <div class="export-manager-file">
+            <span class="export-manager-word-icon">W</span>
+            <strong :title="currentFilePath">{{ managerFileName || 'No Word file selected' }}</strong>
+            <el-button size="small" @click="handleUploadWord">{{ currentFilePath ? 'Replace DOCX' : 'Add DOCX' }}</el-button>
+            <el-button size="small" :disabled="!currentFilePath" @click="downloadCurrentTemplate">Download</el-button>
+            <el-button size="small" :disabled="!currentFilePath" @click="managerPreviewVisible = true">Preview</el-button>
+          </div>
+          <div class="export-manager-mapping-title"><h3>Field Mappings ({{ tableData.length }})</h3>
+            <el-button type="primary" size="small" icon="el-icon-plus" @click="addRow()">Add Mapping</el-button></div>
+          <div class="export-manager-table-scroll"><table>
+            <thead><tr><th>Code</th><th>Category</th><th>Source field</th><th>Word cell</th><th>Unit</th><th></th></tr></thead>
+            <tbody>
+              <tr v-for="(row, index) in tableData" :key="index">
+                <td><el-input v-model="row.code" size="small" placeholder="A1" /></td>
+                <td><el-select v-model="row.category" size="small" placeholder="Category" @change="onCategoryChange(row)">
+                  <el-option v-for="category in categoryOptions" :key="category.value" :label="category.label" :value="category.value" />
+                </el-select></td>
+                <td><el-cascader :value="row.featureLevels.map(level => level.key).filter(Boolean)" :options="managerFieldOptions(row.category)"
+                  :props="{expandTrigger: 'hover'}" filterable clearable size="small" placeholder="Select source field"
+                  @change="setManagerFieldPath(row, $event)" /></td>
+                <td class="export-manager-coordinates">{{ row.coordinates.length ? row.coordinates.join(', ') : 'After save' }}</td>
+                <td><el-checkbox v-model="row.includeUnit" /></td>
+                <td><el-button type="text" icon="el-icon-delete" title="Remove mapping" @click="removeRow(index)" /></td>
+              </tr>
+              <tr v-if="!tableData.length"><td colspan="6">No field mappings yet</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+        <footer class="export-manager-footer">
+          <div><el-button size="small" @click="handleImportJson">Import JSON</el-button>
+            <el-button size="small" :disabled="!tableData.length" @click="handleExportJson">Export JSON</el-button></div>
+          <div><el-button size="small" type="danger" plain @click="handleDelete">Delete</el-button>
+            <el-button size="small" type="primary" @click="handleSave">Save</el-button></div>
+        </footer>
+      </template>
+      <div v-else class="export-manager-empty">Select a template or create a new one</div>
+    </section>
+  </div>
+  <div v-else>
   <template-manager 
     :template-list="templateList" 
     v-model="selectedTemplateName" 
@@ -48,6 +115,10 @@
       Select a template or click <b>Add Template</b> to get started
     </div>
   </div>
+  </div>
+
+  <WordTemplatePreview v-if="managerMode && exportType === 'word'" :visible.sync="managerPreviewVisible"
+    :template-name="selectedTemplateName" :file-path="currentFilePath" :mappings="tableData" />
 
   <el-dialog title="Add new template" :visible.sync="showAddDialog" width="420px" append-to-body @close="resetAddDialog">
     <el-form ref="addForm" :model="addForm" :rules="addRules" size="small" label-width="120px" label-position="left">
@@ -168,6 +239,7 @@ import { ASSET_TYPE_TO_KEY, CATEGORY_OPTION, FEATURE_TREE } from '../Common/cons
 import { exportService } from './services/exportService.js'
 import TemplateManager from './components/TemplateManager.vue'
 import DataTable from './components/DataTable.vue'
+import WordTemplatePreview from '@/views/Import/components/WordTemplatePreview.vue'
 
 export default {
   name: 'ExportView',
@@ -176,6 +248,8 @@ export default {
       type: String,
       default: 'excel'
     },
+    managerMode: { type: Boolean, default: false },
+    initialTemplateName: { type: String, default: '' },
   },
   watch: {
     'exportType' : {
@@ -186,10 +260,11 @@ export default {
       }
     }
   },
-  components: { TemplateManager, DataTable },
+  components: { TemplateManager, DataTable, WordTemplatePreview },
   data() {
     return {
       templateList: [], selectedTemplateName: '', currentFilePath: '', tableData: [],
+      managerSearch: '', managerAssetFilter: '', managerPreviewVisible: false,
       showAddDialog: false, addLoading: false,
       addForm: { name: '', filePath: '' },
       addRules: { name: [{ required: true, message: 'Please enter template name', trigger: 'blur' }] },
@@ -205,6 +280,27 @@ export default {
     }
   },
   computed: {
+    selectedTemplate() {
+      return this.templateList.find(template => template.name === this.selectedTemplateName) || null
+    },
+    managerFileName() {
+      return this.currentFilePath ? this.currentFilePath.split(/[\\/]/).pop() : ''
+    },
+    managerAssetOptions() {
+      return [...new Set(this.templateList.map(this.managerAssetType))].sort((a, b) => a.localeCompare(b))
+    },
+    managerGroups() {
+      const search = this.managerSearch.trim().toLocaleLowerCase()
+      const groups = new Map()
+      for (const template of this.templateList) {
+        const label = this.managerAssetType(template)
+        if (this.managerAssetFilter && label !== this.managerAssetFilter) continue
+        if (search && !`${template.name} ${label}`.toLocaleLowerCase().includes(search)) continue
+        if (!groups.has(label)) groups.set(label, [])
+        groups.get(label).push(template)
+      }
+      return [...groups].sort(([a], [b]) => a.localeCompare(b)).map(([label, templates]) => ({label, templates}))
+    },
     exportCategories() {
       const seen = new Set(), result = []
       for (const row of this.tableData) {
@@ -237,11 +333,39 @@ export default {
   },
   async mounted() { await this.loadTemplates() },
   methods: {
+    managerAssetType(template) {
+      const row = (template?.variable || []).find(item => item.category === 'Asset' && item.featureLevels?.[0]?.key)
+      const key = row?.featureLevels?.[0]?.key
+      return (key && this.FEATURE_TREE.Asset?.children?.[key]?.label) || 'Other templates'
+    },
+    selectManagerTemplate(name) {
+      this.selectedTemplateName = name
+      this.onTemplateChange(name)
+    },
+    managerFieldOptions(category) {
+      const children = this.FEATURE_TREE[category]?.children || {}
+      const toOptions = branches => Object.entries(branches).map(([value, node]) => ({
+        value, label: node.label || value,
+        ...(node.children && Object.keys(node.children).length ? {children: toOptions(node.children)} : {})
+      }))
+      return toOptions(children)
+    },
+    setManagerFieldPath(row, path) {
+      row.featureLevels = path.map(key => ({key}))
+    },
+    async downloadCurrentTemplate() {
+      if (!this.currentFilePath) return
+      const result = await window.electronAPI.downloadWordTemplate(this.currentFilePath)
+      if (!result?.success && !result?.canceled) this.$message.error(result?.message || 'Cannot download template')
+    },
     async loadTemplates() {
       try {
         const rs = await window.electronAPI.getAllTemplatesByType(this.exportType, 'export')
         if (rs?.success) {
           this.templateList = rs.data.map(t => ({ ...t, variable: t.variable ? JSON.parse(t.variable) : [] }))
+          if (this.managerMode && this.initialTemplateName && !this.selectedTemplateName && this.templateList.some(t => t.name === this.initialTemplateName)) {
+            this.selectManagerTemplate(this.initialTemplateName)
+          }
           if (this.exportType === 'word' && !this.selectedTemplateName) {
             const defaultTemplate = this.templateList.find(t => t.name === 'SBM - BB kiểm định máy cắt trung thế (VCB) - Export')
             if (defaultTemplate) {
@@ -517,11 +641,13 @@ export default {
         if (catKey === 'Bay')                 return !!ctx.bay
         if (catKey.startsWith('Asset_')) {
           if (!ctx.asset) return false
+          if (item.mode && item.mode !== 'asset') return false
           const expectedKey = this.assetTypeToKey[ctx.asset.assetType]
           return expectedKey === catKey
         }
         if (catKey.startsWith('Job_')) {
           if (!ctx.job) return false
+          if (item.mode && !['job', 'test'].includes(item.mode)) return false
           const normalKey = catKey.startsWith('Job_Job_') ? catKey.slice(4) : catKey
           const requiredAsset = jobToAsset[normalKey]
           if (!requiredAsset) return false
@@ -529,6 +655,32 @@ export default {
         }
         return false
       })
+    },
+    async buildExportCodeMap() {
+      const codeMap = {}
+      for (const cat of this.exportCategories) {
+        const matchingItems = this.getMatchingItems(cat)
+        if (cat.key.startsWith('Asset_') || cat.key.startsWith('Job_')) {
+          for (const item of matchingItems) {
+            const { flatMap, arrayMap, unitMap } = await exportService.buildDtoForCat(cat, item.context)
+            const partial = exportService.extractFromMaps(cat, flatMap, arrayMap, this.tableData, unitMap)
+            for (const code in partial) {
+              if (!codeMap[code]) codeMap[code] = []
+              const vals = partial[code]
+              codeMap[code].push.apply(codeMap[code], Array.isArray(vals) ? vals : [vals])
+            }
+          }
+        } else {
+          const firstItem = matchingItems[0]
+          if (!firstItem) continue
+          const { flatMap, arrayMap, unitMap } = await exportService.buildDtoForCat(cat, firstItem.context)
+          const partial = exportService.extractFromMaps(cat, flatMap, arrayMap, this.tableData, unitMap)
+          for (const code in partial) {
+            if (!codeMap[code]) codeMap[code] = partial[code]
+          }
+        }
+      }
+      return codeMap
     },
     async doExport() {
       if (this.selectedItems.length === 0) {
@@ -539,30 +691,7 @@ export default {
       try {
         const tmpl = this.templateList.find(t => t.name === this.selectedTemplateName)
         const variables = tmpl ? (tmpl.variable || []) : []
-        const codeMap = {}
-
-        for (const cat of this.exportCategories) {
-          const matchingItems = this.getMatchingItems(cat)
-          if (cat.key.startsWith('Asset_') || cat.key.startsWith('Job_')) {
-            for (const item of matchingItems) {
-              const { flatMap, arrayMap, unitMap } = await exportService.buildDtoForCat(cat, item.context)
-              const partial = exportService.extractFromMaps(cat, flatMap, arrayMap, this.tableData, unitMap)
-              for (const code in partial) {
-                if (!codeMap[code]) codeMap[code] = []
-                const vals = partial[code]
-                codeMap[code].push.apply(codeMap[code], Array.isArray(vals) ? vals : [vals])
-              }
-            }
-          } else {
-            const firstItem = matchingItems[0]
-            if (!firstItem) continue
-            const { flatMap, arrayMap, unitMap } = await exportService.buildDtoForCat(cat, firstItem.context)
-            const partial = exportService.extractFromMaps(cat, flatMap, arrayMap, this.tableData, unitMap)
-            for (const code in partial) {
-              if (!codeMap[code]) codeMap[code] = partial[code]
-            }
-          }
-        }
+        const codeMap = await this.buildExportCodeMap()
 
         if (this.exportType === 'excel') {
           const rs = await window.electronAPI.exportTemplateWithData({ templatePath: this.currentFilePath, variables, codeMap })
@@ -622,3 +751,39 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.export-template-manager { display: grid; grid-template-columns: 300px minmax(0, 1fr); height: 100%; min-height: 0; color: #243247; font-size: 13px; }
+.export-manager-sidebar { display: flex; flex-direction: column; gap: 10px; min-height: 0; padding: 16px; border-right: 1px solid #dce3ec; background: #f7f9fc; }
+.export-manager-tools { display: flex; }
+.export-manager-list { flex: 1; min-height: 0; overflow: auto; margin: 6px -8px 0; padding: 0 8px; }
+.export-manager-list h3 { margin: 14px 6px 8px; color: #768397; font-size: 11px; text-transform: uppercase; }
+.export-manager-list button { display: block; width: 100%; border: 0; border-left: 3px solid transparent; border-radius: 4px; padding: 10px 12px; background: transparent; color: #243247; text-align: left; cursor: pointer; }
+.export-manager-list button:hover { background: #eaf1fd; }
+.export-manager-list button.active { border-left-color: #0b348c; background: #fff; box-shadow: 0 1px 4px #d7deea; }
+.export-manager-list button strong, .export-manager-list button small { display: block; }
+.export-manager-list button small { margin-top: 3px; color: #788699; }
+.export-manager-detail { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.export-manager-scroll { flex: 1; min-height: 0; overflow: auto; padding: 20px 24px; }
+.export-manager-title, .export-manager-mapping-title { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.export-manager-title small { color: #66758c; }
+.export-manager-title h2 { margin: 4px 0 22px; font-size: 20px; }
+.export-manager-scroll h3 { margin: 16px 0 10px; font-size: 14px; }
+.export-manager-file { display: flex; align-items: center; gap: 10px; padding: 16px; border: 1px solid #dce3ec; border-radius: 5px; }
+.export-manager-word-icon { display: grid; place-items: center; flex: none; width: 36px; height: 36px; border-radius: 4px; background: #2b579a; color: #fff; font-size: 18px; font-weight: 800; }
+.export-manager-file strong { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.export-manager-table-scroll { overflow: auto; border: 1px solid #dce3ec; border-radius: 5px; }
+.export-manager-table-scroll table { width: 100%; min-width: 770px; border-collapse: collapse; table-layout: fixed; }
+.export-manager-table-scroll th, .export-manager-table-scroll td { padding: 10px; border-bottom: 1px solid #e4eaf2; text-align: left; }
+.export-manager-table-scroll th { background: #f5f7fa; }
+.export-manager-table-scroll th:nth-child(1) { width: 75px; }
+.export-manager-table-scroll th:nth-child(2) { width: 145px; }
+.export-manager-table-scroll th:nth-child(4) { width: 155px; }
+.export-manager-table-scroll th:nth-child(5) { width: 55px; }
+.export-manager-table-scroll th:nth-child(6) { width: 42px; }
+.export-manager-table-scroll .el-select, .export-manager-table-scroll .el-cascader { width: 100%; }
+.export-manager-coordinates { overflow-wrap: anywhere; color: #697586; }
+.export-manager-footer { display: flex; justify-content: space-between; gap: 10px; padding: 14px 24px; border-top: 1px solid #dce3ec; }
+.export-manager-empty { display: grid; place-items: center; height: 100%; color: #8190a4; }
+@media (max-width: 850px) { .export-template-manager { grid-template-columns: 230px minmax(0, 1fr); } .export-manager-footer { flex-wrap: wrap; } }
+</style>

@@ -8,6 +8,7 @@ export default {
             try {
                 const res = await demoAPI.getOwnerOrganisation()
                 if (requestId !== this.ownerLocationRequestId) return false
+                console.log('get-owner-organisation response:', res)
                 // Máy chủ giờ trả về MẢNG tổ chức gốc: một tài khoản có thể được cấp phạm
                 // vi ở nhiều tổ chức ngang hàng. Vẫn chấp nhận dạng cũ (một đối tượng) để
                 // không vỡ khi chạy với bản máy chủ chưa cập nhật.
