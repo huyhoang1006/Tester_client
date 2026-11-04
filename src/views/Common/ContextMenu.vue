@@ -108,7 +108,7 @@
                 <li v-if="selectedNode && selectedNode.mode !== 'test'" @click="move">
                     <i class="fa-solid fa-arrows-up-down-left-right"></i> Move
                 </li>
-                <li v-if="selectedNode && selectedNode.mode !== 'test'" @click="deleteNode">
+                <li v-if="selectedNode && (isClient || selectedNode.mode !== 'test')" @click="deleteNode">
                     <i class="fas fa-trash-alt"></i> Delete
                 </li>
                 <li v-if="isClient && selectedNode && selectedNode.mode !== 'test'" @click="duplicate">

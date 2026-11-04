@@ -61,6 +61,7 @@ import Attachment from '@/views/Flatten/Attachment'
 import TestStandard from '@/views/Cim/TestStandard'
 import uuid from '@/utils/uuid'
 import { todayTestDate } from '@/views/TreeNode/Common/Fetch/testDate'
+import { removeTest } from '@/views/JobView/Common/removeTest'
 
 export default {
     name: 'SelectTestPanel',
@@ -166,15 +167,7 @@ export default {
             })
         },
         remove(index) {
-            this.$confirm('Remove this test and its data from the job?', 'Warning', {
-                confirmButtonText: 'Remove',
-                cancelButtonText: 'Cancel',
-                type: 'warning'
-            })
-                .then(() => {
-                    this.testListData.splice(index, 1)
-                })
-                .catch(() => {})
+            return removeTest(this.$confirm.bind(this), this.testListData, this.testListData[index])
         }
     }
 }
