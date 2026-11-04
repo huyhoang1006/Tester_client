@@ -159,6 +159,8 @@ export const getTestSnapshot = async (workTaskMrid) => {
                 for (const cell of cells) {
                     const info = measurementMap[cell.measurementId] || {}
                     conditions[info.name || cell.measurementId] = {
+                        // Renderer dùng measurementId để quy về đúng code điều kiện (winding_temp...)
+                        measurementId: cell.measurementId,
                         name: info.name || '',
                         value: cell.displayValue != null ? cell.displayValue : cell.value,
                         unit: info.unit || ''

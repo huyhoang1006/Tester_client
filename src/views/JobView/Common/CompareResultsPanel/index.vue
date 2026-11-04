@@ -24,8 +24,20 @@
                 </el-select>
             </div>
 
-            <div v-if="supportsReferenceValueApply" class="cmp-apply-row">
-                <el-button size="mini" type="primary"
+            <div v-if="supportsReferenceValueApply || isDcWinding" class="cmp-apply-row">
+                <!-- DC Winding: quy R corr của cả hai lần test về cùng một nhiệt độ tham chiếu -->
+                <div v-if="isDcWinding" class="cmp-reftemp">
+                    <el-tooltip placement="top">
+                        <div slot="content" class="cmp-hint-content">{{ refTempHint }}</div>
+                        <span class="cmp-reftemp-label">Reference temperature
+                            <i class="fa-regular fa-circle-question"></i></span>
+                    </el-tooltip>
+                    <el-input v-model="compareRefTemp" size="mini" type="text" class="cmp-reftemp-input"
+                        placeholder="75" @input="onRefTempInput">
+                        <template slot="append">°C</template>
+                    </el-input>
+                </div>
+                <el-button v-if="supportsReferenceValueApply" size="mini" type="primary"
                     :disabled="!canApplyReferenceValues"
                     @click="applyReferenceValues">
                     <i class="fa-solid fa-arrow-right-to-bracket"></i>
@@ -113,8 +125,20 @@
                                         </span>
                                     </td>
                                     <td class="cell-field">{{ cell.name }}</td>
-                                    <td>{{ display(cell.current) }}</td>
-                                    <td class="muted">{{ display(cell.previous) }}</td>
+                                    <td>
+                                        <el-tooltip v-if="missingWindingTemp(cell, 'current', row)" placement="top"
+                                            :content="noWindingTempWarning">
+                                            <span class="cell-warn">— <i class="fa-solid fa-triangle-exclamation"></i></span>
+                                        </el-tooltip>
+                                        <template v-else>{{ display(cell.current) }}</template>
+                                    </td>
+                                    <td class="muted">
+                                        <el-tooltip v-if="missingWindingTemp(cell, 'reference', row)" placement="top"
+                                            :content="noWindingTempWarning">
+                                            <span class="cell-warn">— <i class="fa-solid fa-triangle-exclamation"></i></span>
+                                        </el-tooltip>
+                                        <template v-else>{{ display(cell.previous) }}</template>
+                                    </td>
                                     <!-- % xuống dòng riêng để không bao giờ bị cắt cụt.
                                          Màu theo ĐỘ LỚN |%|, không theo dấu. -->
                                     <td class="cell-delta"
@@ -155,6 +179,31 @@ import { resolveReferenceValueMapping } from '@/config/reference-value-mappings'
 import {
     prepareReferenceValueApplication, applyReferenceValuePlan
 } from '@/utils/applyReferenceValues'
+import {
+    isDcWindingTest, conductorMaterialOf, conductorConstant, toNumberOrNull,
+    findConditionValue, recalcSnapshotRcorr,
+    DEFAULT_REFERENCE_TEMP, NO_WINDING_TEMP_WARNING
+} from '@/utils/dcWindingCorrection'
+
+// Nhãn + thứ tự điều kiện thí nghiệm, khớp với khối Testing conditions trong TestInformation
+const CONDITION_LABELS = {
+    top_oil_temp: 'Top oil temperature',
+    bottom_oil_temp: 'Bottom oil temperature',
+    winding_temp: 'Winding temperature',
+    reference_temp: 'Reference temperature',
+    ambient_temp: 'Ambient temperature',
+    humidity: 'Humidity',
+    weather: 'Weather'
+}
+const CONDITION_ORDER = Object.keys(CONDITION_LABELS)
+
+const normalizeText = (text) => String(text || '').trim().toLowerCase().replace(/[\s_]+/g, ' ')
+
+// 'some_code' → 'Some code' cho điều kiện không có trong bảng nhãn
+const humanize = (code) => {
+    const text = String(code || '').replace(/_/g, ' ').trim()
+    return text ? text.charAt(0).toUpperCase() + text.slice(1) : ''
+}
 
 export default {
     name: 'CompareResultsPanel',
@@ -178,7 +227,13 @@ export default {
             result: null,
             loading: false,
             referenceRowCount: 0,
-            referenceSnapshot: null
+            referenceSnapshot: null,
+            // DC Winding: Ref Temp do user tự đặt để quy mọi KQTN về cùng nhiệt độ
+            compareRefTemp: String(DEFAULT_REFERENCE_TEMP),
+            currentWindingTemp: null,
+            referenceWindingTemp: null,
+            noWindingTempWarning: NO_WINDING_TEMP_WARNING,
+            refTempHint: 'Reference temperature used to recalculate Rcorr of both results (°C, default 75°C).\nRcorr = Rmeas × (K + Tref) / (K + Tmeas), Tmeas is the winding temperature of each result.'
         }
     },
     mounted() { this.loadOptions() },
@@ -222,6 +277,13 @@ export default {
             return !!this.selectedWorkTaskMrid && !!this.referenceSnapshot && !this.loading
         },
         hasReferenceData() { return this.referenceRowCount > 0 },
+        isDcWinding() { return isDcWindingTest(this.testCode) },
+        conductorK() { return conductorConstant(conductorMaterialOf(this.assetData, this.testCode)) },
+        // measurementId của cột R corr — ô cần cảnh báo khi thiếu winding temp
+        rCorrMeasurementId() {
+            const col = (this.columns || []).find(c => c && c.code === 'r_corr')
+            return col ? col.mrid : ''
+        },
         /**
          * Trải ma trận (dòng × measurement) thành danh sách dọc.
          * Cột hẹp không chứa nổi 3 cột cho MỖI measurement — cách này giữ đúng
@@ -294,6 +356,7 @@ export default {
             this.options = []
             this.referenceRowCount = 0
             this.referenceSnapshot = null
+            this.referenceWindingTemp = null
             this.$emit('reference-change', null)
             if (!window.electronAPI || !window.electronAPI.getComparableTests) return
             if (!this.assetMrid || !this.testCode) return
@@ -328,6 +391,10 @@ export default {
                 const reference = attachAliasFromColumns(
                     (rs && rs.success && rs.data) ? rs.data : { conditions: {}, tables: [] },
                     this.columns, keys, this.compareDisplay)
+                this.normalizeConditions(reference)
+                // Đọc winding temp TRƯỚC khi lọc điều kiện
+                this.referenceWindingTemp = findConditionValue(
+                    reference.conditions, 'winding_temp', 'Winding temperature')
                 this.removeExcludedConditions(reference)
                 this.referenceSnapshot = reference
                 this.$emit('reference-change', reference)
@@ -348,10 +415,35 @@ export default {
             const current = buildSnapshotFromForm(
                 this.currentTable, this.columns, this.currentConditions,
                 this.compareKey.keys, this.compareDisplay)
+            this.normalizeConditions(current)
             this.removeExcludedConditions(current)
-            this.result = compareSnapshots(current, reference, {
+            let referenceForCompare = reference
+            if (this.isDcWinding) {
+                // Tính lại R corr + Dev with R ref của CẢ HAI lần test theo Ref Temp đang chọn,
+                // mỗi bên dùng winding temp của chính nó. Làm trên bản sao để không đụng
+                // referenceSnapshot (dùng cho Apply reference values).
+                const tRef = toNumberOrNull(this.compareRefTemp)
+                const K = this.conductorK
+                this.currentWindingTemp = findConditionValue(
+                    this.currentConditions, 'winding_temp', 'Winding temperature')
+                recalcSnapshotRcorr(current, { tMeas: this.currentWindingTemp, tRef, K })
+                referenceForCompare = reference ? JSON.parse(JSON.stringify(reference)) : reference
+                recalcSnapshotRcorr(referenceForCompare, { tMeas: this.referenceWindingTemp, tRef, K })
+            }
+            this.result = compareSnapshots(current, referenceForCompare, {
                 excludedFields: this.excludedCompareFields
             })
+        },
+        onRefTempInput() {
+            if (this.referenceSnapshot) this.compareCurrentWith(this.referenceSnapshot)
+        },
+        /** Ô R corr của bên nào thiếu winding temp thì hiện cảnh báo thay cho giá trị */
+        missingWindingTemp(cell, side, row) {
+            if (!this.isDcWinding || !cell || cell.measurementId !== this.rCorrMeasurementId) return false
+            if (side === 'current') {
+                return row.status !== 'onlyReference' && this.currentWindingTemp === null
+            }
+            return row.status !== 'onlyCurrent' && this.referenceWindingTemp === null
         },
         async applyReferenceValues() {
             if (!this.canApplyReferenceValues || !this.referenceValueMapping) return
@@ -395,6 +487,40 @@ export default {
                 ? `${plan.matchedCount} reference values applied. ${plan.unmatchedCount} measurements were not matched.`
                 : `Reference values applied to ${plan.matchedCount} matched measurements.`
             this.$message.success(message)
+        },
+        /**
+         * Quy điều kiện của một snapshot về cùng khoá = code (winding_temp...) và nhãn dễ đọc.
+         * Snapshot form khoá theo code, snapshot DB khoá theo tên measurement → nếu không
+         * quy về chung thì hai bên không ghép được (bên Reference luôn trống).
+         */
+        normalizeConditions(snapshot) {
+            if (!snapshot || !snapshot.conditions) return
+            const idToCode = {}
+            const current = this.currentConditions || {}
+            for (const code of Object.keys(current)) {
+                const cell = current[code]
+                if (cell && cell.measurement_id) idToCode[cell.measurement_id] = code
+            }
+            const nameToCode = {}
+            for (const code of CONDITION_ORDER) {
+                nameToCode[normalizeText(code)] = code
+                nameToCode[normalizeText(CONDITION_LABELS[code])] = code
+            }
+            const byCode = {}
+            for (const key of Object.keys(snapshot.conditions)) {
+                const entry = snapshot.conditions[key] || {}
+                const code = idToCode[entry.measurementId]
+                    || nameToCode[normalizeText(key)]
+                    || nameToCode[normalizeText(entry.name)]
+                    || key
+                byCode[code] = Object.assign({}, entry, {
+                    name: CONDITION_LABELS[code] || entry.name || humanize(code)
+                })
+            }
+            const ordered = {}
+            for (const code of CONDITION_ORDER) if (byCode[code]) ordered[code] = byCode[code]
+            for (const code of Object.keys(byCode)) if (!ordered[code]) ordered[code] = byCode[code]
+            snapshot.conditions = ordered
         },
         removeExcludedConditions(snapshot) {
             if (!snapshot || !snapshot.conditions) return
@@ -482,13 +608,27 @@ export default {
 .cmp-apply-row {
     flex: 0 0 auto;
     display: flex;
+    align-items: center;
     justify-content: flex-end;
+    gap: 12px;
 }
-.cmp-apply-row i { margin-right: 5px; }
+.cmp-apply-row .el-button i { margin-right: 5px; }
 
+/* Ref Temp (DC Winding) — góc trên bên phải bảng so sánh */
+.cmp-reftemp { display: flex; align-items: center; gap: 8px; }
+.cmp-reftemp-label { font-size: 12px; color: #606266; white-space: nowrap; cursor: help; }
+.cmp-reftemp-label i { color: #909399; font-size: 11px; margin-left: 2px; }
+.cmp-reftemp-input { width: 120px; }
+.cmp-hint-content { white-space: pre-line; max-width: 380px; line-height: 1.5; }
+
+/* Ô R corr không tính được do thiếu winding temp */
+.cell-warn { color: #e6a23c; cursor: help; }
+.cell-warn i { font-size: 11px; margin-left: 2px; }
+
+/* Popup rộng → Test date / Source / Tested by xếp ngang cho gọn */
 .cmp-meta {
     flex: 0 0 auto;
-    display: flex; flex-direction: column; gap: 8px;
+    display: flex; flex-wrap: wrap; gap: 8px 32px;
     padding: 8px 10px; border: 1px solid #ebeef5; border-radius: 4px; background: #fcfcfd;
 }
 .cmp-meta-row { display: flex; align-items: flex-start; gap: 8px; }
