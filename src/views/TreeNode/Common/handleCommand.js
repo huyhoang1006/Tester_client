@@ -6,8 +6,7 @@ export default {
                 this.openExportDialog = true
                 this.exportType = 'excel'
             } else if (cmd === 'exportWord') {
-                this.openExportDialog = true
-                this.exportType = 'word'
+                this.openWordExportWorkspace()
             } else if (cmd === 'exportJSONOnlyNode') {
                 // JSON: không qua dialog — chọn node → chọn chỗ lưu → export luôn
                 this.exportJsonOnlyNode()
@@ -19,8 +18,7 @@ export default {
         // ================== IMPORT COMMAND ==================
         handleImportCommand(cmd) {
             if (cmd === 'importExcel') {
-                this.openImportDialog = true
-                this.importType = 'excel'
+                this.openExcelImportWorkspace()
             } else if (cmd === 'importWord') {
                 this.openWordImportWorkspace()
             } else if (cmd === 'importJSON') {

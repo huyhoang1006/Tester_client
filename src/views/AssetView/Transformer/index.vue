@@ -31,8 +31,9 @@
                 <!-- Winding configuration + Others (short cards, side by side on wide screens) -->
                 <div class="short-cards">
                     <div class="short-card-col">
-                        <winding-configuration :properties="this.transformerDto.properties"
+                        <winding-configuration ref="windingConfiguration" :properties="this.transformerDto.properties"
                             :data="this.transformerDto.winding_configuration"
+                            :phase-error="phaseValidationError"
                             style="font-size: 12px !important;"></winding-configuration>
                     </div>
                     <div class="short-card-col">
@@ -138,6 +139,7 @@ export default {
         return {
             title: 'transformer',
             switch: 'Transformer',
+            phaseValidationError: false,
             normalAttachmentData: []
         }
     },
@@ -155,7 +157,7 @@ export default {
             const phases = this.transformerDto && this.transformerDto.winding_configuration
                 ? this.transformerDto.winding_configuration.phases
                 : ''
-            return phases === '1' || phases === '3'
+            return phases !== null && phases !== undefined && ['1', '3'].includes(String(phases))
         }
     },
     watch: {

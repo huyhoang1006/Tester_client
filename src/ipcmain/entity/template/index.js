@@ -1037,7 +1037,7 @@ export const exportTemplateWithData = () => {
 }
 
 export const exportWordWithData = () => {
-    ipcMain.handle('exportWordWithData', async function (event, { templatePath, codeMap, variables }) {
+    ipcMain.handle('exportWordWithData', async function (event, { templatePath, codeMap, variables, previewOnly = false }) {
         try {
             if (!templatePath || !fs.existsSync(templatePath)) {
                 return { success: false, message: 'Template file not found' }
@@ -1176,6 +1176,8 @@ export const exportWordWithData = () => {
             })
             doc.render(dataForWord)
             const buf = doc.getZip().generate({ type: 'nodebuffer', compression: 'DEFLATE' })
+
+            if (previewOnly) return { success: true, base64: buf.toString('base64') }
  
             // ── Save ──────────────────────────────────────────────────────────
             const { canceled, filePath } = await dialog.showSaveDialog({

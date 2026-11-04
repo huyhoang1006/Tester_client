@@ -13,11 +13,12 @@
             <div class="content winding-content">
                 <div class="phase-row">
                     <el-form class="winding-form" :inline-message="true" :label-width="labelWidth" size="mini" label-position="left">
-                        <el-form-item label="Number of Phase" class="inline-phases">
+                        <el-form-item label="Number of Phase *" class="inline-phases" :class="{ 'phase-invalid': phaseError }">
                             <el-radio-group v-radio-clearable @change="onChangePhase" v-model="windingConfigurationData.phases">
                                 <el-radio type="number" label="1">1</el-radio>
                                 <el-radio type="number" label="3">3</el-radio>
                             </el-radio-group>
+                            <div v-if="phaseError" class="phase-validation-error" role="alert">Select 1 or 3 phases before saving.</div>
                         </el-form-item>
                         <el-form-item v-if="windingConfigurationData.phases === '1'" label="Phase">
                             <el-select class="phase-select" v-model="windingConfigurationData.phase" placeholder="Select phase">
@@ -161,6 +162,10 @@ export default {
         VectorGroup
     },
     props: {
+        phaseError: {
+            type: Boolean,
+            default: false
+        },
         data: {
             type: Object,
             required: true,
@@ -456,6 +461,16 @@ export default {
     gap: 18px;
     min-height: 32px;
     align-items: center;
+}
+
+.phase-validation-error {
+    color: #c92a2a;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.phase-invalid ::v-deep(.el-form-item__label) {
+    color: #c92a2a;
 }
 
 ::v-deep(.el-radio__label) {

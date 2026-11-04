@@ -46,7 +46,8 @@
                                     :compare-asset-mrid="transformerJobDto.properties.asset_id"
                                     :compare-exclude-work-mrid="transformerJobDto.properties.mrid"
                                     :show-oil-and-winding-temperatures="item.testTypeCode === 'WindingDfCap'"
-                                    @compare-reference-change="setCompareReference(item.testTypeCode + index, item.testTypeCode, $event)">
+                                    :show-winding-temperature="isDcWindingTest(item.testTypeCode)"
+                                    :condition-hints="isDcWindingTest(item.testTypeCode) ? dcWindingConditionHints : null"                                    @compare-reference-change="setCompareReference(item.testTypeCode + index, item.testTypeCode, $event)">
                                 </test-information>
                                 <component
                                     :is="item.testTypeCode" 
@@ -88,6 +89,7 @@ import SelectTest from './components/SelectTest'
 import TestInformation from '@/views/Common/TestInformation.vue'
 import compareTestMap from '@/config/test-definitions/Transformer'
 import TestingEquipment from './components/TestingEquipment/index.vue'
+import { isDcWindingTest, CONDITION_HINTS } from '@/utils/dcWindingCorrection'
 
 import DCWindingPrim from './components/DCWindingPrim/index.vue'
 import DCWindingSec from './components/DCWindingSec/index.vue'
@@ -196,12 +198,16 @@ export default {
             assetData : {},
             locationData : {},
             productAssetModelData: {},
-
+            // Tooltip cho Winding / Reference temperature của DC Winding Prim/Sec/Tert
+            dcWindingConditionHints: CONDITION_HINTS
         }
     },
     mounted() { },
     methods: {
         // ── So sánh với lần test trước ──────────────────────────────────
+        isDcWindingTest(testTypeCode) {
+            return isDcWindingTest(testTypeCode)
+        },
         // Bật cho mọi bài test có định nghĩa cột trong test-definitions.
         compareEnabled(testTypeCode) {
             return !!compareTestMap[testTypeCode]

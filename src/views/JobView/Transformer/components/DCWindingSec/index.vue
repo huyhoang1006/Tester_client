@@ -26,7 +26,12 @@
                     <th class="phase-col">Name</th>
                     <th>R meas</th>
                     <th>R ref</th>
-                    <th>R corr</th>
+                    <th>
+                        <el-tooltip placement="top">
+                            <div slot="content" style="white-space: pre-line; max-width: 360px; line-height: 1.5;">{{ rcorrHint }}</div>
+                            <span class="th-hint">R corr <i class="fa-regular fa-circle-question"></i></span>
+                        </el-tooltip>
+                    </th>
                     <th>Dev with R ref (%)</th>
                     <th>Dev within phases (%)</th>
                     <!-- <th>Mean value</th> -->
@@ -60,7 +65,9 @@
                                 slot="append">Ω</template></el-input>
                     </td>
                     <td>
-                        <el-input :measurement="item.r_corr" size="mini" type="text" number="positive" v-model="item.r_corr.value"><template
+                        <!-- R corr do phần mềm tính, user không sửa được -->
+                        <el-input :measurement="item.r_corr" class="rcorr-readonly" size="mini" type="text" disabled
+                            :placeholder="rcorrAvailable ? '' : 'N/A'" v-model="item.r_corr.value"><template
                                 slot="append">Ω</template></el-input>
                     </td>
                     <td>
@@ -204,6 +211,9 @@ import * as common from '../../../Common/index.js'
 import GroupNode from '../../../Common/GroupNode.vue'
 import { changeTestStandard } from '../../../Common'
 import conditionIndicatorMixin from '../MixinCommon/MixinConditionIndicator'
+import {
+    RCORR_HINT, conductorMaterialOf, conductorConstant, toNumberOrNull, computeDcWindingRows
+} from '@/utils/dcWindingCorrection'
 
 export default {
     mixins: [conditionIndicatorMixin],
@@ -213,7 +223,8 @@ export default {
         return {
             openAssessmentDialog: false,
             openConditionIndicatorDialog: false,
-            option: null
+            option: null,
+            rcorrHint: RCORR_HINT
         }
     },
     props: {
@@ -238,9 +249,18 @@ export default {
             if (!this.option) return []
             return (this.assessmentData || []).filter(function(e) { return e.code === this.option }.bind(this))
         },
-        testStandardData() { return this.testAssessment ? this.testAssessment.testStandard : null }
+        testStandardData() { return this.testAssessment ? this.testAssessment.testStandard : null },
+        windingTemp()   { return toNumberOrNull(this.conditions.winding_temp && this.conditions.winding_temp.value) },
+        referenceTemp() { return toNumberOrNull(this.conditions.reference_temp && this.conditions.reference_temp.value) },
+        // Hằng số K theo Conductor material của cuộn dây (Others → Winding): Copper 235, Aluminum 225
+        conductorK()    { return conductorConstant(conductorMaterialOf(this.assetData, 'DCWindingSec')) },
+        rcorrAvailable() { return this.windingTemp !== null && this.referenceTemp !== null }
     },
     watch: {
+        // Đổi nhiệt độ hoặc vật liệu dây dẫn → tính lại R corr và các Dev
+        windingTemp()   { this.computeFields() },
+        referenceTemp() { this.computeFields() },
+        conductorK()    { this.computeFields() },
         'option': {
             immediate: true,
             handler: async function (newVal) {
@@ -290,38 +310,10 @@ export default {
             this.$message.success('Calculating successfully')
         },
         computeFields() {
-            var rows = this.testData.table.table1
+            var rows = this.testData && this.testData.table ? this.testData.table.table1 : null
             if (!rows || rows.length === 0) return
-            var cond = this.conditions
-            var tMeas = parseFloat(cond.winding_temp   && cond.winding_temp.value)   || 0
-            var tRef  = parseFloat(cond.reference_temp && cond.reference_temp.value) || 75
-            // conductor_material: Copper → 235, Aluminum → 225
-            var props = this.assetData && this.assetData.properties ? this.assetData.properties : {}
-            var K = (props.conductor_material === 'Aluminum' || props.conductor_material === 'AL') ? 225 : 235
-
-            for (var i = 0; i < rows.length; i++) {
-                var row = rows[i]
-                var rMeas = parseFloat(row.r_meas && row.r_meas.value)
-                if (!isNaN(rMeas) && tMeas !== 0) {
-                    var rCorr = rMeas * (K + tRef) / (K + tMeas)
-                    row.r_corr.value = String(Math.round(rCorr * 1000000) / 1000000)
-                }
-                var rRef   = parseFloat(row.r_ref  && row.r_ref.value)
-                if (!isNaN(rMeas) && !isNaN(rRef) && rRef !== 0)
-                    row.dev_r_ref.value = String(Math.round(Math.abs(100 * (rMeas - rRef) / rRef) * 10000) / 10000)
-                else row.dev_r_ref.value = ''
-            }
-            // Deviation within phases is calculated from the measured phase values.
-            for (var g = 0; g < rows.length; g += 3) {
-                var group = rows.slice(g, g + 3)
-                var measuredValues = group.map(function(r) { return parseFloat(r.r_meas && r.r_meas.value) }).filter(function(v) { return !isNaN(v) })
-                if (measuredValues.length === group.length && measuredValues.length > 0) {
-                    var maxV = Math.max.apply(null, measuredValues)
-                    var minV = Math.min.apply(null, measuredValues)
-                    var devPhase = minV !== 0 ? Math.abs(100 * (maxV - minV) / minV) : 0
-                    rows[g].dev_phase.value = String(Math.round(devPhase * 10000) / 10000)
-                } else rows[g].dev_phase.value = ''
-            }
+            // Thiếu Winding temp hoặc Ref temp → không có R corr, Dev cũng để trống (đặc tả 5.2.3.2)
+            computeDcWindingRows(rows, { tMeas: this.windingTemp, tRef: this.referenceTemp, K: this.conductorK })
         },
         async calcAssessment() {
             var assessmentStandard = this.filteredAssessmentData.find(function(x) { return x.code === this.option }.bind(this))
@@ -370,6 +362,10 @@ export default {
 
 <style lang="scss" scoped>
 @import "~@/views/JobView/Common/testUi.scss";
+.th-hint { cursor: help; white-space: nowrap; }
+.th-hint i { color: #909399; font-size: 11px; margin-left: 2px; }
+/* R corr: làm mờ, chỉ đọc */
+.rcorr-readonly ::v-deep(.el-input__inner) { background: #f5f7fa; color: #909399; cursor: not-allowed; }
 .size {
     width: 15%;
 }

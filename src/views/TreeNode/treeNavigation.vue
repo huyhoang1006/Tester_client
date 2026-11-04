@@ -171,6 +171,15 @@
                     @fetch-children="fetchChildren" @refresh-tree="showLocationRoot"
                     @imported="handleImportedRefresh" @view-asset="handleWordImportViewAsset" />
             </div>
+            <div v-if="excelImportOpened" v-show="activeWorkspaceTab === 'excelImport' && clientSlide" class="word-import-workspace">
+                <ExcelReportWorkspace ref="excelReportWorkspace" import-type="excel" :organisation-client-list="organisationClientList"
+                    @fetch-children="fetchChildren" @refresh-tree="showLocationRoot"
+                    @imported="handleImportedRefresh" />
+            </div>
+            <div v-if="wordExportOpened" v-show="activeWorkspaceTab === 'wordExport' && clientSlide" class="word-import-workspace">
+                <WordExportWorkspace ref="wordExportWorkspace" export-type="word" :organisation-client-list="organisationClientList"
+                    @fetch-children="fetchChildren" @refresh-tree="showLocationRoot" />
+            </div>
             <div v-if="maintenanceFailureEnabled && clientSlide && activeWorkspaceTab === 'maintenanceFailure' && maintenanceFailureAsset" class="maintenance-failure-workspace">
                 <MaintenanceFailure :asset="maintenanceFailureAsset" />
             </div>
@@ -442,6 +451,8 @@ import Icon from '@/views/Common/Icon.vue'
 import Fmeca from '@/views/Fmeca'
 import MaintenanceFailure from '@/views/MaintenanceFailure'
 import WordReportWorkspace from '@/views/Import/WordReportWorkspace.vue'
+import ExcelReportWorkspace from '@/views/Import/ExcelReportWorkspace.vue'
+import WordExportWorkspace from '@/views/Export/WordExportWorkspace.vue'
 import { MAINTENANCE_FAILURE_ENABLED } from '@/config/featureFlags'
 import Export from '@/views/Export/index.vue'
 import TestingEquipmentView from '@/views/TestingEquipment/index.vue'
@@ -541,6 +552,8 @@ export default {
         Fmeca,
         MaintenanceFailure,
         WordReportWorkspace,
+        ExcelReportWorkspace,
+        WordExportWorkspace,
         Export,
         TestingEquipmentView,
         TestingEquipmentList,
@@ -582,6 +595,8 @@ export default {
             activeWorkspaceTab: 'tree',
             clientWorkspaceTab: 'tree',
             serverWorkspaceTab: 'tree',
+            excelImportOpened: false,
+            wordExportOpened: false,
             clientEquipmentOpened: false,
             serverEquipmentOpened: false,
             maintenanceFailureAsset: null,
@@ -946,7 +961,7 @@ export default {
                 }
                 this.activeWorkspaceTab = this.clientWorkspaceTab || 'tree'
                 this.$nextTick(() => {
-                    if (this.$refs.treeToolBar) this.$refs.treeToolBar.activeTab = this.activeWorkspaceTab === 'wordImport' ? 'import' : this.activeWorkspaceTab
+                    if (this.$refs.treeToolBar) this.$refs.treeToolBar.activeTab = ['wordImport', 'excelImport'].includes(this.activeWorkspaceTab) ? 'import' : this.activeWorkspaceTab === 'wordExport' ? 'export' : this.activeWorkspaceTab
                 })
             } else {
                 this.activeWorkspaceTab = this.serverWorkspaceTab || 'tree'
@@ -1197,6 +1212,28 @@ export default {
             if (this.$refs.treeToolBar) this.$refs.treeToolBar.activeTab = 'import'
             this.$nextTick(() => {
                 if (selected && selected.mode === 'asset' && !this.$refs.wordReportWorkspace.target) this.$refs.wordReportWorkspace.selectContextAsset(selected)
+            })
+        },
+        openExcelImportWorkspace() {
+            if (!this.clientSlide) return
+            const selected = this.selectedNodes[this.selectedNodes.length - 1]
+            this.excelImportOpened = true
+            this.activeWorkspaceTab = 'excelImport'
+            this.clientWorkspaceTab = 'excelImport'
+            if (this.$refs.treeToolBar) this.$refs.treeToolBar.activeTab = 'import'
+            this.$nextTick(() => {
+                if (selected && this.$refs.excelReportWorkspace) this.$refs.excelReportWorkspace.selectContextNode(selected)
+            })
+        },
+        openWordExportWorkspace() {
+            if (!this.clientSlide) return
+            const selected = this.selectedNodes[this.selectedNodes.length - 1]
+            this.wordExportOpened = true
+            this.activeWorkspaceTab = 'wordExport'
+            this.clientWorkspaceTab = 'wordExport'
+            if (this.$refs.treeToolBar) this.$refs.treeToolBar.activeTab = 'export'
+            this.$nextTick(() => {
+                if (selected && this.$refs.wordExportWorkspace) this.$refs.wordExportWorkspace.selectContextNode(selected)
             })
         },
         handleWordImportViewAsset(node) {

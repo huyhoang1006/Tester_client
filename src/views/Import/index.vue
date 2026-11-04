@@ -1,10 +1,10 @@
 <template>
 <div>
-  <div v-if="managerMode && importType === 'word'" class="word-template-manager">
+  <div v-if="managerMode" class="word-template-manager">
     <aside class="word-manager-sidebar">
       <div class="word-manager-sidebar-tools">
         <el-button type="primary" size="small" icon="el-icon-plus" @click="openAddTemplateDialog">New Template</el-button>
-        <el-button size="small" @click="$emit('import-package')">Import ZIP</el-button>
+        <el-button v-if="importType === 'word'" size="small" @click="$emit('import-package')">Import ZIP</el-button>
       </div>
       <el-input v-model="managerSearch" clearable size="small" placeholder="Search templates..." prefix-icon="el-icon-search" />
       <el-select v-model="managerAssetFilter" size="small" class="word-manager-filter" aria-label="Filter asset type">
@@ -30,13 +30,13 @@
             <div><span class="word-manager-eyebrow">{{ managerAssetType(selectedTemplate) }}</span><h2>{{ selectedTemplateName }}</h2></div>
             <el-button size="small" icon="el-icon-refresh" title="Refresh templates" @click="loadTemplates">Refresh</el-button>
           </div>
-          <div class="word-manager-section-title">Word Template (.docx)</div>
+          <div class="word-manager-section-title">{{ importType === 'word' ? 'Word Template (.docx)' : 'Excel Template (.xlsx)' }}</div>
           <div class="word-manager-file">
-            <div class="word-manager-file-icon">W</div>
-            <span :title="currentFilePath">{{ managerFileName || 'No Word file selected' }}</span>
-            <el-button size="small" @click="handleUploadWord">{{ currentFilePath ? 'Replace DOCX' : 'Add DOCX' }}</el-button>
-            <el-button size="small" :disabled="!currentFilePath" @click="downloadCurrentTemplate">Download</el-button>
-            <el-button size="small" :disabled="!currentFilePath" @click="managerPreviewVisible = true">Preview</el-button>
+            <div class="word-manager-file-icon" :class="{'excel-manager-file-icon': importType === 'excel'}">{{ importType === 'word' ? 'W' : 'X' }}</div>
+            <span :title="currentFilePath">{{ managerFileName || 'No template file selected' }}</span>
+            <el-button size="small" @click="importType === 'word' ? handleUploadWord() : handleUploadExcel()">{{ currentFilePath ? 'Replace file' : 'Add file' }}</el-button>
+            <el-button v-if="importType === 'word'" size="small" :disabled="!currentFilePath" @click="downloadCurrentTemplate">Download</el-button>
+            <el-button v-if="importType === 'word'" size="small" :disabled="!currentFilePath" @click="managerPreviewVisible = true">Preview</el-button>
             <el-button size="small" :disabled="!currentFilePath" @click="openTemplateFile">Open</el-button>
           </div>
           <div class="word-manager-mapping-head">
@@ -45,7 +45,7 @@
           </div>
           <div class="word-manager-table-scroll">
             <table class="word-manager-table">
-              <thead><tr><th>Code</th><th>Category</th><th>Target field</th><th>Word cell</th><th title="Include the stored unit">Unit</th><th><span class="sr-only">Remove</span></th></tr></thead>
+              <thead><tr><th>Code</th><th>Category</th><th>Target field</th><th>{{ importType === 'word' ? 'Word cell' : 'Excel cell' }}</th><th title="Include the stored unit">Unit</th><th><span class="sr-only">Remove</span></th></tr></thead>
               <tbody>
                 <tr v-for="(row, index) in tableData" :key="index">
                   <td><el-input v-model="row.code" size="small" placeholder="A1" /></td>
@@ -68,8 +68,8 @@
           <div>
             <el-button size="small" @click="handleImportJson">Import JSON</el-button>
             <el-button size="small" :disabled="!tableData.length" @click="handleExportJson">Export JSON</el-button>
-            <el-button size="small" @click="$emit('set-sample', selectedTemplateName)">Add Sample Report</el-button>
-            <el-button size="small" @click="$emit('export-package', selectedTemplateName)">Export ZIP</el-button>
+            <el-button v-if="importType === 'word'" size="small" @click="$emit('set-sample', selectedTemplateName)">Add Sample Report</el-button>
+            <el-button v-if="importType === 'word'" size="small" @click="$emit('export-package', selectedTemplateName)">Export ZIP</el-button>
           </div>
           <div><el-button type="danger" plain size="small" @click="handleDelete">Delete</el-button><el-button type="primary" size="small" @click="handleSave">Save</el-button></div>
         </div>
@@ -1300,6 +1300,7 @@ export default {
   font-weight: 800;
   font-size: 18px;
 }
+.excel-manager-file-icon { background: #23804c; }
 .word-manager-file > span { flex: 1; min-width: 140px; font-weight: 600; overflow-wrap: anywhere; }
 .word-manager-file .el-button + .el-button { margin-left: 0; }
 .word-manager-mapping-head { margin-bottom: 10px; }
