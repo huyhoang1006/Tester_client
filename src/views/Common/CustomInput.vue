@@ -19,6 +19,8 @@
 <script>
 import ElInputOrigin from 'element-ui/packages/input/src/input.vue'
 
+const MAX_DECIMAL_PLACES = 6
+
 export default {
     name: 'ElInput',
     inheritAttrs: false,
@@ -37,7 +39,7 @@ export default {
 
     computed: {
         displayValue() {
-            return this.roundToFourDecimals(this.value)
+            return this.limitDecimalPlaces(this.value)
         },
         boundListeners() {
             return {
@@ -57,7 +59,7 @@ export default {
             }
             return this.value === null || this.value === undefined ? '' : String(this.value)
         },
-        roundToFourDecimals(value) {
+        limitDecimalPlaces(value) {
             const isNumberInput = this.number !== undefined
                 && this.number !== false
                 && this.number !== 'year'
@@ -69,17 +71,12 @@ export default {
             const stringValue = String(value).replace(/,/g, '.')
             const decimalMatch = stringValue.match(/^(-?\d+)\.(\d+)$/)
 
-            // Keep incomplete input such as "1." intact and only round when needed.
-            if (!decimalMatch || decimalMatch[2].length <= 4) {
+            // Keep drafts such as "1." intact and discard excess fractional digits.
+            if (!decimalMatch || decimalMatch[2].length <= MAX_DECIMAL_PLACES) {
                 return stringValue
             }
 
-            const numericValue = Number(stringValue)
-            if (!Number.isFinite(numericValue)) {
-                return stringValue
-            }
-
-            return String(Number(numericValue.toFixed(4)))
+            return decimalMatch[1] + '.' + decimalMatch[2].slice(0, MAX_DECIMAL_PLACES)
         },
         handleInput(val) {
             // Đảm bảo val luôn là chuỗi để dùng Regex
@@ -139,7 +136,7 @@ export default {
                     }
                 }
 
-                newVal = this.roundToFourDecimals(newVal)
+                newVal = this.limitDecimalPlaces(newVal)
             }
 
             // 🔥 Force UI: Ép DOM cập nhật lại nếu chuỗi bị Regex thay đổi
