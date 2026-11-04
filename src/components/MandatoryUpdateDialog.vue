@@ -2,12 +2,12 @@
     <div>
         <el-dialog
             custom-class="mandatory-update-dialog"
-            title="Update required"
+            :title="dialogTitle"
             :visible="dialogVisible"
-            :before-close="closeApplication"
+            :before-close="handleBeforeClose"
             :close-on-click-modal="false"
             :close-on-press-escape="false"
-            :show-close="true"
+            :show-close="mandatory || !(downloading || installing)"
             :modal="true"
             append-to-body
             width="460px">
@@ -17,7 +17,8 @@
                 </div>
                 <div class="mandatory-update-dialog__content">
                     <strong>AT Digital Tester {{ versionLabel }} is available</strong>
-                    <p>This update must be installed before you can continue using the application.</p>
+                    <p v-if="mandatory">This update must be installed before you can continue using the application.</p>
+                    <p v-else>The update will be downloaded and installed now. The application will restart automatically when it is done.</p>
                 </div>
             </div>
 
@@ -53,6 +54,9 @@ export default {
     data() {
         return {
             dialogVisible: false,
+            // true: bản cập nhật bắt buộc lúc khởi động (đóng dialog = thoát app)
+            // false: user tự bấm Update từ thông báo (đóng dialog = quay lại làm việc)
+            mandatory: true,
             version: '',
             downloading: false,
             installing: false,
@@ -67,6 +71,9 @@ export default {
         serviceDomain() {
             return this.$store.state.serviceAddr || localStorage.getItem('SERVICE_ADDR') || ''
         },
+        dialogTitle() {
+            return this.mandatory ? 'Update required' : 'Update application'
+        },
         versionLabel() {
             return this.version ? `v${this.version}` : ''
         },
@@ -79,6 +86,8 @@ export default {
     mounted() {
         this.registerUpdateEvents()
         this.initializeUpdateFlow()
+        // Nút Update trong thông báo (TopBar) phát sự kiện này → tải, cài, mở lại app ngay
+        this.$root.$on('app-update:install', this.installFromNotification)
     },
     watch: {
         serviceDomain(value) {
@@ -89,6 +98,7 @@ export default {
     },
     beforeDestroy() {
         if (this.hourlyCheckTimer) clearInterval(this.hourlyCheckTimer)
+        this.$root.$off('app-update:install', this.installFromNotification)
     },
     methods: {
         registerUpdateEvents() {
@@ -174,6 +184,28 @@ export default {
                     ? error.message
                     : 'Unable to download the update. Please try again.'
             }
+        },
+        installFromNotification(version) {
+            // Đang tải/cài rồi thì chỉ hiện lại dialog, không tải lần hai
+            if (this.downloading || this.installing) {
+                this.dialogVisible = true
+                return
+            }
+            if (!this.dialogVisible) this.mandatory = false
+            if (version) this.version = String(version).replace(/^v/i, '')
+            this.dialogVisible = true
+            this.downloadUpdate()
+        },
+        handleBeforeClose() {
+            if (this.mandatory) {
+                this.closeApplication()
+                return
+            }
+            // Đang tải/cài thì không cho đóng giữa chừng
+            if (this.downloading || this.installing) return
+            this.dialogVisible = false
+            this.downloadError = ''
+            this.downloadProgress = 0
         },
         closeApplication() {
             window.electronAPI.closeApp()

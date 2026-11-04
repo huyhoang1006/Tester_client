@@ -53,6 +53,11 @@
                                                 <div class="notification-time">{{ notification.name }}</div>
                                             </div>
                                         </div>
+                                        <!-- Thông báo có bản mới: bấm là tải, cài và mở lại app luôn -->
+                                        <el-button v-if="notification.type === 'update'" class="notification-update-btn"
+                                            type="primary" size="mini" @click.stop="installUpdate(notification)">
+                                            <i class="fas fa-download"></i> Update
+                                        </el-button>
                                         <el-dropdown trigger="click" placement="bottom-end" :append-to-body="false">
                                             <div class="notification-menu-btn" @click.stop>
                                                 <i class="fas fa-ellipsis-v"></i>
@@ -203,7 +208,12 @@
                 <el-button class="footer-btn" size="small" @click="dialogNotificationDetail = false">
                     Close
                 </el-button>
-                <el-button class="footer-btn" size="small" type="danger"
+                <el-button v-if="selectedNotification && selectedNotification.type === 'update'"
+                    class="footer-btn" size="small" type="primary"
+                    @click="installUpdate(selectedNotification)">
+                    <i class="fas fa-download"></i> Update
+                </el-button>
+                <el-button v-else class="footer-btn" size="small" type="danger"
                     @click="deleteNotification(selectedNotification.mrid)">
                     <i class="fas fa-trash"></i> Delete
                 </el-button>
@@ -424,6 +434,17 @@ export default {
                     return
                 }
             })
+        },
+        /**
+         * Cài bản cập nhật ngay từ thông báo. Việc tải / cài / mở lại app do
+         * MandatoryUpdateDialog (gắn ở App.vue) đảm nhận, kèm thanh tiến trình.
+         */
+        installUpdate(notification) {
+            const match = String(notification && notification.message || '').match(/Version\s+v?([0-9A-Za-z.+-]+)/i)
+            const version = match ? match[1].replace(/\.$/, '') : ''
+            this.dialogNotificationDetail = false
+            if (this.$refs.notificationDropdown) this.$refs.notificationDropdown.hide()
+            this.$root.$emit('app-update:install', version)
         },
         handleNotificationDropdown() {
             if (this.$refs.notificationDropdown) {
@@ -1231,6 +1252,17 @@ export default {
 .notification-time {
     font-size: 11px;
     color: rgba(255, 255, 255, 0.5);
+}
+
+.notification-update-btn.el-button {
+    flex-shrink: 0;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.notification-update-btn.el-button i {
+    margin-right: 4px;
 }
 
 .notification-menu-btn {

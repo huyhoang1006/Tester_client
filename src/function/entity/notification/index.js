@@ -68,7 +68,7 @@ export const upsertUpdateNotification = async (version) => {
     const notification = {
         mrid: `app-update-${normalizedVersion.replace(/[^0-9A-Za-z._-]/g, '-')}`,
         name: 'Application update available',
-        message: `Version ${normalizedVersion} is available. Restart the application to install this update.`,
+        message: `Version ${normalizedVersion} is available. Click Update to install it now.`,
         type: UPDATE_NOTIFICATION_TYPE,
         status: 'unread',
         created_at: new Date().toISOString()
