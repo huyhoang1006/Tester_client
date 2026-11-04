@@ -71,17 +71,12 @@ export default {
             const stringValue = String(value).replace(/,/g, '.')
             const decimalMatch = stringValue.match(/^(-?\d+)\.(\d+)$/)
 
-            // Keep incomplete input such as "1." intact and only round when needed.
+            // Keep drafts such as "1." intact and discard excess fractional digits.
             if (!decimalMatch || decimalMatch[2].length <= MAX_DECIMAL_PLACES) {
                 return stringValue
             }
 
-            const numericValue = Number(stringValue)
-            if (!Number.isFinite(numericValue)) {
-                return stringValue
-            }
-
-            return numericValue.toFixed(MAX_DECIMAL_PLACES)
+            return decimalMatch[1] + '.' + decimalMatch[2].slice(0, MAX_DECIMAL_PLACES)
         },
         handleInput(val) {
             // Đảm bảo val luôn là chuỗi để dùng Regex
