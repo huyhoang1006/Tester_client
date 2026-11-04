@@ -12,6 +12,7 @@
  * ----------------------------------------------------------------------------
  */
 import { importBranchFromJSON, collectGraftBranches, isOrgIntoOrg, nodeModeOf } from '@/views/Import/services/importJsonService'
+import { prepareTransformerImportDto, validateTransformerImportEntity } from '@/views/Import/services/transformerImportDto'
 import { scanTreeConflicts, CONFLICT_ACTION } from '@/views/TreeNode/Common/Import/mridConflictScan'
 import { hasUserSuffix, getUserSuffix, replaceUserSuffix, isLocalMrid, appendUserSuffix } from '@/utils/serverId'
 import { ID_POLICY_USER_SCOPED } from '@/views/Export/services/exportJsonService'
@@ -465,7 +466,9 @@ export default {
                     self._ensurePhaseFields(dto, key)
                     let entity, oldEntity, rs
                     try {
+                        if (key === 'transformer') prepareTransformerImportDto(dto, { newUuid: () => self.generateUuid() })
                         entity = def.map(dto)
+                        if (key === 'transformer') validateTransformerImportEntity(dto, entity)
                         // Tree package import rewrites attachment/nameplate paths to files
                         // in its staging directory. Asset CRUD copies those files into the
                         // destination owner's attachment directory and persists new paths.

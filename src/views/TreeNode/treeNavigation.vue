@@ -20,8 +20,7 @@
                 @search-select="handleSearchSelect"
                 @search-preview="handleSearchPreview"
                 @show-equipment="handleShowEquipment"
-                @maintenance-failure="openClientMaintenanceFailure"
-                @import-test-report="handleImportTestReport" />
+                @maintenance-failure="openClientMaintenanceFailure" />
 
             <div v-show="activeWorkspaceTab === 'tree'" class="tree-workspace">
                 <div v-show="clientSlide" class="toolbar">
@@ -166,6 +165,11 @@
 
             <div v-show="activeWorkspaceTab === 'fmeca'" class="fmeca-workspace">
                 <Fmeca ref="fmecaWorkspace" />
+            </div>
+            <div v-show="activeWorkspaceTab === 'wordImport' && clientSlide" class="word-import-workspace">
+                <WordReportWorkspace ref="wordReportWorkspace" import-type="word" :organisation-client-list="organisationClientList"
+                    @fetch-children="fetchChildren" @refresh-tree="showLocationRoot"
+                    @imported="handleImportedRefresh" @view-asset="handleWordImportViewAsset" />
             </div>
             <div v-if="maintenanceFailureEnabled && clientSlide && activeWorkspaceTab === 'maintenanceFailure' && maintenanceFailureAsset" class="maintenance-failure-workspace">
                 <MaintenanceFailure :asset="maintenanceFailureAsset" />
@@ -437,6 +441,7 @@ import mainMixin from './mixin/index.js'
 import Icon from '@/views/Common/Icon.vue'
 import Fmeca from '@/views/Fmeca'
 import MaintenanceFailure from '@/views/MaintenanceFailure'
+import WordReportWorkspace from '@/views/Import/WordReportWorkspace.vue'
 import { MAINTENANCE_FAILURE_ENABLED } from '@/config/featureFlags'
 import Export from '@/views/Export/index.vue'
 import TestingEquipmentView from '@/views/TestingEquipment/index.vue'
@@ -535,6 +540,7 @@ export default {
         Icon,
         Fmeca,
         MaintenanceFailure,
+        WordReportWorkspace,
         Export,
         TestingEquipmentView,
         TestingEquipmentList,
@@ -940,7 +946,7 @@ export default {
                 }
                 this.activeWorkspaceTab = this.clientWorkspaceTab || 'tree'
                 this.$nextTick(() => {
-                    if (this.$refs.treeToolBar) this.$refs.treeToolBar.activeTab = this.activeWorkspaceTab
+                    if (this.$refs.treeToolBar) this.$refs.treeToolBar.activeTab = this.activeWorkspaceTab === 'wordImport' ? 'import' : this.activeWorkspaceTab
                 })
             } else {
                 this.activeWorkspaceTab = this.serverWorkspaceTab || 'tree'
@@ -1183,8 +1189,21 @@ export default {
             this.openImportDialog = false
             this.openExportDialog = false
         },
-        handleImportTestReport() {
-            this.$message.info('Feature Import Test Report (TES-278) is under development.')
+        openWordImportWorkspace() {
+            if (!this.clientSlide) return
+            const selected = this.selectedNodes[this.selectedNodes.length - 1]
+            this.activeWorkspaceTab = 'wordImport'
+            this.clientWorkspaceTab = 'wordImport'
+            if (this.$refs.treeToolBar) this.$refs.treeToolBar.activeTab = 'import'
+            this.$nextTick(() => {
+                if (selected && selected.mode === 'asset' && !this.$refs.wordReportWorkspace.target) this.$refs.wordReportWorkspace.selectContextAsset(selected)
+            })
+        },
+        handleWordImportViewAsset(node) {
+            this.handleExplorerTab()
+            this.selectedNodes = [node]
+            this.showDataClient(node)
+            this.showPropertiesDataClient(node)
         },
         openClientMaintenanceFailure(node = null) {
             if (!this.maintenanceFailureEnabled || !this.clientSlide) return
@@ -2012,6 +2031,14 @@ export default {
     padding: 20px 24px;
     box-sizing: border-box;
     background: #fff;
+    overflow: auto;
+}
+
+.word-import-workspace {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    background: #f3f6fa;
     overflow: auto;
 }
 

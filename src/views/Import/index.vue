@@ -1,5 +1,83 @@
 <template>
 <div>
+  <div v-if="managerMode && importType === 'word'" class="word-template-manager">
+    <aside class="word-manager-sidebar">
+      <div class="word-manager-sidebar-tools">
+        <el-button type="primary" size="small" icon="el-icon-plus" @click="openAddTemplateDialog">New Template</el-button>
+        <el-button size="small" @click="$emit('import-package')">Import ZIP</el-button>
+      </div>
+      <el-input v-model="managerSearch" clearable size="small" placeholder="Search templates..." prefix-icon="el-icon-search" />
+      <el-select v-model="managerAssetFilter" size="small" class="word-manager-filter" aria-label="Filter asset type">
+        <el-option label="All asset types" value="" />
+        <el-option v-for="type in managerAssetOptions" :key="type" :label="type" :value="type" />
+      </el-select>
+      <div class="word-manager-template-list">
+        <section v-for="group in managerGroups" :key="group.label" class="word-manager-group">
+          <h3>{{ group.label }} ({{ group.templates.length }})</h3>
+          <button v-for="template in group.templates" :key="template.name" type="button" class="word-manager-template"
+            :class="{active: selectedTemplateName === template.name}" :title="template.name" @click="selectManagerTemplate(template.name)">
+            <strong>{{ template.name }}</strong>
+            <small>{{ template.variable.length }} field mappings</small>
+          </button>
+        </section>
+        <p v-if="!managerGroups.length" class="word-manager-empty">No templates found</p>
+      </div>
+    </aside>
+    <section class="word-manager-detail">
+      <template v-if="selectedTemplateName">
+        <div class="word-manager-detail-scroll">
+          <div class="word-manager-title-row">
+            <div><span class="word-manager-eyebrow">{{ managerAssetType(selectedTemplate) }}</span><h2>{{ selectedTemplateName }}</h2></div>
+            <el-button size="small" icon="el-icon-refresh" title="Refresh templates" @click="loadTemplates">Refresh</el-button>
+          </div>
+          <div class="word-manager-section-title">Word Template (.docx)</div>
+          <div class="word-manager-file">
+            <div class="word-manager-file-icon">W</div>
+            <span :title="currentFilePath">{{ managerFileName || 'No Word file selected' }}</span>
+            <el-button size="small" @click="handleUploadWord">{{ currentFilePath ? 'Replace DOCX' : 'Add DOCX' }}</el-button>
+            <el-button size="small" :disabled="!currentFilePath" @click="downloadCurrentTemplate">Download</el-button>
+            <el-button size="small" :disabled="!currentFilePath" @click="managerPreviewVisible = true">Preview</el-button>
+            <el-button size="small" :disabled="!currentFilePath" @click="openTemplateFile">Open</el-button>
+          </div>
+          <div class="word-manager-mapping-head">
+            <div class="word-manager-section-title">Field Mappings ({{ tableData.length }})</div>
+            <el-button type="primary" size="small" icon="el-icon-plus" @click="addRow()">Add Mapping</el-button>
+          </div>
+          <div class="word-manager-table-scroll">
+            <table class="word-manager-table">
+              <thead><tr><th>Code</th><th>Category</th><th>Target field</th><th>Word cell</th><th title="Include the stored unit">Unit</th><th><span class="sr-only">Remove</span></th></tr></thead>
+              <tbody>
+                <tr v-for="(row, index) in tableData" :key="index">
+                  <td><el-input v-model="row.code" size="small" placeholder="A1" /></td>
+                  <td><el-select v-model="row.category" size="small" placeholder="Category" @change="onCategoryChange(row)">
+                    <el-option v-for="category in categoryOptions" :key="category.value" :label="category.label" :value="category.value" />
+                  </el-select></td>
+                  <td><el-cascader :value="row.featureLevels.map(level => level.key).filter(Boolean)" :options="managerFieldOptions(row.category)"
+                    :props="{expandTrigger: 'hover'}" filterable clearable size="small" placeholder="Select target field"
+                    @change="setManagerFieldPath(row, $event)" /></td>
+                  <td class="word-manager-coordinates"><span v-for="coordinate in row.coordinates" :key="coordinate">{{ coordinate }}</span><span v-if="!row.coordinates.length">After save</span></td>
+                  <td><el-checkbox v-model="row.includeUnit" /></td>
+                  <td><el-button type="text" icon="el-icon-delete" title="Remove mapping" class="word-manager-delete-row" @click="removeRow(index)" /></td>
+                </tr>
+                <tr v-if="!tableData.length"><td colspan="6" class="word-manager-empty">No field mappings yet</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="word-manager-footer">
+          <div>
+            <el-button size="small" @click="handleImportJson">Import JSON</el-button>
+            <el-button size="small" :disabled="!tableData.length" @click="handleExportJson">Export JSON</el-button>
+            <el-button size="small" @click="$emit('set-sample', selectedTemplateName)">Add Sample Report</el-button>
+            <el-button size="small" @click="$emit('export-package', selectedTemplateName)">Export ZIP</el-button>
+          </div>
+          <div><el-button type="danger" plain size="small" @click="handleDelete">Delete</el-button><el-button type="primary" size="small" @click="handleSave">Save</el-button></div>
+        </div>
+      </template>
+      <div v-else class="word-manager-placeholder">Select a template or create a new one</div>
+    </section>
+  </div>
+  <div v-else>
   <template-manager 
     :template-list="templateList" 
     v-model="selectedTemplateName" 
@@ -18,7 +96,7 @@
       <el-button v-if="importType === 'excel'" type="warning" size="mini" :disabled="!selectedTemplateName || !currentFilePath" @click="handleImportExcel">
         <i class="fa-solid fa-file-import"></i> Import Excel
       </el-button>
-      <el-button v-if="importType === 'word'" type="warning" size="mini" :disabled="!selectedTemplateName || !currentFilePath" @click="handleImportWord">
+      <el-button v-if="importType === 'word' && !managerMode" type="warning" size="mini" :disabled="!selectedTemplateName || !currentFilePath" @click="handleImportWord">
         <i class="fa-solid fa-file-import"></i> Import Word
       </el-button>
     </template>
@@ -52,6 +130,10 @@
       Select a template or click <b>Add Template</b> to get started
     </div>
   </div>
+  </div>
+
+  <WordTemplatePreview v-if="managerMode && importType === 'word'" :visible.sync="managerPreviewVisible"
+    :template-name="selectedTemplateName" :file-path="currentFilePath" :mappings="tableData" />
 
   <!-- Add template dialog -->
   <el-dialog title="Add new template" :visible.sync="showAddDialog" width="420px" append-to-body @close="resetAddDialog">
@@ -406,11 +488,14 @@ import { exportService } from '../Export/services/exportService'
 import { deepImportService } from './services/deepImportService.js'
 import TemplateManager from './components/TemplateManager.vue'
 import DataTable from './components/DataTable.vue'
+import WordTemplatePreview from './components/WordTemplatePreview.vue'
 
 export default {
   name: 'ImportView',
   props: {
     importType: { type: String, default: 'excel' },
+    managerMode: { type: Boolean, default: false },
+    initialTemplateName: { type: String, default: '' },
   },
   watch: {
     importType: {
@@ -421,10 +506,11 @@ export default {
       }
     }
   },
-  components: { TemplateManager, DataTable },
+  components: { TemplateManager, DataTable, WordTemplatePreview },
   data() {
     return {
       templateList: [], selectedTemplateName: '', currentFilePath: '', tableData: [],
+      managerSearch: '', managerAssetFilter: '', managerPreviewVisible: false,
       showAddDialog: false, addLoading: false,
       addForm: { name: '', filePath: '' },
       addRules: { name: [{ required: true, message: 'Please enter template name', trigger: 'blur' }] },
@@ -455,6 +541,27 @@ export default {
     }
   },
   computed: {
+    selectedTemplate() {
+      return this.templateList.find(template => template.name === this.selectedTemplateName) || null
+    },
+    managerFileName() {
+      return this.currentFilePath ? this.currentFilePath.split(/[\\/]/).pop() : ''
+    },
+    managerAssetOptions() {
+      return [...new Set(this.templateList.map(this.managerAssetType))].sort((a, b) => a.localeCompare(b))
+    },
+    managerGroups() {
+      const search = this.managerSearch.trim().toLocaleLowerCase()
+      const groups = new Map()
+      for (const template of this.templateList) {
+        const label = this.managerAssetType(template)
+        if (this.managerAssetFilter && label !== this.managerAssetFilter) continue
+        if (search && !`${template.name} ${label}`.toLocaleLowerCase().includes(search)) continue
+        if (!groups.has(label)) groups.set(label, [])
+        groups.get(label).push(template)
+      }
+      return [...groups].sort(([a], [b]) => a.localeCompare(b)).map(([label, templates]) => ({label, templates}))
+    },
     exportCategories() {
       const seen = new Set(), result = []
       for (const row of this.tableData) {
@@ -487,12 +594,41 @@ export default {
   },
   async mounted() { await this.loadTemplates() },
   methods: {
+    managerAssetType(template) {
+      const row = (template?.variable || []).find(item => item.category === 'Asset' && item.featureLevels?.[0]?.key)
+      const key = row?.featureLevels?.[0]?.key
+      return (key && this.FEATURE_TREE.Asset?.children?.[key]?.label) || 'Other templates'
+    },
+    selectManagerTemplate(name) {
+      this.selectedTemplateName = name
+      this.onTemplateChange(name)
+    },
+    managerFieldOptions(category) {
+      const children = this.FEATURE_TREE[category]?.children || {}
+      const toOptions = branches => Object.entries(branches).map(([value, node]) => ({
+        value,
+        label: node.label || value,
+        ...(node.children && Object.keys(node.children).length ? {children: toOptions(node.children)} : {})
+      }))
+      return toOptions(children)
+    },
+    setManagerFieldPath(row, path) {
+      row.featureLevels = path.map(key => ({key}))
+    },
+    async downloadCurrentTemplate() {
+      if (!this.currentFilePath) return
+      const result = await window.electronAPI.downloadWordTemplate(this.currentFilePath)
+      if (!result?.success && !result?.canceled) this.$message.error(result?.message || 'Cannot download template')
+    },
     // ── Templates ─────────────────────────────────────────────────────────
     async loadTemplates() {
       try {
         const rs = await window.electronAPI.getAllTemplatesByType(this.importType, 'import')
         if (rs?.success) {
           this.templateList = rs.data.map(t => ({ ...t, variable: t.variable ? JSON.parse(t.variable) : [] }))
+          if (this.managerMode && this.initialTemplateName && !this.selectedTemplateName && this.templateList.some(t => t.name === this.initialTemplateName)) {
+            this.selectManagerTemplate(this.initialTemplateName)
+          }
           if (this.importType === 'word' && !this.selectedTemplateName) {
             const defaultTemplate = this.templateList.find(t => t.name === 'SBM - BB kiểm định máy cắt trung thế (VCB)')
             if (defaultTemplate) {
@@ -1060,3 +1196,137 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.word-template-manager {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+  color: #243247;
+  font-size: 13px;
+}
+.word-manager-sidebar {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  gap: 12px;
+  padding: 16px;
+  border-right: 1px solid #dce3ec;
+  background: #f7f9fc;
+}
+.word-manager-sidebar-tools {
+  display: flex;
+  gap: 8px;
+}
+.word-manager-sidebar-tools .el-button:first-child { flex: 1; }
+.word-manager-sidebar-tools .el-button + .el-button { margin-left: 0; }
+.word-manager-filter { width: 100%; }
+.word-manager-template-list {
+  min-height: 0;
+  overflow-y: auto;
+  margin: 0 -16px;
+  padding: 0 8px 8px;
+}
+.word-manager-group { margin: 0 0 16px; }
+.word-manager-group h3 {
+  margin: 10px 8px 6px;
+  color: #66758a;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.word-manager-template {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-left: 3px solid transparent;
+  border-radius: 4px;
+  padding: 10px 12px;
+  background: transparent;
+  color: #243247;
+  text-align: left;
+  cursor: pointer;
+}
+.word-manager-template:hover { background: #edf2fa; }
+.word-manager-template.active {
+  border-left-color: #093397;
+  background: #fff;
+  box-shadow: 0 1px 5px #172c4d14;
+}
+.word-manager-template strong,
+.word-manager-template small { display: block; }
+.word-manager-template strong { line-height: 1.35; overflow-wrap: anywhere; }
+.word-manager-template small { margin-top: 4px; color: #6e7b8c; }
+.word-manager-detail {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  background: #fff;
+}
+.word-manager-detail-scroll {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 22px 26px;
+  flex: 1;
+}
+.word-manager-title-row,
+.word-manager-mapping-head,
+.word-manager-file,
+.word-manager-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.word-manager-title-row { margin-bottom: 26px; align-items: flex-start; }
+.word-manager-title-row h2 { margin: 4px 0 0; font-size: 20px; line-height: 1.35; overflow-wrap: anywhere; }
+.word-manager-eyebrow { color: #60728c; font-size: 12px; }
+.word-manager-section-title { margin-bottom: 10px; font-size: 13px; font-weight: 700; color: #465a75; }
+.word-manager-file {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  min-height: 70px;
+  border: 1px solid #dce3ec;
+  border-radius: 5px;
+  padding: 10px 14px;
+  margin-bottom: 28px;
+}
+.word-manager-file-icon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 4px;
+  background: #2b579a;
+  color: white;
+  font-weight: 800;
+  font-size: 18px;
+}
+.word-manager-file > span { flex: 1; min-width: 140px; font-weight: 600; overflow-wrap: anywhere; }
+.word-manager-file .el-button + .el-button { margin-left: 0; }
+.word-manager-mapping-head { margin-bottom: 10px; }
+.word-manager-mapping-head .word-manager-section-title { margin: 0; }
+.word-manager-table-scroll { max-width: 100%; overflow-x: auto; border: 1px solid #dce3ec; border-radius: 4px; }
+.word-manager-table { width: 100%; min-width: 760px; border-collapse: collapse; table-layout: fixed; }
+.word-manager-table th { padding: 12px 10px; background: #f5f7fa; color: #566479; text-align: left; font-weight: 700; }
+.word-manager-table th:nth-child(1) { width: 78px; }
+.word-manager-table th:nth-child(2) { width: 125px; }
+.word-manager-table th:nth-child(4) { width: 165px; }
+.word-manager-table th:nth-child(5) { width: 55px; text-align: center; }
+.word-manager-table th:nth-child(6) { width: 42px; }
+.word-manager-table td { border-top: 1px solid #e4e9f0; padding: 8px 10px; vertical-align: middle; }
+.word-manager-table .el-select,
+.word-manager-table .el-cascader { width: 100%; }
+.word-manager-table td:nth-child(5) { text-align: center; }
+.word-manager-coordinates span { display: inline-block; margin: 2px 3px 2px 0; color: #53657d; font-size: 11px; overflow-wrap: anywhere; }
+.word-manager-delete-row { color: #d23549; }
+.word-manager-empty { padding: 22px; text-align: center; color: #748299; }
+.word-manager-placeholder { margin: auto; color: #748299; }
+.word-manager-footer { flex-wrap: wrap; border-top: 1px solid #dce3ec; padding: 12px 18px; background: #fff; }
+.word-manager-footer > div { display: flex; flex-wrap: wrap; gap: 7px; }
+.word-manager-footer .el-button + .el-button { margin-left: 0; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+@media (max-width: 760px) {
+  .word-template-manager { grid-template-columns: 1fr; grid-template-rows: 220px minmax(0, 1fr); }
+  .word-manager-sidebar { border-right: 0; border-bottom: 1px solid #dce3ec; }
+  .word-manager-detail-scroll { padding: 16px; }
+}
+</style>

@@ -22,8 +22,7 @@ export default {
                 this.openImportDialog = true
                 this.importType = 'excel'
             } else if (cmd === 'importWord') {
-                this.openImportDialog = true
-                this.importType = 'word'
+                this.openWordImportWorkspace()
             } else if (cmd === 'importJSON') {
                 // JSON: không qua dialog — chọn node đích → chọn file → import luôn
                 this.handleImportJSONFromFile()

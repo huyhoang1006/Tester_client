@@ -956,6 +956,28 @@ export var deepImportService = {
       }
       blankJobDto[jcfg.testTypeKey] = []
       var oldJobEntity = jcfg.mapper(blankJobDto)
+      if (data._overwriteMrid) {
+        const getJobApi = jcfg.api.replace(/^insert/, 'get') + 'ByMrid'
+        const existingJob = await window.electronAPI[getJobApi](data._overwriteMrid)
+        if (!existingJob || !existingJob.success || !existingJob.data) {
+          return { success: false, message: 'Cannot load existing job before update' }
+        }
+        oldJobEntity = existingJob.data
+        const importedWork = entity.oldWork
+        entity.oldWork = { ...oldJobEntity.oldWork }
+        Object.keys(importedWork).forEach(function(field) {
+          if (importedWork[field] !== null && importedWork[field] !== undefined && importedWork[field] !== '') {
+            entity.oldWork[field] = importedWork[field]
+          }
+        })
+        if (oldJobEntity.attachment && oldJobEntity.attachment.path) entity.attachment = oldJobEntity.attachment
+        Object.keys(oldJobEntity).forEach(function(key) {
+          if (Array.isArray(oldJobEntity[key]) && Array.isArray(entity[key])) {
+            const addedIds = new Set(entity[key].map(function(item) { return item && item.mrid }).filter(Boolean))
+            entity[key] = oldJobEntity[key].filter(function(item) { return !addedIds.has(item && item.mrid) }).concat(entity[key])
+          }
+        })
+      }
 
       rs = await window.electronAPI[jcfg.api](oldJobEntity, entity)
 
@@ -963,7 +985,7 @@ export var deepImportService = {
       // Nếu fail (FK chưa seed cho device này):
       // Retry với testTypeId=null + measurement_id=null
       // Chỉ strip FK refs nếu cần — device đã seed (Transformer) sẽ pass lần đầu, không retry
-      if (rs && rs.success === false && dto.testList && dto.testList.length > 0) {
+      if (!data._overwriteMrid && rs && rs.success === false && dto.testList && dto.testList.length > 0) {
         dto.testList = dto.testList.map(function(item) {
           var newItem = Object.assign({}, item, { testTypeId: null })
           var _tableKeys = Object.keys((item.data && item.data.table) ? item.data.table : {})
@@ -1544,10 +1566,10 @@ export var deepImportService = {
               // keep ctx pointing to the existing node (skip = leave old node untouched)
               if (oi === 0) ctx = this._updateCtx(ctx, lv.id, existing.mrid, reqVal)
             } else if (choice === 'overwrite') {
-              var rs = await this.overwriteEntity(lv, existing, occData, ctx)
+              var rs = await this.overwriteEntity(lv, existing, occData, ctx, _userId)
               var ok = rs && (rs.success !== false)
               if (oi === 0) ctx = this._updateCtx(ctx, lv.id, existing.mrid, reqVal)
-              results.push({ level: lv.label, catKey: lv.catKey, action: 'overwritten', name: reqVal, success: ok, mrid: existing.mrid })
+              results.push({ level: lv.label, catKey: lv.catKey, action: 'overwritten', name: reqVal, success: ok, mrid: existing.mrid, error: ok ? null : (rs && rs.message) })
             } else {
               // use_existing: dùng node cũ làm parent, KHÔNG đổi data
               if (oi === 0) ctx = this._updateCtx(ctx, lv.id, existing.mrid, reqVal)

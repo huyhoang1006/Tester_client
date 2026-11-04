@@ -5,6 +5,8 @@ import db from '@/function/datacontext/index'
 import vcbImportConfig from '../../../../import-templates/VCB-import-config.json'
 const path = require('path')
 const fs = require('fs')
+const os = require('os')
+const {execFile} = require('child_process')
 
 // ─── Template folder ────────────────────────────────────────────────────────
 // Dev  : <project_root>/template/         (app.getAppPath())
@@ -1315,13 +1317,56 @@ export const readTestingEquipmentColumnImportFile = () => {
 // ══════════════════════════════════════════════════════════════════════════════
 // THÊM: pickWordFileForImport — đặt sau pickExcelFileForImport
 // ══════════════════════════════════════════════════════════════════════════════
+async function readFilledWordBuffer(filePath) {
+    if (/\.docx$/i.test(filePath)) return fs.readFileSync(filePath)
+    if (!/\.doc$/i.test(filePath)) throw new Error('Select a Word .doc or .docx file')
+    if (process.platform !== 'win32') throw new Error('Importing .doc requires Microsoft Word on Windows; save the file as .docx first')
+
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'at-word-import-'))
+    const convertedPath = path.join(tempDir, 'report.docx')
+    const command = [
+        "$ErrorActionPreference = 'Stop'",
+        '$word = $null; $document = $null',
+        'try {',
+        '  $word = New-Object -ComObject Word.Application',
+        '  $word.Visible = $false',
+        '  $word.DisplayAlerts = 0',
+        '  $word.AutomationSecurity = 3',
+        '  $document = $word.Documents.Open($env:WORD_IMPORT_SOURCE, $false, $true, $false)',
+        '  $document.SaveAs2($env:WORD_IMPORT_DEST, 16)',
+        '} finally {',
+        '  if ($document) { $document.Close(0) }',
+        '  if ($word) { $word.Quit() }',
+        '  if ($document) { [void][System.Runtime.InteropServices.Marshal]::ReleaseComObject($document) }',
+        '  if ($word) { [void][System.Runtime.InteropServices.Marshal]::ReleaseComObject($word) }',
+        '}'
+    ].join('\n')
+    try {
+        await new Promise((resolve, reject) => {
+            execFile('powershell.exe', ['-NoProfile', '-NonInteractive', '-Sta', '-Command', command], {
+                windowsHide: true,
+                timeout: 120000,
+                env: {...process.env, WORD_IMPORT_SOURCE: filePath, WORD_IMPORT_DEST: convertedPath}
+            }, (error, stdout, stderr) => {
+                if (error) reject(new Error(`Microsoft Word could not convert this .doc file: ${String(stderr || error.message).trim()}`))
+                else resolve()
+            })
+        })
+        if (!fs.existsSync(convertedPath)) throw new Error('Microsoft Word did not create a .docx file')
+        return fs.readFileSync(convertedPath)
+    } finally {
+        if (fs.existsSync(convertedPath)) fs.unlinkSync(convertedPath)
+        fs.rmdirSync(tempDir)
+    }
+}
+
 export const pickWordFileForImport = () => {
     ipcMain.handle('pickWordFileForImport', async function () {
         try {
             const result = await dialog.showOpenDialog({
                 title: 'Select filled Word file to import',
                 filters: [
-                    { name: 'Word Documents', extensions: ['docx'] },
+                    { name: 'Word Documents', extensions: ['docx', 'doc'] },
                     { name: 'All Files',       extensions: ['*'] }
                 ],
                 properties: ['openFile']
@@ -1657,7 +1702,7 @@ export const readWordForImport = () => {
             }
  
             // Parse filled docx
-            const filledBuf = fs.readFileSync(filePath)
+            const filledBuf = await readFilledWordBuffer(filePath)
             const { cells: filledCells, paras: filledParas } = parseDocxContent(filledBuf)
  
             // Parse template docx (để tách prefix/suffix giống Excel)
@@ -1896,7 +1941,7 @@ export const readWordForImportTE = () => {
                 return { success: true, codeValueMap: {} }
             }
 
-            const filledBuf = fs.readFileSync(filePath)
+            const filledBuf = await readFilledWordBuffer(filePath)
             const { cells: filledCells, paras: filledParas } = parseDocxContentTE(filledBuf)
 
             let tmplCells = [], tmplParas = []
@@ -2286,6 +2331,134 @@ export const openFileTemplate = () => {
     })
 }
 
+export const readWordTemplateXml = () => {
+    ipcMain.handle('readWordTemplateXml', async (event, filePath) => {
+        try {
+            if (!filePath || !/\.docx$/i.test(filePath)) throw new Error('Select a DOCX template')
+            const fs = require('fs')
+            const PizZip = require('pizzip')
+            const zip = new PizZip(fs.readFileSync(filePath))
+            const document = zip.file('word/document.xml')
+            if (!document) throw new Error('Word document content not found')
+            return { success: true, xml: document.asText() }
+        } catch (error) {
+            return { success: false, message: error.message }
+        }
+    })
+}
+
+export const wordTemplateExtras = () => {
+    ipcMain.handle('readWordPreview', async (event, {templateName, sample = false} = {}) => {
+        try {
+            if (!templateName) throw new Error('Select a Word template')
+            const result = await entityFunc.templateFunc.getTemplateByName(templateName)
+            const template = result && result.data
+            if (!template || template.type !== 'word') throw new Error('Word template not found')
+            let filePath = template.path
+            if (sample) {
+                filePath = await new Promise((resolve, reject) => {
+                    db.get('SELECT value FROM app_settings WHERE key = ?', [`word-sample:${templateName}`], (error, row) =>
+                        error ? reject(error) : resolve((row && row.value) || ''))
+                })
+            }
+            if (!filePath || !/\.docx$/i.test(filePath) || !fs.existsSync(filePath)) throw new Error(sample ? 'Sample report not found' : 'Template file not found')
+            const size = fs.statSync(filePath).size
+            if (size > 25 * 1024 * 1024) throw new Error('DOCX exceeds the 25 MB preview limit')
+            return {success: true, fileName: path.basename(filePath), base64: fs.readFileSync(filePath).toString('base64')}
+        } catch (error) {
+            return {success: false, message: error.message}
+        }
+    })
+    ipcMain.handle('getWordSampleReport', async (event, templateName) => {
+        if (!templateName) return { success: false, message: 'Select a template first' }
+        return new Promise(resolve => {
+            db.get('SELECT value FROM app_settings WHERE key = ?', [`word-sample:${templateName}`], (error, row) => {
+                if (error) return resolve({ success: false, message: error.message })
+                const filePath = (row && row.value) || ''
+                resolve({ success: true, filePath: filePath && fs.existsSync(filePath) ? filePath : '' })
+            })
+        })
+    })
+    ipcMain.handle('setWordSampleReport', async (event, templateName) => {
+        if (!templateName) return { success: false, message: 'Select a template first' }
+        const selected = await dialog.showOpenDialog({ title: 'Select sample test report', filters: [{ name: 'Word document', extensions: ['docx'] }], properties: ['openFile'] })
+        if (selected.canceled || !selected.filePaths.length) return { success: false, canceled: true }
+        const safeName = templateName.replace(/[^a-zA-Z0-9_-]/g, '_')
+        const destination = path.join(TEMPLATE_DIR, `${safeName}.sample.docx`)
+        try {
+            if (path.resolve(selected.filePaths[0]) !== path.resolve(destination)) fs.copyFileSync(selected.filePaths[0], destination)
+            return await new Promise(resolve => {
+                db.run('INSERT INTO app_settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value', [`word-sample:${templateName}`, destination], error => {
+                    resolve(error ? { success: false, message: error.message } : { success: true, filePath: destination })
+                })
+            })
+        } catch (error) { return { success: false, message: error.message } }
+    })
+    ipcMain.handle('downloadWordTemplate', async (event, filePath) => {
+        try {
+            if (!filePath || !fs.existsSync(filePath)) throw new Error('Template file not found')
+            const selected = await dialog.showSaveDialog({ title: 'Save Word template', defaultPath: path.basename(filePath), filters: [{ name: 'Word document', extensions: ['docx'] }] })
+            if (selected.canceled || !selected.filePath) return { success: false, canceled: true }
+            if (path.resolve(filePath) !== path.resolve(selected.filePath)) fs.copyFileSync(filePath, selected.filePath)
+            return { success: true, filePath: selected.filePath }
+        } catch (error) { return { success: false, message: error.message } }
+    })
+    ipcMain.handle('exportWordTemplatePackage', async (event, templateName) => {
+        try {
+            const result = await entityFunc.templateFunc.getTemplateByName(templateName)
+            const template = result && result.data
+            if (!template || template.type !== 'word' || !template.path || !fs.existsSync(template.path)) throw new Error('Word template file not found')
+            const selected = await dialog.showSaveDialog({ title: 'Export Word template package', defaultPath: `${templateName.replace(/[^a-zA-Z0-9_-]/g, '_')}.zip`, filters: [{ name: 'ZIP package', extensions: ['zip'] }] })
+            if (selected.canceled || !selected.filePath) return { success: false, canceled: true }
+            const PizZip = require('pizzip')
+            const zip = new PizZip()
+            zip.file('config.json', JSON.stringify({ version: 1, name: template.name, type: template.type, category: template.category, variable: JSON.parse(template.variable || '[]') }, null, 2))
+            zip.file('template.docx', fs.readFileSync(template.path))
+            const sample = await new Promise(resolve => db.get('SELECT value FROM app_settings WHERE key = ?', [`word-sample:${templateName}`], (error, row) => resolve(error ? '' : ((row && row.value) || ''))))
+            if (sample && fs.existsSync(sample)) zip.file('sample.docx', fs.readFileSync(sample))
+            fs.writeFileSync(selected.filePath, zip.generate({ type: 'nodebuffer', compression: 'DEFLATE' }))
+            return { success: true, filePath: selected.filePath }
+        } catch (error) { return { success: false, message: error.message } }
+    })
+    ipcMain.handle('importWordTemplatePackage', async () => {
+        const selected = await dialog.showOpenDialog({ title: 'Import Word template package', filters: [{ name: 'ZIP package', extensions: ['zip'] }], properties: ['openFile'] })
+        if (selected.canceled || !selected.filePaths.length) return { success: false, canceled: true }
+        try {
+            const PizZip = require('pizzip')
+            const zip = new PizZip(fs.readFileSync(selected.filePaths[0]))
+            const configFile = zip.file('config.json')
+            const wordFile = zip.file('template.docx')
+            if (!configFile || !wordFile) throw new Error('Package requires config.json and template.docx')
+            const config = JSON.parse(configFile.asText())
+            if (config.version !== 1 || config.type !== 'word' || config.category !== 'import' || !config.name || !Array.isArray(config.variable)) throw new Error('Unsupported Word import template package')
+            const existing = await entityFunc.templateFunc.getTemplateByName(config.name)
+            if (existing && existing.success) throw new Error('A template with this name already exists')
+            const safeName = config.name.replace(/[^a-zA-Z0-9_-]/g, '_')
+            const wordPath = path.join(TEMPLATE_DIR, `${safeName}.import.docx`)
+            const samplePath = path.join(TEMPLATE_DIR, `${safeName}.sample.docx`)
+            if (fs.existsSync(wordPath)) throw new Error('A template file with this name already exists')
+            if (zip.file('sample.docx') && fs.existsSync(samplePath)) throw new Error('A sample report with this name already exists')
+            let templateInserted = false
+            fs.writeFileSync(wordPath, wordFile.asNodeBuffer())
+            try {
+                await entityFunc.templateFunc.insertTemplate({ name: config.name, path: wordPath, variable: JSON.stringify(config.variable), type: 'word', category: 'import' })
+                templateInserted = true
+                const sample = zip.file('sample.docx')
+                if (sample) {
+                    fs.writeFileSync(samplePath, sample.asNodeBuffer())
+                    await new Promise((resolve, reject) => db.run('INSERT INTO app_settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value', [`word-sample:${config.name}`, samplePath], error => error ? reject(error) : resolve()))
+                }
+            } catch (error) {
+                if (templateInserted) await entityFunc.templateFunc.deleteTemplate(config.name)
+                fs.unlinkSync(wordPath)
+                if (fs.existsSync(samplePath)) fs.unlinkSync(samplePath)
+                throw error
+            }
+            return { success: true, name: config.name }
+        } catch (error) { return { success: false, message: error.message } }
+    })
+}
+
 export const active = () => {
     getAllTemplates()
     getAllTemplatesByType()
@@ -2305,6 +2478,8 @@ export const active = () => {
     readTestingEquipmentColumnImportFile()
     readExcelForImport()
     openFileTemplate()
+    readWordTemplateXml()
+    wordTemplateExtras()
     pickWordFileForImport()
     readWordForImport()
     readWordForImportTE()

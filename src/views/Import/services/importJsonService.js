@@ -35,6 +35,7 @@
  * ----------------------------------------------------------------------------
  */
 import { normaliseUnitsDeep } from '@/utils/unitNormalise'
+import { prepareTransformerImportDto } from './transformerImportDto'
 
 // Hằng số hành động xung đột — đồng bộ với CONFLICT_ACTION trong mridConflictScan.js
 const CONFLICT_ACTION = {
@@ -382,6 +383,7 @@ const importNormalNode = async (branch, parentNode, deps) => {
         return null
     } catch (err) {
         console.error(`[importJson] Error importing node ${branch.type}:`, err)
+        deps._lastError = (err && err.message) || 'Insert failed'
         return null
     }
 }
@@ -584,7 +586,9 @@ const regenBranchIds = (branch, parentNode, uuid) => {
             break
         default: // asset
             if (d.properties && !d.properties.mrid) d.properties.mrid = uuid.newUuid()
-            if (!d.assetInfoId) d.assetInfoId = uuid.newUuid()
+            if (branch.type === 'transformer') {
+                prepareTransformerImportDto(d, uuid, { regenerateTapPointIds: true })
+            } else if (!d.assetInfoId) d.assetInfoId = uuid.newUuid()
             if (!d.assetPsrId) d.assetPsrId = uuid.newUuid()
             if (!d.productAssetModelId) d.productAssetModelId = uuid.newUuid()
             if (!d.lifecycleDateId) d.lifecycleDateId = uuid.newUuid()
@@ -898,4 +902,4 @@ export const importBranchFromJSON = async (fileContent, targetNode, deps, decisi
 }
 
 // Xuất các helper để test/độc lập nếu cần
-export { regenJobDtoIds, regenStandardTree, branchMrid, collectGraftBranches, isOrgIntoOrg, levelOf, nodeModeOf }
+export { regenJobDtoIds, regenStandardTree, regenBranchIds, branchMrid, collectGraftBranches, isOrgIntoOrg, levelOf, nodeModeOf }

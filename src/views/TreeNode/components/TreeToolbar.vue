@@ -33,69 +33,64 @@
                     <span class="rail-label">FMECA & Health Index</span>
                 </button>
 
-                <!-- 4. Import Test Report (Tính năng mới - TES-278) -->
-                <button v-if="clientSlide" type="button" class="rail-tab" :class="{ active: activeTab === 'importTestReport' }" title="Import Test Report" @click="handleImportTestReport">
-                    <div class="rail-icon"><i class="fa-solid fa-file-circle-plus"></i></div>
-                    <span class="rail-label">Import Test Report</span>
-                </button>
-
-                <!-- 5. Advanced Import -->
-                <el-dropdown v-if="clientSlide" @command="handleImportCommand" @visible-change="handleDropdownVisibleChange" trigger="click" placement="right-start">
-                    <button type="button" class="rail-tab" :class="{ active: activeTab === 'import' }" title="Advanced Import">
+                <!-- Advanced Import -->
+                <div v-if="clientSlide" class="rail-group">
+                    <button type="button" class="rail-tab" :class="{ active: activeTab === 'import' || expandedGroups.import }"
+                        title="Advanced Import" :aria-expanded="expandedGroups.import" aria-controls="advanced-import-menu"
+                        @click="toggleSubmenu('import')">
                         <div class="rail-icon"><i class="fa-solid fa-file-import"></i></div>
                         <span class="rail-label">Advanced Import</span>
-                        <i v-if="isExpanded" class="fa-solid fa-chevron-right rail-arrow"></i>
+                        <i v-if="isExpanded" class="fa-solid rail-arrow"
+                            :class="expandedGroups.import ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
                     </button>
-                    <el-dropdown-menu slot="dropdown" class="rail-dropdown-menu">
-                        <el-dropdown-item command="importJSON">
-                            <i class="fa-solid fa-file-zipper" style="font-size:12px"></i>
-                            Import tree package
-                        </el-dropdown-item>
-                        <el-dropdown-item command="importPTM">
-                            <i class="fa-solid fa-file-zipper" style="font-size:12px"></i>
-                            Import from PTM (OMICRON)
-                        </el-dropdown-item>
-                        <el-dropdown-item command="importCPXpert">
-                            <i class="fa-solid fa-file-zipper" style="font-size:12px"></i>
-                            Import from CPXpert (OMICRON)
-                        </el-dropdown-item>
-                        <el-dropdown-item command="importExcel">
-                            <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon>
-                            Import from Excel
-                        </el-dropdown-item>
-                        <el-dropdown-item command="importWord">
-                            <icon size="12px" fileTypeDetail="word" folderType="fileType" badgeColor="146EBE"></icon>
-                            Import from Word
-                        </el-dropdown-item>
-                    </el-dropdown-menu>
-                </el-dropdown>
+                    <div v-if="isExpanded && expandedGroups.import" id="advanced-import-menu" class="rail-submenu">
+                        <button type="button" class="rail-subitem" @click="handleImportCommand('importJSON')">
+                            <i class="fa-solid fa-file-code"></i><span>Import Tree Package</span>
+                        </button>
+                        <button type="button" class="rail-subitem" title="Import From PTM (OMICRON)" @click="handleImportCommand('importPTM')">
+                            <i class="fa-solid fa-file-zipper"></i><span>Import PTM</span>
+                        </button>
+                        <button type="button" class="rail-subitem" title="Import From CPXpert (OMICRON)" @click="handleImportCommand('importCPXpert')">
+                            <i class="fa-solid fa-file-zipper"></i><span>Import CPXpert</span>
+                        </button>
+                        <button type="button" class="rail-subitem" @click="handleImportCommand('importExcel')">
+                            <i class="fa-solid fa-file-excel"></i>
+                            <span>Import From Excel</span>
+                        </button>
+                        <button type="button" class="rail-subitem" @click="handleImportCommand('importWord')">
+                            <i class="fa-solid fa-file-word"></i>
+                            <span>Import From Word</span>
+                        </button>
+                    </div>
+                </div>
 
                 <!-- 6. Advanced Export -->
-                <el-dropdown v-if="clientSlide" @command="handleExportCommand" @visible-change="handleDropdownVisibleChange" trigger="click" placement="right-start">
-                    <button type="button" class="rail-tab" :class="{ active: activeTab === 'export' }" title="Advanced Export">
+                <div v-if="clientSlide" class="rail-group">
+                    <button type="button" class="rail-tab" :class="{ active: activeTab === 'export' || expandedGroups.export }"
+                        title="Advanced Export" :aria-expanded="expandedGroups.export" aria-controls="advanced-export-menu"
+                        @click="toggleSubmenu('export')">
                         <div class="rail-icon"><i class="fa-solid fa-file-export"></i></div>
                         <span class="rail-label">Advanced Export</span>
-                        <i v-if="isExpanded" class="fa-solid fa-chevron-right rail-arrow"></i>
+                        <i v-if="isExpanded" class="fa-solid rail-arrow"
+                            :class="expandedGroups.export ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
                     </button>
-                    <el-dropdown-menu slot="dropdown" class="rail-dropdown-menu">
-                        <el-dropdown-item command="exportJSONOnlyNode">
-                            <i class="fa-solid fa-file-zipper" style="font-size:12px"></i>
-                            Export package only node
-                        </el-dropdown-item>
-                        <el-dropdown-item command="exportJSONFullTree">
-                            <i class="fa-solid fa-file-zipper" style="font-size:12px"></i>
-                            Export package full tree
-                        </el-dropdown-item>
-                        <el-dropdown-item command="exportExcel">
-                            <icon size="12px" fileTypeDetail="excel" folderType="fileType" badgeColor="146EBE"></icon>
-                            Export to Excel
-                        </el-dropdown-item>
-                        <el-dropdown-item command="exportWord">
-                            <icon size="12px" fileTypeDetail="word" folderType="fileType" badgeColor="146EBE"></icon>
-                            Export to Word
-                        </el-dropdown-item>
-                    </el-dropdown-menu>
-                </el-dropdown>
+                    <div v-if="isExpanded && expandedGroups.export" id="advanced-export-menu" class="rail-submenu">
+                        <button type="button" class="rail-subitem" @click="handleExportCommand('exportJSONOnlyNode')">
+                            <i class="fa-solid fa-file-code"></i><span>Export Package Only Node</span>
+                        </button>
+                        <button type="button" class="rail-subitem" @click="handleExportCommand('exportJSONFullTree')">
+                            <i class="fa-solid fa-file-code"></i><span>Export Package Full Tree</span>
+                        </button>
+                        <button type="button" class="rail-subitem" @click="handleExportCommand('exportExcel')">
+                            <i class="fa-solid fa-file-excel"></i>
+                            <span>Export To Excel</span>
+                        </button>
+                        <button type="button" class="rail-subitem" @click="handleExportCommand('exportWord')">
+                            <i class="fa-solid fa-file-word"></i>
+                            <span>Export To Word</span>
+                        </button>
+                    </div>
+                </div>
 
                 <!-- Contextual: Maintenance & Failure Record -->
                 <button v-if="maintenanceFailureEnabled && clientSlide" type="button" class="rail-tab"
@@ -146,7 +141,6 @@
 </template>
 
 <script>
-import Icon from '@/views/Common/Icon.vue'
 import TreeSearchPanel from '@/views/TreeNode/components/TreeSearchPanel.vue'
 import { MAINTENANCE_FAILURE_ENABLED } from '@/config/featureFlags'
 
@@ -169,7 +163,6 @@ const getPinKey = () => `${PIN_KEY}${getCurrentUserSuffix()}`
 export default {
     name: 'TreeToolbar',
     components: {
-        Icon,
         TreeSearchPanel
     },
     props: {
@@ -193,13 +186,13 @@ export default {
             isPinned: localStorage.getItem(getPinKey()) === '1',
             isHovered: false,
             searchOpen: false,
-            dropdownActive: false,
+            expandedGroups: { import: false, export: false },
             hoverTimer: null
         }
     },
     computed: {
         isExpanded() {
-            return this.isPinned || this.isHovered || this.searchOpen || this.dropdownActive
+            return this.isPinned || this.isHovered || this.searchOpen
         }
     },
     beforeDestroy() {
@@ -227,9 +220,9 @@ export default {
             this.isPinned = !this.isPinned
             localStorage.setItem(getPinKey(), this.isPinned ? '1' : '0')
         },
-        handleDropdownVisibleChange(visible) {
-            this.dropdownActive = visible
-            this.$emit('dropdown-visible-change', visible)
+        toggleSubmenu(group) {
+            this.isHovered = true
+            this.expandedGroups[group] = !this.expandedGroups[group]
         },
         onSearchOpened() {
             const panel = this.$refs.searchPanel
@@ -258,10 +251,6 @@ export default {
         handleShowEquipment() {
             this.activeTab = 'testingEquipment'
             this.$emit('show-equipment')
-        },
-        handleImportTestReport() {
-            this.activeTab = 'importTestReport'
-            this.$emit('import-test-report')
         },
         handleMaintenanceFailure() {
             if (this.selectedMode !== 'asset') return
@@ -471,13 +460,59 @@ export default {
     flex-shrink: 0;
 }
 
-.rail-spacer {
-    flex: 1;
+.rail-group {
+    width: 100%;
+    flex-shrink: 0;
 }
 
-.toolbar-rail ::v-deep .el-dropdown {
+.rail-submenu {
+    margin: 2px 8px 6px 35px;
+    border-left: 1px solid rgba(255, 255, 255, 0.25);
+    padding-left: 8px;
+}
+
+.rail-subitem {
     width: 100%;
-    display: block;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 7px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.78);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.3;
+    text-align: left;
+    cursor: pointer;
+}
+
+.rail-subitem:hover,
+.rail-subitem:focus-visible {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    outline: none;
+}
+
+.rail-subitem > *:first-child {
+    flex: 0 0 16px;
+    text-align: center;
+}
+
+.rail-subitem > i {
+    font-size: 15px;
+}
+
+.rail-subitem span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.rail-spacer {
+    flex: 1;
 }
 
 .toolbar-rail ::v-deep .el-popover__reference-wrapper {
@@ -485,8 +520,4 @@ export default {
     display: block;
 }
 
-.el-dropdown-menu__item {
-    font-size: 12px !important;
-    font-family: Arial, sans-serif !important;
-}
 </style>
