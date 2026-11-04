@@ -27,6 +27,10 @@ build_electron:
       if (Test-Path -LiteralPath 'dist_electron') {
         Remove-Item -LiteralPath 'dist_electron' -Recurse -Force
       }
+
+      # Keep electron-builder's NSIS toolset isolated from the runner's shared cache.
+      $env:ELECTRON_BUILDER_CACHE = Join-Path $env:CI_PROJECT_DIR ".electron-builder-cache-$env:CI_JOB_ID"
+      Write-Host "Electron Builder cache: $env:ELECTRON_BUILDER_CACHE"
     - npm ci --prefer-offline --no-audit
     - |
       if ($LASTEXITCODE -ne 0) {
