@@ -33,7 +33,8 @@
                         </el-tooltip>
                     </th>
                     <th>Dev with R ref (%)</th>
-                    <th>Dev within phases (%)</th>
+                    <!-- Máy 1 pha không có Dev within phases -->
+                    <th v-if="phaseCount > 1">Dev within phases (%)</th>
                     <!-- <th>Mean value</th> -->
                     <th class="assessment-col">Assessment</th>
                     <th class="condition-indicator-col">Condition indicator</th>
@@ -45,10 +46,9 @@
                     <td class="phase-col">
                         <div class="col-phase">
                             <div class="phase">
+                                <!-- Máy 1 pha: chỉ cho chọn đúng pha khai báo trong asset -->
                                 <el-select size="mini" v-model="item.name.value" placeholder="Phase">
-                                    <el-option label="A" value="A"></el-option>
-                                    <el-option label="B" value="B"></el-option>
-                                    <el-option label="C" value="C"></el-option>
+                                    <el-option v-for="phase in phaseOptions" :key="phase" :label="phase" :value="phase"></el-option>
                                 </el-select>
                             </div>
                             <div class="rectangle"
@@ -73,8 +73,8 @@
                     <td>
                         <el-input :measurement="item.dev_r_ref" size="mini" type="text" v-model="item.dev_r_ref.value" readonly></el-input>
                     </td>
-                    <template v-if="index % 3 == 0 && assetData.tap_changers.winding === $constant.TERT">
-                        <td rowspan="3">
+                    <template v-if="phaseCount > 1 && index % phaseCount == 0 && assetData.tap_changers.winding === $constant.TERT">
+                        <td :rowspan="phaseCount">
                             <el-input :measurement="item.dev_phase" size="mini" type="text" v-model="item.dev_phase.value" readonly></el-input>
                         </td>
 
@@ -82,8 +82,8 @@
                                 <el-input :measurement="item.mean_value" size="mini" type="text" v-model="item.mean_value.value"><template slot="append">Ω</template></el-input>
 </td> -->
                     </template>
-                    <template v-else-if="index % 3 == 0 && assetData.tap_changers.winding !== $constant.TERT">
-                        <td rowspan="3">
+                    <template v-else-if="phaseCount > 1 && index % phaseCount == 0 && assetData.tap_changers.winding !== $constant.TERT">
+                        <td :rowspan="phaseCount">
                             <el-input :measurement="item.dev_phase" size="mini" type="text" v-model="item.dev_phase.value" readonly></el-input>
                         </td>
 
@@ -215,12 +215,13 @@ import * as common from '../../../Common/index.js'
 import GroupNode from '../../../Common/GroupNode.vue'
 import { changeTestStandard } from '../../../Common'
 import conditionIndicatorMixin from '../MixinCommon/MixinConditionIndicator'
+import dcWindingPhaseMixin from '../MixinCommon/MixinDcWindingPhase'
 import {
     RCORR_HINT, conductorMaterialOf, conductorConstant, toNumberOrNull, computeDcWindingRows
 } from '@/utils/dcWindingCorrection'
 
 export default {
-    mixins: [conditionIndicatorMixin],
+    mixins: [conditionIndicatorMixin, dcWindingPhaseMixin],
     name: "DCWindingTert",
     components: { GroupNode },
     data() {
@@ -317,7 +318,7 @@ export default {
             var rows = this.testData && this.testData.table ? this.testData.table.table1 : null
             if (!rows || rows.length === 0) return
             // Thiếu Winding temp hoặc Ref temp → không có R corr, Dev cũng để trống (đặc tả 5.2.3.2)
-            computeDcWindingRows(rows, { tMeas: this.windingTemp, tRef: this.referenceTemp, K: this.conductorK })
+            computeDcWindingRows(rows, { tMeas: this.windingTemp, tRef: this.referenceTemp, K: this.conductorK, phaseCount: this.phaseCount })
         },
         async calcAssessment() {
             var assessmentStandard = this.filteredAssessmentData.find(function(x) { return x.code === this.option }.bind(this))
@@ -331,8 +332,8 @@ export default {
                     if (!item || typeof item !== 'object') return
                     if (item.measurement_id) measurementMap[item.measurement_id] = item.value
                 })
-                // dev_phase rowspan=3 → lấy từ row đầu nhóm
-                var groupFirstRow = rows[Math.floor(i / 3) * 3]
+                // dev_phase gộp theo nhóm pha (rowspan) → lấy từ row đầu nhóm; máy 1 pha không có
+                var groupFirstRow = this.phaseCount > 1 ? rows[Math.floor(i / this.phaseCount) * this.phaseCount] : null
                 if (groupFirstRow && groupFirstRow.dev_phase && groupFirstRow.dev_phase.measurement_id) {
                     measurementMap[groupFirstRow.dev_phase.measurement_id] = groupFirstRow.dev_phase.value
                 }
