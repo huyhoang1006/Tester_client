@@ -8,10 +8,11 @@
 import {
     ALL_PHASES, transformerPhases, detectPhaseMismatch, rebuildRowsForPhases, moveRowsToPhase
 } from '@/utils/transformerPhases'
+import { askPhaseChange } from '@/utils/phaseChangeDialog'
 
 export default {
     data() {
-        return { phaseCheckRunning: false }
+        return { phaseCheckRunning: false, phaseKeepUnchanged: false }
     },
     computed: {
         assetPhases() { return transformerPhases(this.assetData) },
@@ -46,9 +47,40 @@ export default {
             const mismatch = detectPhaseMismatch(rows, this.assetPhases)
             if (!mismatch) return
 
-            // Chưa có kết quả → dựng lại theo pha mới, không cần hỏi
-            if (!mismatch.hasResults) {
+            // Đổi giữa 3 pha ↔ 1 pha mà chưa có kết quả → dựng lại theo pha mới, không cần hỏi
+            // (máy 1 pha đổi pha thì luôn hỏi, xét theo pha — xem bên dưới)
+            if (!mismatch.singleSwitch && !mismatch.hasResults) {
                 this.replaceRows(rebuildRowsForPhases(rows, this.assetPhases, this.rowData, false))
+                return
+            }
+
+            // Máy 1 pha đổi pha: dùng chung hộp thoại 3 lựa chọn với lúc lưu asset
+            if (mismatch.singleSwitch) {
+                if (this.phaseKeepUnchanged) return
+                this.phaseCheckRunning = true
+                try {
+                    const choice = await askPhaseChange({
+                        title: `Test results exist for phase ${mismatch.oldPhase}`,
+                        message: `This test already has results for phase ${mismatch.oldPhase}, but the transformer is now configured as single-phase ${mismatch.newPhase}. What should happen to these results?`,
+                        oldPhase: mismatch.oldPhase,
+                        newPhase: mismatch.newPhase
+                    })
+                    if (choice === 'move') {
+                        moveRowsToPhase(rows, mismatch.expected[0])
+                        this.computeFields()
+                        this.$message.success(`Test results were moved to phase ${mismatch.newPhase}`)
+                    } else if (choice === 'delete') {
+                        // Xoá hẳn bài test khỏi job — trang job (Transformer/index.vue) gỡ tab test,
+                        // lưu job là xoá khỏi DB
+                        this.$emit('remove-test')
+                        this.$message.success('The test was removed from the job. Save the job to apply.')
+                    } else if (choice === 'keep') {
+                        // Giữ nguyên: không hỏi lại trong lần mở này
+                        this.phaseKeepUnchanged = true
+                    }
+                } finally {
+                    this.phaseCheckRunning = false
+                }
                 return
             }
 

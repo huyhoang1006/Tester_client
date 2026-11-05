@@ -60,7 +60,8 @@
                                     :asset-mrid="transformerJobDto.properties.asset_id"
                                     :work-mrid="transformerJobDto.properties.mrid"
                                     :work-task-mrid="item.mrid"
-                                    @toggle-compare="toggleCompare(item.testTypeCode + index)">
+                                    @toggle-compare="toggleCompare(item.testTypeCode + index)"
+                                    @remove-test="removeTestAt(index)">
                                 </component>
                             </el-tab-pane>
                         </el-tabs>
@@ -209,6 +210,14 @@ export default {
         // ── So sánh với lần test trước ──────────────────────────────────
         isDcWindingTest(testTypeCode) {
             return isDcWindingTest(testTypeCode)
+        },
+        // Test con yêu cầu tự gỡ (vd DC Winding: user chọn xoá test của pha cũ)
+        removeTestAt(index) {
+            const list = this.transformerJobDto.testList || []
+            if (index < 0 || index >= list.length) return
+            list.splice(index, 1)
+            const next = list[Math.min(index, list.length - 1)]
+            this.objActiveName.activeName = next ? next.name + Math.min(index, list.length - 1) : null
         },
         // Bật cho mọi bài test có định nghĩa cột trong test-definitions.
         compareEnabled(testTypeCode) {

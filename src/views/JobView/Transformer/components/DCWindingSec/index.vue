@@ -67,7 +67,7 @@
                     <td>
                         <!-- R corr do phần mềm tính, user không sửa được -->
                         <el-input :measurement="item.r_corr" class="rcorr-readonly" size="mini" type="text" disabled
-                            :placeholder="rcorrAvailable ? '' : 'N/A'" v-model="item.r_corr.value"><template
+                            v-model="item.r_corr.value"><template
                                 slot="append">Ω</template></el-input>
                     </td>
                     <td>
