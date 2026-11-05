@@ -64,10 +64,10 @@
     {
       "mrid": "69afd811-d561-4b0c-ae90-13117ede5ecb",
       "code": "ieee_c57_152_ratio_primsec",
-      "name": "IEEE C57.152 (2013)",
+      "name": "IEEE C57.152 (2025)",
       "type": "ieee",
       "standard_number": "C57.152",
-      "standard_edition": "2013",
+      "standard_edition": "2025",
       "columns": [
         {
           "mrid": "1d510b78-7413-4777-a344-4b65d4e3e920",

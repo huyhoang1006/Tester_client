@@ -161,7 +161,7 @@
             <!-- <el-form size="small" label-position="left" label-width="140px">
                 <el-form-item label="Option">
                     <el-select class="w-100" placeholder="please select" v-model="assessmentSetting.option.value">
-                        <el-option label="IEEE C57.152 (2013)" value="IEEE"></el-option>
+                        <el-option label="IEEE C57.152 (2025)" value="IEEE"></el-option>
                         <el-option label="CIGRE 445" value="CIGRE"></el-option>
                         <el-option label="Customized limit" value="Custom"></el-option>
                     </el-select>

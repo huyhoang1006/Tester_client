@@ -6,10 +6,10 @@
     {
       "mrid": "8c8c9188-d6b4-4929-bc9d-f1a5ce47300b",
       "code": "ieee_c57_152_shortcircuitimpedanceprim",
-      "name": "IEEE C57.152 (2013)",
+      "name": "IEEE C57.152 (2025)",
       "type": "ieee",
       "standard_number": "C57.152",
-      "standard_edition": "2013",
+      "standard_edition": "2025",
       "columns": [
         {
           "mrid": "68ebea17-7af1-4438-87bf-cf7bda61e691",

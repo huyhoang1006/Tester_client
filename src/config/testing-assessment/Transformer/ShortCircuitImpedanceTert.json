@@ -6,10 +6,10 @@
     {
       "mrid": "e007bede-3966-47d8-b9c7-033fad776698",
       "code": "ieee_c57_152_shortcircuitimpedancetert",
-      "name": "IEEE C57.152 (2013)",
+      "name": "IEEE C57.152 (2025)",
       "type": "ieee",
       "standard_number": "C57.152",
-      "standard_edition": "2013",
+      "standard_edition": "2025",
       "columns": [
         {
           "mrid": "68ebea17-7af1-4438-87bf-cf7bda61e691",
