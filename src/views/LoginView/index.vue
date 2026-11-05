@@ -131,7 +131,7 @@ export default {
                     throw new Error((tokenResponse && tokenResponse.message) || 'Unable to exchange SSO code')
                 }
 
-                this.$helper.afterSsoLogin(tokenResponse.data)
+                await this.$helper.afterSsoLogin(tokenResponse.data)
                 this.$message.success('Login successfully')
                 await this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
                 if (window.electronAPI && window.electronAPI.focusApp) {

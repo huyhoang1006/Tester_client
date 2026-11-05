@@ -16,6 +16,11 @@ const serverConfigAPI = {
     getServerConfig: () => ipcRenderer.invoke('getServerConfig'),
     setServerConfig: (config) => ipcRenderer.invoke('setServerConfig', config)
 }
+const authSessionAPI = {
+    getAuthSession: () => ipcRenderer.invoke('getAuthSession'),
+    setAuthSession: session => ipcRenderer.invoke('setAuthSession', session),
+    clearAuthSession: () => ipcRenderer.invoke('clearAuthSession')
+}
 
 const appOptionAPI = appOptionPreload.appOptionPreload()
 const uploadCustomAPI = uploadCustomPreload.uploadCustomPreload()
@@ -174,6 +179,7 @@ const ipcMain = Object.assign(
     fileConverterAPI,
     systemInfoAPI,
     serverConfigAPI,
+    authSessionAPI,
     entitySnapshotAPI,
     templateAPI,
     mRIDCheckAPI,

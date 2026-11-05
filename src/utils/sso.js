@@ -50,3 +50,16 @@ export const clearSsoTokens = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('refresh_token')
 }
+
+export const persistSsoSession = async (user, accessToken = getStoredAccessToken()) => {
+    const api = window.electronAPI
+    if (!api || !api.setAuthSession || !user || !accessToken) return
+    const refreshToken = getStoredRefreshToken()
+    await api.setAuthSession({
+        user: {...user, access_token: accessToken, refresh_token: refreshToken},
+        accessToken,
+        refreshToken,
+        role: localStorage.getItem('role') || '',
+        loginDomain: getLoginDomain()
+    })
+}

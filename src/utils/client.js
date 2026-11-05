@@ -12,6 +12,7 @@ import {
     getStoredAccessToken,
     getStoredRefreshToken,
     SSO_TOKEN_HEADER,
+    persistSsoSession,
     storeSsoTokens
 } from '@/utils/sso'
 
@@ -79,10 +80,13 @@ const logoutExpiredSession = (message = 'Session expired. Please sign in again.'
         duration: 5000
     })
     markRestoreAfterLogin()
-    afterLogout()
-    if (route.currentRoute.name !== 'login') {
-        route.push({ name: 'login' }).catch(() => {})
-    }
+    void afterLogout()
+        .catch(error => console.warn('Unable to clear saved desktop session:', error))
+        .finally(() => {
+            if (route.currentRoute.name !== 'login') {
+                route.push({ name: 'login' }).catch(() => {})
+            }
+        })
     return true
 }
 
@@ -100,7 +104,7 @@ const refreshToken = () => {
         params: {refreshToken: refreshTokenValue},
         timeout: REFRESH_TIMEOUT_MS,
         serviceName: 'Login server'
-    }).then(response => {
+    }).then(async response => {
         const body = response.data || {}
         if (body.code !== 1 || !body.data || !body.data.accessToken) {
             throw new Error(body.message || 'Unable to refresh SSO session')
@@ -108,6 +112,11 @@ const refreshToken = () => {
 
         storeSsoTokens(body.data)
         store.dispatch('setToken', body.data.accessToken)
+        try {
+            await persistSsoSession(store.state.user, body.data.accessToken)
+        } catch (error) {
+            console.warn('Unable to back up renewed session:', error)
+        }
         return body.data.accessToken
     })
 }
@@ -171,6 +180,8 @@ const retryRequestWithFreshToken = (originalRequest, sourceError) => {
 client.interceptors.request.use(
     function (config) {
         config.serviceName = config.serviceName || 'Server asset'
+        config.headers = config.headers || {}
+        config.headers['X-Requested-With'] = 'XMLHttpRequest'
         // Logic cũ: Kiểm tra server address (giữ nguyên nếu bạn cần)
         if (!store.state.serviceAddr && !(config.url || '').startsWith('http')) {
             const error = new Error('Server address not configured')
@@ -212,6 +223,15 @@ client.interceptors.response.use(
         // Tôi sửa lại logic: Nếu có data.data thì trả về data.data, không thì trả về toàn bộ body.
         
         const res = response.data
+
+        if (typeof res === 'string' && /^\s*(?:<!doctype\s+html|<html\b)/i.test(res)) {
+            const error = new Error('API returned HTML instead of JSON')
+            error.code = 'ERR_UNEXPECTED_HTML'
+            error.config = response.config
+            error.response = response
+            reportApiFailure(error)
+            return Promise.reject(error)
+        }
 
         if (res && res.code === 10) {
             const authError = markAuthExpiredError(new Error(res.message || 'Session expired. Please sign in again.'))

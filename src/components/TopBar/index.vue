@@ -371,7 +371,7 @@ export default {
                                 this.$message.warning(formatApiError(error))
                             })
 
-                        this.$helper.afterLogout()
+                        await this.$helper.afterLogout()
                         await this.$router.push({ path: '/login' })
                         if (window.electronAPI && window.electronAPI.focusApp) {
                             await window.electronAPI.focusApp()

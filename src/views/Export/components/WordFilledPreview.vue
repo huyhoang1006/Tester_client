@@ -56,17 +56,77 @@ export default {
     filledCount() { return this.rows.filter(row => row.value).length },
     emptyCount() { return this.rows.length - this.filledCount }
   },
-  created() { this.renderRequest = 0 },
+  created() {
+    this.renderRequest = 0
+    this.previewFieldByMarker = new Map()
+  },
   mounted() { this.renderDocument() },
   beforeDestroy() { this.renderRequest += 1 },
   methods: {
+    markedCodeMap() {
+      const codeMap = {...this.codeMap}
+      this.previewFieldByMarker.clear()
+      const markedCodes = new Set()
+      this.rows.filter(row => row.code && row.value).forEach((row, index) => {
+        if (index >= 0x18ff || markedCodes.has(row.code)) return
+        markedCodes.add(row.code)
+        const marker = String.fromCharCode(0xe000 + index)
+        this.previewFieldByMarker.set(marker, row)
+        const mark = value => value == null || String(value).trim() === ''
+          ? value : `${marker}${value}\uf8ff`
+        const value = codeMap[row.code]
+        codeMap[row.code] = Array.isArray(value) ? value.map(mark) : mark(value)
+      })
+      return codeMap
+    },
+    markFilledValues() {
+      for (const paragraph of this.$refs.docRoot.querySelectorAll('p')) {
+        const walker = document.createTreeWalker(paragraph, NodeFilter.SHOW_TEXT)
+        const parts = []
+        let text = ''
+        while (walker.nextNode()) {
+          const node = walker.currentNode
+          parts.push({node, start: text.length, end: text.length + node.textContent.length})
+          text += node.textContent
+        }
+        const matches = [...text.matchAll(/([\ue000-\uf8fe])[^\uf8ff]*\uf8ff/g)]
+          .filter(match => this.previewFieldByMarker.has(match[1]))
+        for (const match of matches.reverse()) {
+          const start = parts.find(part => part.end > match.index)
+          const endIndex = match.index + match[0].length
+          const end = parts.find(part => part.end >= endIndex && part.start < endIndex)
+          if (!start || !end) continue
+          const range = document.createRange()
+          range.setStart(start.node, match.index - start.start)
+          range.setEnd(end.node, endIndex - end.start)
+          const fragment = range.extractContents()
+          const textWalker = document.createTreeWalker(fragment, NodeFilter.SHOW_TEXT)
+          const textNodes = []
+          while (textWalker.nextNode()) textNodes.push(textWalker.currentNode)
+          if (!textNodes.length) continue
+          if (textNodes.length === 1) textNodes[0].textContent = textNodes[0].textContent.slice(1, -1)
+          else {
+            textNodes[0].textContent = textNodes[0].textContent.slice(1)
+            const last = textNodes[textNodes.length - 1]
+            last.textContent = last.textContent.slice(0, -1)
+          }
+          const row = this.previewFieldByMarker.get(match[1])
+          const highlight = document.createElement('span')
+          highlight.className = 'word-filled-value'
+          highlight.title = `{${row.code}} - ${row.label}`
+          highlight.setAttribute('aria-label', highlight.title)
+          highlight.appendChild(fragment)
+          range.insertNode(highlight)
+        }
+      }
+    },
     async renderDocument() {
       const request = ++this.renderRequest
       this.loading = true
       this.errorMessage = ''
       try {
         const result = await window.electronAPI.exportWordWithData({
-          templatePath: this.templatePath, variables: this.variables, codeMap: this.codeMap, previewOnly: true
+          templatePath: this.templatePath, variables: this.variables, codeMap: this.markedCodeMap(), previewOnly: true
         })
         if (!result?.success || !result.base64) throw new Error(result?.message || 'Cannot generate filled report preview')
         if (request !== this.renderRequest) return
@@ -75,6 +135,7 @@ export default {
         for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index)
         await renderAsync(bytes, this.$refs.docRoot, this.$refs.styles, {breakPages: true, ignoreLastRenderedPageBreak: false})
         if (request !== this.renderRequest) return
+        this.markFilledValues()
         this.pageCount = this.$refs.docRoot.querySelectorAll('section.docx').length
         this.$refs.stage.scrollTop = 0
       } catch (error) {
@@ -119,6 +180,8 @@ export default {
 .word-filled-docx {width:max-content; min-width:100%; margin:0 auto;}
 .word-filled-docx .docx-wrapper {padding:0; background:transparent;}
 .word-filled-docx .docx {margin:0 auto 24px; box-shadow:0 4px 20px #1b243550;}
+.word-filled-docx .word-filled-value {background:#fff0a6; box-shadow:0 0 0 1px #e9c94d; border-radius:2px; cursor:help; box-decoration-break:clone;}
+.word-filled-docx .word-filled-value:hover {background:#ffe27a; box-shadow:0 0 0 1px #cf9b1c;}
 .word-filled-status {position:absolute; z-index:2; inset:0; display:flex; align-items:center; justify-content:center; gap:8px; background:#525860; color:#fff;}
 .word-filled-error {color:#ffe3e3;}
 .word-filled-page-nav {position:absolute; z-index:4; top:12px; right:24px; display:flex; align-items:center; gap:8px; padding:5px; border:1px solid #cdd6e2; border-radius:4px; background:#fff; color:#223852; box-shadow:0 2px 8px #1b243533; font-size:12px;}

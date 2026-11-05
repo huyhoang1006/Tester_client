@@ -380,6 +380,35 @@ app.on('ready', async () => {
 
     const serverConfigStore = createServerConfigStore(app.getPath('userData'))
 
+    const authSessionKey = 'desktop-auth-session-v1'
+    ipcMain.handle('getAuthSession', (event) => {
+        if (event.sender !== win.webContents) return null
+        return new Promise((resolve, reject) => {
+            db.get('SELECT value FROM app_settings WHERE key = ?', [authSessionKey], (error, row) => {
+                if (error) return reject(error)
+                try {
+                    resolve(row ? JSON.parse(row.value) : null)
+                } catch (parseError) {
+                    reject(parseError)
+                }
+            })
+        })
+    })
+    ipcMain.handle('setAuthSession', (event, session) => {
+        if (event.sender !== win.webContents) return false
+        if (!session || !session.user || !session.accessToken || !session.loginDomain) return false
+        return new Promise((resolve, reject) => {
+            db.run('INSERT INTO app_settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',
+                [authSessionKey, JSON.stringify(session)], error => error ? reject(error) : resolve(true))
+        })
+    })
+    ipcMain.handle('clearAuthSession', (event) => {
+        if (event.sender !== win.webContents) return false
+        return new Promise((resolve, reject) => {
+            db.run('DELETE FROM app_settings WHERE key = ?', [authSessionKey], error => error ? reject(error) : resolve(true))
+        })
+    })
+
     ipcMain.handle('openSsoLogin', (_event, targetUrl, redirectUri) => (
         browserSso.open(targetUrl, redirectUri, true)
     ))

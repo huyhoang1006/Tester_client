@@ -5,6 +5,7 @@ import {getLoginDomain, getServiceDomain} from '@/config/server'
 import {
     clearSsoTokens,
     getStoredAccessToken,
+    persistSsoSession,
     storeSsoTokens
 } from '@/utils/sso'
 
@@ -43,15 +44,33 @@ export const initApp = async () => {
     client.defaults.baseURL = serviceAddr
 
     // 2. Khôi phục thông tin User & Token từ LocalStorage
-    const userStr = localStorage.getItem('user')
-    const token = getStoredAccessToken()
-    const role = localStorage.getItem('role')
-    // const refreshToken = localStorage.getItem('refresh_token') // Nếu sau này cần dùng refresh token
+    let userData = null
+    let token = getStoredAccessToken()
+    let role = localStorage.getItem('role')
+    try {
+        const userStr = localStorage.getItem('user')
+        userData = userStr ? JSON.parse(userStr) : null
+    } catch (error) {
+        console.warn('Unable to read saved user session:', error)
+    }
 
-    if (userStr && token) {
+    try {
+        const api = window.electronAPI
+        const saved = api && api.getAuthSession ? await api.getAuthSession() : null
+        if (saved && saved.user && saved.accessToken && saved.loginDomain === loginAddr) {
+            userData = saved.user
+            token = saved.accessToken
+            role = saved.role || ''
+            localStorage.setItem('user', JSON.stringify(userData))
+            localStorage.setItem('role', role)
+            storeSsoTokens({accessToken: token, refreshToken: saved.refreshToken})
+        }
+    } catch (error) {
+        console.warn('Unable to restore saved desktop session:', error)
+    }
+
+    if (userData && token) {
         storeSsoTokens({accessToken: token})
-        // Parse thông tin user
-        const userData = JSON.parse(userStr)
 
         // Đẩy lại vào Store (Vuex)
         store.dispatch('setUser', userData)
@@ -61,13 +80,18 @@ export const initApp = async () => {
 
         // Thiết lập Interceptor để tự động gắn Token vào mọi request API tiếp theo
         setupInterceptor(token)
+        try {
+            await persistSsoSession(userData, token)
+        } catch (error) {
+            console.warn('Unable to back up desktop session:', error)
+        }
     } else {
         // Nếu thiếu thông tin thì reset
         store.dispatch('setIsAuthenticated', false)
     }
 }
 
-export const afterSsoLogin = (ssoToken) => {
+export const afterSsoLogin = async (ssoToken) => {
     const accessToken = ssoToken && ssoToken.accessToken
     const refreshToken = ssoToken && ssoToken.refreshToken
     const tokenUser = (ssoToken && ssoToken.tokenUser) || {}
@@ -106,10 +130,16 @@ export const afterSsoLogin = (ssoToken) => {
     store.dispatch('setIsAuthenticated', true)
     setupInterceptor(accessToken)
 
+    try {
+        await persistSsoSession(user, accessToken)
+    } catch (error) {
+        console.warn('Unable to back up desktop session:', error)
+    }
+
     return user
 }
 
-export const afterLogout = () => {
+export const afterLogout = async () => {
     // Xóa sạch LocalStorage
     localStorage.removeItem('user')
     clearSsoTokens()
@@ -126,6 +156,10 @@ export const afterLogout = () => {
     if (interceptorAuthenticate !== null) {
         client.interceptors.request.eject(interceptorAuthenticate)
         interceptorAuthenticate = null
+    }
+
+    if (window.electronAPI && window.electronAPI.clearAuthSession) {
+        await window.electronAPI.clearAuthSession()
     }
 }
 

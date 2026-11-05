@@ -20,6 +20,13 @@ export const classifyApiError = (error, online = typeof navigator === 'undefined
     const request = `${target.method} ${target.endpoint}`
     const destination = `${target.service}${target.host ? ` (${target.host})` : ''}`
 
+    if (error.code === 'ERR_UNEXPECTED_HTML') {
+        return {
+            kind: 'unexpected-html',
+            message: `${destination} returned an HTML page instead of JSON for ${request}. Check the service URL and SSO sign-in.`
+        }
+    }
+
     if (error.code === 'ERR_SERVER_NOT_CONFIGURED') {
         return { kind: 'configuration', message: `${target.service} address is not configured.` }
     }
