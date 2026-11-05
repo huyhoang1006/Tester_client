@@ -140,7 +140,7 @@
 </template>
 
 <script>
-import * as echarts from 'echarts'
+import { initChartWhenVisible, disposeChartWatchers } from '@/utils/echartsWhenVisible'
 import sfraDefinition from '@/config/test-definitions/Transformer/SFRA.json'
 import { attachAliasFromColumns } from '@/utils/compareTestResults'
 
@@ -296,6 +296,7 @@ export default {
     beforeDestroy() {
         window.removeEventListener('resize', this.resizeCharts)
         if (this.resizeObserver) this.resizeObserver.disconnect()
+        disposeChartWatchers(this)
         if (this.magnitudeChart) this.magnitudeChart.dispose()
         if (this.phaseChart) this.phaseChart.dispose()
     },
@@ -425,11 +426,15 @@ export default {
         },
         renderCharts() {
             if (!this.$refs.magnitudeChart) return
-            if (!this.magnitudeChart) this.magnitudeChart = echarts.init(this.$refs.magnitudeChart)
+            // Tab đang ẩn → chưa có kích thước, đợi hiện ra mới vẽ
+            if (!this.magnitudeChart) {
+                this.magnitudeChart = initChartWhenVisible(this, this.$refs.magnitudeChart, () => this.renderCharts())
+                if (!this.magnitudeChart) return
+            }
             this.magnitudeChart.setOption(this.chartOption(1, 'dB'), true)
             if (this.showPhase && this.$refs.phaseChart) {
-                if (!this.phaseChart) this.phaseChart = echarts.init(this.$refs.phaseChart)
-                this.phaseChart.setOption(this.chartOption(2, '°'), true)
+                if (!this.phaseChart) this.phaseChart = initChartWhenVisible(this, this.$refs.phaseChart, () => this.renderCharts())
+                if (this.phaseChart) this.phaseChart.setOption(this.chartOption(2, '°'), true)
             }
             this.resizeCharts()
         },

@@ -44,7 +44,7 @@
 </template>
 
 <script>
-import * as echarts from 'echarts'
+import { initChartWhenVisible, disposeChartWatchers } from '@/utils/echartsWhenVisible'
 
 const COLORS = ['#e53935', '#c58a00', '#1558d6', '#17823b', '#7b4ab5', '#00838f', '#d85b00', '#5f6b7a']
 const LEGACY_SWEEP = /^(.*?)\s*@\s*([+-]?\d+(?:\.\d+)?)\s*(Hz|kV)\s*$/i
@@ -190,6 +190,7 @@ export default {
     beforeDestroy() {
         window.removeEventListener('resize', this.resizeAll)
         if (this._resizeObserver) this._resizeObserver.disconnect()
+        disposeChartWatchers(this)
         Object.values(this._charts).forEach(chart => chart.dispose())
     },
     methods: {
@@ -287,6 +288,7 @@ export default {
             const element = this.$refs[refName]
             if (!element) return
             const chart = this.chartFor(refName, element)
+            if (!chart) return
             chart.setOption(Object.assign(this.baseOption(unit, `winding-${metric}-50hz`), {
                 xAxis: {
                     type: 'category',
@@ -300,6 +302,7 @@ export default {
             const element = this.$refs[refName]
             if (!element) return
             const chart = this.chartFor(refName, element)
+            if (!chart) return
             chart.setOption(Object.assign(this.baseOption(unit, `winding-${metric}-${kind}-sweep`), {
                 xAxis: {
                     type: 'value',
@@ -313,7 +316,12 @@ export default {
             }), true)
         },
         chartFor(name, element) {
-            if (!this._charts[name]) this._charts[name] = echarts.init(element)
+            if (!this._charts[name]) {
+                // Tab đang ẩn → chưa có kích thước, đợi hiện ra mới vẽ
+                const chart = initChartWhenVisible(this, element, () => this.renderAll())
+                if (!chart) return null
+                this._charts[name] = chart
+            }
             return this._charts[name]
         },
         disposeMissingCharts() {

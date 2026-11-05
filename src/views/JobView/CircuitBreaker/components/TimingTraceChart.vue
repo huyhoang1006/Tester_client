@@ -57,7 +57,7 @@
 </template>
 
 <script>
-import * as echarts from 'echarts'
+import { initChartWhenVisible, disposeChartWatchers } from '@/utils/echartsWhenVisible'
 
 const PHASE_COLORS = { A: '#e53935', B: '#d4a900', C: '#1558d6' }
 const EXTRA_COLORS = ['#16a085', '#8e44ad', '#e67e22', '#34495e', '#00a8a8', '#7f8c8d']
@@ -128,6 +128,7 @@ export default {
     },
     beforeDestroy() {
         window.removeEventListener('resize', this.resizeChart)
+        disposeChartWatchers(this)
         if (this._chart) this._chart.dispose()
         this._chart = null
     },
@@ -150,7 +151,11 @@ export default {
         renderChart() {
             const element = this.$refs.chart
             if (!element) return
-            if (!this._chart) this._chart = echarts.init(element)
+            if (!this._chart) {
+                // Tab đang ẩn → chưa có kích thước, đợi hiện ra mới vẽ
+                this._chart = initChartWhenVisible(this, element, () => this.renderChart())
+                if (!this._chart) return
+            }
 
             const units = [...new Set(this.activeTraces.map(trace => trace.unit || 'Digital'))]
             const yAxis = units.map((unit, index) => ({

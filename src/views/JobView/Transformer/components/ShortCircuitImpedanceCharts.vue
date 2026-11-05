@@ -72,7 +72,7 @@
 </template>
 
 <script>
-import * as echarts from 'echarts'
+import { initChartWhenVisible, disposeChartWatchers } from '@/utils/echartsWhenVisible'
 
 const PHASES = ['A', 'B', 'C']
 const PHASE_COLORS = { A: '#e53935', B: '#c58a00', C: '#1558d6' }
@@ -162,23 +162,32 @@ export default {
         renderState: {
             deep: true,
             handler() { this.$nextTick(this.renderAll) }
-        }
+        },
+        // Khi showPlots false thì $el chỉ là comment node → gắn observer lại khi biểu đồ hiện ra
+        showPlots() { this.$nextTick(this.attachResizeObserver) }
     },
     mounted() {
         this.$nextTick(this.renderAll)
         window.addEventListener('resize', this.resizeAll)
-        if (window.ResizeObserver) {
-            this._resizeObserver = new window.ResizeObserver(this.resizeAll)
-            this._resizeObserver.observe(this.$el)
-        }
+        this.attachResizeObserver()
     },
     beforeDestroy() {
         window.removeEventListener('resize', this.resizeAll)
         if (this._resizeObserver) this._resizeObserver.disconnect()
+        disposeChartWatchers(this)
         Object.values(this._charts).forEach(chart => chart.dispose())
         this._charts = Object.create(null)
     },
     methods: {
+        attachResizeObserver() {
+            if (!window.ResizeObserver) return
+            if (this._resizeObserver) this._resizeObserver.disconnect()
+            this._resizeObserver = null
+            // ResizeObserver chỉ nhận Element — v-if false thì $el là comment, bỏ qua
+            if (!(this.$el instanceof window.Element)) return
+            this._resizeObserver = new window.ResizeObserver(this.resizeAll)
+            this._resizeObserver.observe(this.$el)
+        },
         phaseRows() {
             return this.perPhaseRows.filter(row => PHASES.includes(normalizePhase(row)))
         },
@@ -318,7 +327,12 @@ export default {
         chartFor(name) {
             const element = this.$refs[name]
             if (!element) return null
-            if (!this._charts[name]) this._charts[name] = echarts.init(element)
+            if (!this._charts[name]) {
+                // Tab đang ẩn → chưa có kích thước, đợi hiện ra mới vẽ
+                const chart = initChartWhenVisible(this, element, () => this.renderAll())
+                if (!chart) return null
+                this._charts[name] = chart
+            }
             return this._charts[name]
         },
         disposeHiddenCharts() {

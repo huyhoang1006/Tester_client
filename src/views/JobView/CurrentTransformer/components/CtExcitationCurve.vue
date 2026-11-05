@@ -96,7 +96,7 @@
 
 <script>
 /* eslint-disable */
-import * as echarts from 'echarts'
+import { initChartWhenVisible, disposeChartWatchers } from '@/utils/echartsWhenVisible'
 
 /**
  * ĐƯỜNG CONG TỪ HOÁ CT — đồ thị + bảng điểm đo.
@@ -238,6 +238,7 @@ export default {
     },
     beforeDestroy() {
         window.removeEventListener('resize', this.onResize)
+        disposeChartWatchers(this)
         // Không dispose thì các instance ECharts giữ canvas và listener sau khi dialog đóng.
         this.disposeCharts()
     },
@@ -379,7 +380,9 @@ export default {
                 if (!el) return
 
                 activeKeys.add(group.key)
-                const chart = this._charts[group.key] || echarts.init(el)
+                // Khung đang ẩn → chưa có kích thước, đợi hiện ra mới vẽ
+                const chart = this._charts[group.key] || initChartWhenVisible(this, el, () => this.renderChart())
+                if (!chart) return
                 if (!this._charts[group.key]) this._charts[group.key] = chart
 
                 const chartSeries = []
