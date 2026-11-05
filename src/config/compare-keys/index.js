@@ -194,6 +194,7 @@ const COMPARE_KEYS = {
         // DGA: mỗi lần lấy mẫu một dòng. 'status' là KẾT LUẬN (Normal/Caution)
         // chứ không phải mốc — đưa vào khoá thì hết so được khi tình trạng đổi.
         Dga: [],
+        DgaOltc: [],
 
         // Kích thước & khối lượng: bảng một dòng
         DimensionWeight: []

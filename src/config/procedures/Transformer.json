@@ -118,7 +118,13 @@
     {
       "mrid": "7c80ee02-9315-449b-8808-4aca4bd7b59e",
       "code": "Dga",
-      "name": "DGA",
+      "name": "DGA - Main tank",
+      "kind": "test"
+    },
+    {
+      "mrid": "add8c30d-4136-44e6-8fe1-6c378cf0e32f",
+      "code": "DgaOltc",
+      "name": "DGA - OLTC",
       "kind": "test"
     },
     {

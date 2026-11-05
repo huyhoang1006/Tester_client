@@ -108,6 +108,7 @@ export default {
                     data = await this.initBushingTertC2(testTypeCode, assetData)
                     break
                 case 'Dga':
+                case 'DgaOltc':
                     data = await this.initDga(testTypeCode)
                     break
                 case 'InsulationResistanceYokeCore':

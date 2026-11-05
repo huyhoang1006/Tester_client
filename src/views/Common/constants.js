@@ -1269,7 +1269,7 @@ export const FEATURE_TREE = {
             cond_humidity: { label: 'Humidity (cond.)', value: 'DCWindingTert_cond_humidity' },
             cond_weather: { label: 'Weather (cond.)', value: 'DCWindingTert_cond_weather' }
             }},
-            Dga: { label: 'DGA', children: {
+            Dga: { label: 'DGA - Main tank', children: {
             h2: { label: 'H2', value: 'Dga_h2' },
             ch4: { label: 'CH4', value: 'Dga_ch4' },
             c2h2: { label: 'C2H2', value: 'Dga_c2h2' },
@@ -1277,6 +1277,9 @@ export const FEATURE_TREE = {
             c2h6: { label: 'C2H6', value: 'Dga_c2h6' },
             co: { label: 'CO', value: 'Dga_co' },
             co2: { label: 'CO2', value: 'Dga_co2' },
+            o2: { label: 'O2', value: 'Dga_o2' },
+            n2: { label: 'N2', value: 'Dga_n2' },
+            communicating_oltc: { label: 'Communicating OLTC', value: 'Dga_communicating_oltc' },
             tdcg: { label: 'TDCG', value: 'Dga_tdcg' },
             status: { label: 'Status', value: 'Dga_status' },
             condition_indicator: { label: 'Condition indicator', value: 'Dga_condition_indicator' },
@@ -1287,6 +1290,22 @@ export const FEATURE_TREE = {
             cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'Dga_cond_ambient_temp' },
             cond_humidity: { label: 'Humidity (cond.)', value: 'Dga_cond_humidity' },
             cond_weather: { label: 'Weather (cond.)', value: 'Dga_cond_weather' }
+            }},
+            DgaOltc: { label: 'DGA - OLTC', children: {
+            h2: { label: 'H2', value: 'DgaOltc_h2' },
+            ch4: { label: 'CH4', value: 'DgaOltc_ch4' },
+            c2h2: { label: 'C2H2', value: 'DgaOltc_c2h2' },
+            c2h4: { label: 'C2H4', value: 'DgaOltc_c2h4' },
+            c2h6: { label: 'C2H6', value: 'DgaOltc_c2h6' },
+            co: { label: 'CO', value: 'DgaOltc_co' },
+            co2: { label: 'CO2', value: 'DgaOltc_co2' },
+            cond_top_oil_temp: { label: 'Top oil temperature (cond.)', value: 'DgaOltc_cond_top_oil_temp' },
+            cond_bottom_oil_temp: { label: 'Bottom oil temperature (cond.)', value: 'DgaOltc_cond_bottom_oil_temp' },
+            cond_winding_temp: { label: 'Winding temperature (cond.)', value: 'DgaOltc_cond_winding_temp' },
+            cond_reference_temp: { label: 'Reference temperature (cond.)', value: 'DgaOltc_cond_reference_temp' },
+            cond_ambient_temp: { label: 'Ambient temperature (cond.)', value: 'DgaOltc_cond_ambient_temp' },
+            cond_humidity: { label: 'Humidity (cond.)', value: 'DgaOltc_cond_humidity' },
+            cond_weather: { label: 'Weather (cond.)', value: 'DgaOltc_cond_weather' }
             }},
             DimensionWeight: { label: 'Dimension Weight', children: {
             a: { label: 'A', value: 'DimensionWeight_a' },

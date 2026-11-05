@@ -46,6 +46,10 @@ const TRANSFORMER_PTM_IMPORT_CODES = [
     'DCWindingSec',
     'SFRA',
     'Dirana',
+    // TES-288: DGA - Main tank (thêm cột O₂, N₂, Communicating OLTC) và DGA - OLTC
+    // phải có trên máy đang chạy bản cũ mà không cần tăng version DB
+    'Dga',
+    'DgaOltc',
 ]
 
 const pickConfigEntries = (source, codes) => {

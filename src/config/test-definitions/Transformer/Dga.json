@@ -1,7 +1,7 @@
 {
     "testId": "7c80ee02-9315-449b-8808-4aca4bd7b59e",
     "testCode": "Dga",
-    "testName": "DGA",
+    "testName": "DGA - Main tank",
     "columns": [
         {
             "mrid": "3d17a726-bf1e-4fcb-bf69-0fbf0271e051",
@@ -51,6 +51,27 @@
             "name": "CO2",
             "type": "analog",
             "unit": "ppm"
+        },
+        {
+            "mrid": "98e7fee4-2994-408d-82e1-dae4d986f51f",
+            "code": "o2",
+            "name": "O2",
+            "type": "analog",
+            "unit": "ppm"
+        },
+        {
+            "mrid": "c7d2ba98-ccee-4f95-8fb9-ec81f57cd2bc",
+            "code": "n2",
+            "name": "N2",
+            "type": "analog",
+            "unit": "ppm"
+        },
+        {
+            "mrid": "65b5b408-c057-4039-8c8a-cd1c306e6ffe",
+            "code": "communicating_oltc",
+            "name": "Communicating OLTC",
+            "type": "string",
+            "unit": ""
         },
         {
             "mrid": "3719d8ae-812d-4180-a204-49a2fe28bea8",

@@ -1,0 +1,56 @@
+{
+  "testId": "add8c30d-4136-44e6-8fe1-6c378cf0e32f",
+  "testCode": "DgaOltc",
+  "testName": "DGA - OLTC",
+  "columns": [
+    {
+      "mrid": "b9b8c7c1-9c8c-4e03-97f1-bb9323270a05",
+      "code": "h2",
+      "name": "H2",
+      "type": "analog",
+      "unit": "ppm"
+    },
+    {
+      "mrid": "4dd53fdb-1c3b-4f73-b96d-68bbae161790",
+      "code": "ch4",
+      "name": "CH4",
+      "type": "analog",
+      "unit": "ppm"
+    },
+    {
+      "mrid": "45f3f578-0290-4d43-a85f-3b3a00da4ccd",
+      "code": "c2h2",
+      "name": "C2H2",
+      "type": "analog",
+      "unit": "ppm"
+    },
+    {
+      "mrid": "a48d9f21-1322-41c1-93b0-6a2066d3ab83",
+      "code": "c2h4",
+      "name": "C2H4",
+      "type": "analog",
+      "unit": "ppm"
+    },
+    {
+      "mrid": "252bd91c-19d8-4df6-bc3b-8b22382276f8",
+      "code": "c2h6",
+      "name": "C2H6",
+      "type": "analog",
+      "unit": "ppm"
+    },
+    {
+      "mrid": "e3a85668-f481-496e-bfa1-c6b092608d4a",
+      "code": "co",
+      "name": "CO",
+      "type": "analog",
+      "unit": "ppm"
+    },
+    {
+      "mrid": "51fbcff6-95f8-4868-82fc-d4035c967ae0",
+      "code": "co2",
+      "name": "CO2",
+      "type": "analog",
+      "unit": "ppm"
+    }
+  ]
+}

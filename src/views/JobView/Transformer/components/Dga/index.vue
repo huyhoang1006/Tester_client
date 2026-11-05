@@ -1,185 +1,216 @@
 <template>
-    <div id="energy-efficiency" class="test-ui">
-        <!-- Cấu hình -->
+    <div class="test-ui dga">
         <div class="test-toolbar">
             <div class="test-toolbar-group">
-                <el-button size="mini" type="primary" @click="calculator"> <i class="fas fa-circle-play"></i> Assess results </el-button>
-                <el-button size="mini" type="success" @click="calculateConditionIndicator">
-                    <i class="fa-solid fa-calculator"></i> Calculate CI
-                </el-button>
-                <el-button size="mini" @click="openDuvalDialog = true">
-                    <i class="fa-solid fa-draw-polygon"></i> Duval triangle
-                </el-button>
                 <el-button size="mini" @click="clear"> <i class="fas fa-xmark"></i> Clear all </el-button>
             </div>
             <div class="test-toolbar-group">
-                <el-button size="mini" @click="openConditionIndicatorDialog = true"> <i class="fa-solid fa-hammer"></i> Condition indicator settings </el-button>
                 <el-button size="mini" :type="compareOpen ? 'primary' : ''" @click="$emit('toggle-compare')">
                     <i class="fa-solid fa-scale-balanced"></i> Compare with previous results
                 </el-button>
             </div>
         </div>
-        <!-- Tính toán đánh giá -->
 
-
-        <div class="table-scroll">
-        <table class="table-strip-input-data test-table">
-            <thead>
-                <tr>
-                    <th>H<sub>2</sub></th>
-                    <th>CH<sub>4</sub></th>
-                    <th>C<sub>2</sub>H<sub>2</sub></th>
-                    <th>C<sub>2</sub>H<sub>4</sub></th>
-                    <th>C<sub>2</sub>H<sub>6</sub></th>
-                    <th>CO</th>
-                    <th>CO<sub>2</sub></th>
-                    <th>TDCG</th>
-                    <th>Status</th>
-                    <th class="condition-indicator-col">Condition indicator</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="(item, index) in testData.table.table1" :key="index">
-                    <td>
-                        <el-input :measurement="item.h2" type="text" number="positive" size="mini" v-model="item.h2.value">
-                            <template slot="append">ppm</template>
-                        </el-input>
-                    </td>
-                    <td>
-                        <el-input :measurement="item.ch4" type="text" number="positive" size="mini" v-model="item.ch4.value">
-                            <template slot="append">ppm</template>
-                        </el-input>
-                    </td>
-                    <td>
-                        <el-input :measurement="item.c2h2" type="text" number="positive" size="mini" v-model="item.c2h2.value">
-                            <template slot="append">ppm</template>
-                        </el-input>
-                    </td>
-                    <td>
-                        <el-input :measurement="item.c2h4" type="text" number="positive" size="mini" v-model="item.c2h4.value">
-                            <template slot="append">ppm</template>
-                        </el-input>
-                    </td>
-                    <td>
-                        <el-input :measurement="item.c2h6" type="text" number="positive" size="mini" v-model="item.c2h6.value">
-                            <template slot="append">ppm</template>
-                        </el-input>
-                    </td>
-                    <td>
-                        <el-input :measurement="item.co" type="text" number="positive" size="mini" v-model="item.co.value">
-                            <template slot="append">ppm</template>
-                        </el-input>
-                    </td>
-                    <td>
-                        <el-input :measurement="item.co2" type="text" number="positive" size="mini" v-model="item.co2.value">
-                            <template slot="append">ppm</template>
-                        </el-input>
-                    </td>
-                    <td>
-                        <el-input :measurement="item.tdcg" type="text" number="positive" size="mini" v-model="item.tdcg.value">
-                            <template slot="append">ppm</template>
-                        </el-input>
-                    </td>
-                    <td>
-                        <el-select style="width: 120px" size="mini" v-model="item.status.value">
-                            <el-option label="Condition 1" value="Condition 1"></el-option>
-                            <el-option label="Condition 2" value="Condition 2"></el-option>
-                            <el-option label="Condition 3" value="Condition 3"></el-option>
-                            <el-option label="Condition 4" value="Condition 4"></el-option>
+        <el-tabs v-model="activeTab" type="card" class="dga-tabs">
+            <!-- ═══════════════ TAB 1: OVERVIEW ═══════════════ -->
+            <el-tab-pane label="Overview" name="dga-overview">
+                <!-- Block 1: bảng nhập khí -->
+                <section class="dga-card">
+                    <div class="dga-card__header">
+                        <span>Gas concentrations</span>
+                        <el-select v-if="rows.length > 1" v-model="selectedRowIndex" size="mini" class="dga-sample-select">
+                            <el-option v-for="(row, index) in rows" :key="index" :label="'Sample ' + (index + 1)" :value="index" />
                         </el-select>
-                    </td>
-                    <td>
-                        <el-select :class="nameColor(item.condition_indicator.value)" id="condition" type="text"
-                            size="mini" disabled v-model="item.condition_indicator.value">
-                            <el-option value="Good">Good</el-option>
-                            <el-option value="Fair">Fair</el-option>
-                            <el-option value="Poor">Poor</el-option>
-                            <el-option value="Bad">Bad</el-option>
-                        </el-select>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        </div>
+                    </div>
+                    <div class="table-scroll">
+                        <table class="table-strip-input-data test-table dga-input-table">
+                            <thead>
+                                <tr>
+                                    <th v-for="key in inputGases" :key="key">
+                                        {{ gasLabels[key] }}
+                                        <info-tip v-if="key === 'o2' || key === 'n2'" :text="tips.o2n2Input" />
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(item, index) in rows" :key="index">
+                                    <td v-for="key in inputGases" :key="key">
+                                        <el-input v-if="item[key]" :measurement="item[key]" type="text" number="positive"
+                                            size="mini" v-model="item[key].value">
+                                            <template slot="append">ppm</template>
+                                        </el-input>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div v-if="!isOltc && currentRow && currentRow.communicating_oltc" class="dga-option-row">
+                        <el-checkbox :value="communicatingOltc" @change="setCommunicatingOltc">Communicating OLTC</el-checkbox>
+                        <info-tip :text="tips.communicatingOltc" />
+                    </div>
+                </section>
 
-        <el-dialog append-to-body title="Duval Triangle 1" :visible.sync="openDuvalDialog"
-            width="min(920px, 94vw)" top="4vh" custom-class="duval-dialog">
-            <DuvalTriangle1 :rows="testData.table && testData.table.table1 ? testData.table.table1 : []" />
-        </el-dialog>
+                <div v-if="!hasData" class="dga-empty">Enter gas concentrations to see the assessment.</div>
 
-        <!-- Condition indicator settings -->
-        <el-dialog append-to-body title="Condition indicator settings" :visible.sync="openConditionIndicatorDialog"
-            width="1120px">
-            <TransformerConditionIndicatorSettings :test-code="$options.name" />
-            <!-- <div class="table-scroll">
-        <table class="table-strip-input-data test-table mgb-10">
-                <thead>
-                    <tr>
-                        <th>Status</th>
-                        <th>H2</th>
-                        <th>C2H2</th>
-                        <th>C2H4</th>
-                        <th>C2H6</th>
-                        <th>CH4</th>
-                        <th>CO</th>
-                        <th>TDCG</th>
-                        <th>Condition Indicator</th>
-                        <th>Score</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Condition 1</td>
-                        <td>≤ {{ conditionIndicatorSetting.good.h2[0].value }}</td>
-                        <td>≤ {{ conditionIndicatorSetting.good.c2h2[0].value }}</td>
-                        <td>≤ {{ conditionIndicatorSetting.good.c2h4[0].value }}</td>
-                        <td>≤ {{ conditionIndicatorSetting.good.c2h6[0].value }}</td>
-                        <td>≤ {{ conditionIndicatorSetting.good.ch4[0].value }}</td>
-                        <td>≤ {{ conditionIndicatorSetting.good.co[0].value }}</td>
-                        <td>≤ {{ conditionIndicatorSetting.good.tdcg[0].value }}</td>
-                        <td class="good">Good</td>
-                        <td>{{ conditionIndicatorSetting.good.score.value }}</td>
-                    </tr>
-                    <tr>
-                        <td>Condition 2</td>
-                        <td>{{ `${conditionIndicatorSetting.fair.h2[0].value} - ${conditionIndicatorSetting.fair.h2[1].value}` }}</td>
-                        <td>{{ `${conditionIndicatorSetting.fair.c2h2[0].value} - ${conditionIndicatorSetting.fair.c2h2[1].value}` }}</td>
-                        <td>{{ `${conditionIndicatorSetting.fair.c2h4[0].value} - ${conditionIndicatorSetting.fair.c2h4[1].value}` }}</td>
-                        <td>{{ `${conditionIndicatorSetting.fair.c2h6[0].value} - ${conditionIndicatorSetting.fair.c2h6[1].value}` }}</td>
-                        <td>{{ `${conditionIndicatorSetting.fair.ch4[0].value} - ${conditionIndicatorSetting.fair.ch4[1].value}` }}</td>
-                        <td>{{ `${conditionIndicatorSetting.fair.co[0].value} - ${conditionIndicatorSetting.fair.co[1].value}` }}</td>
-                        <td>{{ `${conditionIndicatorSetting.fair.tdcg[0].value} - ${conditionIndicatorSetting.fair.tdcg[1].value}` }}</td>
-                        <td class="fair">Fair</td>
-                        <td>{{ conditionIndicatorSetting.fair.score.value }}</td>
-                    </tr>
-                    <tr>
-                        <td>Condition 3</td>
-                        <td>{{ `${conditionIndicatorSetting.poor.h2[0].value} - ${conditionIndicatorSetting.poor.h2[1].value}` }}</td>
-                        <td>{{ `${conditionIndicatorSetting.poor.c2h2[0].value} - ${conditionIndicatorSetting.poor.c2h2[1].value}` }}</td>
-                        <td>{{ `${conditionIndicatorSetting.poor.c2h4[0].value} - ${conditionIndicatorSetting.poor.c2h4[1].value}` }}</td>
-                        <td>{{ `${conditionIndicatorSetting.poor.c2h6[0].value} - ${conditionIndicatorSetting.poor.c2h6[1].value}` }}</td>
-                        <td>{{ `${conditionIndicatorSetting.poor.ch4[0].value} - ${conditionIndicatorSetting.poor.ch4[1].value}` }}</td>
-                        <td>{{ `${conditionIndicatorSetting.poor.co[0].value} - ${conditionIndicatorSetting.poor.co[1].value}` }}</td>
-                        <td>{{ `${conditionIndicatorSetting.poor.tdcg[0].value} - ${conditionIndicatorSetting.poor.tdcg[1].value}` }}</td>
-                        <td class="poor">Poor</td>
-                        <td>{{ conditionIndicatorSetting.poor.score.value }}</td>
-                    </tr>
-                    <tr>
-                        <td>Condition 4</td>
-                        <td>> {{ conditionIndicatorSetting.bad.h2[1].value }}</td>
-                        <td>> {{ conditionIndicatorSetting.bad.c2h2[1].value }}</td>
-                        <td>> {{ conditionIndicatorSetting.bad.c2h4[1].value }}</td>
-                        <td>> {{ conditionIndicatorSetting.bad.c2h6[1].value }}</td>
-                        <td>> {{ conditionIndicatorSetting.bad.ch4[1].value }}</td>
-                        <td>> {{ conditionIndicatorSetting.bad.co[1].value }}</td>
-                        <td>> {{ conditionIndicatorSetting.bad.tdcg[1].value }}</td>
-                        <td class="bad">Bad</td>
-                        <td>{{ conditionIndicatorSetting.bad.score.value }}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div> -->
-        </el-dialog>
+                <!-- OLTC: chỉ Triangle 2 + tỷ số C₂H₄/C₂H₂ -->
+                <template v-else-if="isOltc">
+                    <el-alert type="info" :closable="false" show-icon class="dga-alert">
+                        <span slot="title">{{ tips.oltcNote }}</span>
+                    </el-alert>
+                    <section class="dga-card">
+                        <div class="dga-card__header"><span>OLTC assessment</span></div>
+                        <div class="dga-oltc">
+                            <div class="dga-oltc__item">
+                                <div class="dga-oltc__label">Duval Triangle 2 <info-tip :text="tips.triangle2Limits" /></div>
+                                <div v-if="oltc.triangle2" class="dga-oltc__value">
+                                    <strong>{{ oltc.triangle2.zone }}</strong> – {{ oltc.triangle2.name }}
+                                </div>
+                                <div v-else class="dga-oltc__value muted">CH₄, C₂H₄ and C₂H₂ are all zero.</div>
+                            </div>
+                            <div class="dga-oltc__item">
+                                <div class="dga-oltc__label">C₂H₄/C₂H₂ <info-tip :text="tips.oltcRatio" /></div>
+                                <div class="dga-oltc__value">{{ oltc.c2h4c2h2 === null ? '—' : formatNumber(oltc.c2h4c2h2) }}</div>
+                            </div>
+                        </div>
+                    </section>
+                </template>
+
+                <template v-else>
+                    <!-- Block 2: ma trận đối chiếu 6 phương pháp -->
+                    <section class="dga-card">
+                        <div class="dga-card__header"><span>DGA methods overview</span></div>
+                        <div class="table-scroll">
+                            <table class="dga-matrix">
+                                <thead>
+                                    <tr>
+                                        <th class="dga-matrix__fault" colspan="2"></th>
+                                        <th v-for="method in methodColumns" :key="method.key" :class="{ 'is-disabled': method.disabled }">
+                                            {{ method.label }}
+                                            <info-tip :text="method.tip" />
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="dga-matrix__meta">
+                                        <td colspan="2">Method applied <info-tip :text="tips.methodApplied" /></td>
+                                        <td v-for="method in methodColumns" :key="'a-' + method.key" :class="{ 'is-disabled': method.disabled }">
+                                            {{ methodResult(method.key).applied ? 'X' : '' }}
+                                        </td>
+                                    </tr>
+                                    <tr class="dga-matrix__meta">
+                                        <td colspan="2">No diagnosis <info-tip :text="tips.noDiagnosis" /></td>
+                                        <td v-for="method in methodColumns" :key="'n-' + method.key" :class="{ 'is-disabled': method.disabled }">
+                                            <span v-if="hasFault(method.key, 'ND')" :title="methodResult(method.key).note || methodResult(method.key).detail || ''">X</span>
+                                        </td>
+                                    </tr>
+                                    <tr v-for="(row, index) in faultRows" :key="row.key">
+                                        <td v-if="index === 0" class="dga-matrix__group" :rowspan="faultRows.length">Fault</td>
+                                        <td class="dga-matrix__fault">
+                                            <span class="dga-matrix__code">{{ row.key === 'NF' ? '' : row.key }}</span>
+                                            {{ row.label }}
+                                            <info-tip v-if="row.key === 'NF'" :text="tips.noFault" />
+                                            <info-tip v-if="row.key === 'DT'" :text="tips.dt" />
+                                        </td>
+                                        <td v-for="method in methodColumns" :key="row.key + method.key"
+                                            :class="{ 'is-disabled': method.disabled, 'is-hit': hasFault(method.key, row.key) }">
+                                            <template v-if="hasFault(method.key, row.key)">
+                                                X
+                                                <info-tip v-if="cellNote(method.key, row.key)" :text="cellNote(method.key, row.key)" />
+                                            </template>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <!-- Block 3: Assessment summary -->
+                    <section class="dga-card">
+                        <div class="dga-card__header"><span>Assessment summary</span></div>
+                        <table class="dga-summary">
+                            <tbody>
+                                <tr v-for="item in summaryRows" :key="item.key">
+                                    <td class="dga-summary__name">
+                                        {{ item.name }}
+                                        <info-tip :text="item.tip" :notes="item.notes" />
+                                        <el-tooltip v-if="item.status3" :content="tips.status3Icon" placement="top">
+                                            <i class="fa-solid fa-circle-exclamation dga-summary__alert"></i>
+                                        </el-tooltip>
+                                    </td>
+                                    <td class="dga-summary__status">
+                                        <span class="dga-summary__bar" :style="{ backgroundColor: colors[item.result.level] }"></span>
+                                        {{ item.result.label }}
+                                    </td>
+                                    <td class="dga-summary__message">{{ item.result.message }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
+                </template>
+            </el-tab-pane>
+
+            <!-- ═══════════════ TAB 2: KEY GAS ANALYSIS ═══════════════ -->
+            <el-tab-pane v-if="!isOltc" label="Key Gas Analysis" name="dga-keygas">
+                <section class="dga-card">
+                    <div class="dga-card__header">
+                        <span>Key gas analysis</span>
+                        <div class="dga-standard">
+                            <span>Standard</span>
+                            <el-select v-model="gaugeStandard" size="mini">
+                                <el-option v-for="opt in gaugeStandards" :key="opt.key" :label="opt.label" :value="opt.key" />
+                            </el-select>
+                            <info-tip :text="gaugeTip" :notes="gaugeStandard === 'ieee2019' ? summary.ieee2019.notes : []" />
+                        </div>
+                    </div>
+                    <key-gas-gauges :columns="gauges" />
+                </section>
+
+                <section class="dga-card">
+                    <div class="dga-card__header">
+                        <span>Pattern <info-tip :text="tips.pattern" /></span>
+                    </div>
+                    <div class="dga-patterns">
+                        <pattern-chart v-for="chart in analysis.patterns" :key="chart.key" :chart="chart" />
+                    </div>
+                    <div class="dga-legend">
+                        <span><i class="dga-legend__swatch is-measured"></i> Measurement</span>
+                        <span><i class="dga-legend__swatch is-standard"></i> Standard pattern</span>
+                    </div>
+                </section>
+            </el-tab-pane>
+
+            <!-- ═══════════════ TAB 3: DUVAL ═══════════════ -->
+            <el-tab-pane label="Duval" name="dga-duval">
+                <el-alert v-if="hasData && lowGas" type="info" :closable="false" show-icon class="dga-alert"
+                    :title="tips.lowGas" />
+                <section class="dga-card">
+                    <div class="dga-card__header">
+                        <span v-if="isOltc">Duval Triangle 2 (OLTC) <info-tip :text="tips.triangle2Limits" /></span>
+                        <span v-else>Duval Triangle 1 <info-tip :text="tips.duval" /></span>
+                    </div>
+                    <duval-triangle v-if="isOltc" title="Duval Triangle 2 – OLTC"
+                        :zones="triangle2Zones" :percentages="oltc.triangle2 ? oltc.triangle2.percentages : null"
+                        :active-zone="oltc.triangle2 ? oltc.triangle2.zone : ''" />
+                    <duval-triangle v-else title="Duval Triangle 1"
+                        :zones="triangle1Zones" :percentages="analysis.triangle1 ? analysis.triangle1.percentages : null"
+                        :active-zone="analysis.triangle1 ? analysis.triangle1.zone : ''" />
+                </section>
+
+                <section v-if="!isOltc" class="dga-card">
+                    <div class="dga-card__header">
+                        <span>Duval Pentagons <info-tip :text="tips.pentagonPoint" :notes="[tips.pentagonGaps]" /></span>
+                    </div>
+                    <div class="dga-pentagons">
+                        <duval-pentagon title="Pentagon 1" :zones="pentagon1Zones"
+                            :point="analysis.pentagon1" :active-zone="analysis.pentagon1 ? analysis.pentagon1.zone : ''"
+                            tip="IEEE C57.104-2019 Annex D.3 — six basic fault types plus stray gassing (S)." />
+                        <duval-pentagon title="Pentagon 2" :zones="pentagon2Zones"
+                            :point="analysis.pentagon2" :active-zone="analysis.pentagon2 ? analysis.pentagon2.zone : ''"
+                            tip="IEEE C57.104-2019 Annex D.5 — thermal sub-types: T3-H (oil only), C (possible paper carbonization), O (overheating < 250 °C)." />
+                    </div>
+                </section>
+            </el-tab-pane>
+        </el-tabs>
     </div>
 </template>
 
@@ -187,156 +218,468 @@
 /* eslint-disable */
 import transformerTestMap from '@/config/test-definitions/Transformer'
 import * as common from '../../../Common/index.js'
-import GroupNode from '../../../Common/GroupNode.vue'
-import { changeTestStandard } from '../../../Common'
-import DuvalTriangle1 from './DuvalTriangle1.vue'
-import conditionIndicatorMixin from '../MixinCommon/MixinConditionIndicator'
+import InfoTip from './InfoTip.vue'
+import DuvalTriangle from './DuvalTriangle.vue'
+import DuvalPentagon from './DuvalPentagon.vue'
+import KeyGasGauges from './KeyGasGauges.vue'
+import PatternChart from './PatternChart.vue'
+import {
+    GASES, GAS_LABELS, FAULT_ROWS, STATUS_COLORS, DGA_TOOLTIPS,
+    PENTAGON_1_ZONES, PENTAGON_2_ZONES
+} from '@/utils/dga/config'
+import { DUVAL_TRIANGLE_1_ZONES, DUVAL_TRIANGLE_2_ZONES } from '@/utils/dga/duval'
+import { readGases, analyseDga, analyseOltc, gaugeColumns, GAUGE_STANDARDS } from '@/utils/dga/analysis'
+import { calculateTransformerConditionIndicators } from '@/utils/transformerConditionIndicator'
+
+const parseTestDate = (text) => {
+    // Ngày thí nghiệm lưu dạng MM/dd/yyyy
+    const match = String(text || '').match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/)
+    if (!match) return null
+    const date = new Date(Number(match[3]), Number(match[1]) - 1, Number(match[2]))
+    return isNaN(date.getTime()) ? null : date
+}
 
 export default {
-    mixins: [conditionIndicatorMixin],
-    name: "Dga",
-    components: { GroupNode, DuvalTriangle1 },
-    data() {
-        return {
-            openAssessmentDialog: false,
-            openConditionIndicatorDialog: false,
-            openDuvalDialog: false,
-            option: null
-        }
-    },
+    name: 'Dga',
+    components: { InfoTip, DuvalTriangle, DuvalPentagon, KeyGasGauges, PatternChart },
     props: {
         data:           { type: Object, require: true },
         asset:          { type: Object, require: true },
         testAssessment: { type: Object, require: true },
-        testCondition:  { type: Object, default: function() { return { condition: {} } } },
-        compareOpen:    { type: Boolean, default: false }
+        testCondition:  { type: Object, default: function () { return { condition: {} } } },
+        compareOpen:    { type: Boolean, default: false },
+        assetMrid:      { type: String, default: '' },
+        workMrid:       { type: String, default: '' },
+        workTaskMrid:   { type: String, default: '' }
+    },
+    data() {
+        return {
+            // Tên tab có tiền tố 'dga-': App.vue ẩn toàn cục #tab-overview (tab Overview của job)
+            activeTab: 'dga-overview',
+            selectedRowIndex: 0,
+            gaugeStandard: 'ieee2019',
+            gaugeStandards: GAUGE_STANDARDS,
+            gasLabels: GAS_LABELS,
+            tips: DGA_TOOLTIPS,
+            colors: STATUS_COLORS,
+            faultRows: FAULT_ROWS,
+            triangle1Zones: DUVAL_TRIANGLE_1_ZONES,
+            triangle2Zones: DUVAL_TRIANGLE_2_ZONES,
+            pentagon1Zones: PENTAGON_1_ZONES,
+            pentagon2Zones: PENTAGON_2_ZONES,
+            // Lần đo trước (chỉ DGA - Main tank, cho Delta của IEEE-2019)
+            previousGas: null,
+            previousDate: '',
+            daysBetween: null,
+            previousRequestId: 0
+        }
     },
     computed: {
-        testData()     { return this.data },
-        assetData()    { return this.asset },
-        conditions()   { return (this.testCondition && this.testCondition.condition) ? this.testCondition.condition : {} },
-        rowData()      { return common.buildEmptyTestRow(transformerTestMap['Dga'].columns) },
-        assessmentData()        { return this.testAssessment ? this.testAssessment.assessment : [] },
-        assessmentList() {
-            return (this.assessmentData || []).map(function(x) {
-                return { code: x.code, name: x.name, type: x.type, mrid: x.mrid }
+        // DGA - OLTC override computed này (xem ../DgaOltc)
+        isOltc() { return false },
+        testCode() { return this.$options.name },
+        testData() { return this.data },
+        assetData() { return this.asset || {} },
+        rowTemplate() { return common.buildEmptyTestRow(transformerTestMap[this.testCode].columns) },
+        rows() { return (this.testData && this.testData.table && this.testData.table.table1) || [] },
+        currentRow() { return this.rows[this.selectedRowIndex] || this.rows[0] || null },
+        inputGases() { return this.isOltc ? GASES : [...GASES, 'o2', 'n2'] },
+        gas() { return readGases(this.currentRow) },
+        hasData() { return GASES.some(key => this.gas[key] !== null) },
+        communicatingOltc() {
+            const cell = this.currentRow && this.currentRow.communicating_oltc
+            return !!(cell && String(cell.value || '').toLowerCase() === 'yes')
+        },
+        testingDate() {
+            const meta = this.testCondition && this.testCondition.metadata
+            return parseTestDate(meta && meta.testing_date)
+        },
+        transformerAge() {
+            const props = this.assetData.properties || {}
+            const match = String(props.manufacturer_year || '').match(/(\d{4})/)
+            if (!match) return null
+            const year = (this.testingDate || new Date()).getFullYear()
+            const age = year - Number(match[1])
+            return age >= 0 ? age : null
+        },
+        analysis() {
+            return analyseDga(this.gas, {
+                communicatingOltc: this.communicatingOltc,
+                age: this.transformerAge,
+                previous: this.previousGas,
+                previousDate: this.previousDate,
+                daysBetween: this.daysBetween
             })
         },
-        filteredAssessmentData() {
-            if (!this.option) return []
-            return (this.assessmentData || []).filter(function(e) { return e.code === this.option }.bind(this))
+        oltc() { return analyseOltc(this.gas) },
+        lowGas() { return this.isOltc ? this.oltc.lowGas : this.analysis.lowGas },
+        summary() { return this.analysis.summary },
+        methodColumns() {
+            return [
+                { key: 'duval', label: 'Duval', tip: DGA_TOOLTIPS.duval },
+                { key: 'iec', label: 'IEC basic gas ratios', tip: DGA_TOOLTIPS.iec },
+                { key: 'rogers', label: 'Rogers', tip: DGA_TOOLTIPS.rogers },
+                { key: 'doernenburg', label: 'Doernenburg', tip: DGA_TOOLTIPS.doernenburg },
+                { key: 'keyGas', label: 'Key gas method', tip: DGA_TOOLTIPS.keyGas },
+                { key: 'mss', label: 'MSS-Scheme', tip: DGA_TOOLTIPS.mss, disabled: true }
+            ]
         },
-        testStandardData() { return this.testAssessment ? this.testAssessment.testStandard : null }
+        summaryRows() {
+            const s = this.summary
+            return [
+                { key: 'iec', name: 'IEC 60599:2022', tip: DGA_TOOLTIPS.iecSummary, result: s.iec },
+                { key: 'ieee2019', name: 'IEEE-2019 C57.104', tip: DGA_TOOLTIPS.ieee2019Summary, notes: s.ieee2019.notes,
+                    result: s.ieee2019, status3: s.ieee2019.status === 3 },
+                { key: 'ieee2008Tdcg', name: 'IEEE-2008 C57.104 (TDCG)', tip: DGA_TOOLTIPS.ieee2008TdcgSummary,
+                    notes: [`TDCG = ${this.formatNumber(s.ieee2008Tdcg.tdcg)} ppm`], result: s.ieee2008Tdcg },
+                { key: 'ieee2008Gas', name: 'IEEE-2008 C57.104 (individual gases)', tip: DGA_TOOLTIPS.ieee2008GasSummary, result: s.ieee2008Gas }
+            ]
+        },
+        gauges() {
+            return gaugeColumns(this.gas, this.gaugeStandard, { communicatingOltc: this.communicatingOltc, age: this.transformerAge })
+        },
+        gaugeTip() {
+            return { iec: DGA_TOOLTIPS.gaugeIec, ieee2008: DGA_TOOLTIPS.gaugeIeee2008 }[this.gaugeStandard] || DGA_TOOLTIPS.gaugeIeee2019
+        },
+        // Chữ ký các giá trị khí — đổi là tính lại CI ngầm cho Health Index
+        gasSignature() {
+            return this.rows.map(row => GASES.map(key => (row && row[key] ? row[key].value : '')).join('|')).join(';')
+        },
+        previousKey() {
+            return [this.isOltc, this.assetMrid, this.workMrid, this.testingDate ? this.testingDate.getTime() : ''].join('|')
+        }
     },
     watch: {
-        'option': {
+        rows: {
             immediate: true,
-            handler: async function (newVal) {
-                const standard = this.filteredAssessmentData.find(x => x.code === newVal)
-                if (standard) await changeTestStandard(standard.mrid, standard.type, this.testStandardData)
-            }
+            handler() { this.ensureRowFields() }
         },
-        'testStandardData': {
+        // Bỏ nút Calculate CI: CI cũ vẫn tính ngầm (Health Index đọc cột này)
+        gasSignature() {
+            if (this.isOltc) return
+            calculateTransformerConditionIndicators('Dga', this.testData)
+        },
+        previousKey: {
             immediate: true,
-            handler: async function (newVal) {
-                const optionData = common.testStandardDataToOption(newVal)
-                if(optionData && optionData.mrid) {
-                    const standardChosen = this.assessmentData.find(x => x.mrid === optionData.mrid)
-                    if(standardChosen) {
-                        this.option = standardChosen.code
-                    }
-                }
-            }
+            handler() { this.loadPreviousSample() }
         }
     },
     methods: {
-        add() {
-            if (!this.testData.table) this.$set(this.testData, 'table', {})
-            if (!this.testData.table.table1) this.$set(this.testData.table, 'table1', [])
-            this.testData.table.table1.push(JSON.parse(JSON.stringify(this.rowData)))
-        },
-        removeAll() {
-            this.$confirm('Delete all?', 'Warning', { confirmButtonText: 'OK', cancelButtonText: 'Cancel', type: 'warning' })
-                .then(function() { if (this.testData.table) this.testData.table.table1 = [] }.bind(this))
-                .catch(function() {})
-        },
-        deleteTest(index) {
-            if (this.testData.table && this.testData.table.table1)
-                this.testData.table.table1.splice(index, 1)
-        },
-        addTest(index) {
-            var data = JSON.parse(JSON.stringify(this.rowData))
-            if (this.testData.table && this.testData.table.table1)
-                this.testData.table.table1.splice(index + 1, 0, data)
-        },
-        async calculator() {
-            this.computeFields()
-            await this.calcAssessment()
-            this.$message.success('Calculating successfully')
-        },
-        computeFields() {
-            // No computed fields for this test
-        },
-        async calcAssessment() {
-            var assessmentStandard = this.filteredAssessmentData.find(function(x) { return x.code === this.option }.bind(this))
-            if (!assessmentStandard) { this.$message.error('Please select an assessment standard'); return }
-            var rows = this.testData.table.table1
-            for (var i = 0; i < rows.length; i++) {
-                var row = rows[i]
-                var measurementMap = {}
-                Object.keys(row).forEach(function(key) {
-                    var item = row[key]
-                    if (!item || typeof item !== 'object') return
-                    if (item.measurement_id) measurementMap[item.measurement_id] = item.value
-                })
-                row.assessment.value = common.resolveAssessmentResult(assessmentStandard, measurementMap)
+        /** Job cũ chưa có cột O₂, N₂, Communicating OLTC → bổ sung từ định nghĩa cột */
+        ensureRowFields() {
+            for (const row of this.rows) {
+                if (!row) continue
+                for (const key of Object.keys(this.rowTemplate)) {
+                    if (!row[key]) this.$set(row, key, JSON.parse(JSON.stringify(this.rowTemplate[key])))
+                }
             }
         },
-        evaluateGroup(group, measurementMap) {
-            return common.evaluateAssessmentGroup(group, measurementMap)
+        setCommunicatingOltc(checked) {
+            if (this.currentRow && this.currentRow.communicating_oltc) {
+                this.currentRow.communicating_oltc.value = checked ? 'Yes' : ''
+            }
+        },
+        methodResult(key) {
+            return this.analysis.methods[key] || { applied: false, faults: [] }
+        },
+        hasFault(methodKey, faultKey) {
+            return (this.methodResult(methodKey).faults || []).includes(faultKey)
+        },
+        cellNote(methodKey, faultKey) {
+            const result = this.methodResult(methodKey)
+            if (methodKey === 'keyGas' && result.note) return result.note
+            if (methodKey === 'doernenburg' && result.detail) return result.detail
+            return ''
+        },
+        formatNumber(value) {
+            if (value === null || value === undefined) return '—'
+            if (value === Infinity) return '∞'
+            return String(Math.round(value * 100) / 100)
+        },
+        /**
+         * Lần đo DGA - Main tank ngay trước ngày thí nghiệm hiện tại, cùng thiết bị.
+         * Chỉ đọc trên máy này (SQLite) — giống bảng Compare.
+         */
+        async loadPreviousSample() {
+            const requestId = ++this.previousRequestId
+            this.previousGas = null
+            this.previousDate = ''
+            this.daysBetween = null
+            if (this.isOltc || !this.assetMrid) return
+            const api = window.electronAPI
+            if (!api || !api.getComparableTests || !api.getTestSnapshot) return
+            try {
+                const rs = await api.getComparableTests(this.assetMrid, 'Dga', this.workMrid)
+                if (requestId !== this.previousRequestId || !rs || !rs.success) return
+                const current = this.testingDate
+                const candidates = (rs.data || [])
+                    .filter(item => item.workTaskMrid !== this.workTaskMrid)
+                    .map(item => ({ ...item, date: parseTestDate(item.executionDate) }))
+                    .filter(item => !current || (item.date && item.date < current))
+                const previous = candidates[0]
+                if (!previous) return
+                const snap = await api.getTestSnapshot(previous.workTaskMrid)
+                if (requestId !== this.previousRequestId || !snap || !snap.success || !snap.data) return
+                const codeByMrid = {}
+                for (const col of transformerTestMap.Dga.columns) codeByMrid[col.mrid] = col.code
+                const table = (snap.data.tables || []).find(t => t.rows && t.rows.length)
+                if (!table) return
+                const row = {}
+                for (const cell of Object.values(table.rows[0].cells || {})) {
+                    const code = codeByMrid[cell.measurementId]
+                    if (code) row[code] = { value: cell.value }
+                }
+                const gas = readGases(row)
+                if (!GASES.some(key => gas[key] !== null)) return
+                this.previousGas = gas
+                this.previousDate = previous.executionDate || ''
+                this.daysBetween = current && previous.date
+                    ? Math.round((current.getTime() - previous.date.getTime()) / 86400000)
+                    : null
+            } catch (error) {
+                console.error('Load previous DGA sample failed:', error)
+            }
         },
         clear() {
             common.clearEditableTestValues(this.testData && this.testData.table)
-        },
-        nameColor(data) {
-            if (data === this.$constant.GOOD) return 'Good'
-            else if (data === this.$constant.FAIR) return 'Fair'
-            else if (data === this.$constant.POOR) return 'Poor'
-            else if (data === this.$constant.BAD) return 'Bad'
-            else return
         }
     }
 }
 </script>
 
-<style>
-.Good input {
-    background: #00CC00;
+<style scoped>
+/* Tab dạng card: có vạch ngăn giữa các tab; khoảng đệm đều cho cả tab đầu/cuối
+   (kiểu tab thường của Element bỏ padding tab đầu/cuối → chữ dính mép khi tô nền) */
+.dga-tabs ::v-deep(.el-tabs__header) {
+    margin-bottom: 10px;
 }
 
-.Fair input {
-    background: #ffff00;
+.dga-tabs ::v-deep(.el-tabs__item),
+.dga-tabs ::v-deep(.el-tabs__item:nth-child(2)),
+.dga-tabs ::v-deep(.el-tabs__item:last-child) {
+    padding: 0 22px !important;
+    text-align: center;
+    /* Giữ chiều cao mặc định 40px của Element; vertical-align để không sinh khe
+       baseline giữa tab và đường kẻ dưới */
+    vertical-align: bottom;
 }
 
-.Poor input {
-    background: #ff9900;
+.dga-tabs ::v-deep(.el-tabs__item:not(:first-child)) {
+    border-left: 1px solid #e4e7ed;
 }
 
-.Bad input {
-    background: #ff3300;
+.dga-card {
+    background: #fff;
+    border: 1px solid #e4e7ed;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
 }
 
-.assessment-container { width: 75%; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 16px; overflow: hidden; }
-.assessment-header { display: flex; background: #f5f7fa; font-weight: bold; padding: 8px; }
-.assessment-body { display: flex; flex-direction: column; border: 1px solid #ebeef5; border-radius: 4px; }
-.tree-row { display: flex; align-items: center; border-bottom: 1px solid #ebeef5; min-height: 40px; padding: 8px 0; width: 100%; }
-.tree-row:last-child { border-bottom: none; }
-.limit-col { flex: 1; padding: 0 12px; }
-.result-col { flex-shrink: 0; width: 168px; text-align: center; border-left: 1px solid #ebeef5; padding: 0 12px; align-self: stretch; display: flex; align-items: center; justify-content: center; }
-.tree-row-default { background: #fafafa; }
-.default-label { font-style: italic; color: #909399; font-size: 13px; }
-.pass { color: #67C23A; font-weight: bold; }
-.fail { color: #F56C6C; font-weight: bold; }
+.dga-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #303133;
+    margin-bottom: 8px;
+}
+
+.dga-sample-select {
+    width: 130px;
+}
+
+.dga-option-row {
+    display: flex;
+    align-items: center;
+    margin-top: 8px;
+    font-size: 12px;
+}
+
+.dga-empty {
+    padding: 28px;
+    text-align: center;
+    color: #909399;
+    border: 1px dashed #dcdfe6;
+    border-radius: 6px;
+    margin-bottom: 12px;
+}
+
+.dga-alert {
+    margin-bottom: 12px;
+}
+
+/* Ma trận phương pháp */
+.dga-matrix {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.dga-matrix th,
+.dga-matrix td {
+    border: 1px solid #ebeef5;
+    padding: 5px 8px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.dga-matrix th {
+    background: #f5f7fa;
+    color: #606266;
+    font-weight: 600;
+}
+
+.dga-matrix td.dga-matrix__fault,
+.dga-matrix__meta td:first-child {
+    text-align: left;
+}
+
+.dga-matrix__meta td:first-child {
+    text-align: right;
+    font-weight: 600;
+    color: #606266;
+}
+
+.dga-matrix__group {
+    font-weight: 700;
+    color: #606266;
+    background: #fafafa;
+}
+
+.dga-matrix__code {
+    display: inline-block;
+    min-width: 26px;
+    font-weight: 700;
+}
+
+.dga-matrix td.is-hit {
+    font-weight: 700;
+    color: #c0392b;
+    background: #fff4f2;
+}
+
+.dga-matrix .is-disabled {
+    color: #c0c4cc;
+    background: #f7f7f7;
+}
+
+/* Bảng tóm tắt */
+.dga-summary {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.dga-summary td {
+    padding: 6px 8px;
+    vertical-align: top;
+    border-bottom: 1px solid #f2f3f5;
+}
+
+.dga-summary__name {
+    width: 280px;
+    font-weight: 700;
+    color: #303133;
+    white-space: nowrap;
+}
+
+.dga-summary__alert {
+    margin-left: 6px;
+    color: #8e44ad;
+    cursor: help;
+}
+
+.dga-summary__status {
+    width: 150px;
+    white-space: nowrap;
+}
+
+.dga-summary__bar {
+    display: inline-block;
+    width: 14px;
+    height: 18px;
+    margin-right: 6px;
+    vertical-align: -4px;
+    border-radius: 2px;
+}
+
+.dga-summary__message {
+    color: #303133;
+    line-height: 1.5;
+}
+
+/* Key gas */
+.dga-standard {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 400;
+    font-size: 12px;
+}
+
+.dga-patterns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.dga-legend {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #606266;
+}
+
+.dga-legend__swatch {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    vertical-align: -1px;
+    margin-right: 4px;
+}
+
+.dga-legend__swatch.is-measured { background: #4a90e2; }
+.dga-legend__swatch.is-standard { background: #bdbdbd; }
+
+/* Duval */
+.dga-pentagons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+/* OLTC */
+.dga-oltc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    font-size: 13px;
+}
+
+.dga-oltc__label {
+    color: #606266;
+    margin-bottom: 4px;
+}
+
+.dga-oltc__value {
+    font-size: 14px;
+    color: #303133;
+}
+
+.muted {
+    color: #909399;
+}
+
+@media (max-width: 900px) {
+    .dga-patterns {
+        grid-template-columns: 1fr;
+    }
+}
 </style>
 <style lang="scss" scoped>
 @import "~@/views/JobView/Common/testUi.scss";
