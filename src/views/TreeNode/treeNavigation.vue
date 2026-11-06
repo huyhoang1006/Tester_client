@@ -2038,6 +2038,8 @@ export default {
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
+    position: relative;
+    z-index: 1;
 }
 
 .tree-workspace-body {
@@ -2059,6 +2061,8 @@ export default {
     box-sizing: border-box;
     background: #edf1f7;
     overflow: hidden;
+    position: relative;
+    z-index: 1;
 }
 
 .fmeca-workspace {
