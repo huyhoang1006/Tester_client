@@ -94,7 +94,7 @@ export const formatDev = (value) => (value === null ? '' : String(round(value, 4
  * Tính lại R corr / Dev with R ref / Dev within phases cho bảng nhập liệu.
  * rows: testData.table.table1 — mỗi nhóm 3 dòng (3 pha) chung một ô dev_phase (rowspan=3).
  */
-export const computeDcWindingRows = (rows, { tMeas, tRef, K }) => {
+export const computeDcWindingRows = (rows, { tMeas, tRef, K, phaseCount = 3 }) => {
     if (!Array.isArray(rows)) return
     for (const row of rows) {
         if (!row) continue
@@ -102,8 +102,13 @@ export const computeDcWindingRows = (rows, { tMeas, tRef, K }) => {
         if (row.r_corr) row.r_corr.value = formatRcorr(rCorr)
         if (row.dev_r_ref) row.dev_r_ref.value = formatDev(devWithReference(rCorr, row.r_ref && row.r_ref.value))
     }
-    for (let g = 0; g < rows.length; g += 3) {
-        const group = rows.slice(g, g + 3)
+    // Máy 1 pha: không có "Dev within phases"
+    if (phaseCount < 2) {
+        for (const row of rows) if (row && row.dev_phase) row.dev_phase.value = ''
+        return
+    }
+    for (let g = 0; g < rows.length; g += phaseCount) {
+        const group = rows.slice(g, g + phaseCount)
         const dev = devWithinPhases(group.map(r => r && r.r_corr ? r.r_corr.value : null))
         if (rows[g] && rows[g].dev_phase) rows[g].dev_phase.value = formatDev(dev)
     }

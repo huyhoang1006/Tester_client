@@ -4,6 +4,7 @@ import transformerConditionMap from '@/config/testing-condition/Transformer/inde
 import * as common from '../../../../Common/index.js'
 import transformerAssessmentMap from '@/config/testing-assessment/Transformer'
 import { writeTerminalSides } from '../../InsulationResistance/terminalUtils'
+import { transformerPhases } from '@/utils/transformerPhases'
 
 const BUSHING_WINDING_BY_TEST = {
     BushingPrimC1: 'prim',
@@ -346,7 +347,8 @@ export default {
             }
 
             let table1 = []
-            const phases = ['A', 'B', 'C']
+            // Máy 1 pha chỉ tạo dòng cho pha đã chọn trong asset
+            const phases = transformerPhases(assetData)
 
             if ((tapChangers ? tapChangers.mode : null) && tapChangers.winding === this.$constant.PRIM && tapChangers.tap_scheme && tapChangers.no_of_taps) {
                 const voltage_table = tapChangers.voltage_table || []
@@ -390,7 +392,8 @@ export default {
             }
 
             let table1 = []
-            const phases = ['A', 'B', 'C']
+            // Máy 1 pha chỉ tạo dòng cho pha đã chọn trong asset
+            const phases = transformerPhases(assetData)
 
             if ((tapChangers ? tapChangers.mode : null) && tapChangers.winding === this.$constant.SEC && tapChangers.tap_scheme && tapChangers.no_of_taps) {
                 const voltage_table = tapChangers.voltage_table || []
@@ -434,7 +437,8 @@ export default {
             }
 
             let table1 = []
-            const phases = ['A', 'B', 'C']
+            // Máy 1 pha chỉ tạo dòng cho pha đã chọn trong asset
+            const phases = transformerPhases(assetData)
 
             if ((tapChangers ? tapChangers.mode : null) && tapChangers.winding === this.$constant.TERT && tapChangers.tap_scheme && tapChangers.no_of_taps) {
                 const voltage_table = tapChangers.voltage_table || []

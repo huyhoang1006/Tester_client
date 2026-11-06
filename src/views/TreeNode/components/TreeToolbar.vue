@@ -268,15 +268,20 @@ export default {
     width: 52px;
     flex-shrink: 0;
     position: relative;
+    z-index: 100;
     box-sizing: border-box;
     transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .toolbar-rail-wrap.is-pinned {
     width: 240px;
+    z-index: 100;
 }
 
 .toolbar-rail {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 52px;
     height: 100%;
     display: flex;
@@ -289,6 +294,7 @@ export default {
     overflow-x: hidden;
     overflow-y: auto;
     user-select: none;
+    z-index: 100;
 }
 
 .toolbar-rail::-webkit-scrollbar {
@@ -299,21 +305,19 @@ export default {
     border-radius: 2px;
 }
 
+/* Expanded state: width expands to 240px */
+.toolbar-rail.is-expanded {
+    width: 240px;
+}
+
 /* Quick Peek mode: floating overlay over workspace */
 .toolbar-rail.is-floating {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 240px;
-    height: 100%;
     z-index: 1000;
     box-shadow: 4px 0 20px rgba(0, 15, 45, 0.35);
 }
 
 /* Smart Pin mode: stays in layout flow */
 .toolbar-rail.is-pinned {
-    position: relative;
-    width: 100%;
     box-shadow: none;
 }
 

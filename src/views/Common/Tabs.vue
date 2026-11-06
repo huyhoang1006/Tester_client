@@ -410,6 +410,12 @@ export default {
                     assetMrid: tab.parentId
                 })
             }
+            // Lưu asset làm sửa/xoá test của nó (vd đổi pha Transformer → xoá bài DC Winding)
+            // → tải lại nhánh job/test của thiết bị trên cây
+            const lastEvent = args.length ? args[args.length - 1] : null
+            if (tab && tab.mode === 'asset' && lastEvent && lastEvent.testsChanged) {
+                this.$emit('job-updated', { assetMrid: tab.mrid || tab.id })
+            }
         },
 
         async loadData(tab, index, savedData) {

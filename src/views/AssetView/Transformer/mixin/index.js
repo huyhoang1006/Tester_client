@@ -7,6 +7,13 @@ import { WindingConnection } from "@/views/Enum/WindingConnection"
 import { PhaseCode } from "@/views/Enum/PhaseCode"
 import { parseServerVectorGroup } from "@/views/Mapping/ServerToDTO/Transformer/vectorGroup"
 import { ensureUniqueAssetBeforeSave } from "@/views/AssetView/mixin/assetDuplicateGuard";
+import { askPhaseChange } from "@/utils/phaseChangeDialog";
+import {
+    DC_WINDING_TEST_CODES, DC_WINDING_TEST_LABELS, phasesOfConfig, removedPhases, affectedTests, applyPhaseChangeToJob
+} from "@/utils/dcWindingPhaseChange";
+import * as transformerJobMapping from "@/views/Mapping/TransformerJob/index";
+import transformerTestMap from "@/config/test-definitions/Transformer";
+import * as commonJob from "@/views/JobView/Common/index.js";
 export default {
     data() {
         return {
@@ -96,6 +103,12 @@ export default {
                     }
                     const data = JSON.parse(JSON.stringify(this.transformerDto));
                     if (!(await ensureUniqueAssetBeforeSave(this, data))) return { success: false, duplicate: true };
+                    // Máy 1 pha đổi pha (vd A → B) mà đã có KQTN DC Winding ở pha cũ → hỏi user
+                    const phaseChange = await this.confirmDcWindingPhaseChange()
+                    if (phaseChange && phaseChange.abort) {
+                        this.$message.info('Saving was cancelled')
+                        return { success: false, validation: true }
+                    }
                     const result = this.checkTransformerDto(data);
                     const oldData = JSON.parse(JSON.stringify(this.oldTransformerDto));
                     const oldResult = this.checkTransformerDto(oldData, { normalizeTransformerEnds: false });
@@ -106,10 +119,15 @@ export default {
                         if (window.electronAPI.ensureUserOwnership) {
                             await window.electronAPI.ensureUserOwnership(this.$store.state.user.user_id, result.properties.mrid)
                         }
+                        const testsChanged = phaseChange && phaseChange.mode
+                            ? (await this.applyDcWindingPhaseChange(phaseChange)) > 0
+                            : false
                         return {
                             success: true,
                             data: rs.data,
-                            changed: rs.changed
+                            changed: rs.changed,
+                            // Job/test của thiết bị bị sửa/xoá → cây cần tải lại nhánh thiết bị
+                            testsChanged
                         };
                     } else {
                         this.$message.error("Error saving transformer entity: " + rs.message);
@@ -136,6 +154,107 @@ export default {
                     message: "An error occurred while saving the asset."
                 });
             }
+        },
+
+        /**
+         * Asset đổi cấu hình pha (1 pha A → B, hoặc 3 pha → 1 pha) mà các bài DC Winding Res
+         * Prim/Sec/Tert đã có kết quả ở pha bị bỏ → cảnh báo, cho chọn (mặc định 1):
+         *   1. Move test results to phase mới | 2. Giữ nguyên | 3. Xoá hẳn bài test
+         * Cancel / đóng hộp thoại → huỷ lưu asset.
+         * Đọc job qua đúng đường mở job (getComparableTests + getTransformerJobByMrid), sửa trên
+         * DTO rồi lưu lại bằng insertTransformerJob → không cần thêm API ở main process.
+         * @returns null | { abort } | { mode, jobs, removed, newPhases }
+         */
+        async confirmDcWindingPhaseChange() {
+            const api = window.electronAPI
+            if (!api || !api.getComparableTests || !api.getTransformerJobByMrid) return null
+            const oldWc = (this.oldTransformerDto && this.oldTransformerDto.winding_configuration) || {}
+            const newWc = (this.transformerDto && this.transformerDto.winding_configuration) || {}
+            const removed = removedPhases(oldWc, newWc)
+            const newPhases = phasesOfConfig(newWc)
+            if (!removed.length) return null
+            const assetMrid = this.transformerDto.properties && this.transformerDto.properties.mrid
+            if (!assetMrid) return null
+
+            const jobs = await this.loadDcWindingJobs(assetMrid, removed)
+            if (!jobs.length) return null
+
+            const list = jobs.map(job => {
+                const tests = affectedTests(job.dto, removed).map(t => DC_WINDING_TEST_LABELS[t.testTypeCode] || t.testTypeCode)
+                return `${tests.join(', ')}${job.name ? ` (${job.name})` : ''}`
+            }).join('; ')
+            const oldPhase = removed.join(', ')
+            const newPhase = newPhases.join(', ')
+            const fromSingle = phasesOfConfig(oldWc).length === 1
+            const choice = await askPhaseChange({
+                title: `Test results exist for phase ${oldPhase}`,
+                message: `Test results already exist for phase ${oldPhase}: ${list}. The transformer is being changed to phase ${newPhase}. What should happen to these tests?`,
+                oldPhase,
+                newPhase,
+                moveLabel: fromSingle ? `Move test results to phase ${newPhase}` : `Keep only the results of phase ${newPhase}`,
+                moveHint: fromSingle
+                    ? `Keep all results and relabel them as phase ${newPhase}.`
+                    : `Rows of phase ${oldPhase} are removed; rows of phase ${newPhase} keep their results.`
+            })
+            if (!choice) return { abort: true }
+            if (choice === 'keep') return null
+            return { mode: choice, jobs, removed, newPhases }
+        },
+
+        /** Các job (trên máy này) của thiết bị có bài DC Winding bị ảnh hưởng */
+        async loadDcWindingJobs(assetMrid, removed) {
+            const api = window.electronAPI
+            const workMrids = []
+            const names = {}
+            for (const code of DC_WINDING_TEST_CODES) {
+                const rs = await api.getComparableTests(assetMrid, code, '')
+                for (const item of (rs && rs.success && rs.data) || []) {
+                    if (!workMrids.includes(item.workMrid)) workMrids.push(item.workMrid)
+                    names[item.workMrid] = item.workName || names[item.workMrid] || ''
+                }
+            }
+            const jobs = []
+            for (const workMrid of workMrids) {
+                const rs = await api.getTransformerJobByMrid(workMrid)
+                if (!rs || !rs.success || !rs.data) continue
+                const dto = transformerJobMapping.JobEntityToDto(rs.data)
+                if (!affectedTests(dto, removed).length) continue
+                jobs.push({ workMrid, name: names[workMrid], dto, old: JSON.parse(JSON.stringify(dto)) })
+            }
+            return jobs
+        },
+
+        async applyDcWindingPhaseChange({ mode, jobs, removed, newPhases }) {
+            let changedTests = 0
+            const failed = []
+            for (const job of jobs) {
+                try {
+                    const changed = applyPhaseChangeToJob(job.dto, {
+                        mode,
+                        removed,
+                        newPhases,
+                        rowTemplateOf: code => commonJob.buildEmptyTestRow(transformerTestMap[code].columns)
+                    })
+                    if (!changed) continue
+                    const rs = await window.electronAPI.insertTransformerJob(
+                        transformerJobMapping.jobDtoToEntity(job.old),
+                        transformerJobMapping.jobDtoToEntity(job.dto)
+                    )
+                    if (!rs || !rs.success) throw new Error((rs && rs.message) || 'Save failed')
+                    changedTests += changed
+                } catch (error) {
+                    console.error('Apply DC winding phase change failed:', job.workMrid, error)
+                    failed.push(job.name || job.workMrid)
+                }
+            }
+            if (failed.length) {
+                this.$message.error(`Asset saved, but these jobs could not be updated: ${failed.join(', ')}`)
+            } else if (changedTests) {
+                this.$message.success(mode === 'delete'
+                    ? `${changedTests} DC winding test(s) were deleted`
+                    : `DC winding test results were updated to phase ${newPhases.join(', ')}`)
+            }
+            return changedTests
         },
 
         loadData(data) {
@@ -208,7 +327,7 @@ export default {
                     this.loadData(dto)
                 }
                 this.$message.success("Asset saved successfully")
-                this.$emit('reload', { savedData: this.transformerDto, changed: data.changed === true })
+                this.$emit('reload', { savedData: this.transformerDto, changed: data.changed === true, testsChanged: data.testsChanged === true })
             } else if (!data || (!data.validation && !data.duplicate)) {
                 this.$message.error("Failed to save asset")
             }
