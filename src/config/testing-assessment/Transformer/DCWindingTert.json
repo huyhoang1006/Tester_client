@@ -6,10 +6,10 @@
     {
       "mrid": "89517ddf-f877-4475-9fe1-414b934f98f6",
       "code": "ieee_c57_152_dcwindingtert",
-      "name": "IEEE C57.152 (2013)",
+      "name": "IEEE C57.152 (2025)",
       "type": "ieee",
       "standard_number": "C57.152",
-      "standard_edition": "2013",
+      "standard_edition": "2025",
       "columns": [
         {
           "mrid": "59459bfe-10d4-4cda-b6fc-ad67a18e172a",

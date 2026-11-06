@@ -6,10 +6,10 @@
     {
       "mrid": "30409f76-7e59-4ef6-8dbc-aa585291c20a",
       "code": "ieee_c57_152_dcwindingsec",
-      "name": "IEEE C57.152 (2013)",
+      "name": "IEEE C57.152 (2025)",
       "type": "ieee",
       "standard_number": "C57.152",
-      "standard_edition": "2013",
+      "standard_edition": "2025",
       "columns": [
         {
           "mrid": "59459bfe-10d4-4cda-b6fc-ad67a18e172a",

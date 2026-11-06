@@ -6,10 +6,10 @@
     {
       "mrid": "7fd98297-b316-4d1f-ba56-6a802a0e9f99",
       "code": "ieee_c57_new_mineral_25_bushingtertc1",
-      "name": "IEEE C57.152 (2013) - New - Mineral oil (25°C)",
+      "name": "IEEE C57.152 (2025) - New - Mineral oil (25°C)",
       "type": "ieee",
       "standard_number": "C57.152",
-      "standard_edition": "2013",
+      "standard_edition": "2025",
       "columns": [
         {
           "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
@@ -80,10 +80,10 @@
     {
       "mrid": "449c798f-d5bc-465e-b0fd-34f4f8231b61",
       "code": "ieee_c57_new_mineral_100_bushingtertc1",
-      "name": "IEEE C57.152 (2013) - New - Mineral oil (100°C)",
+      "name": "IEEE C57.152 (2025) - New - Mineral oil (100°C)",
       "type": "ieee",
       "standard_number": "C57.152",
-      "standard_edition": "2013",
+      "standard_edition": "2025",
       "columns": [
         {
           "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
@@ -154,10 +154,10 @@
     {
       "mrid": "aef1f8be-87d9-40b5-8f2f-b01b666f3cb4",
       "code": "ieee_c57_new_lfh_25_bushingtertc1",
-      "name": "IEEE C57.152 (2013) - New - LFH (25°C)",
+      "name": "IEEE C57.152 (2025) - New - LFH (25°C)",
       "type": "ieee",
       "standard_number": "C57.152",
-      "standard_edition": "2013",
+      "standard_edition": "2025",
       "columns": [
         {
           "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
@@ -228,10 +228,10 @@
     {
       "mrid": "4a29d4c5-aa38-4a6b-8d14-52f14626cd9f",
       "code": "ieee_c57_new_lfh_100_bushingtertc1",
-      "name": "IEEE C57.152 (2013) - New - LFH (100°C)",
+      "name": "IEEE C57.152 (2025) - New - LFH (100°C)",
       "type": "ieee",
       "standard_number": "C57.152",
-      "standard_edition": "2013",
+      "standard_edition": "2025",
       "columns": [
         {
           "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
@@ -302,10 +302,10 @@
     {
       "mrid": "492e63da-892b-4f63-b245-8dc827e8501a",
       "code": "ieee_c57_new_silicone_25_bushingtertc1",
-      "name": "IEEE C57.152 (2013) - New - Silicone (25°C)",
+      "name": "IEEE C57.152 (2025) - New - Silicone (25°C)",
       "type": "ieee",
       "standard_number": "C57.152",
-      "standard_edition": "2013",
+      "standard_edition": "2025",
       "columns": [
         {
           "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
@@ -376,10 +376,10 @@
     {
       "mrid": "deca8ddd-1204-440c-a0db-fdea28174d39",
       "code": "ieee_c57_new_natural_25_bushingtertc1",
-      "name": "IEEE C57.152 (2013) - New - Natural ester (25°C)",
+      "name": "IEEE C57.152 (2025) - New - Natural ester (25°C)",
       "type": "ieee",
       "standard_number": "C57.152",
-      "standard_edition": "2013",
+      "standard_edition": "2025",
       "columns": [
         {
           "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
@@ -450,10 +450,10 @@
     {
       "mrid": "20366f15-2faa-49bc-b46b-c507c4408960",
       "code": "ieee_c57_aged_mineral_25_bushingtertc1",
-      "name": "IEEE C57.152 (2013) - Service-aged - Mineral oil (25°C)",
+      "name": "IEEE C57.152 (2025) - Service-aged - Mineral oil (25°C)",
       "type": "ieee",
       "standard_number": "C57.152",
-      "standard_edition": "2013",
+      "standard_edition": "2025",
       "columns": [
         {
           "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
@@ -524,10 +524,10 @@
     {
       "mrid": "8de89402-647c-40c6-89f3-96965980f236",
       "code": "ieee_c57_aged_mineral_100_bushingtertc1",
-      "name": "IEEE C57.152 (2013) - Service-aged - Mineral oil (100°C)",
+      "name": "IEEE C57.152 (2025) - Service-aged - Mineral oil (100°C)",
       "type": "ieee",
       "standard_number": "C57.152",
-      "standard_edition": "2013",
+      "standard_edition": "2025",
       "columns": [
         {
           "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
@@ -598,10 +598,10 @@
     {
       "mrid": "8c1ed0f6-9ad7-4d17-ba7e-9b18d36aed10",
       "code": "ieee_c57_aged_lfh_25_bushingtertc1",
-      "name": "IEEE C57.152 (2013) - Service-aged - LFH (25°C)",
+      "name": "IEEE C57.152 (2025) - Service-aged - LFH (25°C)",
       "type": "ieee",
       "standard_number": "C57.152",
-      "standard_edition": "2013",
+      "standard_edition": "2025",
       "columns": [
         {
           "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
@@ -672,10 +672,10 @@
     {
       "mrid": "c5ed9c06-f884-4d64-bbc4-eca935f19c0b",
       "code": "ieee_c57_aged_silicone_25_bushingtertc1",
-      "name": "IEEE C57.152 (2013) - Service-aged - Silicone (25°C)",
+      "name": "IEEE C57.152 (2025) - Service-aged - Silicone (25°C)",
       "type": "ieee",
       "standard_number": "C57.152",
-      "standard_edition": "2013",
+      "standard_edition": "2025",
       "columns": [
         {
           "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",
@@ -746,10 +746,10 @@
     {
       "mrid": "436fa448-9733-4f29-8a27-8e29c8e58065",
       "code": "ieee_c57_aged_natural_25_bushingtertc1",
-      "name": "IEEE C57.152 (2013) - Service-aged - Natural ester (25°C)",
+      "name": "IEEE C57.152 (2025) - Service-aged - Natural ester (25°C)",
       "type": "ieee",
       "standard_number": "C57.152",
-      "standard_edition": "2013",
+      "standard_edition": "2025",
       "columns": [
         {
           "mrid": "1e2050bd-da5f-44fc-ad75-0c5c416fa14f",

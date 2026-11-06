@@ -6,10 +6,10 @@
     {
       "mrid": "18ebdc22-1acb-421e-9429-17539c5f23e8",
       "code": "ieee_c57_152_shortcircuitimpedancesec",
-      "name": "IEEE C57.152 (2013)",
+      "name": "IEEE C57.152 (2025)",
       "type": "ieee",
       "standard_number": "C57.152",
-      "standard_edition": "2013",
+      "standard_edition": "2025",
       "columns": [
         {
           "mrid": "68ebea17-7af1-4438-87bf-cf7bda61e691",
