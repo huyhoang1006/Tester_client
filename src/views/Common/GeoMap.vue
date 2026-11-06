@@ -65,23 +65,12 @@ export default {
         LMarker,
         LPopup,
     },
-    mounted() {
-        this.$nextTick(() => {
-            let attributionLinks = document.querySelectorAll('.leaflet-control-attribution a[href*="leaflet"]');
-            attributionLinks.forEach(link => {
-                link.href = '';
-                link.title = 'AT Energy';
-                link.innerHTML = '<img style="width : 15px; height:15px;" src="/img/favicon.png"> AT Energy';
-            });
-        })
-    },
     data () {
         return {
             url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
             zoom: 8,
             center: [21, 106],
             latLng: null,
-            attribution: '&copy; <a>Open ATDigitalTester Map</a> contributors',
             popupText: '',
             clickedLatLng: null,
             redIcon,
