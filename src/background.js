@@ -2,8 +2,7 @@
 
 import {app, protocol, BrowserWindow, ipcMain, screen, shell} from 'electron'
 import {createBrowserSso} from './utils/ssoBrowser'
-import {createProtocol} from 'vue-cli-plugin-electron-builder/lib'
-import installExtension, {VUEJS_DEVTOOLS} from 'electron-devtools-installer'
+import createProtocol from 'vue-cli-plugin-electron-builder/lib/createProtocol'
 import fs from 'fs'
 import path from 'path'
 import {v4 as newUuid} from 'uuid'
@@ -360,6 +359,7 @@ app.on('ready', async () => {
     if (isDevelopment && !process.env.IS_TEST) {
         // Install Vue Devtools
         try {
+            const { default: installExtension, VUEJS_DEVTOOLS } = require('electron-devtools-installer')
             await installExtension(VUEJS_DEVTOOLS)
         } catch (e) {
             console.error('Vue Devtools failed to install:', e.toString())

@@ -6,13 +6,47 @@ import * as notificationEntityFunc from '@/function/entity/notification'
 const UPDATE_PATH = '/api/app-updates/win/'
 const VERSION_PATTERN = /\bVersion\s+v?([0-9]+(?:\.[0-9]+){1,3}(?:-[0-9A-Za-z.-]+)?)/i
 
-autoUpdater.autoDownload = false
-autoUpdater.autoInstallOnAppQuit = false
-autoUpdater.disableWebInstaller = true
-
 let checkPromise = null
 let lastAvailableVersion = ''
 let notificationSavePromise = Promise.resolve()
+let updaterInitialized = false
+
+const getAutoUpdater = () => {
+    if (!updaterInitialized) {
+        updaterInitialized = true
+        autoUpdater.autoDownload = false
+        autoUpdater.autoInstallOnAppQuit = false
+        autoUpdater.disableWebInstaller = true
+
+        autoUpdater.on('download-progress', (progressObj) => {
+            sendToRenderer('download-progress', progressObj)
+        })
+
+        autoUpdater.on('update-available', (info) => {
+            lastAvailableVersion = normalizeVersion(info && info.version) || ''
+            notificationSavePromise = saveUpdateNotification(info)
+            sendToRenderer('update-available', info)
+        })
+
+        autoUpdater.on('update-not-available', (info) => {
+            lastAvailableVersion = ''
+            sendToRenderer('update-not-available', info)
+        })
+
+        autoUpdater.on('error', (err) => {
+            console.error('[AutoUpdater] Error IN autoUpdater.on')
+            sendToRenderer('update-error', err.message || String(err))
+        })
+
+        autoUpdater.on('update-downloaded', (info) => {
+            sendToRenderer('update-downloaded', info)
+
+            autoUpdater.autoRunAppAfterInstall = true
+            setTimeout(() => autoUpdater.quitAndInstall(true, true), 500)
+        })
+    }
+    return autoUpdater
+}
 
 const buildUpdateFeedUrl = (serviceDomain) => {
     if (typeof serviceDomain !== 'string' || !serviceDomain.trim()) {
@@ -92,13 +126,14 @@ const performUpdateCheck = async (serviceDomain) => {
     if (checkPromise) return checkPromise
 
     checkPromise = (async () => {
-        autoUpdater.setFeedURL({
+        const updater = getAutoUpdater()
+        updater.setFeedURL({
             provider: 'generic',
             url: buildUpdateFeedUrl(serviceDomain)
         })
         lastAvailableVersion = ''
         notificationSavePromise = Promise.resolve()
-        await autoUpdater.checkForUpdates()
+        await updater.checkForUpdates()
         await notificationSavePromise
         return {
             updateAvailable: Boolean(lastAvailableVersion),
@@ -112,26 +147,6 @@ const performUpdateCheck = async (serviceDomain) => {
         checkPromise = null
     }
 }
-
-autoUpdater.on('download-progress', (progressObj) => {
-    sendToRenderer('download-progress', progressObj)
-})
-
-autoUpdater.on('update-available', (info) => {
-    lastAvailableVersion = normalizeVersion(info && info.version) || ''
-    notificationSavePromise = saveUpdateNotification(info)
-    sendToRenderer('update-available', info)
-})
-
-autoUpdater.on('update-not-available', (info) => {
-    lastAvailableVersion = ''
-    sendToRenderer('update-not-available', info)
-})
-
-autoUpdater.on('error', (err) => {
-    console.error('[AutoUpdater] Error IN autoUpdater.on')
-    sendToRenderer('update-error', err.message || String(err))
-})
 
 export async function checkForStartupUpdate(serviceDomain) {
     const pendingNotification = await getPendingUpdateNotification()
@@ -182,17 +197,10 @@ export async function downloadUpdate(serviceDomain) {
         if (!lastAvailableVersion) {
             throw new Error('The update is no longer available')
         }
-        const result = await autoUpdater.downloadUpdate()
+        const result = await getAutoUpdater().downloadUpdate()
         return result
     } catch (error) {
         console.error('[Update] Download failed:', error)
         throw error
     }
 }
-
-autoUpdater.on('update-downloaded', (info) => {
-    sendToRenderer('update-downloaded', info)
-
-    autoUpdater.autoRunAppAfterInstall = true
-    setTimeout(() => autoUpdater.quitAndInstall(true, true), 500)
-})
