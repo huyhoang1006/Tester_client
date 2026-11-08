@@ -9,10 +9,15 @@ import { app } from 'electron'
 const nameDB = 'database.db'
 const DB_PASSWORD = 'attester'
 
-const userDataPath = app.getPath('userData')
-const userDBPath = path.join(userDataPath, nameDB)
-const developmentDBPath = path.join(__dirname, `/../database/${nameDB}`)
-const dbPath = process.env.NODE_ENV === 'development' ? developmentDBPath : userDBPath
+let dbPath
+if (process.env.NODE_ENV === 'development') {
+  dbPath = path.join(__dirname, `/../database/${nameDB}`)
+} else {
+  const electron = require('electron')
+  const electronApp = app || electron.app || (electron.remote && electron.remote.app)
+  const userDataPath = electronApp ? electronApp.getPath('userData') : ''
+  dbPath = path.join(userDataPath, nameDB)
+}
 
 fs.mkdirSync(path.dirname(dbPath), {recursive: true})
 
