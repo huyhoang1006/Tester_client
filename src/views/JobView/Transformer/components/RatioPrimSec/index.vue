@@ -53,10 +53,10 @@
                         </div>
                     </td>
                     <td>
-                        <el-input :measurement="item.voltage_prim" size="mini" type="text" number="positive" v-model="item.voltage_prim.value" @input="computeFields"></el-input>
+                        <el-input :measurement="item.voltage_prim" size="mini" type="text" number="positive" v-model="item.voltage_prim.value" @input="recalculate"></el-input>
                     </td>
                     <td>
-                        <el-input :measurement="item.voltage_sec" size="mini" type="text" number="positive" v-model="item.voltage_sec.value" @input="computeFields"></el-input>
+                        <el-input :measurement="item.voltage_sec" size="mini" type="text" number="positive" v-model="item.voltage_sec.value" @input="recalculate"></el-input>
                     </td>
                     <td>
                         <el-input :measurement="item.i_out" size="mini" type="text" number="positive" v-model="item.i_out.value"></el-input>
@@ -239,7 +239,10 @@ export default {
             immediate: true,
             handler: async function (newVal) {
                 const standard = this.filteredAssessmentData.find(x => x.code === newVal)
-                if (standard) await changeTestStandard(standard.mrid, standard.type, this.testStandardData)
+                if (standard) {
+                    await changeTestStandard(standard.mrid, standard.type, this.testStandardData)
+                    await this.recalculate()
+                }
             }
         },
         'testStandardData': {
@@ -256,7 +259,7 @@ export default {
         }
     },
     mounted() {
-        this.$nextTick(this.computeFields)
+        this.$nextTick(this.recalculate)
     },
     methods: {
         add() {
@@ -279,9 +282,12 @@ export default {
                 this.testData.table.table1.splice(index + 1, 0, data)
         },
         async calculator() {
-            this.computeFields()
-            await this.calcAssessment()
+            await this.recalculate()
             this.$message.success('Calculating successfully')
+        },
+        async recalculate() {
+            this.computeFields()
+            if (this.option) await this.calcAssessment()
         },
         computeFields() {
             var rows = this.testData && this.testData.table && this.testData.table.table1
