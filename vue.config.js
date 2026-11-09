@@ -1,4 +1,3 @@
-delete process.env.ELECTRON_RUN_AS_NODE
 const updateMetadataUrl = process.env.APP_UPDATE_FEED_URL || 'http://localhost/'
 
 module.exports = {
