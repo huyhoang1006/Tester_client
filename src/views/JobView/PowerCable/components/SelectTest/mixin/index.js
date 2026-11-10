@@ -4,13 +4,14 @@ import powerCableTestMap from '@/config/test-definitions/PowerCable'
 import powerCableConditionMap from '@/config/testing-condition/PowerCable'
 import * as common from '../../../../Common/index.js'
 import powerCableAssessmentMap from '@/config/testing-assessment/PowerCable'
+import { filterTestTablesByAssetPhase } from '@/views/JobView/Common/assetPhase'
 export default {
     methods: {
-        async initTest(testTypeCode) {
+        async initTest(testTypeCode, assetData) {
             let data = null
             switch (testTypeCode) {
                 case 'InsulationResistance':
-                    data = this.initInsulationResistance(testTypeCode)
+                    data = await this.initInsulationResistance(testTypeCode)
                     break
                 case 'DcVoltageOverSheath':
                     data = await this.initDcVoltageOverSheath(testTypeCode)
@@ -38,6 +39,7 @@ export default {
                     break
             }
 
+            filterTestTablesByAssetPhase(data, assetData)
             common.markInitialTestValues(data && data.table)
             return data
         },

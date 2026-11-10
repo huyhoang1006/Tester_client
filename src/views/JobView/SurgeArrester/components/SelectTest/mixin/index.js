@@ -3,13 +3,14 @@ import surgeArresterTestMap from '@/config/test-definitions/SurgeArrester'
 import surgeArresterConditionMap from '@/config/testing-condition/SurgeArrester'
 import * as common from '../../../../Common/index.js'
 import surgeArresterAssessmentMap from '@/config/testing-assessment/SurgeArrester'
+import { filterTestTablesByAssetPhase, phaseListForAsset } from '@/views/JobView/Common/assetPhase'
 export default {
     methods: {
         async initTest(testTypeCode, assetData) {
             let data = null
             switch (testTypeCode) {
                 case 'InsulationResistance':
-                    data = this.initInsulationResistance(testTypeCode)
+                    data = await this.initInsulationResistance(testTypeCode)
                     break
                 case 'GeneralInspection':
                     data = await this.initGeneralInspection(testTypeCode)
@@ -21,6 +22,7 @@ export default {
                     data = await this.initPowerFrequency(assetData, testTypeCode)
                     break
             }
+            filterTestTablesByAssetPhase(data, assetData)
             common.markInitialTestValues(data && data.table)
             return data
         },
@@ -54,7 +56,7 @@ export default {
         },
         async initLeakageCurrent(assetData, testTypeCode) {
             let units = assetData.unit_count || 0
-            let phase = ["A", "B", "C"]
+            let phase = phaseListForAsset(assetData)
             let table1 = []
             const rowDataExample = common.buildEmptyTestRow(surgeArresterTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(surgeArresterConditionMap[testTypeCode].columns)
@@ -80,7 +82,7 @@ export default {
         },
         async initPowerFrequency(assetData, testTypeCode) {
             let units = assetData.unit_count || 0
-            let phase = ["A", "B", "C"]
+            let phase = phaseListForAsset(assetData)
             let table1 = []
             const rowDataExample = common.buildEmptyTestRow(surgeArresterTestMap[testTypeCode].columns)
             const rowDataExampleCondition = common.buildEmptyTestCondition(surgeArresterConditionMap[testTypeCode].columns)

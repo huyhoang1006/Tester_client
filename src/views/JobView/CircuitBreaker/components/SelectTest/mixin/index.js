@@ -3,6 +3,7 @@ import circuitBreakerTestMap from '@/config/test-definitions/CircuitBreaker'
 import circuitBreakerConditionMap from '@/config/testing-condition/CircuitBreaker/index.js'
 import * as common from '../../../../Common/index.js'
 import { createPowerFrequencyTest } from '@/views/JobView/Common/powerFrequencyTest'
+import { filterTestTablesByAssetPhase, phaseListForAsset } from '@/views/JobView/Common/assetPhase'
 
 // Lấy mrid (measurement_id) của 1 cột theo testCode + col.code từ config.
 // Dùng cho các init build cell thủ công, tránh cell thiếu measurement_id.
@@ -64,7 +65,7 @@ export default {
                     data = await this.initInsulationResistanceCircuit(testTypeCode, assetData)
                     break
                 case 'PowerFrequencyVoltageWithstand':
-                    data = await this.initPowerFrequencyVoltageWithstand(testTypeCode)
+                    data = await this.initPowerFrequencyVoltageWithstand(testTypeCode, assetData)
                     break
                 case 'InsulationResistanceTripCoil':
                     data = await this.initInsulationResistanceTripCoil(testTypeCode, assetData)
@@ -94,6 +95,7 @@ export default {
                     data = await this.initGeneralInspection(testTypeCode)
                     break
             }
+            filterTestTablesByAssetPhase(data, assetData)
             common.markInitialTestValues(data && data.table)
             return data
         },
@@ -258,11 +260,11 @@ export default {
             const {circuitBreaker, operating} = assetData
 
             const tripCoilsCount = parseInt(operating?.number_of_trip_coil || 1)
-            const phaseCount = parseInt(circuitBreaker?.numberOfPhase || 3)
+            const phaseNames = phaseListForAsset(assetData)
+            const phaseCount = phaseNames.length
             const interruptCount = parseInt(circuitBreaker?.interruptersPerPhase || 1)
 
             let table = []
-            let phaseNames = ['A', 'B', 'C']
 
             for (let t = 0; t < tripCoilsCount; t++) {
                 let coilTable = []
@@ -751,8 +753,8 @@ export default {
                 }
             }
         },
-        async initPowerFrequencyVoltageWithstand(testTypeCode) {
-            return createPowerFrequencyTest(circuitBreakerTestMap[testTypeCode], circuitBreakerConditionMap[testTypeCode])
+        async initPowerFrequencyVoltageWithstand(testTypeCode, assetData) {
+            return createPowerFrequencyTest(circuitBreakerTestMap[testTypeCode], circuitBreakerConditionMap[testTypeCode], assetData)
         },
         async initInsulationResistanceCircuit(testTypeCode, assetData) {
             const rowDataExample = common.buildEmptyTestRow(circuitBreakerTestMap[testTypeCode].columns)
