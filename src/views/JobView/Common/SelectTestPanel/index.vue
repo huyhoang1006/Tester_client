@@ -62,6 +62,7 @@ import TestStandard from '@/views/Cim/TestStandard'
 import uuid from '@/utils/uuid'
 import { todayTestDate } from '@/views/TreeNode/Common/Fetch/testDate'
 import { removeTest } from '@/views/JobView/Common/removeTest'
+import { changeTestStandard, testStandardDataToOption } from '@/views/JobView/Common'
 
 export default {
     name: 'SelectTestPanel',
@@ -111,7 +112,37 @@ export default {
             return map
         }
     },
+    watch: {
+        data: {
+            immediate: true,
+            handler(testList) {
+                this.ensureDefaultAssessmentStandards(testList)
+            }
+        }
+    },
     methods: {
+        defaultAssessmentStandard(testAssessment) {
+            const standards = (testAssessment && testAssessment.assessment) || []
+            return standards.find(standard => standard && standard.type === 'ieee')
+                || standards.find(Boolean)
+                || null
+        },
+        ensureDefaultAssessmentStandard(test) {
+            if (!test || !test.testAssessment) return
+
+            const testAssessment = test.testAssessment
+            if (!testAssessment.testStandard) {
+                this.$set(testAssessment, 'testStandard', new TestStandard())
+            }
+            if (testStandardDataToOption(testAssessment.testStandard)) return
+
+            const standard = this.defaultAssessmentStandard(testAssessment)
+            if (!standard) return
+            changeTestStandard(standard.mrid, standard.type, testAssessment.testStandard)
+        },
+        ensureDefaultAssessmentStandards(testList) {
+            ;(testList || []).forEach(test => this.ensureDefaultAssessmentStandard(test))
+        },
         availabilityOf(testType) {
             if (!this.testAvailability) return { enabled: true, message: '' }
             const availability = this.testAvailability(testType, this.assetData) || {}
@@ -132,7 +163,7 @@ export default {
             const count = this.usageCount[testType.mrid] || 0
             const initTest = await this.initTest(testType.alias_name, this.assetData)
             const name = count === 0 ? testType.name : `${testType.name} (${count})`
-            this.testListData.push({
+            const test = {
                 mrid: uuid.newUuid(),
                 testTypeId: testType.mrid,
                 testTypeCode: testType.alias_name,
@@ -164,7 +195,9 @@ export default {
                 total_average_score: null,
                 total_worst_score: null,
                 created_on: new Date().getTime()
-            })
+            }
+            this.ensureDefaultAssessmentStandard(test)
+            this.testListData.push(test)
         },
         remove(index) {
             return removeTest(this.$confirm.bind(this), this.testListData, this.testListData[index])
