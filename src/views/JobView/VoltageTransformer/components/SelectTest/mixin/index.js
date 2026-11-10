@@ -4,6 +4,7 @@ import voltageTransformerConditionMap from '@/config/testing-condition/VoltageTr
 import voltageTransformerAssessmentMap from '@/config/testing-assessment/VoltageTransformer'
 import * as common from '../../../../Common/index.js'
 import { createPowerFrequencyTest } from '@/views/JobView/Common/powerFrequencyTest'
+import { filterTestTablesByAssetPhase } from '@/views/JobView/Common/assetPhase'
 import { readVTRatioProfile } from '../../vtRatioProfile'
 
 /**
@@ -49,7 +50,7 @@ export default {
                     data = this.initInsulationResistance(testTypeCode, assetData)
                     break
                 case 'PowerFrequencyVoltageWithstand':
-                    data = createPowerFrequencyTest(voltageTransformerTestMap[testTypeCode], voltageTransformerConditionMap[testTypeCode])
+                    data = createPowerFrequencyTest(voltageTransformerTestMap[testTypeCode], voltageTransformerConditionMap[testTypeCode], assetData)
                     break
                 case 'VTRatio':
                     data = await this.initVTRatio(testTypeCode, assetData)
@@ -64,6 +65,7 @@ export default {
                     data = await this.initGeneralInspection(testTypeCode)
                     break
             }
+            filterTestTablesByAssetPhase(data, assetData)
             common.markInitialTestValues(data && data.table)
             return data
         },

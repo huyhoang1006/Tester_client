@@ -1,14 +1,12 @@
 import { buildEmptyTestRow, buildEmptyTestCondition } from './index'
 import { readSides } from './terminalSelect'
 import { buildCircuitBreakerTerminals } from './terminalOptions'
+import { phaseListForAsset } from './assetPhase'
 
-export const createPowerFrequencyTest = (definition, condition) => {
+export const createPowerFrequencyTest = (definition, condition, assetData) => {
     const example = buildEmptyTestRow(definition.columns)
-    const terminalPairs = [
-        ['A', ['B', 'C', 'GND']],
-        ['B', ['A', 'C', 'GND']],
-        ['C', ['A', 'B', 'GND']]
-    ]
+    const phases = phaseListForAsset(assetData)
+    const terminalPairs = phases.map(left => [left, [...phases.filter(phase => phase !== left), 'GND']])
     return {
         rowDataExampleCondition: buildEmptyTestCondition(condition.columns || []),
         rowDataAssessment: [],

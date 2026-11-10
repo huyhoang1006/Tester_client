@@ -5,6 +5,7 @@ import * as common from '../../../../Common/index.js'
 import transformerAssessmentMap from '@/config/testing-assessment/Transformer'
 import { writeTerminalSides } from '../../InsulationResistance/terminalUtils'
 import { transformerPhases } from '@/utils/transformerPhases'
+import { phaseListForAsset } from '@/views/JobView/Common/assetPhase'
 
 const BUSHING_WINDING_BY_TEST = {
     BushingPrimC1: 'prim',
@@ -134,6 +135,17 @@ export default {
                     data = await this.initSfra(testTypeCode)
                     break
             }
+            const selectedPhase = phaseListForAsset(assetData)
+            if (selectedPhase.length === 1 && ['DCWindingPrim', 'DCWindingSec', 'DCWindingTert', 'ShortCircuitImpedancePrim', 'ShortCircuitImpedanceSec', 'ShortCircuitImpedanceTert'].includes(testTypeCode) && data && data.table) {
+                Object.keys(data.table).forEach(key => {
+                    if (Array.isArray(data.table[key])) data.table[key] = data.table[key].filter(row => {
+                        const value = row.name && row.name.value || row.phase && row.phase.value
+                        if (value !== undefined && value !== '') return String(value).toUpperCase() === selectedPhase[0]
+                        const measurement = String(row.measurement && row.measurement.value || '')
+                        return measurement.toUpperCase().startsWith(`PHASE ${selectedPhase[0]}`) || measurement.toUpperCase().startsWith(`${selectedPhase[0]}-`) || measurement.toUpperCase().startsWith(`${selectedPhase[0]} `)
+                    })
+                })
+            }
             common.markInitialTestValues(data && data.table)
             return data
         },
@@ -262,7 +274,7 @@ export default {
 
             let table1 = []
             const voltage_table = tapChangers.voltage_table || []
-            const phases = ['A', 'B', 'C']
+            const phases = phaseListForAsset(assetData)
 
             voltage_table.forEach((element) => {
                 const tap = element.tap
@@ -309,7 +321,7 @@ export default {
 
             let table1 = []
             const voltage_table = tapChangers.voltage_table || []
-            const phases = ['A', 'B', 'C']
+            const phases = phaseListForAsset(assetData)
 
             voltage_table.forEach((element) => {
                 const tap = element.tap
@@ -917,7 +929,7 @@ export default {
 
             let table1 = []
             let table2 = []
-            let phases = ['A', 'B', 'C']
+            let phases = phaseListForAsset(assetData)
             let primSec = assetData.impedances.prim_sec || []
 
             const reference = primSec[0] || {}
@@ -948,7 +960,7 @@ export default {
 
             let table1 = []
             let table2 = []
-            let phases = ['A', 'B', 'C']
+            let phases = phaseListForAsset(assetData)
             let secTert = assetData.impedances.sec_tert || []
 
             const reference = secTert[0] || {}
@@ -979,7 +991,7 @@ export default {
 
             let table1 = []
             let table2 = []
-            let phases = ['A', 'B', 'C']
+            let phases = phaseListForAsset(assetData)
             let primTert = assetData.impedances.prim_tert || []
 
             const reference = primTert[0] || {}

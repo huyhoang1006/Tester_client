@@ -4,17 +4,18 @@ import disconnectorTestMap from '@/config/test-definitions/Disconnector'
 import disconnectorConditionMap from '@/config/testing-condition/Disconnector'
 import disconnectorAssessmentsMap from '@/config/testing-assessment/Disconnector'
 import * as common from '@/views/JobView/Common/index'
+import { filterTestTablesByAssetPhase } from '@/views/JobView/Common/assetPhase'
 
 export default {
     data() {
         return {}
     },
     methods: {
-        async initTest(testTypeCode) {
+        async initTest(testTypeCode, assetData) {
             let data = null
             switch (testTypeCode) {
                 case 'InsulationResistance':
-                    data = this.initInsulationResistance(testTypeCode)
+                    data = await this.initInsulationResistance(testTypeCode)
                     break
                 case 'ContactResistance':
                     data = await this.initContactResistance(testTypeCode)
@@ -36,6 +37,7 @@ export default {
                     break
             }
 
+            filterTestTablesByAssetPhase(data, assetData)
             common.markInitialTestValues(data && data.table)
             return data
         },
