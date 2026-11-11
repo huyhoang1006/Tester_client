@@ -2,14 +2,14 @@ import db from '../../datacontext/index'
 import path from 'path'
 import { safePathSegment } from '@/utils/fileName'
 import * as attachmentContext from '../../attachmentcontext/index'
-import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteDirectory } from '@/function/entity/attachment'
+import { uploadAttachmentTransaction, backupAllFilesInDir, deleteBackupFiles, restoreFiles, syncFilesWithDeletion, getAttachmentByForeignIdAndType, deleteDirectory, deleteAttachmentFolder } from '@/function/entity/attachment'
 import { insertVoltageTransaction, getVoltageByIds } from '@/function/cim/voltage';
 import { insertCurrentFlowTransaction, getCurrentFlowByIds } from '@/function/cim/currentFlow';
 import { insertLifecycleDateTransaction, getLifecycleDateById } from '@/function/cim/lifecycleDate';
 import { insertProductAssetModelTransaction, getProductAssetModelById } from '@/function/cim/productAssetModel';
 import { insertAssetPsrTransaction, getAssetPsrByAssetIdAndPsrId } from '@/function/entity/assetPsr'
 import { insertFrequencyTransaction, getFrequencyByIds } from '@/function/cim/frequency';
-import { insertAssetTransaction, getAssetById } from '@/function/cim/asset';
+import { insertAssetTransaction, getAssetById, deleteEmptyAssetJobsTransaction } from '@/function/cim/asset';
 import { insertCapacitorInfoTransaction, getCapacitorInfoById } from '@/function/cim/capacitorInfo';
 import { insertCapacitanceCapacitorInfoTransaction, getCapacitanceCapacitorInfoByIds, deleteCapacitanceInfoTransaction } from '@/function/cim/capacitanceInfo';
 import { insertDissipationFactorCapacitorInfoTransaction, getDissipationFactorCapacitorInfoByIds, deleteDissipationFactorCapacitorInfoTransaction } from '@/function/cim/dissipationFactorInfo';
@@ -409,6 +409,7 @@ export const getCapacitorEntity = async (id, psrId) => {
     }
 };
 export const deleteCapacitorEntity = async (entity) => {
+    const emptyJobIds = [];
     try {
         await runAsync('BEGIN TRANSACTION');
 
@@ -428,6 +429,7 @@ export const deleteCapacitorEntity = async (entity) => {
 
         // 3. Xóa asset (có FK đến asset_info, product_asset_model, lifecycle_date)
         if (entity.asset && entity.asset.mrid) {
+            emptyJobIds.push(...await deleteEmptyAssetJobsTransaction(entity.asset.mrid, db));
             await runAsync("DELETE FROM asset WHERE mrid=?", [entity.asset.mrid]);
         }
 
@@ -524,6 +526,7 @@ export const deleteCapacitorEntity = async (entity) => {
         }
 
         await runAsync('COMMIT');
+        for (const jobId of emptyJobIds) deleteAttachmentFolder(jobId);
         await writeAssetDeleteAuditLog('Capacitor', entity)
         return { success: true, message: 'Capacitor entity deleted successfully' };
     } catch (error) {

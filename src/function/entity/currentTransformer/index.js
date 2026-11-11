@@ -373,6 +373,7 @@ export const deleteCurrentTransformerEntity = async (data) => {
         } else {
             try {
                 await runAsync('BEGIN TRANSACTION');
+                const emptyJobIds = [];
                 if (data.attachment && data.attachment.id) {
                     const pathData = JSON.parse(data.attachment.path || '[]')
                     if (Array.isArray(pathData) && pathData.length > 0) {
@@ -400,7 +401,7 @@ export const deleteCurrentTransformerEntity = async (data) => {
                 }
 
                 // 5. Xóa Asset. Hàm này sẽ xóa IdentifiedObject, và CSDL sẽ tự động xóa bản ghi trong bảng 'asset' do có ràng buộc khóa ngoại.
-                await deleteAssetByIdTransaction(data.asset.mrid, db);
+                await deleteAssetByIdTransaction(data.asset.mrid, db, emptyJobIds);
                 // 6. Xóa AssetInfo. Thao tác này sẽ tự động xóa (cascade) các bản ghi trong 'current_transformer_info' và 'old_current_transformer_info'
                 // do đã thiết lập 'ON DELETE CASCADE' trong schema CSDL.
                 if (data.assetInfo && data.assetInfo.mrid) {
@@ -457,13 +458,11 @@ export const deleteCurrentTransformerEntity = async (data) => {
                 // 8. Commit transaction để lưu tất cả thay đổi
                 await runAsync('COMMIT');
 
-                // Xoá HẲN thư mục file. Đây là 1 trong 2 loại asset trước đây KHÔNG có
-                // bước này (loại kia là power cable) — 9 loại còn lại đều gọi
-                // deleteDirectory, nên xoá current transformer để lại cả file lẫn thư mục.
-                //
-                // Thư mục đặt theo `oldCurrentTransformerInfo.mrid` — không phải
-                // `asset.mrid` như phần lớn asset khác; lấy đúng theo đường LƯU của chính
-                // file này (dòng 38) chứ không suy theo quy ước chung.
+                for (const jobId of emptyJobIds) {
+                    deleteAttachmentFolder(jobId);
+                }
+
+                // CT attachments use the info MRID rather than the asset MRID.
                 if (data.oldCurrentTransformerInfo && data.oldCurrentTransformerInfo.mrid) {
                     deleteAttachmentFolder(data.oldCurrentTransformerInfo.mrid);
                 }

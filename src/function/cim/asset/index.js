@@ -685,22 +685,49 @@ export const updateAssetTransaction = (mrid, asset, dbsql) => {
     })
 }
 
-export const deleteAssetByIdTransaction = async (mrid, dbsql) => {
-    return new Promise((resolve, reject) => {
-        IdentifiedObjectFunc.deleteIdentifiedObjectByIdTransaction(mrid, dbsql)
-            .then(result => {
-                if (!result.success && result.message !== 'Identified object not found') {
-                    return reject({ success: false, message: 'Delete identified object failed', err: result.err })
-                }
-                return resolve({
-                    success: true,
-                    data: mrid,
-                    alreadyDeleted: result.message === 'Identified object not found',
-                    message: 'Delete asset (and cascade identified object) completed'
-                })
-            })
-            .catch(err => {
-                return reject({ success: false, err: err, message: 'Delete asset transaction failed' })
-            })
+// Removing the last test leaves an old_work row linked to the asset. Remove only
+// jobs without work tasks; a job with tests must never be deleted implicitly.
+export const deleteEmptyAssetJobsTransaction = async (mrid, dbsql) => {
+    const jobs = await new Promise((resolve, reject) => {
+        dbsql.all(`SELECT ow.mrid,
+                          EXISTS(SELECT 1 FROM work_task wt WHERE wt.work = ow.mrid) AS has_tests
+                   FROM old_work ow WHERE ow.asset_id = ?`, [mrid], (err, rows) => {
+            if (err) reject(err)
+            else resolve(rows)
+        })
     })
+
+    if (jobs.some(job => job.has_tests)) {
+        throw new Error('Cannot delete asset while its jobs still contain tests')
+    }
+
+    const run = (sql, params) => new Promise((resolve, reject) => {
+        dbsql.run(sql, params, err => err ? reject(err) : resolve())
+    })
+    for (const job of jobs) {
+        await run('UPDATE testing_equipment SET work_id = NULL WHERE work_id = ?', [job.mrid])
+        await run('DELETE FROM attachment WHERE id_foreign = ?', [job.mrid])
+        await run('DELETE FROM identified_object WHERE mrid = ?', [job.mrid])
+    }
+    return jobs.map(job => job.mrid)
+}
+
+export const deleteAssetByIdTransaction = async (mrid, dbsql, deletedJobIds = []) => {
+    try {
+        const emptyJobIds = await deleteEmptyAssetJobsTransaction(mrid, dbsql)
+        const result = await IdentifiedObjectFunc.deleteIdentifiedObjectByIdTransaction(mrid, dbsql)
+        if (!result.success && result.message !== 'Identified object not found') {
+            throw { success: false, message: 'Delete identified object failed', err: result.err }
+        }
+        deletedJobIds.push(...emptyJobIds)
+        return {
+            success: true,
+            data: mrid,
+            emptyJobIds,
+            alreadyDeleted: result.message === 'Identified object not found',
+            message: 'Delete asset (and cascade identified object) completed'
+        }
+    } catch (err) {
+        throw { success: false, err, message: 'Delete asset transaction failed' }
+    }
 }
