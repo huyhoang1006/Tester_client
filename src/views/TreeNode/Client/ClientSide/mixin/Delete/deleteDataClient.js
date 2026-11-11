@@ -18,7 +18,8 @@ export default {
                             ? (childResult.failedNode.apparatus_id || childResult.failedNode.serial_number
                                 || childResult.failedNode.serial_no || childResult.failedNode.name || 'Unknown')
                             : 'Unknown'
-                        this.$message.error(`Delete child node "${failedName}" failed, stopped`)
+                        const reason = childResult.message ? `: ${childResult.message}` : ''
+                        this.$message.error(`Delete child node "${failedName}" failed${reason}; stopped`)
                         return
                     }
                 }

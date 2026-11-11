@@ -16,7 +16,7 @@ export default {
             // Gọi handleDeleteNode để hiển thị confirm dialog và xử lý xóa
             await this.handleDeleteNode()
         },
-        async deleteLocalTest(node) {
+        async deleteLocalTest(node, confirm = true) {
             try {
                 const strategy = await getTestSyncStrategy(node.job)
                 const response = await strategy.read(node.workMrid)
@@ -28,7 +28,11 @@ export default {
 
                 const oldEntity = strategy.local.jobDtoToEntity(dto)
                 const removedDto = selectTestDto(dto, test.mrid, strategy.linkKey)
-                if (!await removeTest(this.$confirm.bind(this), dto.testList, test, 'Delete')) return
+                if (confirm) {
+                    if (!await removeTest(this.$confirm.bind(this), dto.testList, test, 'Delete')) return false
+                } else {
+                    dto.testList.splice(dto.testList.indexOf(test), 1)
+                }
 
                 dto[strategy.linkKey] = (dto[strategy.linkKey] || []).filter(link => link.work_task_id !== test.mrid)
                 for (const key of ['ctExcitationPoints', 'ctExcitationKneePoints', 'cbMotorCurrentPoints', 'cbTimingTraces']) {
@@ -48,8 +52,10 @@ export default {
                 if (tabIndex !== -1) this.removeTabClient(tabIndex)
                 this.selectedNodes = this.selectedNodes.filter(selected => selected.mrid !== node.mrid)
                 this.$message.success('Test deleted successfully')
+                return true
             } catch (error) {
                 this.$message.error(error.message || 'Unable to delete the selected test')
+                return false
             }
         }
     }

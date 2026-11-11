@@ -17,7 +17,7 @@ export default {
          * Xóa toàn bộ con cháu của node, từ dưới lên.
          *
          * Node có thể chưa từng được expand nên phải fetchChildren trước để nạp cây con
-         * vào tree. Mỗi child được xóa với cờ cascade = true để tự đệ quy xuống cháu.
+         * vào tree. Test con dùng luồng xóa test; các node khác tiếp tục đệ quy.
          *
          * @returns {Promise<{success: boolean, failedNode?: object}>}
          */
@@ -38,9 +38,10 @@ export default {
             // Mỗi node con xóa xong đều gọi $message.success nên xóa cả cây sẽ nổ ra
             // hàng loạt toast. Nuốt hết message của con cháu, chỉ để node gốc báo 1 lần.
             const originalMessage = this.$message
+            let childError = ''
             const silentMessage = {
                 success: () => {},
-                error: () => {},
+                error: message => { childError = message },
                 warning: () => {},
                 info: () => {}
             }
@@ -64,14 +65,21 @@ export default {
                         this.reportDeleteProgress(`Deleting ${this.describeNodeKind(child)} "${label}"`)
                     }
 
+                    childError = ''
                     this.$message = silentMessage
                     try {
-                        await this.deleteDataClient(child, true)
+                        if (child.mode === 'test') {
+                            if (!await this.deleteLocalTest(child, false)) {
+                                return { success: false, failedNode: child, message: childError }
+                            }
+                        } else {
+                            await this.deleteDataClient(child, true)
+                        }
                     } finally {
                         this.$message = originalMessage
                     }
                     if (this.isNodeStillInClientTree(child)) {
-                        return { success: false, failedNode: child }
+                        return { success: false, failedNode: child, message: childError }
                     }
                 }
             } finally {
@@ -90,6 +98,7 @@ export default {
                 voltageLevel: 'voltage level',
                 bay: 'bay',
                 job: 'job',
+                test: 'test',
             }
             if (node && node.mode === 'asset') return node.asset || 'asset'
             return (node && byMode[node.mode]) || 'node'
