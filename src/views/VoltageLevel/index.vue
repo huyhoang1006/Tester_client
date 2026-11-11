@@ -13,7 +13,7 @@
                             <el-form-item label="Name">
                                 <el-input v-model="properties.name"></el-input>
                             </el-form-item>
-                            <el-form-item label="High voltage limit" class="form-item-top">
+                            <!-- <el-form-item label="High voltage limit" class="form-item-top">
                                 <el-row :gutter="10" class="voltage-row">
                                     <el-col :xs="24" :sm="12" :md="12" class="voltage-value-col">
                                         <el-select v-model.number="properties.high_voltage_limit_value" allow-create
@@ -35,8 +35,8 @@
                                         </el-select>
                                     </el-col>
                                 </el-row>
-                            </el-form-item>
-                            <el-form-item label="Low voltage limit" class="form-item-top">
+                            </el-form-item> -->
+                            <!-- <el-form-item label="Low voltage limit" class="form-item-top">
                                 <el-row :gutter="10" class="voltage-row">
                                     <el-col :xs="24" :sm="12" :md="12" class="voltage-value-col">
                                         <el-select v-model.number="properties.low_voltage_limit_value" allow-create
@@ -58,7 +58,7 @@
                                         </el-select>
                                     </el-col>
                                 </el-row>
-                            </el-form-item>
+                            </el-form-item> -->
                             <el-form-item label="Base voltage" class="form-item-top">
                                 <el-row :gutter="10" class="voltage-row">
                                     <el-col :xs="24" :sm="12" :md="12" class="voltage-value-col">

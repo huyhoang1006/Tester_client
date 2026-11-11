@@ -10,7 +10,7 @@ export default {
         return {
             properties: new VoltageLevelDto(),
             labelWidth: `150px`,
-            voltageList: ['500', '220', '110', '35', '26', '22', '21', '15.75', '13.8', '10', '6.6', '0.4'],
+            voltageList: ['500', '400', '22', '163', '110', '66', '35', '22', '15', '10', '6.6', '3','0.4'],
             voltageUnitArr: [UnitSymbol.V],
             voltageMultiplierArr: [UnitMultiplier.k, UnitMultiplier.m, '']
         }
