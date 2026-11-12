@@ -46,21 +46,9 @@ const client = axios.create({
 })
 
 // --- BIẾN TOÀN CỤC ĐỂ QUẢN LÝ REFRESH TOKEN ---
-let isRefreshing = false
-let failedQueue = []
+let refreshPromise = null
 let expiredSessionHandled = false
 let expiredSessionToken = null
-
-const processQueue = (error, token = null) => {
-    failedQueue.forEach(prom => {
-        if (error) {
-            prom.reject(error)
-        } else {
-            prom.resolve(token)
-        }
-    })
-    failedQueue = []
-}
 
 const resetExpiredSessionGuard = token => {
     if (token && token !== expiredSessionToken) {
@@ -94,7 +82,9 @@ const logoutExpiredSession = (message = 'Session expired. Please sign in again.'
 const refreshToken = () => {
     const refreshTokenValue = getStoredRefreshToken()
     if (!refreshTokenValue) {
-        return Promise.reject(new Error('No refresh token available'))
+        const error = new Error('No refresh token available')
+        error.code = 'ERR_NO_REFRESH_TOKEN'
+        return Promise.reject(error)
     }
 
     const apiBase = getSsoApiBase()
@@ -107,7 +97,9 @@ const refreshToken = () => {
     }).then(async response => {
         const body = response.data || {}
         if (body.code !== 1 || !body.data || !body.data.accessToken) {
-            throw new Error(body.message || 'Unable to refresh SSO session')
+            const error = new Error(body.message || 'Unable to refresh SSO session')
+            if (body.code === 10 || body.code === 15) error.code = 'ERR_REFRESH_TOKEN_REJECTED'
+            throw error
         }
 
         storeSsoTokens(body.data)
@@ -121,6 +113,12 @@ const refreshToken = () => {
     })
 }
 
+const isRefreshTokenRejected = error => (
+    error.code === 'ERR_NO_REFRESH_TOKEN'
+    || error.code === 'ERR_REFRESH_TOKEN_REJECTED'
+    || [400, 401, 403].includes(error.response && error.response.status)
+)
+
 const retryRequestWithFreshToken = (originalRequest, sourceError) => {
     if (!originalRequest || originalRequest._retry) {
         const authError = markAuthExpiredError(sourceError)
@@ -130,50 +128,49 @@ const retryRequestWithFreshToken = (originalRequest, sourceError) => {
 
     originalRequest._retry = true
 
-    if (isRefreshing) {
-        return new Promise((resolve, reject) => failedQueue.push({resolve, reject}))
+    if (!refreshPromise) {
+        let refreshLoading = null
+        try {
+            refreshLoading = Loading.service({
+                fullscreen: true,
+                lock: true,
+                text: 'Session expired — renewing sign-in...',
+                background: 'rgba(255, 255, 255, 0.75)'
+            })
+        } catch (error) { /* Loading is optional during session renewal. */ }
+
+        refreshPromise = refreshToken()
             .then(token => {
-                originalRequest.headers = originalRequest.headers || {}
-                originalRequest.headers.Authorization = `Bearer ${token}`
-                originalRequest.headers[SSO_TOKEN_HEADER] = token
-                return client(originalRequest)
+                resetExpiredSessionGuard(token)
+                Message.success('Session renewed')
+                return token
+            })
+            .catch(error => {
+                if (isRefreshTokenRejected(error)) {
+                    const authError = markAuthExpiredError(error)
+                    logoutExpiredSession()
+                    throw authError
+                }
+
+                Message.error({
+                    message: `Unable to renew sign-in: ${formatApiError(error)} Your session was kept; please retry when the server is available.`,
+                    showClose: true,
+                    duration: 7000
+                })
+                throw error
+            })
+            .finally(() => {
+                refreshPromise = null
+                if (refreshLoading) refreshLoading.close()
             })
     }
 
-    isRefreshing = true
-    let refreshLoading = null
-    try {
-        refreshLoading = Loading.service({
-            fullscreen: true,
-            lock: true,
-            text: 'Session expired — renewing sign-in...',
-            background: 'rgba(255, 255, 255, 0.75)'
-        })
-    } catch (error) { /* Loading is optional during session renewal. */ }
-
-    return refreshToken()
-        .then(token => {
-            resetExpiredSessionGuard(token)
-            originalRequest.headers = originalRequest.headers || {}
-            originalRequest.headers.Authorization = `Bearer ${token}`
-            originalRequest.headers[SSO_TOKEN_HEADER] = token
-            processQueue(null, token)
-            Message.success('Session renewed')
-            return client(originalRequest)
-        })
-        .catch(error => {
-            const authError = markAuthExpiredError(error)
-            processQueue(authError, null)
-            const networkFailure = classifyApiError(error)
-            logoutExpiredSession(networkFailure
-                ? `${formatApiError(error)} Please sign in again.`
-                : 'Session expired. Please sign in again.')
-            return Promise.reject(authError)
-        })
-        .finally(() => {
-            isRefreshing = false
-            if (refreshLoading) refreshLoading.close()
-        })
+    return refreshPromise.then(token => {
+        originalRequest.headers = originalRequest.headers || {}
+        originalRequest.headers.Authorization = `Bearer ${token}`
+        originalRequest.headers[SSO_TOKEN_HEADER] = token
+        return client(originalRequest)
+    })
 }
 
 // --- 1. REQUEST INTERCEPTOR (Gửi đi) ---
@@ -234,9 +231,7 @@ client.interceptors.response.use(
         }
 
         if (res && res.code === 10) {
-            const authError = markAuthExpiredError(new Error(res.message || 'Session expired. Please sign in again.'))
-            logoutExpiredSession(authError.message)
-            return Promise.reject(authError)
+            return retryRequestWithFreshToken(response.config, new Error(res.message || 'Token expired'))
         }
 
         if (res && res.code === 15) {

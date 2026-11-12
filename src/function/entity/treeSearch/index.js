@@ -200,6 +200,13 @@ const getOne = (sql, params) => new Promise((resolve, reject) => {
 
 /** Cha trực tiếp của một node: { mrid, mode } hoặc null nếu đã ở gốc. */
 const findParent = async (mrid, mode) => {
+    if (mode === 'test') {
+        const row = await getOne(
+            'SELECT ow.asset_id FROM work_task wt JOIN old_work ow ON ow.mrid = wt.work WHERE wt.mrid = ?',
+            [mrid]
+        )
+        return row && row.asset_id ? { mrid: row.asset_id, mode: 'asset' } : null
+    }
     if (mode === 'job') {
         const row = await getOne('SELECT asset_id FROM old_work WHERE mrid = ?', [mrid])
         return row && row.asset_id ? { mrid: row.asset_id, mode: 'asset' } : null

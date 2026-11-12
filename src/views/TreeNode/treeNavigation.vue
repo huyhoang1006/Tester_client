@@ -1267,6 +1267,23 @@ export default {
             await this.$nextTick()
             await this.goToNodeByMrid(result)
         },
+        async navigateToPendingUpload(item) {
+            if (!item || !item.mrid) return
+            if (item.is_testing_equipment) {
+                await this.handleShowEquipment()
+                this.openTestingEquipment({ mrid: item.mrid })
+                return
+            }
+            this.handleExplorerTab()
+            if (!this.organisationClientList.length) await this.showLocationRoot()
+            await this.$nextTick()
+            const found = await this.goToNodeByMrid({
+                mrid: item.mrid,
+                mode: item.mode,
+                title: item.name
+            })
+            if (found) await this.handleOpenNode()
+        },
         handleSearchPreview(result) {
             if (!result || !result.mrid) return
             const side = this.clientSlide ? 'client' : 'server'
@@ -1608,16 +1625,16 @@ export default {
                 await this.showPropertiesDataClient(tab)
             }
         },
-        serverSwap(serverSign) {
+        async serverSwap(serverSign) {
             if (serverSign == true) {
                 this.clientSlide = false
                 if (this.ownerServerList.length === 0) {
-                    this.showOwnerServerRoot()
+                    await this.showOwnerServerRoot()
                 }
             } else {
                 this.clientSlide = true
                 if (this.organisationClientList.length === 0) {
-                    this.showLocationRoot()
+                    await this.showLocationRoot()
                 }
             }
             this.persistWorkspaceState()

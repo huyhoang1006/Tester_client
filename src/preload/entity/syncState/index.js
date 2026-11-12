@@ -6,6 +6,8 @@ export const syncStatePreload = () => {
         getSyncStateByMrid: (nodeMrid) => ipcRenderer.invoke('getSyncStateByMrid', nodeMrid),
         getSyncStatesByMrids: (nodeMrids) => ipcRenderer.invoke('getSyncStatesByMrids', nodeMrids),
         getSyncStatesByStatus: (status) => ipcRenderer.invoke('getSyncStatesByStatus', status),
+        getPendingUploadCount: (userId) => ipcRenderer.invoke('getPendingUploadCount', userId),
+        getPendingUploadItems: (userId) => ipcRenderer.invoke('getPendingUploadItems', userId),
         upsertSyncState: (data) => ipcRenderer.invoke('upsertSyncState', data),
         markNodeDirty: (nodeMrid, nodeType, lastError) => ipcRenderer.invoke('markNodeDirty', nodeMrid, nodeType, lastError),
         markNodeSyncing: (nodeMrid, nodeType) => ipcRenderer.invoke('markNodeSyncing', nodeMrid, nodeType),

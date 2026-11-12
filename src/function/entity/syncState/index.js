@@ -67,6 +67,110 @@ export const getSyncStatesByStatus = async (status) => {
     })
 }
 
+const pendingUploadsSql = `WITH owned_nodes AS (
+    SELECT DISTINCT identified_object_id AS mrid
+    FROM user_identified_object
+    WHERE user_id = ?
+), pending_tests AS (
+    SELECT wt.mrid
+    FROM work_task wt
+    JOIN old_work ow ON ow.mrid = wt.work
+    JOIN owned_nodes asset_node ON asset_node.mrid = ow.asset_id
+    LEFT JOIN sync_state test_state ON test_state.node_mrid = wt.mrid
+    WHERE test_state.sync_status IN ('dirty', 'syncing', 'failed')
+       OR (test_state.node_mrid IS NULL
+           AND NOT EXISTS (SELECT 1 FROM entity_snapshot snapshot WHERE snapshot.mrid = wt.mrid))
+), pending_nodes AS (
+    SELECT mrid FROM owned_nodes
+    UNION
+    SELECT mrid FROM pending_tests
+), pending_uploads AS (
+    SELECT node.mrid,
+        CASE
+            WHEN wt.mrid IS NOT NULL THEN
+                COALESCE(NULLIF(wt.test_name, ''), NULLIF(io.name, ''), 'Unnamed test')
+            WHEN a.mrid IS NOT NULL THEN
+            COALESCE(NULLIF(io.name, ''),
+                CASE WHEN a.serial_number GLOB '_UNKNOWN_*'
+                    THEN 'Serial unknown'
+                    ELSE NULLIF(a.serial_number, '') END,
+                'Serial unknown')
+            ELSE COALESCE(NULLIF(io.alias_name, ''), NULLIF(io.name, ''), node.mrid)
+        END AS name,
+        CASE WHEN te.mrid IS NOT NULL THEN 'Testing equipment'
+            ELSE COALESCE(NULLIF(a.kind, ''), 'Equipment') END AS asset_kind,
+        CASE WHEN te.mrid IS NOT NULL THEN 1 ELSE 0 END AS is_testing_equipment,
+        CASE
+            WHEN wt.mrid IS NOT NULL THEN 'test'
+            WHEN a.mrid IS NOT NULL THEN 'asset'
+            WHEN EXISTS (SELECT 1 FROM bay b WHERE b.mrid = node.mrid) THEN 'bay'
+            WHEN EXISTS (SELECT 1 FROM voltage_level v WHERE v.mrid = node.mrid) THEN 'voltageLevel'
+            WHEN EXISTS (SELECT 1 FROM substation s WHERE s.mrid = node.mrid) THEN 'substation'
+            WHEN EXISTS (SELECT 1 FROM power_plant p WHERE p.mrid = node.mrid) THEN 'powerPlant'
+            WHEN EXISTS (SELECT 1 FROM organisation o WHERE o.mrid = node.mrid) THEN 'organisation'
+            ELSE 'unknown'
+        END AS mode,
+        CASE WHEN state.sync_status IN ('dirty', 'syncing', 'failed') THEN state.sync_status
+            WHEN state.node_mrid IS NULL
+                AND NOT EXISTS (SELECT 1 FROM entity_snapshot snapshot WHERE snapshot.mrid = node.mrid)
+                THEN 'new'
+            ELSE 'synced' END AS sync_status,
+        state.last_error
+    FROM pending_nodes node
+    JOIN identified_object io ON io.mrid = node.mrid
+    LEFT JOIN asset a ON a.mrid = node.mrid
+    LEFT JOIN work_task wt ON wt.mrid = node.mrid
+    LEFT JOIN testing_equipment te ON te.mrid = node.mrid
+    LEFT JOIN sync_state state ON state.node_mrid = node.mrid
+    WHERE (state.sync_status IN ('dirty', 'syncing', 'failed')
+       OR (state.node_mrid IS NULL
+           AND NOT EXISTS (SELECT 1 FROM entity_snapshot snapshot WHERE snapshot.mrid = node.mrid)))
+      AND (
+               EXISTS (SELECT 1 FROM organisation o WHERE o.mrid = node.mrid)
+               OR EXISTS (SELECT 1 FROM substation s WHERE s.mrid = node.mrid)
+               OR EXISTS (SELECT 1 FROM power_plant p WHERE p.mrid = node.mrid)
+               OR EXISTS (SELECT 1 FROM voltage_level v WHERE v.mrid = node.mrid)
+               OR EXISTS (SELECT 1 FROM bay b WHERE b.mrid = node.mrid)
+               OR a.mrid IS NOT NULL
+               OR wt.mrid IS NOT NULL
+           )
+)
+`
+
+export const getPendingUploadCount = async (userId) => {
+    if (userId === undefined || userId === null || userId === '') {
+        return { success: true, data: 0, message: 'No signed-in user' }
+    }
+
+    return new Promise((resolve, reject) => {
+        db.get(
+            `${pendingUploadsSql} SELECT COUNT(*) AS count FROM pending_uploads`,
+            [String(userId)],
+            (err, row) => {
+                if (err) return reject({ success: false, err, message: 'Count pending uploads failed' })
+                return resolve({ success: true, data: row ? row.count : 0, message: 'Count pending uploads completed' })
+            }
+        )
+    })
+}
+
+export const getPendingUploadItems = async (userId) => {
+    if (userId === undefined || userId === null || userId === '') {
+        return { success: true, data: [], message: 'No signed-in user' }
+    }
+
+    return new Promise((resolve, reject) => {
+        db.all(
+            `${pendingUploadsSql} SELECT * FROM pending_uploads ORDER BY name COLLATE NOCASE, mrid`,
+            [String(userId)],
+            (err, rows) => {
+                if (err) return reject({ success: false, err, message: 'Get pending uploads failed' })
+                return resolve({ success: true, data: rows || [], message: 'Get pending uploads completed' })
+            }
+        )
+    })
+}
+
 export const upsertSyncStateTransaction = async (state, dbsql) => {
     const data = normalizeState(state)
     ensureRequired(data)

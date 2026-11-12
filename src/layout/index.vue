@@ -1,6 +1,7 @@
 <template>
     <div id="windows" :class="{ 'logged-in': user }">
-        <top-bar id="top-bar" @server-config-changed="handleServerConfigChanged"></top-bar>
+        <top-bar id="top-bar" @server-config-changed="handleServerConfigChanged"
+            @pending-upload-navigate="handlePendingUploadNavigate"></top-bar>
         <section id="main-windows">
             <router-view ref="mainWindows"></router-view>
         </section>
@@ -46,6 +47,23 @@ export default {
         this.restoreWorkspaceSide()
     },
     methods: {
+        async handlePendingUploadNavigate(item) {
+            if (this.$route.name !== 'home') {
+                await this.$router.push({ name: 'home' })
+                await this.$nextTick()
+            }
+            const view = this.$refs.mainWindows
+            if (!view || typeof view.navigateToPendingUpload !== 'function') {
+                this.$message.error('Asset tree is unavailable')
+                return
+            }
+            if (!view.clientSlide) {
+                this.serverSign = false
+                this.saveWorkspaceSide()
+                await view.serverSwap(false)
+            }
+            await view.navigateToPendingUpload(item)
+        },
         async handleServerConfigChanged() {
             const view = this.$refs.mainWindows
             if (view && typeof view.handleServerConfigChanged === 'function') {

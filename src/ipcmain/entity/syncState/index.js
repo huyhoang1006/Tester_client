@@ -46,6 +46,18 @@ export const getSyncStatesByStatus = () => {
     })
 }
 
+export const getPendingUploadCount = () => {
+    ipcMain.handle('getPendingUploadCount', async (event, userId) => {
+        return wrap(() => entityFunc.syncStateFunc.getPendingUploadCount(userId))
+    })
+}
+
+export const getPendingUploadItems = () => {
+    ipcMain.handle('getPendingUploadItems', async (event, userId) => {
+        return wrap(() => entityFunc.syncStateFunc.getPendingUploadItems(userId))
+    })
+}
+
 export const upsertSyncState = () => {
     ipcMain.handle('upsertSyncState', async (event, data) => {
         return wrap(() => entityFunc.syncStateFunc.upsertSyncState(data))
@@ -86,6 +98,8 @@ export const active = () => {
     getSyncStateByMrid()
     getSyncStatesByMrids()
     getSyncStatesByStatus()
+    getPendingUploadCount()
+    getPendingUploadItems()
     upsertSyncState()
     markNodeDirty()
     markNodeSyncing()

@@ -126,6 +126,7 @@ export default {
             await window.electronAPI.markNodeDirty(mrid, nodeType)
             this.updateTreeNodeSyncState(mrid, 'dirty')
             this.scheduleSyncStateRefresh()
+            window.dispatchEvent(new Event('pending-upload-changed'))
         },
 
         extractSavedSyncNodeType(data) {
@@ -159,6 +160,7 @@ export default {
                     detail.mrid,
                     this.getSyncNodeType(node) || detail.nodeType || 'Object'
                 )
+                window.dispatchEvent(new Event('pending-upload-changed'))
             }
             this.updateTreeNodeSyncState(detail.mrid, detail.status, detail)
         }

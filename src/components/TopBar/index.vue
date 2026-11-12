@@ -15,6 +15,23 @@
             </div>
 
             <div class="right-bar">
+                <section v-if="user" class="sync-counters" aria-label="Synchronization status">
+                    <el-tooltip :content="pendingUploadTooltip" :disabled="dialogPendingUploads" placement="bottom">
+                        <button type="button" class="sync-counter sync-counter-upload"
+                            :aria-label="pendingUploadTooltip" @click="dialogPendingUploads = true">
+                            <i class="fa-solid fa-arrow-up" aria-hidden="true"></i>
+                            <span class="sync-counter-label">Pending Upload</span>
+                            <strong class="sync-counter-value">{{ pendingUploadCount === null ? '—' : pendingUploadCount }}</strong>
+                        </button>
+                    </el-tooltip>
+                    <el-tooltip content="Server Updates: checking server versions is not available yet" placement="bottom">
+                        <span class="sync-counter sync-counter-download" aria-label="Server Updates not available yet">
+                            <i class="fa-solid fa-arrow-down" aria-hidden="true"></i>
+                            <span class="sync-counter-label">Server Updates</span>
+                            <strong class="sync-counter-value">—</strong>
+                        </span>
+                    </el-tooltip>
+                </section>
                 <el-tooltip v-if="user" content="Notifications" placement="bottom" trigger="hover"
                     :append-to-body="true">
                     <div class="dropdown-trigger-wrapper" style="-webkit-app-region: no-drag;"
@@ -110,6 +127,10 @@
                                         <i class="fas fa-wrench"></i>
                                         Config server address
                                     </el-dropdown-item>
+                                    <el-dropdown-item command="toggle_pet">
+                                        <i class="fas fa-bolt"></i>
+                                        {{ showElectricPet ? 'Hide Pet' : 'Show Pet' }}
+                                    </el-dropdown-item>
                                     <el-divider></el-divider>
                                     <!-- <el-dropdown-item command="manage_user">
                                         <i class="fas fa-user-cog"></i>
@@ -129,6 +150,10 @@
                                     <el-dropdown-item command="config">
                                         <i class="fas fa-wrench"></i>
                                         Config server address
+                                    </el-dropdown-item>
+                                    <el-dropdown-item command="toggle_pet">
+                                        <i class="fas fa-bolt"></i>
+                                        {{ showElectricPet ? 'Hide Pet' : 'Show Pet' }}
                                     </el-dropdown-item>
                                 </template>
                             </el-dropdown-menu>
@@ -156,6 +181,85 @@
                 </el-tooltip>
             </div>
         </div>
+
+        <div v-if="showElectricPet" class="electric-pet" :class="{ 'is-dragging': petIsDragging }"
+            :style="petPosition ? { left: `${petPosition.x}px`, top: `${petPosition.y}px`, right: 'auto', bottom: 'auto' } : null"
+            role="img" aria-label="Electric transformer pet" @pointerdown="startPetDrag"
+            @pointermove="movePet" @pointerup="endPetDrag" @pointercancel="endPetDrag"
+            @lostpointercapture="endPetDrag">
+            <div class="electric-pet-figure">
+                <img class="electric-pet-frame" src="@/assets/images/electric-transformer-pet.png"
+                    alt="" draggable="false" />
+                <img class="electric-pet-frame electric-pet-wave"
+                    src="@/assets/images/electric-transformer-pet-wave.png" alt="" draggable="false" />
+                <img class="electric-pet-frame electric-pet-blink"
+                    src="@/assets/images/electric-transformer-pet-blink.png" alt="" draggable="false" />
+            </div>
+        </div>
+
+        <el-dialog :visible.sync="dialogPendingUploads" width="720px"
+            custom-class="pending-upload-dialog" append-to-body @open="loadPendingUploadItems">
+            <div slot="title" class="pending-upload-heading">
+                <span class="pending-upload-heading-icon"><i class="fas fa-arrow-up" aria-hidden="true"></i></span>
+                <strong>Pending Upload</strong>
+                <span class="pending-upload-heading-count">{{ pendingUploadItems.length }}</span>
+            </div>
+            <div class="pending-upload-toolbar">
+                <el-input v-model="pendingUploadSearch" size="small" clearable
+                    placeholder="Search by name or location" aria-label="Search pending uploads">
+                    <i slot="prefix" class="el-icon-search"></i>
+                </el-input>
+                <div class="pending-upload-toolbar-actions">
+                    <el-button size="small" icon="el-icon-refresh" :loading="pendingUploadItemsLoading"
+                        @click="loadPendingUploadItems">Refresh</el-button>
+                    <span title="Sync all is not available yet">
+                        <el-button size="small" type="primary" icon="el-icon-upload2" disabled>Sync all</el-button>
+                    </span>
+                </div>
+            </div>
+            <el-alert v-if="pendingUploadItemsError" :title="pendingUploadItemsError" type="error"
+                :closable="false" show-icon />
+            <div v-else class="pending-upload-list">
+                <div v-if="pendingUploadItemsLoading && !pendingUploadItems.length" class="pending-upload-empty">
+                    Loading local changes...
+                </div>
+                <div v-else-if="!filteredPendingUploadItems.length" class="pending-upload-empty">
+                    {{ pendingUploadItems.length ? 'No matching items' : 'No items pending upload' }}
+                </div>
+                <div v-for="item in filteredPendingUploadItems" :key="item.mrid" class="pending-upload-item">
+                    <span class="pending-upload-item-icon" :class="item.is_testing_equipment ? 'pending-upload-icon-equipment' : `pending-upload-icon-${item.mode}`">
+                        <Icon v-if="item.mode === 'asset' && !item.is_testing_equipment"
+                            folder-type="asset" :asset-detail="item.asset_kind" size="20px" />
+                        <i v-else :class="pendingUploadIcon(item)" aria-hidden="true"></i>
+                    </span>
+                    <div class="pending-upload-item-content">
+                        <div class="pending-upload-item-heading">
+                            <span class="pending-upload-item-name">{{ item.name }}</span>
+                            <span class="pending-upload-item-type">{{ pendingUploadTypeLabel(item) }}</span>
+                        </div>
+                        <button type="button" class="pending-upload-item-path" :title="item.path"
+                            @click="openPendingUploadItem(item)">
+                            <i class="el-icon-location-outline" aria-hidden="true"></i>
+                            <span>{{ item.path }}</span>
+                        </button>
+                        <div v-if="item.last_error" class="pending-upload-item-error">{{ item.last_error }}</div>
+                    </div>
+                    <div class="pending-upload-item-actions">
+                        <span class="pending-upload-item-status" :class="`pending-upload-status-${item.sync_status}`">
+                            {{ pendingUploadStatusLabel(item.sync_status) }}
+                        </span>
+                        <span title="Sync for individual items is not available yet">
+                            <el-button size="mini" type="primary" icon="el-icon-refresh"
+                                class="pending-upload-item-sync" disabled>Sync</el-button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <span slot="footer" class="dialog-footer">
+                <span class="pending-upload-total">{{ pendingUploadItems.length }} item(s)</span>
+                <el-button size="small" type="danger" @click="dialogPendingUploads = false">Close</el-button>
+            </span>
+        </el-dialog>
 
         <!-- Server address -->
         <el-dialog custom-class="app-dialog" title="Config server address" :visible.sync="dialogConfig" :modal="true"
@@ -229,13 +333,19 @@ import { mapState } from 'vuex'
 import * as userApi from '@/api/user'
 import { createSsoRedirectUri } from '@/utils/sso'
 import { formatApiError } from '@/utils/apiError'
+import Icon from '@/views/Common/Icon.vue'
 
 export default {
     name: 'TopBar',
+    components: { Icon },
     data() {
         return {
             dialogChangePw: false,
             dialogConfig: false,
+            showElectricPet: localStorage.getItem('at-digital-tester:show-electric-pet') === 'true',
+            petPosition: null,
+            petDrag: null,
+            petIsDragging: false,
             loading: false,
             formChangePass: {
                 oldPassword: '',
@@ -274,12 +384,32 @@ export default {
             dialogNotificationDetail: false,
             selectedNotification: null,
             removeUpdateNotificationListener: null,
-            removeNotificationListener: null
+            removeNotificationListener: null,
+            pendingUploadCount: null,
+            pendingUploadError: false,
+            pendingUploadTimer: null,
+            pendingUploadRefreshTimer: null,
+            pendingUploadRequestId: 0,
+            dialogPendingUploads: false,
+            pendingUploadItems: [],
+            pendingUploadItemsLoading: false,
+            pendingUploadItemsError: '',
+            pendingUploadSearch: '',
+            pendingUploadItemsRequestId: 0
         }
     },
     mounted() {
         this.formConfig.loginDomain = this.loginAddr
         this.formConfig.serviceDomain = this.serviceAddr
+        try {
+            const savedPosition = JSON.parse(localStorage.getItem('at-digital-tester:pet-position'))
+            if (savedPosition && Number.isFinite(savedPosition.x) && Number.isFinite(savedPosition.y)) {
+                this.petPosition = this.clampPetPosition(savedPosition.x, savedPosition.y)
+            }
+        } catch (error) {
+            // Ignore an invalid saved position and use the default corner.
+        }
+        window.addEventListener('resize', this.keepPetInViewport)
 
         if (window.electronAPI && window.electronAPI.onWindowStateChange) {
             window.electronAPI.onWindowStateChange((isMax) => {
@@ -299,15 +429,39 @@ export default {
                 this.loadNotifications()
             })
         }
+        this.refreshPendingUploadCount()
+        this.pendingUploadTimer = setInterval(this.refreshPendingUploadCount, 15000)
+        window.addEventListener('focus', this.refreshPendingUploadCount)
+        window.addEventListener('sync-state-changed', this.schedulePendingUploadRefresh)
+        window.addEventListener('pending-upload-changed', this.schedulePendingUploadRefresh)
         // this.updateSearchState()
         // window.addEventListener('resize', this.updateSearchState)
     },
     beforeDestroy() {
+        this.pendingUploadItemsRequestId++
         if (this.removeUpdateNotificationListener) this.removeUpdateNotificationListener()
         if (this.removeNotificationListener) this.removeNotificationListener()
+        if (this.pendingUploadTimer) clearInterval(this.pendingUploadTimer)
+        if (this.pendingUploadRefreshTimer) clearTimeout(this.pendingUploadRefreshTimer)
+        window.removeEventListener('focus', this.refreshPendingUploadCount)
+        window.removeEventListener('sync-state-changed', this.schedulePendingUploadRefresh)
+        window.removeEventListener('pending-upload-changed', this.schedulePendingUploadRefresh)
+        window.removeEventListener('resize', this.keepPetInViewport)
     },
     computed: {
         ...mapState(['user', 'loginAddr', 'serviceAddr']),
+        pendingUploadTooltip() {
+            if (this.pendingUploadError) return 'Pending Upload: unable to read local changes'
+            if (this.pendingUploadCount === null) return 'Pending Upload: checking local changes'
+            return `${this.pendingUploadCount} local item(s) pending upload. Click to view.`
+        },
+        filteredPendingUploadItems() {
+            const search = this.pendingUploadSearch.trim().toLowerCase()
+            if (!search) return this.pendingUploadItems
+            return this.pendingUploadItems.filter(item =>
+                [item.name, item.path, item.mrid].some(value => String(value || '').toLowerCase().includes(search))
+            )
+        },
         unreadCount() {
             return this.notifications.filter(n => n.status === 'unread').length
         },
@@ -338,7 +492,165 @@ export default {
                 this.notificationLimit < visibleNotifications.length
         }
     },
+    watch: {
+        user() {
+            this.pendingUploadCount = null
+            this.dialogPendingUploads = false
+            this.pendingUploadItemsRequestId++
+            this.pendingUploadItems = []
+            this.refreshPendingUploadCount()
+        }
+    },
     methods: {
+        clampPetPosition(x, y) {
+            const maxX = Math.max(0, window.innerWidth - 64)
+            const maxY = Math.max(0, window.innerHeight - 64 - 28)
+            const minY = Math.min(48, maxY)
+            return {
+                x: Math.round(Math.max(0, Math.min(x, maxX))),
+                y: Math.round(Math.max(minY, Math.min(y, maxY)))
+            }
+        },
+        keepPetInViewport() {
+            if (!this.petPosition) return
+            this.petPosition = this.clampPetPosition(this.petPosition.x, this.petPosition.y)
+            localStorage.setItem('at-digital-tester:pet-position', JSON.stringify(this.petPosition))
+        },
+        startPetDrag(event) {
+            if (event.button !== 0 || this.petDrag) return
+            const rect = event.currentTarget.getBoundingClientRect()
+            this.petDrag = {
+                pointerId: event.pointerId,
+                offsetX: event.clientX - rect.left,
+                offsetY: event.clientY - rect.top
+            }
+            this.petPosition = this.clampPetPosition(rect.left, rect.top)
+            this.petIsDragging = true
+            event.currentTarget.setPointerCapture(event.pointerId)
+            event.preventDefault()
+        },
+        movePet(event) {
+            if (!this.petDrag || this.petDrag.pointerId !== event.pointerId) return
+            this.petPosition = this.clampPetPosition(
+                event.clientX - this.petDrag.offsetX,
+                event.clientY - this.petDrag.offsetY
+            )
+        },
+        endPetDrag(event) {
+            if (!this.petDrag || this.petDrag.pointerId !== event.pointerId) return
+            this.petDrag = null
+            this.petIsDragging = false
+            localStorage.setItem('at-digital-tester:pet-position', JSON.stringify(this.petPosition))
+            if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                event.currentTarget.releasePointerCapture(event.pointerId)
+            }
+        },
+        pendingUploadTypeLabel(item) {
+            if (item.mode === 'asset') {
+                return item.asset_kind === 'WorkEquipmentAsset' ? 'Work equipment' : item.asset_kind
+            }
+            return {
+                organisation: 'Organisation', substation: 'Substation', powerPlant: 'Power plant',
+                voltageLevel: 'Voltage level', bay: 'Bay', test: 'Test'
+            }[item.mode] || 'Node'
+        },
+        pendingUploadIcon(item) {
+            if (item.is_testing_equipment) return 'fas fa-tools'
+            return {
+                organisation: 'fas fa-building',
+                substation: 'fas fa-home',
+                powerPlant: 'fas fa-industry',
+                voltageLevel: 'fas fa-bolt',
+                bay: 'fas fa-sitemap',
+                test: 'fas fa-clipboard-check'
+            }[item.mode] || 'fas fa-folder'
+        },
+        pendingUploadStatusLabel(status) {
+            return { new: 'New', dirty: 'Changed', syncing: 'Uploading', failed: 'Failed' }[status] || status
+        },
+        openPendingUploadItem(item) {
+            this.dialogPendingUploads = false
+            this.$emit('pending-upload-navigate', item)
+        },
+        async loadPendingUploadItems() {
+            const userId = this.user && (this.user.user_id || this.user.id)
+            const requestId = ++this.pendingUploadItemsRequestId
+            this.pendingUploadItems = []
+            this.pendingUploadItemsError = ''
+            this.pendingUploadItemsLoading = true
+            if (!userId || !window.electronAPI || !window.electronAPI.getPendingUploadItems) {
+                this.pendingUploadItemsLoading = false
+                this.pendingUploadItemsError = 'Local change list is unavailable'
+                return
+            }
+            try {
+                const result = await window.electronAPI.getPendingUploadItems(userId)
+                if (requestId !== this.pendingUploadItemsRequestId) return
+                if (!result || !result.success || !Array.isArray(result.data)) {
+                    throw new Error(result && result.message ? result.message : 'Could not read local changes')
+                }
+                this.pendingUploadItems = result.data.map(item => ({ ...item, path: 'Locating...' }))
+                this.pendingUploadCount = result.data.length
+                this.pendingUploadItemsLoading = false
+
+                for (let offset = 0; offset < this.pendingUploadItems.length; offset += 8) {
+                    if (requestId !== this.pendingUploadItemsRequestId || !this.dialogPendingUploads) return
+                    await Promise.all(this.pendingUploadItems.slice(offset, offset + 8).map(async item => {
+                        if (item.is_testing_equipment) {
+                            this.$set(item, 'path', `Testing Equipment / ${item.name}`)
+                            return
+                        }
+                        if (!window.electronAPI.getNodePath || item.mode === 'unknown') {
+                            this.$set(item, 'path', 'Location unavailable')
+                            return
+                        }
+                        try {
+                            const pathResult = await window.electronAPI.getNodePath(item.mrid, item.mode)
+                            if (requestId !== this.pendingUploadItemsRequestId) return
+                            const path = pathResult && pathResult.success && Array.isArray(pathResult.data)
+                                ? pathResult.data.map(step => step.mrid === item.mrid
+                                    ? item.name : (step.name || step.mrid)).join(' / ') : ''
+                            this.$set(item, 'path', path || 'Location unavailable')
+                        } catch (error) {
+                            if (requestId === this.pendingUploadItemsRequestId) this.$set(item, 'path', 'Location unavailable')
+                        }
+                    }))
+                }
+            } catch (error) {
+                if (requestId !== this.pendingUploadItemsRequestId) return
+                this.pendingUploadItemsLoading = false
+                this.pendingUploadItemsError = error.message || 'Could not read local changes'
+            }
+        },
+        schedulePendingUploadRefresh() {
+            if (this.pendingUploadRefreshTimer) clearTimeout(this.pendingUploadRefreshTimer)
+            this.pendingUploadRefreshTimer = setTimeout(() => {
+                this.pendingUploadRefreshTimer = null
+                this.refreshPendingUploadCount()
+            }, 300)
+        },
+        async refreshPendingUploadCount() {
+            const userId = this.user && (this.user.user_id || this.user.id)
+            const requestId = ++this.pendingUploadRequestId
+            if (!userId || !window.electronAPI || !window.electronAPI.getPendingUploadCount) {
+                this.pendingUploadCount = null
+                this.pendingUploadError = false
+                return
+            }
+            try {
+                const result = await window.electronAPI.getPendingUploadCount(userId)
+                if (requestId !== this.pendingUploadRequestId) return
+                if (!result || !result.success) throw new Error('Count pending uploads failed')
+                const count = Number(result.data)
+                if (!Number.isSafeInteger(count) || count < 0) throw new Error('Invalid pending upload count')
+                this.pendingUploadCount = count
+                this.pendingUploadError = false
+            } catch (error) {
+                if (requestId !== this.pendingUploadRequestId) return
+                this.pendingUploadCount = null
+                this.pendingUploadError = true
+            }
+        },
         // updateSearchState() {
         //     const topbar = document.getElementById('top-windows')
         //     if (!topbar) return
@@ -387,6 +699,10 @@ export default {
                     break
                 case 'config':
                     this.dialogConfig = true
+                    break
+                case 'toggle_pet':
+                    this.showElectricPet = !this.showElectricPet
+                    localStorage.setItem('at-digital-tester:show-electric-pet', String(this.showElectricPet))
                     break
             }
         },
@@ -664,6 +980,84 @@ export default {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
+.electric-pet {
+    position: fixed;
+    right: 16px;
+    bottom: 34px;
+    z-index: 1200;
+    width: 64px;
+    height: 64px;
+    -webkit-app-region: no-drag;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+}
+
+.electric-pet.is-dragging {
+    cursor: grabbing;
+}
+
+.electric-pet-figure {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    animation: electric-pet-bob 3s ease-in-out infinite;
+}
+
+.electric-pet.is-dragging .electric-pet-figure {
+    animation-play-state: paused;
+}
+
+.electric-pet-frame {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    -webkit-user-drag: none;
+}
+
+.electric-pet-wave,
+.electric-pet-blink {
+    opacity: 0;
+    animation-duration: 6s;
+    animation-timing-function: steps(1, end);
+    animation-iteration-count: infinite;
+}
+
+.electric-pet-wave {
+    animation-name: electric-pet-wave;
+}
+
+.electric-pet-blink {
+    animation-name: electric-pet-blink;
+}
+
+@keyframes electric-pet-bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+}
+
+@keyframes electric-pet-wave {
+    0%, 4%, 8%, 12%, 100% { opacity: 0; }
+    5%, 7%, 9%, 11% { opacity: 1; }
+}
+
+@keyframes electric-pet-blink {
+    0%, 54%, 57%, 100% { opacity: 0; }
+    55%, 56% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .electric-pet-figure,
+    .electric-pet-wave,
+    .electric-pet-blink {
+        animation: none;
+    }
+}
+
 .left-bar {
     display: flex;
     align-items: center;
@@ -753,6 +1147,71 @@ export default {
     z-index: 2;
     -webkit-app-region: no-drag;
     margin-left: auto;
+}
+
+.sync-counters {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 100%;
+    padding: 0 10px;
+    -webkit-app-region: no-drag;
+}
+
+.sync-counter {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 28px;
+    padding: 0 7px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.16);
+    color: #fff;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.sync-counter-upload i {
+    color: #ffba59;
+}
+
+.sync-counter-upload {
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.sync-counter-upload:hover,
+.sync-counter-upload:focus-visible {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: rgba(255, 255, 255, 0.55);
+    outline: none;
+}
+
+.sync-counter-download i {
+    color: #79d1ed;
+}
+
+.sync-counter-value {
+    display: inline-flex;
+    min-width: 18px;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.sync-counter-upload .sync-counter-value {
+    color: #ffba59;
+}
+
+.sync-counter-download .sync-counter-value {
+    color: #79d1ed;
+}
+
+@media (max-width: 900px) {
+    .sync-counter-label {
+        display: none;
+    }
 }
 
 .right-bar>div {
@@ -990,6 +1449,324 @@ export default {
 </style>
 
 <style lang="scss">
+.pending-upload-dialog.el-dialog {
+    width: min(760px, calc(100vw - 32px)) !important;
+    max-height: 85vh;
+    margin-top: 7vh !important;
+    display: flex;
+    flex-direction: column;
+    border-radius: 6px;
+    border: 1px solid #dce3ec;
+    box-shadow: 0 16px 48px rgba(19, 37, 65, 0.2);
+}
+
+.pending-upload-dialog .el-dialog__header {
+    padding: 17px 24px;
+    border-bottom: 1px solid #e7ebf1;
+    background: #f9fbfe;
+}
+
+.pending-upload-heading {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    color: #1c2b42;
+    font-size: 17px;
+}
+
+.pending-upload-heading strong {
+    font-weight: 650;
+}
+
+.pending-upload-heading-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: #e7efff;
+    color: #16449d;
+    font-size: 14px;
+}
+
+.pending-upload-heading-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 23px;
+    height: 23px;
+    padding: 0 6px;
+    border-radius: 12px;
+    background: #e9edf4;
+    color: #52637a;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.pending-upload-dialog .el-dialog__body {
+    min-height: 0;
+    padding: 18px 24px 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.pending-upload-dialog .el-dialog__footer {
+    padding: 12px 24px;
+    border-top: 1px solid #e7ebf1;
+    background: #f8fafc;
+}
+
+.pending-upload-toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.pending-upload-toolbar .el-input {
+    min-width: 0;
+    flex: 1;
+}
+
+.pending-upload-toolbar .el-input__prefix {
+    display: flex;
+    align-items: center;
+    left: 10px;
+    color: #8390a3;
+}
+
+.pending-upload-toolbar .el-input__inner:focus {
+    border-color: #4d73af;
+    box-shadow: 0 0 0 2px rgba(44, 91, 167, 0.11);
+}
+
+.pending-upload-toolbar-actions {
+    display: flex;
+    flex: none;
+    gap: 8px;
+}
+
+.pending-upload-toolbar-actions .el-button + .el-button {
+    margin-left: 0;
+}
+
+.pending-upload-toolbar-actions .el-button.is-disabled {
+    color: #8390a2;
+    border-color: #d8e0eb;
+    background: #f4f7fb;
+}
+
+.pending-upload-list {
+    min-height: 110px;
+    max-height: 52vh;
+    overflow-y: auto;
+    border: 1px solid #e3e8f0;
+    border-radius: 5px;
+}
+
+.pending-upload-item {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #e8edf3;
+}
+
+.pending-upload-item-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid #dce5f0;
+    border-radius: 6px;
+    background: #eef3f9;
+    color: #44678d;
+    font-size: 14px;
+}
+
+.pending-upload-icon-organisation,
+.pending-upload-icon-substation,
+.pending-upload-icon-powerPlant {
+    border-color: #d8e8d9;
+    background: #edf7ee;
+    color: #357344;
+}
+
+.pending-upload-icon-test {
+    border-color: #d7e9e8;
+    background: #ebf7f6;
+    color: #217774;
+}
+
+.pending-upload-icon-equipment {
+    border-color: #e6dff4;
+    background: #f5f1fb;
+    color: #72569a;
+}
+
+.pending-upload-item:last-child {
+    border-bottom: 0;
+}
+
+.pending-upload-item:hover {
+    background: #f8fafd;
+}
+
+.pending-upload-item-content {
+    min-width: 0;
+}
+
+.pending-upload-item-heading {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.pending-upload-item-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pending-upload-item-name {
+    color: #1c2b42;
+    font-size: 13px;
+    font-weight: 650;
+    overflow-wrap: anywhere;
+}
+
+.pending-upload-item-type,
+.pending-upload-item-status {
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 11px;
+    line-height: 18px;
+    white-space: nowrap;
+}
+
+.pending-upload-item-type {
+    color: #536175;
+    background: #edf1f6;
+}
+
+.pending-upload-item-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #8a570d;
+    background: #fff1d9;
+}
+
+.pending-upload-item-status::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.pending-upload-item-sync {
+    height: 30px;
+    min-width: 70px;
+    white-space: nowrap;
+}
+
+.pending-upload-status-syncing {
+    color: #19527b;
+    background: #e5f3fc;
+}
+
+.pending-upload-status-failed {
+    color: #a12631;
+    background: #fce9eb;
+}
+
+.pending-upload-item-path,
+.pending-upload-item-error {
+    margin-top: 6px;
+    color: #708097;
+    font-size: 12px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.pending-upload-item-path {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.pending-upload-item-path span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pending-upload-item-path:hover,
+.pending-upload-item-path:focus-visible {
+    color: #012596;
+    text-decoration: underline;
+}
+
+.pending-upload-item-error {
+    color: #a12631;
+}
+
+.pending-upload-empty {
+    padding: 32px 12px;
+    text-align: center;
+    color: #78869a;
+    font-size: 13px;
+}
+
+.pending-upload-dialog .dialog-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.pending-upload-total {
+    color: #607086;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+@media (max-width: 560px) {
+    .pending-upload-dialog .el-dialog__body {
+        padding: 14px 16px 16px;
+    }
+
+    .pending-upload-toolbar {
+        flex-wrap: wrap;
+    }
+
+    .pending-upload-toolbar .el-input {
+        flex-basis: 100%;
+    }
+
+    .pending-upload-item {
+        grid-template-columns: 36px minmax(0, 1fr);
+        gap: 10px;
+        padding: 12px;
+    }
+
+    .pending-upload-item-actions {
+        grid-column: 2;
+        justify-content: space-between;
+    }
+}
+
 .dropdown-menu.el-dropdown-menu {
     z-index: 3000 !important;
     margin-top: 12px !important;

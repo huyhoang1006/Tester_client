@@ -90,21 +90,6 @@
                         <li @click="downloadFullTree"><i class="fa-solid fa-sitemap"></i> Download full tree</li>
                     </ul>
                 </li>
-                <li v-if="isClient && selectedNode && selectedNode.mode === 'test'" class="has-submenu">
-                    <i class="fa-solid fa-upload"></i> Upload
-                    <ul class="submenu">
-                        <li @click="uploadOnlyNode"><i class="fa-solid fa-file-arrow-up"></i> Upload only test</li>
-                        <li @click="uploadPathNode"><i class="fa-solid fa-diagram-project"></i> Upload path node</li>
-                    </ul>
-                </li>
-                <li v-if="isClient && selectedNode && selectedNode.mode !== 'test'" class="has-submenu">
-                    <i class="fa-solid fa-upload"></i> Upload
-                    <ul class="submenu">
-                        <li @click="uploadOnlyNode"><i class="fa-solid fa-file-arrow-up"></i> Upload only node</li>
-                        <li @click="uploadPathNode"><i class="fa-solid fa-diagram-project"></i> Upload path node</li>
-                        <li @click="uploadFullTree"><i class="fa-solid fa-sitemap"></i> Upload full tree</li>
-                    </ul>
-                </li>
                 <li v-if="selectedNode && selectedNode.mode !== 'test'" @click="move">
                     <i class="fa-solid fa-arrows-up-down-left-right"></i> Move
                 </li>
@@ -354,21 +339,6 @@ export default {
         },
         exportJSONFullTree() {
             this.$emit("export-json-full-tree", this.selectedNode)
-            this.closeContextMenu()
-        },
-        uploadNode() {
-            this.uploadOnlyNode()
-        },
-        uploadOnlyNode() {
-            this.$emit("upload-node", this.selectedNode)
-            this.closeContextMenu()
-        },
-        uploadPathNode() {
-            this.$emit("upload-path-node", this.selectedNode)
-            this.closeContextMenu()
-        },
-        uploadFullTree() {
-            this.$emit("upload-full-tree", this.selectedNode)
             this.closeContextMenu()
         },
         downloadNode() {
