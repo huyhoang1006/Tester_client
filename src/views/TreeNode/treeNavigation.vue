@@ -496,6 +496,8 @@ import TopBarServer from './Server/TopBarServer/index.vue'
 import uploadNodeMixin from './Client/mixin/Upload/index.js';
 import testSyncMixin from './Common/testSyncMixin';
 import downloadNode from './Server/mixin/Download/downloadNode.js';
+import { getSubstationChain } from './Server/mixin/Download/substation.js'
+import { downloadChainInfo } from './Server/mixin/Download/core-utils.js'
 import ClientTreePanel from './Client/ClientTree/index.vue'
 import ServerTreePanel from './Server/ServerTree/index.vue'
 import {
@@ -1283,6 +1285,31 @@ export default {
                 title: item.name
             })
             if (found) await this.handleOpenNode()
+        },
+        async syncServerUpdateSubstation(item) {
+            if (!item || item.mode !== 'substation' || !item.mrid) {
+                throw new Error('Only Substation updates can be synced here')
+            }
+            const path = await window.electronAPI.getNodePath(item.mrid, 'substation')
+            if (!path || !path.success || !Array.isArray(path.data) || path.data.length < 2) {
+                throw new Error('Could not find the local Substation parent')
+            }
+            const parent = path.data[path.data.length - 2]
+            if (parent.mode !== 'organisation') {
+                throw new Error('Substation parent is not an Organisation')
+            }
+            if (!this.organisationClientList.length) await this.showLocationRoot()
+            this.$store.dispatch('loading/start', { action: 'download', type: 'heavy' })
+            try {
+                const chain = await getSubstationChain(item.mrid, parent.mrid)
+                await downloadChainInfo([chain], this)
+                if (this.applySyncStatesToTree) {
+                    await this.applySyncStatesToTree(this.organisationClientList)
+                }
+                return true
+            } finally {
+                this.$store.dispatch('loading/stop')
+            }
         },
         handleSearchPreview(result) {
             if (!result || !result.mrid) return

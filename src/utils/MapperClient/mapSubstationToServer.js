@@ -26,7 +26,7 @@ export const mapSubstationEntityToServer = (entity, parentNode) => {
         mRID: person.mrid || null,
         name: person.name || '',
         aliasName: person.alias_name || '',
-        description: person.description || personRole.description || '',
+        description: person.description || personRole.position || '',
         prefix: person.prefix || null,
         firstName: person.first_name || '',
         middleName: person.m_name || '',

@@ -14,7 +14,7 @@
                             <el-form-item label="Name">
                                 <el-input v-model="properties.name" v-if="properties"></el-input>
                             </el-form-item>
-                            <OperatingDateField v-if="!isPowerPlant" :properties="properties"></OperatingDateField>
+                            <OperatingDateField v-if="!isPowerPlant" ref="operatingDateField" :properties="properties"></OperatingDateField>
 
                             <template v-if="isPowerPlant">
                                 <div class="sub-section">Plant Capacity</div>

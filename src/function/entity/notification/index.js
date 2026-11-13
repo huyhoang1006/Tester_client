@@ -1,10 +1,93 @@
 import db from '../../datacontext/index.js'
+import { v4 as uuidv4 } from 'uuid'
 
 const UPDATE_NOTIFICATION_TYPE = 'update'
 const PROCESSED_STATUS = 'processed'
 const LICENSE_NOTIFICATION_IDS = {
     warning: 'license-grace-warning',
     expired: 'license-grace-expired'
+}
+const SERVER_UPDATE_NOTICE_PREFIX = 'server-update-notices:'
+let serverUpdateNoticeQueue = Promise.resolve()
+
+const run = (sql, params = []) => new Promise((resolve, reject) => {
+    db.run(sql, params, function (error) {
+        if (error) reject(error)
+        else resolve(this)
+    })
+})
+
+const get = (sql, params = []) => new Promise((resolve, reject) => {
+    db.get(sql, params, (error, row) => error ? reject(error) : resolve(row))
+})
+
+const saveServerUpdateNotice = async ({ scope, items, legacySeen = {} }) => {
+    if (!scope || !Array.isArray(items)) throw new Error('Invalid server update notice')
+    const revisions = new Map()
+    items.forEach(item => {
+        if (item && item.type && item.server_id && item.serverRevision) {
+            revisions.set(`${item.type}:${item.server_id}`, {
+                revision: String(item.serverRevision), name: String(item.name || 'Item')
+            })
+        }
+    })
+    if (!revisions.size) return { success: true, notified: false }
+
+    await run('BEGIN IMMEDIATE')
+    try {
+        const key = `${SERVER_UPDATE_NOTICE_PREFIX}${scope}`
+        const row = await get('SELECT value FROM app_settings WHERE key = ?', [key])
+        let seen = {}
+        if (row && row.value) {
+            try {
+                const stored = JSON.parse(row.value)
+                if (stored && typeof stored === 'object' && !Array.isArray(stored)) seen = stored
+            } catch (error) { seen = {} }
+        } else if (legacySeen && typeof legacySeen === 'object' && !Array.isArray(legacySeen)) {
+            seen = { ...legacySeen }
+        }
+        const fresh = [...revisions].filter(([id, item]) => seen[id] !== item.revision)
+        let notified = false
+        let message = ''
+        if (fresh.length) {
+            message = fresh.length === 1
+                ? `${fresh[0][1].name} has a newer version on the server.`
+                : `${fresh.length} downloaded items have newer versions on the server.`
+            // Older releases stored notices in SQLite but their dedupe marker in localStorage.
+            const oldNotice = !row && !Object.keys(legacySeen || {}).length && await get(
+                `SELECT mrid FROM notification WHERE type = 'server_update' AND name = 'Server Updates' AND message = ? LIMIT 1`,
+                [message]
+            )
+            if (!oldNotice) {
+                const mrid = uuidv4()
+                await run(
+                    `INSERT INTO notification (mrid, name, message, type, status, created_at)
+                     VALUES (?, 'Server Updates', ?, 'server_update', 'unread', ?)`,
+                    [mrid, message, new Date().toISOString()]
+                )
+                notified = true
+            }
+        }
+        if (!row || fresh.length) {
+            revisions.forEach((item, id) => { seen[id] = item.revision })
+            await run(
+                `INSERT INTO app_settings (key, value) VALUES (?, ?)
+                 ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+                [key, JSON.stringify(seen)]
+            )
+        }
+        await run('COMMIT')
+        return { success: true, notified, message }
+    } catch (error) {
+        await run('ROLLBACK').catch(() => {})
+        throw error
+    }
+}
+
+export const recordServerUpdateNotice = (payload) => {
+    const task = serverUpdateNoticeQueue.then(() => saveServerUpdateNotice(payload))
+    serverUpdateNoticeQueue = task.catch(() => {})
+    return task
 }
 
 export const getAllNotifications = async () => {

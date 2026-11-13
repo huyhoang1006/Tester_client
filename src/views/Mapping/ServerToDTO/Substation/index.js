@@ -37,6 +37,7 @@ export const mapServerToDto = (serverData) => {
 
     // Giá trị hiển thị
     dto.street            = street.addressGeneral  || '';
+    dto.postal_code       = mainAddr.postalCode || '';
     dto.ward_or_commune   = town.wardOrCommune     || '';
     dto.district_or_town  = town.districtOrTown    || '';
     dto.city              = town.city              || '';

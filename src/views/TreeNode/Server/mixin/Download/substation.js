@@ -4,6 +4,7 @@ import * as SubstationServerMapper from '@/views/Mapping/ServerToDTO/Substation/
 import * as SubstationMapper from '@/views/Mapping/Substation/index.js'
 import { fetchWithRetry } from './core-utils.js'
 import { detectConflicts, applyResolved, SUBSTATION_FIELD_DEFS } from '@/utils/conflictUtils.js'
+import { showSubstationConflictDialog } from '@/views/TreeNode/dialogs/showSubstationConflictDialog'
 import { replaceUserSuffix } from '@/utils/serverId'
 import { scopeDtoIds, scopePositionPointIds } from './id-scope'
 import { downloadAssetMediaToAttachmentData } from '@/utils/assetMedia'
@@ -71,6 +72,7 @@ export async function downloadSubstationChain(data, ctx) {
 
     // 3. Merge
     let mergedDto
+    let localChangesAfterDownload = false
 
     if (!clientDto) {
         // Chưa có ở local → insert thẳng serverDto
@@ -81,18 +83,21 @@ export async function downloadSubstationChain(data, ctx) {
         const baseDto        = snapshotResult.success ? snapshotResult.data : null
 
         if (!baseDto) {
-            // Chưa có snapshot → server wins nếu client rỗng, giữ client nếu đã có data
-            mergedDto = { ...clientDto }
-            for (const group of SUBSTATION_FIELD_DEFS) {
-                for (const field of group.fields) {
-                    const clientVal   = clientDto[field.key]
-                    const serverVal   = serverDto[field.key]
-                    const clientEmpty = clientVal === null || clientVal === undefined || clientVal === ''
-                    if (clientEmpty && serverVal) {
-                        mergedDto[field.key] = serverVal
+            // Legacy download without a base: treat divergent non-empty values as conflicts.
+            const diffFields = detectConflicts({}, clientDto, serverDto, SUBSTATION_FIELD_DEFS)
+                .map(field => {
+                    const clientEmpty = field.client === null || field.client === ''
+                    const serverEmpty = field.server === null || field.server === ''
+                    if (field.client === field.server) return { ...field, status: 'unchanged', resolved: field.client }
+                    if (clientEmpty || serverEmpty) return {
+                        ...field, status: 'auto', autoResolved: clientEmpty ? 'server' : 'client',
+                        resolved: clientEmpty ? field.server : field.client
                     }
-                }
-            }
+                    return { ...field, status: 'conflict', resolved: null }
+                })
+            mergedDto = diffFields.some(field => field.status === 'conflict')
+                ? applyResolved(await showSubstationConflictDialog(diffFields, substation.name), clientDto)
+                : applyResolved(diffFields, clientDto)
 
         } else {
             // Có snapshot → 3-way merge
@@ -102,16 +107,14 @@ export async function downloadSubstationChain(data, ctx) {
             if (!hasConflict) {
                 mergedDto = applyResolved(diffFields, clientDto)
             } else {
-                mergedDto = await new Promise((resolve, reject) => {
-                    ctx.$showConflictDialog({
-                        title:     `Xung đột dữ liệu — ${substation.name}`,
-                        fields:    diffFields,
-                        onResolve: (resolvedFields) => resolve(applyResolved(resolvedFields, clientDto)),
-                        onCancel:  () => reject(new Error('CANCELED')),
-                    })
-                })
+                const resolvedFields = await showSubstationConflictDialog(diffFields, substation.name)
+                mergedDto = applyResolved(resolvedFields, clientDto)
             }
         }
+
+        localChangesAfterDownload = SUBSTATION_FIELD_DEFS.some(group => group.fields.some(
+            field => mergedDto[field.key] !== serverDto[field.key]
+        ))
 
         // Giữ lại các mrid cũ để tránh orphan records
         mergedDto.streetDetailId      = mergedDto.street
@@ -163,8 +166,8 @@ export async function downloadSubstationChain(data, ctx) {
     if (parentNode) {
         const newNode = {
             mrid:      substation.mrid,
-            name:      substation.name,
-            aliasName: substation.aliasName,
+            name:      mergedDto.name,
+            aliasName: mergedDto.aliasName,
             parentId:  data.parentOrgId,
             mode:      'substation',
         }
@@ -176,6 +179,8 @@ export async function downloadSubstationChain(data, ctx) {
             // Đã có children → chỉ update/thêm node, không đụng vào mảng
             const idx = parentNode.children.findIndex(c => c.mrid === substation.mrid)
             if (idx >= 0) {
+                newNode.children = parentNode.children[idx].children
+                newNode.expanded = parentNode.children[idx].expanded
                 // Dùng splice thay vì $set để Vue detect change mà không re-render toàn bộ
                 parentNode.children.splice(idx, 1, newNode)
             } else {
@@ -184,4 +189,5 @@ export async function downloadSubstationChain(data, ctx) {
         }
         // Không set expanded — giữ nguyên trạng thái cây
     }
+    return { localChangesAfterDownload }
 }

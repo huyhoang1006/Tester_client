@@ -4,9 +4,9 @@ import {entityFunc} from "@/function"
 import { describeFailure } from '@/ipcmain/failureMessage'
 
 export const insertSubstationEntity = () => {
-    ipcMain.handle('insertSubstationEntity', async function (event, data) {
+    ipcMain.handle('insertSubstationEntity', async function (event, data, serverSnapshot) {
         try {
-            const rs = await entityFunc.substationEntityFunc.insertSubstationEntity(data)
+            const rs = await entityFunc.substationEntityFunc.insertSubstationEntity(data, serverSnapshot)
             if (rs.success == true) {
                 return {
                     success: true,

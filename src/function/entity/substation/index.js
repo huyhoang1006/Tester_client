@@ -23,6 +23,7 @@ import { getPowerSystemResourceByLocationIdTransaction } from '@/function/cim/po
 import SubstationEntity from '@/views/Flatten/Substation'
 import { normaliseAuditValue, tryWriteAuditLog } from '../auditLog/index'
 import { safePathSegment } from '@/utils/fileName'
+import { saveSnapshotTransaction } from '../entitySnapshot'
 
 const getAttachmentLogValue = (attachment) => {
     if (!attachment || !attachment.path) return ''
@@ -52,9 +53,12 @@ const getSubstationLogFields = (entity) => ({
     'Alias name': readLogValue(entity, 'substation', 'alias_name'),
     'Comment': readLogValue(entity, 'substation', 'description'),
     'Psr type': readLogValue(entity, 'substation', 'psr_type_id'),
+    'Type': readLogValue(entity, 'psrType', 'name'),
     'Generation': readLogValue(entity, 'substation', 'generation'),
     'Industry': readLogValue(entity, 'substation', 'industry'),
+    'Operating date': readLogValue(entity, 'substation', 'operating_date'),
     'Street': readLogValue(entity, 'streetDetail', 'address_general'),
+    'Postcode': readLogValue(entity, 'streetAddress', 'postal_code'),
     'Ward/Commune': readLogValue(entity, 'townDetail', 'ward_or_commune'),
     'District/Town': readLogValue(entity, 'townDetail', 'district_or_town'),
     'City': readLogValue(entity, 'townDetail', 'city'),
@@ -62,7 +66,10 @@ const getSubstationLogFields = (entity) => ({
     'Country': readLogValue(entity, 'townDetail', 'country'),
     'Contact name': readLogValue(entity, 'person', 'name'),
     'Phone number': readLogValue(entity, 'telephoneNumber', 'itu_phone'),
+    'Fax': readLogValue(entity, 'electronicAddress', 'fax'),
     'Email': readLogValue(entity, 'electronicAddress', 'email'),
+    'Department': readLogValue(entity, 'personRole', 'department'),
+    'Position': readLogValue(entity, 'personRole', 'position'),
     'Attachments': getAttachmentLogValue(entity && entity.attachment),
     'Geo coordinates': getPositionPointLogValue(entity && entity.positionPoint)
 })
@@ -105,7 +112,7 @@ const getExistingSubstationEntity = async (entity) => {
 
 const runSubstationStep = async (fn) => fn()
 
-const insertSubstationRowsTransaction = async (entity, useSubstationAttachmentDir) => {
+const insertSubstationRowsTransaction = async (entity, useSubstationAttachmentDir, serverSnapshot = null) => {
     await runSQL('BEGIN TRANSACTION')
     try {
         if (entity.psrType.mrid) await runSubstationStep(() => insertPsrTypeTransaction(entity.psrType, db))
@@ -139,6 +146,9 @@ const insertSubstationRowsTransaction = async (entity, useSubstationAttachmentDi
             }
             entity.attachment.path = JSON.stringify(newPath)
             await runSubstationStep(() => uploadAttachmentTransaction(entity.attachment, db))
+        }
+        if (serverSnapshot) {
+            await saveSnapshotTransaction(entity.substation.mrid, 'substation', serverSnapshot, db)
         }
         await runSQL('COMMIT')
     } catch (err) {
@@ -277,7 +287,7 @@ export const moveSubstationToOrganisation = async (substationId, organisationId)
     })
 }
 
-export const insertSubstationEntity = async (entity) => {
+export const insertSubstationEntity = async (entity, serverSnapshot = null) => {
     if (entity == null || typeof entity !== 'object') {
         return { success: false, error: new Error('Invalid entity data') }
     }
@@ -314,7 +324,7 @@ export const insertSubstationEntity = async (entity) => {
             }
         }
 
-        await insertSubstationRowsTransaction(entity, hasAttachments)
+        await insertSubstationRowsTransaction(entity, hasAttachments, serverSnapshot)
 
         if (hasAttachments) {
             deleteBackupFiles(null, entity.substation.mrid)

@@ -84,6 +84,16 @@ export const insertNotification = () => {
     })
 }
 
+export const recordServerUpdateNotice = () => {
+    ipcMain.handle('recordServerUpdateNotice', async function (event, data) {
+        try {
+            return await entityFunc.notificationEntityFunc.recordServerUpdateNotice(data)
+        } catch (error) {
+            return { success: false, message: error && error.message || 'Could not save server update notice' }
+        }
+    })
+}
+
 export const updateNotification = () => {
     ipcMain.handle('updateNotification', async function (event, mrid, data) {
         try {
@@ -215,6 +225,7 @@ export const active = () => {
     getAllNotifications()
     getNotificationById()
     insertNotification()
+    recordServerUpdateNotice()
     updateNotification()
     markAsRead()
     hmrideNotification()

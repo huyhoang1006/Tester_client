@@ -25,6 +25,9 @@ export default {
                     ? await this.savePowerPlant()
                     : await this.saveSubstation()
                 if (success) {
+                    const formChanged = !this.isPowerPlant && this._savedSubstationForm != null &&
+                        this._savedSubstationForm !== JSON.stringify(this.properties)
+                    this._savedSubstationForm = JSON.stringify(this.properties)
                     this.$message.success(this.isPowerPlant ? 'Power Plant saved successfully' : 'Substation saved successfully')
                     
                     // ✅ Emit reload event với savedData - KHÔNG cần gọi API!
@@ -37,7 +40,7 @@ export default {
                             substation: this.substation,
                             powerPlantCapacity: this.getPowerPlantCapacityData()
                         },
-                        changed: changed === true
+                        changed: changed === true || formChanged
                     })
                 }
             } catch (error) {
@@ -61,6 +64,7 @@ export default {
                 this.locationTemp = this.properties.locationId || ""
                 this.personTemp = this.properties.personId || ""
                 this.substation = substation
+                this._savedSubstationForm = JSON.stringify(this.properties)
                 if (this.isPowerPlant && typeof this.loadPowerPlantCapacity === 'function') {
                     this.loadPowerPlantCapacity(powerPlantCapacity)
                 }
@@ -209,6 +213,10 @@ export default {
         },
 
         async saveSubstation() {
+            if (this.$refs.operatingDateField && !this.$refs.operatingDateField.syncDate()) {
+                this.$message.error('Please enter a complete, valid Operating Date or leave it empty')
+                return { success: false }
+            }
             if (this.properties.name === '') {
                 this.$message.error('Please enter the name of the substation')
                 return {

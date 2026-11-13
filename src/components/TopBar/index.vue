@@ -24,12 +24,13 @@
                             <strong class="sync-counter-value">{{ pendingUploadCount === null ? '—' : pendingUploadCount }}</strong>
                         </button>
                     </el-tooltip>
-                    <el-tooltip content="Server Updates: checking server versions is not available yet" placement="bottom">
-                        <span class="sync-counter sync-counter-download" aria-label="Server Updates not available yet">
+                    <el-tooltip :content="serverUpdateTooltip" :disabled="dialogServerUpdates" placement="bottom">
+                        <button type="button" class="sync-counter sync-counter-download"
+                            :aria-label="serverUpdateTooltip" @click="dialogServerUpdates = true">
                             <i class="fa-solid fa-arrow-down" aria-hidden="true"></i>
                             <span class="sync-counter-label">Server Updates</span>
-                            <strong class="sync-counter-value">—</strong>
-                        </span>
+                            <strong class="sync-counter-value">{{ serverUpdateCount === null ? '—' : serverUpdateCount }}</strong>
+                        </button>
                     </el-tooltip>
                 </section>
                 <el-tooltip v-if="user" content="Notifications" placement="bottom" trigger="hover"
@@ -127,6 +128,10 @@
                                         <i class="fas fa-wrench"></i>
                                         Config server address
                                     </el-dropdown-item>
+                                    <el-dropdown-item command="user_info">
+                                        <i class="fas fa-user-circle"></i>
+                                        User information
+                                    </el-dropdown-item>
                                     <el-dropdown-item command="toggle_pet">
                                         <i class="fas fa-bolt"></i>
                                         {{ showElectricPet ? 'Hide Pet' : 'Show Pet' }}
@@ -186,7 +191,7 @@
             :style="petPosition ? { left: `${petPosition.x}px`, top: `${petPosition.y}px`, right: 'auto', bottom: 'auto' } : null"
             role="img" aria-label="Electric transformer pet" @pointerdown="startPetDrag"
             @pointermove="movePet" @pointerup="endPetDrag" @pointercancel="endPetDrag"
-            @lostpointercapture="endPetDrag">
+            @lostpointercapture="endPetDrag" @contextmenu.prevent.stop="openPetContextMenu">
             <div class="electric-pet-figure">
                 <img class="electric-pet-frame" src="@/assets/images/electric-transformer-pet.png"
                     alt="" draggable="false" />
@@ -195,6 +200,14 @@
                 <img class="electric-pet-frame electric-pet-blink"
                     src="@/assets/images/electric-transformer-pet-blink.png" alt="" draggable="false" />
             </div>
+        </div>
+        <div v-if="showElectricPet && petMenuPosition" class="electric-pet-menu"
+            :style="{ left: `${petMenuPosition.x}px`, top: `${petMenuPosition.y}px` }"
+            @pointerdown.stop @contextmenu.prevent>
+            <button type="button" @click="hidePet">
+                <i class="fas fa-eye-slash" aria-hidden="true"></i>
+                Hide Pet
+            </button>
         </div>
 
         <el-dialog :visible.sync="dialogPendingUploads" width="720px"
@@ -209,6 +222,12 @@
                     placeholder="Search by name or location" aria-label="Search pending uploads">
                     <i slot="prefix" class="el-icon-search"></i>
                 </el-input>
+                <el-select v-model="pendingUploadType" size="small" class="pending-upload-type-filter"
+                    aria-label="Filter pending uploads by type" placeholder="All types">
+                    <el-option label="All types" value="" />
+                    <el-option v-for="type in pendingUploadTypeOptions" :key="type.value"
+                        :label="type.label" :value="type.value" />
+                </el-select>
                 <div class="pending-upload-toolbar-actions">
                     <el-button size="small" icon="el-icon-refresh" :loading="pendingUploadItemsLoading"
                         @click="loadPendingUploadItems">Refresh</el-button>
@@ -219,14 +238,14 @@
             </div>
             <el-alert v-if="pendingUploadItemsError" :title="pendingUploadItemsError" type="error"
                 :closable="false" show-icon />
-            <div v-else class="pending-upload-list">
+            <div v-else ref="pendingUploadList" class="pending-upload-list">
                 <div v-if="pendingUploadItemsLoading && !pendingUploadItems.length" class="pending-upload-empty">
                     Loading local changes...
                 </div>
                 <div v-else-if="!filteredPendingUploadItems.length" class="pending-upload-empty">
                     {{ pendingUploadItems.length ? 'No matching items' : 'No items pending upload' }}
                 </div>
-                <div v-for="item in filteredPendingUploadItems" :key="item.mrid" class="pending-upload-item">
+                <div v-for="item in pagedPendingUploadItems" :key="item.mrid" class="pending-upload-item">
                     <span class="pending-upload-item-icon" :class="item.is_testing_equipment ? 'pending-upload-icon-equipment' : `pending-upload-icon-${item.mode}`">
                         <Icon v-if="item.mode === 'asset' && !item.is_testing_equipment"
                             folder-type="asset" :asset-detail="item.asset_kind" size="20px" />
@@ -248,16 +267,82 @@
                         <span class="pending-upload-item-status" :class="`pending-upload-status-${item.sync_status}`">
                             {{ pendingUploadStatusLabel(item.sync_status) }}
                         </span>
-                        <span title="Sync for individual items is not available yet">
+                        <span :title="item.mode === 'substation' || (item.mode === 'asset' && !item.is_testing_equipment) ? 'Upload this item' : 'Sync for this item is not available yet'">
                             <el-button size="mini" type="primary" icon="el-icon-refresh"
-                                class="pending-upload-item-sync" disabled>Sync</el-button>
+                                class="pending-upload-item-sync" :disabled="!(item.mode === 'substation' || (item.mode === 'asset' && !item.is_testing_equipment)) || !!pendingUploadSyncingMrid"
+                                :loading="pendingUploadSyncingMrid === item.mrid"
+                                @click="syncPendingUploadItem(item)">Sync</el-button>
                         </span>
                     </div>
                 </div>
             </div>
+            <el-pagination v-if="!pendingUploadItemsError && filteredPendingUploadItems.length > pendingUploadPageSize"
+                class="pending-upload-pagination" background small layout="prev, pager, next"
+                :current-page="pendingUploadPage" :page-size="pendingUploadPageSize"
+                :total="filteredPendingUploadItems.length" :pager-count="5"
+                @current-change="changePendingUploadPage" />
             <span slot="footer" class="dialog-footer">
-                <span class="pending-upload-total">{{ pendingUploadItems.length }} item(s)</span>
+                <span class="pending-upload-total">
+                    {{ filteredPendingUploadItems.length }} item(s)<template v-if="pendingUploadSearch || pendingUploadType"> of {{ pendingUploadItems.length }}</template>
+                </span>
                 <el-button size="small" type="danger" @click="dialogPendingUploads = false">Close</el-button>
+            </span>
+        </el-dialog>
+
+        <el-dialog :visible.sync="dialogServerUpdates" width="720px"
+            custom-class="pending-upload-dialog" append-to-body @open="loadServerUpdatePaths">
+            <div slot="title" class="pending-upload-heading">
+                <span class="pending-upload-heading-icon"><i class="fas fa-arrow-down" aria-hidden="true"></i></span>
+                <strong>Server Updates</strong>
+                <span class="pending-upload-heading-count">{{ serverUpdateItems.length }}</span>
+            </div>
+            <div class="pending-upload-toolbar">
+                <el-input v-model="serverUpdateSearch" size="small" clearable
+                    placeholder="Search by name or location" aria-label="Search server updates">
+                    <i slot="prefix" class="el-icon-search"></i>
+                </el-input>
+                <el-button size="small" icon="el-icon-refresh" :loading="serverUpdateLoading"
+                    @click="refreshServerUpdates">Refresh</el-button>
+            </div>
+            <el-alert v-if="serverUpdateError" :title="serverUpdateError" type="error"
+                :closable="false" show-icon />
+            <div class="pending-upload-list">
+                <div v-if="serverUpdateLoading && !serverUpdateItems.length" class="pending-upload-empty">
+                    Checking server versions...
+                </div>
+                <div v-else-if="!filteredServerUpdateItems.length" class="pending-upload-empty">
+                    {{ serverUpdateItems.length ? 'No matching items' : 'No newer server versions' }}
+                </div>
+                <div v-for="item in filteredServerUpdateItems" :key="item.mrid" class="pending-upload-item">
+                    <span class="pending-upload-item-icon" :class="`pending-upload-icon-${item.mode}`">
+                        <Icon v-if="item.mode === 'asset'" folder-type="asset"
+                            :asset-detail="item.asset_kind" size="20px" />
+                        <i v-else :class="pendingUploadIcon(item)" aria-hidden="true"></i>
+                    </span>
+                    <div class="pending-upload-item-content">
+                        <div class="pending-upload-item-heading">
+                            <span class="pending-upload-item-name">{{ item.name }}</span>
+                            <span class="pending-upload-item-type">{{ pendingUploadTypeLabel(item) }}</span>
+                        </div>
+                        <button type="button" class="pending-upload-item-path" :title="item.path"
+                            @click="openServerUpdateItem(item)">
+                            <i class="el-icon-location-outline" aria-hidden="true"></i>
+                            <span>{{ item.path }}</span>
+                        </button>
+                    </div>
+                    <div class="pending-upload-item-actions">
+                        <span class="pending-upload-item-status pending-upload-status-newer">Newer on server</span>
+                        <el-button v-if="item.mode === 'substation'" size="mini" type="primary"
+                            icon="el-icon-refresh" :loading="serverUpdateSyncingMrid === item.mrid"
+                            :disabled="Boolean(serverUpdateSyncingMrid)" @click="syncServerUpdateSubstation(item)">
+                            Sync
+                        </el-button>
+                    </div>
+                </div>
+            </div>
+            <span slot="footer" class="dialog-footer">
+                <span class="pending-upload-total">{{ serverUpdateItems.length }} item(s)</span>
+                <el-button size="small" type="danger" @click="dialogServerUpdates = false">Close</el-button>
             </span>
         </el-dialog>
 
@@ -279,6 +364,26 @@
                 <el-button class="footer-btn" size="small" @click="dialogConfig = false">Cancel</el-button>
                 <el-button class="footer-btn" size="small" type="primary" @click="setServerAddr">Save</el-button>
             </span>
+        </el-dialog>
+
+        <el-dialog title="User information" :visible.sync="dialogUserInfo"
+            custom-class="user-info-dialog" append-to-body width="480px">
+            <div v-if="user" class="user-info-content">
+                <div class="user-info-heading">
+                    <span class="user-info-avatar"><i class="fas fa-user" aria-hidden="true"></i></span>
+                    <div>
+                        <strong>{{ user.name || user.username || 'User' }}</strong>
+                        <span>{{ user.email || 'No email available' }}</span>
+                    </div>
+                </div>
+                <dl class="user-info-fields">
+                    <div><dt>Username</dt><dd>{{ user.username || user.name || '—' }}</dd></div>
+                    <div><dt>User ID</dt><dd>{{ user.user_id || user.id || '—' }}</dd></div>
+                    <div><dt>Email</dt><dd>{{ user.email || '—' }}</dd></div>
+                    <div><dt>Role</dt><dd>{{ userRoleLabel }}</dd></div>
+                </dl>
+            </div>
+            <span slot="footer"><el-button size="small" @click="dialogUserInfo = false">Close</el-button></span>
         </el-dialog>
 
         <!-- Notification Detail Dialog -->
@@ -334,6 +439,12 @@ import * as userApi from '@/api/user'
 import { createSsoRedirectUri } from '@/utils/sso'
 import { formatApiError } from '@/utils/apiError'
 import Icon from '@/views/Common/Icon.vue'
+import client from '@/utils/client'
+import jobClient from '@/api/demo/jobClient'
+import { JOB_KIND_BY_ASSET } from '@/api/demo/Job'
+import { JOB_SERVICE_DOMAIN, getServiceDomain } from '@/config/server'
+import { toServerId } from '@/utils/serverId'
+import { streamServerUpdates } from '@/utils/serverUpdateStream'
 
 export default {
     name: 'TopBar',
@@ -342,10 +453,12 @@ export default {
         return {
             dialogChangePw: false,
             dialogConfig: false,
+            dialogUserInfo: false,
             showElectricPet: localStorage.getItem('at-digital-tester:show-electric-pet') === 'true',
             petPosition: null,
             petDrag: null,
             petIsDragging: false,
+            petMenuPosition: null,
             loading: false,
             formChangePass: {
                 oldPassword: '',
@@ -393,9 +506,25 @@ export default {
             dialogPendingUploads: false,
             pendingUploadItems: [],
             pendingUploadItemsLoading: false,
+            pendingUploadSyncingMrid: '',
             pendingUploadItemsError: '',
             pendingUploadSearch: '',
-            pendingUploadItemsRequestId: 0
+            pendingUploadType: '',
+            pendingUploadPage: 1,
+            pendingUploadPageSize: 10,
+            pendingUploadItemsRequestId: 0,
+            serverUpdateCount: null,
+            serverUpdateItems: [],
+            serverUpdateError: '',
+            serverUpdateLoading: false,
+            serverUpdateSearch: '',
+            serverUpdateSyncingMrid: '',
+            dialogServerUpdates: false,
+            serverUpdateRequestId: 0,
+            serverUpdatePathRequestId: 0,
+            serverUpdateRefreshTimer: null,
+            serverUpdatePollTimer: null,
+            serverUpdateStreams: []
         }
     },
     mounted() {
@@ -410,6 +539,8 @@ export default {
             // Ignore an invalid saved position and use the default corner.
         }
         window.addEventListener('resize', this.keepPetInViewport)
+        window.addEventListener('pointerdown', this.closePetContextMenu)
+        window.addEventListener('keydown', this.handlePetMenuKeydown)
 
         if (window.electronAPI && window.electronAPI.onWindowStateChange) {
             window.electronAPI.onWindowStateChange((isMax) => {
@@ -434,11 +565,16 @@ export default {
         window.addEventListener('focus', this.refreshPendingUploadCount)
         window.addEventListener('sync-state-changed', this.schedulePendingUploadRefresh)
         window.addEventListener('pending-upload-changed', this.schedulePendingUploadRefresh)
+        this.startServerUpdateMonitoring()
+        window.addEventListener('focus', this.scheduleServerUpdateRefresh)
+        window.addEventListener('sync-state-changed', this.scheduleServerUpdateRefresh)
+        window.addEventListener('pending-upload-changed', this.scheduleServerUpdateRefresh)
         // this.updateSearchState()
         // window.addEventListener('resize', this.updateSearchState)
     },
     beforeDestroy() {
         this.pendingUploadItemsRequestId++
+        this.stopServerUpdateMonitoring()
         if (this.removeUpdateNotificationListener) this.removeUpdateNotificationListener()
         if (this.removeNotificationListener) this.removeNotificationListener()
         if (this.pendingUploadTimer) clearInterval(this.pendingUploadTimer)
@@ -446,21 +582,60 @@ export default {
         window.removeEventListener('focus', this.refreshPendingUploadCount)
         window.removeEventListener('sync-state-changed', this.schedulePendingUploadRefresh)
         window.removeEventListener('pending-upload-changed', this.schedulePendingUploadRefresh)
+        window.removeEventListener('focus', this.scheduleServerUpdateRefresh)
+        window.removeEventListener('sync-state-changed', this.scheduleServerUpdateRefresh)
+        window.removeEventListener('pending-upload-changed', this.scheduleServerUpdateRefresh)
         window.removeEventListener('resize', this.keepPetInViewport)
+        window.removeEventListener('pointerdown', this.closePetContextMenu)
+        window.removeEventListener('keydown', this.handlePetMenuKeydown)
     },
     computed: {
         ...mapState(['user', 'loginAddr', 'serviceAddr']),
+        userRoleLabel() {
+            if (!this.user) return '—'
+            const roles = Array.isArray(this.user.roles) ? this.user.roles : []
+            return roles.length ? roles.map(role => typeof role === 'string'
+                ? role : role.name || role.coded || role.code).filter(Boolean).join(', ')
+                : this.user.role || '—'
+        },
         pendingUploadTooltip() {
             if (this.pendingUploadError) return 'Pending Upload: unable to read local changes'
             if (this.pendingUploadCount === null) return 'Pending Upload: checking local changes'
             return `${this.pendingUploadCount} local item(s) pending upload. Click to view.`
         },
+        serverUpdateTooltip() {
+            if (this.serverUpdateCount === null) return this.serverUpdateError
+                ? 'Server Updates: could not check server versions' : 'Server Updates: checking for changes'
+            const count = `${this.serverUpdateCount} item(s) have newer server versions. Click to view.`
+            return this.serverUpdateError ? `${count} Some services could not be checked.` : count
+        },
+        filteredServerUpdateItems() {
+            const search = this.serverUpdateSearch.trim().toLowerCase()
+            if (!search) return this.serverUpdateItems
+            return this.serverUpdateItems.filter(item =>
+                [item.name, item.path].some(value => String(value || '').toLowerCase().includes(search))
+            )
+        },
         filteredPendingUploadItems() {
             const search = this.pendingUploadSearch.trim().toLowerCase()
-            if (!search) return this.pendingUploadItems
-            return this.pendingUploadItems.filter(item =>
-                [item.name, item.path, item.mrid].some(value => String(value || '').toLowerCase().includes(search))
-            )
+            return this.pendingUploadItems.filter(item => {
+                if (this.pendingUploadType && this.pendingUploadTypeKey(item) !== this.pendingUploadType) return false
+                return !search || [item.name, item.path, item.mrid]
+                    .some(value => String(value || '').toLowerCase().includes(search))
+            })
+        },
+        pendingUploadTypeOptions() {
+            const types = new Map()
+            this.pendingUploadItems.forEach(item => {
+                const value = this.pendingUploadTypeKey(item)
+                if (!types.has(value)) types.set(value, this.pendingUploadTypeLabel(item))
+            })
+            return Array.from(types, ([value, label]) => ({ value, label }))
+                .sort((a, b) => a.label.localeCompare(b.label))
+        },
+        pagedPendingUploadItems() {
+            const start = (this.pendingUploadPage - 1) * this.pendingUploadPageSize
+            return this.filteredPendingUploadItems.slice(start, start + this.pendingUploadPageSize)
         },
         unreadCount() {
             return this.notifications.filter(n => n.status === 'unread').length
@@ -493,15 +668,56 @@ export default {
         }
     },
     watch: {
+        pendingUploadSearch() {
+            this.pendingUploadPage = 1
+        },
+        pendingUploadType() {
+            this.pendingUploadPage = 1
+        },
+        pendingUploadItems(items) {
+            if (this.pendingUploadType && !items.some(item => this.pendingUploadTypeKey(item) === this.pendingUploadType)) {
+                this.pendingUploadType = ''
+            }
+            const pageCount = Math.max(1, Math.ceil(this.filteredPendingUploadItems.length / this.pendingUploadPageSize))
+            if (this.pendingUploadPage > pageCount) this.pendingUploadPage = pageCount
+        },
         user() {
             this.pendingUploadCount = null
             this.dialogPendingUploads = false
             this.pendingUploadItemsRequestId++
             this.pendingUploadItems = []
             this.refreshPendingUploadCount()
+            this.startServerUpdateMonitoring()
+        },
+        serviceAddr() {
+            this.startServerUpdateMonitoring()
         }
     },
     methods: {
+        pendingUploadTypeKey(item) {
+            return item.mode === 'asset' ? `asset:${item.asset_kind || 'Equipment'}` : item.mode
+        },
+        changePendingUploadPage(page) {
+            this.pendingUploadPage = page
+            if (this.$refs.pendingUploadList) this.$refs.pendingUploadList.scrollTop = 0
+        },
+        openPetContextMenu(event) {
+            this.petMenuPosition = {
+                x: Math.max(8, Math.min(event.clientX, window.innerWidth - 136)),
+                y: Math.max(8, Math.min(event.clientY, window.innerHeight - 48))
+            }
+        },
+        closePetContextMenu() {
+            this.petMenuPosition = null
+        },
+        handlePetMenuKeydown(event) {
+            if (event.key === 'Escape') this.closePetContextMenu()
+        },
+        hidePet() {
+            this.showElectricPet = false
+            this.closePetContextMenu()
+            localStorage.setItem('at-digital-tester:show-electric-pet', 'false')
+        },
         clampPetPosition(x, y) {
             const maxX = Math.max(0, window.innerWidth - 64)
             const maxY = Math.max(0, window.innerHeight - 64 - 28)
@@ -518,6 +734,7 @@ export default {
         },
         startPetDrag(event) {
             if (event.button !== 0 || this.petDrag) return
+            this.closePetContextMenu()
             const rect = event.currentTarget.getBoundingClientRect()
             this.petDrag = {
                 pointerId: event.pointerId,
@@ -571,6 +788,207 @@ export default {
         openPendingUploadItem(item) {
             this.dialogPendingUploads = false
             this.$emit('pending-upload-navigate', item)
+        },
+        async syncPendingUploadItem(item) {
+            if (!(item.mode === 'substation' || (item.mode === 'asset' && !item.is_testing_equipment)) || this.pendingUploadSyncingMrid) return
+            this.pendingUploadSyncingMrid = item.mrid
+            try {
+                await new Promise((resolve, reject) => {
+                    this.$emit('pending-upload-sync', item, resolve, reject)
+                })
+            } catch (error) {
+                if (error && error.code === 'SUBSTATION_DOWNLOAD_REQUIRED') this.$message.warning(error.message)
+                else this.$message.error(formatApiError(error))
+            } finally {
+                this.pendingUploadSyncingMrid = ''
+                await this.loadPendingUploadItems()
+            }
+        },
+        openServerUpdateItem(item) {
+            this.dialogServerUpdates = false
+            this.$emit('pending-upload-navigate', item)
+        },
+        async syncServerUpdateSubstation(item) {
+            if (item.mode !== 'substation' || this.serverUpdateSyncingMrid) return
+            this.serverUpdateSyncingMrid = item.mrid
+            try {
+                const completed = await new Promise((resolve, reject) => {
+                    this.$emit('server-update-sync', item, resolve, reject)
+                })
+                if (!completed) return
+                this.$message.success('Substation downloaded and local changes merged.')
+                await this.refreshServerUpdates()
+                await this.loadPendingUploadItems()
+            } catch (error) {
+                if (!error || error.message !== 'CANCELED') this.$message.error(formatApiError(error))
+            } finally {
+                this.serverUpdateSyncingMrid = ''
+            }
+        },
+        stopServerUpdateMonitoring() {
+            this.serverUpdateRequestId++
+            this.serverUpdatePathRequestId++
+            if (this.serverUpdateRefreshTimer) clearTimeout(this.serverUpdateRefreshTimer)
+            if (this.serverUpdatePollTimer) clearInterval(this.serverUpdatePollTimer)
+            this.serverUpdateRefreshTimer = null
+            this.serverUpdatePollTimer = null
+            this.serverUpdateStreams.forEach(controller => controller.abort())
+            this.serverUpdateStreams = []
+        },
+        startServerUpdateMonitoring() {
+            this.stopServerUpdateMonitoring()
+            this.serverUpdateItems = []
+            this.serverUpdateCount = null
+            this.serverUpdateError = ''
+            if (!this.user || !this.serviceAddr) return
+            this.refreshServerUpdates()
+            this.serverUpdatePollTimer = setInterval(this.scheduleServerUpdateRefresh, 5 * 60 * 1000)
+            const endpoints = [
+                `${getServiceDomain().replace(/\/+$/, '')}/api/sync-updates/events`,
+                `${JOB_SERVICE_DOMAIN.replace(/\/+$/, '')}/api/job/updates/events`
+            ]
+            endpoints.forEach(url => {
+                const controller = new AbortController()
+                this.serverUpdateStreams.push(controller)
+                this.runServerUpdateStream(url, controller.signal)
+            })
+        },
+        async runServerUpdateStream(url, signal) {
+            let retryMs = 1000
+            while (!signal.aborted) {
+                try {
+                    await streamServerUpdates(url, signal, this.scheduleServerUpdateRefresh)
+                    retryMs = 1000
+                } catch (error) {
+                    if (signal.aborted) return
+                    retryMs = Math.min(retryMs * 2, 30000)
+                }
+                if (signal.aborted) return
+                this.scheduleServerUpdateRefresh()
+                await new Promise(resolve => {
+                    const onAbort = () => { clearTimeout(timer); resolve() }
+                    const timer = setTimeout(() => {
+                        signal.removeEventListener('abort', onAbort)
+                        resolve()
+                    }, retryMs)
+                    signal.addEventListener('abort', onAbort, { once: true })
+                })
+            }
+        },
+        scheduleServerUpdateRefresh() {
+            if (this.serverUpdateRefreshTimer) clearTimeout(this.serverUpdateRefreshTimer)
+            this.serverUpdateRefreshTimer = setTimeout(() => {
+                this.serverUpdateRefreshTimer = null
+                this.refreshServerUpdates()
+            }, 500)
+        },
+        async refreshServerUpdates() {
+            const userId = this.user && (this.user.user_id || this.user.id)
+            const requestId = ++this.serverUpdateRequestId
+            if (!userId || !window.electronAPI || !window.electronAPI.getServerUpdateCandidates) return
+            this.serverUpdateLoading = true
+            this.serverUpdateError = ''
+            try {
+                const result = await window.electronAPI.getServerUpdateCandidates(userId)
+                if (requestId !== this.serverUpdateRequestId) return
+                if (!result || !result.success || !Array.isArray(result.data)) {
+                    throw new Error(result && result.message || 'Could not read downloaded items')
+                }
+                const assetItems = result.data.filter(item => item.type !== 'test'
+                    && /^(organisation|substation|voltagelevel|bay|transformer|bushing|circuitbreaker|currenttransformer|voltagetransformer|surgearrester|disconnector|powercable)$/i
+                        .test(String(item.type).replace(/[^a-z]/gi, ''))
+                    && /^\d+$/.test(String(toServerId(item.server_id))))
+                const testItems = result.data.filter(item => item.type === 'test'
+                    && JOB_KIND_BY_ASSET[item.asset_kind] && Number.isSafeInteger(Number(item.version)))
+                const checks = []
+                const clientNow = new Date().toISOString()
+                for (let offset = 0; offset < assetItems.length; offset += 500) {
+                    const batch = assetItems.slice(offset, offset + 500)
+                    checks.push(client.post('/api/sync-updates/check', batch.map(item => ({
+                        type: item.type, id: String(toServerId(item.server_id)),
+                        lastSyncedAt: item.last_synced_at, clientNow
+                    })), { silentBackgroundRequest: true }).then(changed => ({ batch, changed })))
+                }
+                for (let offset = 0; offset < testItems.length; offset += 500) {
+                    const batch = testItems.slice(offset, offset + 500)
+                    checks.push(jobClient.post('/api/job/updates/check', batch.map(item => ({
+                        kind: JOB_KIND_BY_ASSET[item.asset_kind], testId: String(toServerId(item.server_id)),
+                        version: Number(item.version)
+                    })), { silentBackgroundRequest: true }).then(changed => ({ batch, changed })))
+                }
+                const responses = await Promise.allSettled(checks)
+                if (requestId !== this.serverUpdateRequestId) return
+                const updated = []
+                for (const response of responses) {
+                    if (response.status !== 'fulfilled' || !Array.isArray(response.value.changed)) continue
+                    const { batch, changed } = response.value
+                    for (const item of batch) {
+                        const match = changed.find(entry => String(entry.id || entry.testId) === String(toServerId(item.server_id)))
+                        if (match) {
+                            updated.push({
+                                ...item,
+                                mode: item.type === 'test' ? 'test' : item.asset_kind ? 'asset' : item.type,
+                                path: 'Locating...',
+                                serverRevision: String(match.updatedAt || match.version || item.last_synced_at || item.version || '')
+                            })
+                        }
+                    }
+                }
+                this.serverUpdateItems = updated
+                const checkFailed = responses.some(response => response.status === 'rejected')
+                this.serverUpdateCount = responses.length && responses.every(response => response.status === 'rejected')
+                    ? null : updated.length
+                this.serverUpdateError = checkFailed
+                    ? 'Some server versions could not be checked. Try Refresh.' : ''
+                await this.notifyNewServerUpdates(updated, userId)
+                if (this.dialogServerUpdates) this.loadServerUpdatePaths()
+            } catch (error) {
+                if (requestId !== this.serverUpdateRequestId) return
+                this.serverUpdateError = error.message || 'Could not check server versions'
+            } finally {
+                if (requestId === this.serverUpdateRequestId) this.serverUpdateLoading = false
+            }
+        },
+        async notifyNewServerUpdates(items, userId) {
+            if (!items.length || !window.electronAPI || !window.electronAPI.recordServerUpdateNotice) return
+            const scope = `${userId}:${getServiceDomain()}:${JOB_SERVICE_DOMAIN}`
+            const storageKey = `at-digital-tester:server-update-notices:${scope}`
+            let legacySeen = {}
+            try {
+                const stored = JSON.parse(localStorage.getItem(storageKey) || '{}')
+                if (stored && typeof stored === 'object' && !Array.isArray(stored)) legacySeen = stored
+            } catch (error) {
+                // Ignore a malformed marker from an older release.
+            }
+            try {
+                const result = await window.electronAPI.recordServerUpdateNotice({ scope, items, legacySeen })
+                if (!result || !result.success || !result.notified) return
+                await this.loadNotifications()
+                this.$notify({
+                    title: 'Server Updates', message: result.message, type: 'info', duration: 6000,
+                    onClick: () => { this.dialogServerUpdates = true }
+                })
+            } catch (error) {
+                // Version checks should still work if notification storage fails.
+            }
+        },
+        async loadServerUpdatePaths() {
+            const requestId = ++this.serverUpdatePathRequestId
+            for (let offset = 0; offset < this.serverUpdateItems.length; offset += 8) {
+                if (requestId !== this.serverUpdatePathRequestId || !this.dialogServerUpdates) return
+                await Promise.all(this.serverUpdateItems.slice(offset, offset + 8).map(async item => {
+                    try {
+                        const response = await window.electronAPI.getNodePath(item.mrid, item.mode)
+                        if (requestId !== this.serverUpdatePathRequestId) return
+                        const path = response && response.success && Array.isArray(response.data)
+                            ? response.data.map(step => step.mrid === item.mrid
+                                ? item.name : (step.name || step.mrid)).join(' / ') : ''
+                        this.$set(item, 'path', path || 'Location unavailable')
+                    } catch (error) {
+                        if (requestId === this.serverUpdatePathRequestId) this.$set(item, 'path', 'Location unavailable')
+                    }
+                }))
+            }
         },
         async loadPendingUploadItems() {
             const userId = this.user && (this.user.user_id || this.user.id)
@@ -700,8 +1118,12 @@ export default {
                 case 'config':
                     this.dialogConfig = true
                     break
+                case 'user_info':
+                    this.dialogUserInfo = true
+                    break
                 case 'toggle_pet':
                     this.showElectricPet = !this.showElectricPet
+                    this.closePetContextMenu()
                     localStorage.setItem('at-digital-tester:show-electric-pet', String(this.showElectricPet))
                     break
             }
@@ -794,6 +1216,12 @@ export default {
             }
         },
         openNotificationDetail(notification) {
+            if (notification.type === 'server_update') {
+                if (notification.status !== 'read') this.markAsRead(notification.mrid)
+                if (this.$refs.notificationDropdown) this.$refs.notificationDropdown.hide()
+                this.dialogServerUpdates = true
+                return
+            }
             this.selectedNotification = notification
             this.dialogNotificationDetail = true
             if (notification.status !== 'read') {
@@ -807,6 +1235,7 @@ export default {
                 'warning': 'fas fa-exclamation-triangle',
                 'error': 'fas fa-times-circle',
                 'update': 'fas fa-download',
+                'server_update': 'fas fa-arrow-down',
                 'maintenance': 'fas fa-wrench',
                 'user': 'fas fa-user-plus',
                 'test': 'fas fa-clipboard-check',
@@ -997,6 +1426,41 @@ export default {
     cursor: grabbing;
 }
 
+.electric-pet-menu {
+    position: fixed;
+    z-index: 1201;
+    min-width: 128px;
+    padding: 4px;
+    border: 1px solid #dce3ec;
+    border-radius: 4px;
+    background: #fff;
+    box-shadow: 0 8px 20px rgba(19, 37, 65, 0.18);
+    -webkit-app-region: no-drag;
+}
+
+.electric-pet-menu button {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    min-height: 32px;
+    padding: 6px 8px;
+    border: 0;
+    border-radius: 3px;
+    background: transparent;
+    color: #34445d;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.electric-pet-menu button:hover,
+.electric-pet-menu button:focus-visible {
+    background: #edf3fd;
+    color: #012596;
+    outline: none;
+}
+
 .electric-pet-figure {
     position: relative;
     width: 100%;
@@ -1176,13 +1640,16 @@ export default {
     color: #ffba59;
 }
 
-.sync-counter-upload {
+.sync-counter-upload,
+.sync-counter-download {
     cursor: pointer;
     font-family: inherit;
 }
 
 .sync-counter-upload:hover,
-.sync-counter-upload:focus-visible {
+.sync-counter-upload:focus-visible,
+.sync-counter-download:hover,
+.sync-counter-download:focus-visible {
     background: rgba(255, 255, 255, 0.16);
     border-color: rgba(255, 255, 255, 0.55);
     outline: none;
@@ -1449,6 +1916,100 @@ export default {
 </style>
 
 <style lang="scss">
+.user-info-dialog.el-dialog {
+    width: min(480px, calc(100vw - 32px)) !important;
+    border: 1px solid #dce3ec;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fff;
+
+    .el-dialog__header {
+        padding: 18px 24px;
+        border-bottom: 1px solid #e5eaf1;
+    }
+
+    .el-dialog__title {
+        color: #1c2d47;
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .el-dialog__body {
+        padding: 24px;
+    }
+
+    .el-dialog__footer {
+        padding: 14px 24px;
+        border-top: 1px solid #e5eaf1;
+    }
+}
+
+.user-info-heading {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid #e5eaf1;
+
+    > div {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    strong {
+        color: #1c2d47;
+        font-size: 17px;
+        overflow-wrap: anywhere;
+    }
+
+    span:not(.user-info-avatar) {
+        color: #68778d;
+        font-size: 13px;
+        overflow-wrap: anywhere;
+    }
+}
+
+.user-info-avatar {
+    width: 44px;
+    height: 44px;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border-radius: 6px;
+    background: #e8f0ff;
+    color: #163c91;
+    font-size: 18px;
+}
+
+.user-info-fields {
+    margin: 18px 0 0;
+
+    > div {
+        display: grid;
+        grid-template-columns: 110px minmax(0, 1fr);
+        gap: 14px;
+        padding: 10px 0;
+        border-bottom: 1px solid #edf0f5;
+    }
+
+    > div:last-child {
+        border-bottom: 0;
+    }
+
+    dt {
+        color: #68778d;
+    }
+
+    dd {
+        margin: 0;
+        color: #263951;
+        font-weight: 500;
+        overflow-wrap: anywhere;
+    }
+}
+
 .pending-upload-dialog.el-dialog {
     width: min(760px, calc(100vw - 32px)) !important;
     max-height: 85vh;
@@ -1528,6 +2089,11 @@ export default {
     flex: 1;
 }
 
+.pending-upload-toolbar .pending-upload-type-filter {
+    flex: 0 0 168px;
+    min-width: 0;
+}
+
 .pending-upload-toolbar .el-input__prefix {
     display: flex;
     align-items: center;
@@ -1562,6 +2128,12 @@ export default {
     overflow-y: auto;
     border: 1px solid #e3e8f0;
     border-radius: 5px;
+}
+
+.pending-upload-pagination {
+    display: flex;
+    justify-content: center;
+    padding-top: 14px;
 }
 
 .pending-upload-item {
@@ -1684,6 +2256,11 @@ export default {
     background: #fce9eb;
 }
 
+.pending-upload-status-newer {
+    color: #145884;
+    background: #e5f3fc;
+}
+
 .pending-upload-item-path,
 .pending-upload-item-error {
     margin-top: 6px;
@@ -1753,6 +2330,10 @@ export default {
 
     .pending-upload-toolbar .el-input {
         flex-basis: 100%;
+    }
+
+    .pending-upload-toolbar .pending-upload-type-filter {
+        flex: 1 1 160px;
     }
 
     .pending-upload-item {

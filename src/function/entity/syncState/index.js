@@ -171,6 +171,42 @@ export const getPendingUploadItems = async (userId) => {
     })
 }
 
+export const getServerUpdateCandidates = async (userId) => {
+    if (userId === undefined || userId === null || userId === '') {
+        return { success: true, data: [], message: 'No signed-in user' }
+    }
+    return new Promise((resolve, reject) => {
+        db.all(`
+            SELECT DISTINCT s.node_mrid AS mrid, s.node_type AS type, s.server_id,
+                s.last_synced_at, COALESCE(NULLIF(io.name, ''),
+                    CASE WHEN a.serial_number GLOB '_UNKNOWN_*' THEN 'Serial unknown'
+                         ELSE NULLIF(a.serial_number, '') END,
+                    NULLIF(io.alias_name, ''), s.node_type) AS name,
+                NULL AS version, a.kind AS asset_kind
+            FROM sync_state s
+            JOIN user_identified_object u ON u.identified_object_id = s.node_mrid AND u.user_id = ?
+            JOIN identified_object io ON io.mrid = s.node_mrid
+            LEFT JOIN asset a ON a.mrid = s.node_mrid
+            WHERE s.server_id IS NOT NULL AND s.last_synced_at IS NOT NULL
+              AND s.node_type <> 'test'
+            UNION ALL
+            SELECT wt.mrid, 'test', wt.mrid, NULL,
+                COALESCE(NULLIF(wt.test_name, ''), NULLIF(io.name, ''), 'Unnamed test'),
+                json_extract(snap.snapshot, '$.version'), a.kind
+            FROM work_task wt
+            JOIN old_work ow ON ow.mrid = wt.work
+            JOIN asset a ON a.mrid = ow.asset_id
+            JOIN user_identified_object u ON u.identified_object_id = ow.asset_id AND u.user_id = ?
+            LEFT JOIN identified_object io ON io.mrid = wt.mrid
+            JOIN entity_snapshot snap ON snap.mrid = wt.mrid AND snap.type = 'work_task'
+            WHERE json_extract(snap.snapshot, '$.version') IS NOT NULL
+        `, [String(userId), String(userId)], (err, rows) => {
+            if (err) return reject({ success: false, err, message: 'Get server update candidates failed' })
+            return resolve({ success: true, data: rows || [], message: 'Get server update candidates completed' })
+        })
+    })
+}
+
 export const upsertSyncStateTransaction = async (state, dbsql) => {
     const data = normalizeState(state)
     ensureRequired(data)

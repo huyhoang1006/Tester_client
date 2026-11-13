@@ -1,7 +1,9 @@
 <template>
     <div id="windows" :class="{ 'logged-in': user }">
         <top-bar id="top-bar" @server-config-changed="handleServerConfigChanged"
-            @pending-upload-navigate="handlePendingUploadNavigate"></top-bar>
+            @pending-upload-navigate="handlePendingUploadNavigate"
+            @pending-upload-sync="handlePendingUploadSync"
+            @server-update-sync="handleServerUpdateSync"></top-bar>
         <section id="main-windows">
             <router-view ref="mainWindows"></router-view>
         </section>
@@ -47,6 +49,36 @@ export default {
         this.restoreWorkspaceSide()
     },
     methods: {
+        async handleServerUpdateSync(item, resolve, reject) {
+            try {
+                if (this.$route.name !== 'home') {
+                    await this.$router.push({ name: 'home' })
+                    await this.$nextTick()
+                }
+                const view = this.$refs.mainWindows
+                if (!view || typeof view.syncServerUpdateSubstation !== 'function') {
+                    throw new Error('Asset tree is unavailable')
+                }
+                resolve(await view.syncServerUpdateSubstation(item))
+            } catch (error) {
+                reject(error)
+            }
+        },
+        async handlePendingUploadSync(item, resolve, reject) {
+            try {
+                if (this.$route.name !== 'home') {
+                    await this.$router.push({ name: 'home' })
+                    await this.$nextTick()
+                }
+                const view = this.$refs.mainWindows
+                if (!view || typeof view.syncPendingUploadItem !== 'function') {
+                    throw new Error('Asset tree is unavailable')
+                }
+                resolve(await view.syncPendingUploadItem(item))
+            } catch (error) {
+                reject(error)
+            }
+        },
         async handlePendingUploadNavigate(item) {
             if (this.$route.name !== 'home') {
                 await this.$router.push({ name: 'home' })

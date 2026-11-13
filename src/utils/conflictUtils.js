@@ -174,6 +174,7 @@ export const SUBSTATION_FIELD_DEFS = [
         group: 'Address',
         fields: [
             { key: 'locationName',      label: 'Location Name' },
+            { key: 'postal_code',       label: 'Postal Code' },
             { key: 'street',            label: 'Street' },
             { key: 'ward_or_commune',   label: 'Ward / Commune' },
             { key: 'district_or_town',  label: 'District / Town' },
@@ -186,7 +187,6 @@ export const SUBSTATION_FIELD_DEFS = [
         group: 'Contact Person',
         fields: [
             { key: 'personName',  label: 'Name' },
-            { key: 'department',  label: 'Department' },
             { key: 'position',    label: 'Position' },
             { key: 'phoneNumber', label: 'Phone Number' },
             { key: 'email',       label: 'Email' },

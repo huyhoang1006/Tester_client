@@ -58,6 +58,12 @@ export const getPendingUploadItems = () => {
     })
 }
 
+export const getServerUpdateCandidates = () => {
+    ipcMain.handle('getServerUpdateCandidates', async (event, userId) => {
+        return wrap(() => entityFunc.syncStateFunc.getServerUpdateCandidates(userId))
+    })
+}
+
 export const upsertSyncState = () => {
     ipcMain.handle('upsertSyncState', async (event, data) => {
         return wrap(() => entityFunc.syncStateFunc.upsertSyncState(data))
@@ -100,6 +106,7 @@ export const active = () => {
     getSyncStatesByStatus()
     getPendingUploadCount()
     getPendingUploadItems()
+    getServerUpdateCandidates()
     upsertSyncState()
     markNodeDirty()
     markNodeSyncing()

@@ -11,6 +11,9 @@ export const notificationEntityPreload = () => {
         insertNotification: async (data) => {
             return await ipcRenderer.invoke('insertNotification', data)
         },
+        recordServerUpdateNotice: async (data) => {
+            return await ipcRenderer.invoke('recordServerUpdateNotice', data)
+        },
         updateNotification: async (mrid, data) => {
             return await ipcRenderer.invoke('updateNotification', mrid, data)
         },

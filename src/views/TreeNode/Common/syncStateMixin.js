@@ -92,6 +92,7 @@ export default {
 
             await window.electronAPI.markNodeSynced(mrid, this.getSyncNodeType(node), mrid)
             this.updateTreeNodeSyncState(mrid, 'synced', { serverId: mrid })
+            window.dispatchEvent(new Event('pending-upload-changed'))
         },
 
         extractSavedSyncMrid(data) {

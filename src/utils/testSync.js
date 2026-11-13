@@ -59,6 +59,7 @@ const saveSnapshot = async (id, dto, version) => {
         mrid: id, type: 'work_task', snapshot: { ...testSnapshotDto(dto), version }
     })
     checkResult(result, 'The test was synchronized, but its synchronization version could not be saved.')
+    window.dispatchEvent(new Event('pending-upload-changed'))
 }
 
 const readTest = async (strategy, assetId, testId) => {

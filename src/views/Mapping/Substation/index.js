@@ -10,6 +10,7 @@ export function mapDtoToEntity(dto) {
 
     // Map các trường đơn giản
     entity.substation.name = dto.name || null
+    entity.substation.alias_name = dto.aliasName || null
     entity.substation.generation = dto.generation || null
     entity.substation.industry = dto.industry || null
     entity.substation.operating_date = dto.operating_date || null
@@ -126,6 +127,7 @@ export function mapEntityToDto(entity) {
 
     // substation
     dto.name = entity.substation.name || ''
+    dto.aliasName = entity.substation.alias_name || ''
     dto.generation = entity.substation.generation || ''
     dto.industry = entity.substation.industry || ''
     dto.operating_date = entity.substation.operating_date || ''

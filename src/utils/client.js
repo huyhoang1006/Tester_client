@@ -25,6 +25,7 @@ const reportApiFailure = error => {
     if (!failure) return
     error.apiFailureKind = failure.kind
     error.message = failure.message
+    if (error.config && error.config.silentBackgroundRequest) return
     if (error.config && error.config.suppressGlobalApiError && failure.kind === 'not-found') return
 
     const config = error.config || {}

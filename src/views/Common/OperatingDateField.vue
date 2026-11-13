@@ -90,18 +90,20 @@ export default {
         syncDate() {
             if (!this.day && !this.month && !this.year) {
                 this.$set(this.properties, 'operating_date', '')
-                return
+                return true
             }
-            if (!this.day || !this.month || !this.year) return
+            if (!this.day || !this.month || !this.year) return false
 
             const year = Number(this.year)
             const month = Number(this.month)
             const day = Number(this.day)
             const maxDay = new Date(year, month, 0).getDate()
-            if (!Number.isInteger(year) || year < 1 || month < 1 || month > 12 || day < 1 || day > maxDay) {
-                return
+            if (!Number.isInteger(year) || year < 1 || !Number.isInteger(month) || month < 1 || month > 12 ||
+                !Number.isInteger(day) || day < 1 || day > maxDay) {
+                return false
             }
             this.$set(this.properties, 'operating_date', `${String(year).padStart(4, '0')}-${pad(month)}-${pad(day)}`)
+            return true
         }
     }
 }

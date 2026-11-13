@@ -1,9 +1,141 @@
 import processUploadMixin from './upload-process.js'
+import * as demoAPI from '@/api/demo/index.js'
+import { toServerId } from '@/utils/serverId'
 
 export default {
     mixins: [processUploadMixin],
 
     methods: {
+        async syncPendingUploadItem(item) {
+            if (item?.mode === 'substation') return this.syncPendingUploadSubstation(item)
+            if (item?.mode === 'asset' && !item.is_testing_equipment) return this.syncPendingUploadAsset(item)
+            throw new Error('Sync is not available for this item')
+        },
+        async syncPendingUploadAsset(item) {
+            if (!item?.mrid) throw new Error('Asset ID is missing')
+            if (!this.organisationClientList.length) await this.showLocationRoot()
+            const node = await this.resolveSearchResultNode(item, 'client')
+            if (!node || node.mode !== 'asset' || node.mrid !== item.mrid) {
+                throw new Error('Local asset not found. Refresh the asset tree and try again.')
+            }
+
+            const handlers = {
+                'Power cable': this.processUploadPowerCable,
+                Transformer: this.processUploadTransformer,
+                'Voltage transformer': this.processUploadVoltageTransformer,
+                'Current transformer': this.processUploadCurrentTransformer,
+                'Circuit breaker': this.processUploadCircuitBreaker,
+                Disconnector: this.processUploadDisconnector,
+                'Surge arrester': this.processUploadSurgeArrester,
+                Bushing: this.processUploadBushing
+            }
+            const handler = handlers[node.asset]
+            if (!handler) throw new Error(`Sync is not available for ${node.asset || 'this asset'}`)
+            const parentNode = this.findUploadParentNode(node)
+            const parentId = toServerId(node.parentId)
+            if (!parentNode || !/^\d+$/.test(String(parentId || ''))) {
+                throw new Error('Upload the parent node before syncing this asset.')
+            }
+
+            try {
+                await this.$confirm(`Sync ${node.asset} "${this.getUploadNodeName(node)}" to Server?`, 'Confirm Sync', {
+                    confirmButtonText: 'Sync',
+                    cancelButtonText: 'Cancel',
+                    type: 'warning'
+                })
+            } catch (error) {
+                return false
+            }
+
+            const originalMrid = node.mrid
+            const syncType = this.getSyncNodeType(node)
+            try {
+                if (parentNode.mode === 'organisation') {
+                    await demoAPI.getOrganisationById(parentId)
+                } else if (parentNode.mode === 'powerPlant') {
+                    await demoAPI.getSubstationById(parentId)
+                } else if (parentNode.mode === 'asset') {
+                    await this.getServerAssetForUpload(parentNode, parentId)
+                } else if (['substation', 'voltageLevel', 'bay'].includes(parentNode.mode)) {
+                    if (!await this.checkParentBeforUpload(node.parentId, parentNode.mode)) {
+                        throw new Error('Parent node does not exist on the server.')
+                    }
+                } else {
+                    throw new Error(`Cannot sync an asset under ${parentNode.mode || 'an unknown parent'}.`)
+                }
+                if (/^\d+$/.test(String(toServerId(originalMrid)))) {
+                    await this.getServerAssetForUpload(node, originalMrid)
+                }
+                await window.electronAPI.markNodeSyncing(originalMrid, syncType)
+                this.updateTreeNodeSyncState(node, 'syncing')
+                const response = await handler.call(this, node, true)
+                if (!response || !this.extractUploadedServerId(response)) {
+                    throw new Error('Server did not return an Asset ID')
+                }
+                await this.writeSyncLog('UPLOAD', node, true, '')
+                window.dispatchEvent(new Event('pending-upload-changed'))
+                return true
+            } catch (error) {
+                await window.electronAPI.markNodeSyncFailed(node.mrid, syncType, error)
+                this.updateTreeNodeSyncState(node, 'failed', { error: error.message })
+                await this.writeSyncLog('UPLOAD', node, false, error.message)
+                window.dispatchEvent(new Event('pending-upload-changed'))
+                throw error
+            }
+        },
+        async syncPendingUploadSubstation(item) {
+            if (!item || item.mode !== 'substation' || !item.mrid) {
+                throw new Error('Only Substation sync is available here')
+            }
+            if (!this.organisationClientList.length) await this.showLocationRoot()
+            const node = await this.resolveSearchResultNode(item, 'client')
+            if (!node || node.mode !== 'substation' || node.mrid !== item.mrid) {
+                throw new Error('Local substation not found. Refresh the asset tree and try again.')
+            }
+
+            const parentId = toServerId(node.parentId)
+            if (!/^\d+$/.test(String(parentId || ''))) {
+                throw new Error('Upload the parent organisation before syncing this substation.')
+            }
+
+            try {
+                await this.$confirm(`Sync Substation "${this.getUploadNodeName(node)}" to Server?`, 'Confirm Sync', {
+                    confirmButtonText: 'Sync',
+                    cancelButtonText: 'Cancel',
+                    type: 'warning'
+                })
+            } catch (error) {
+                return false
+            }
+
+            const originalMrid = node.mrid
+            try {
+                await demoAPI.getOrganisationById(parentId)
+                if (/^\d+$/.test(String(toServerId(originalMrid)))) {
+                    await demoAPI.getSubstationById(originalMrid)
+                }
+                await window.electronAPI.markNodeSyncing(originalMrid, 'substation')
+                this.updateTreeNodeSyncState(node, 'syncing')
+                const response = await this.processUploadSubstation(node, true)
+                if (!response || !this.extractUploadedServerId(response)) {
+                    throw new Error('Server did not return a Substation ID')
+                }
+                await this.writeSyncLog('UPLOAD', node, true, '')
+                window.dispatchEvent(new Event('pending-upload-changed'))
+                return true
+            } catch (error) {
+                if (error.code === 'SUBSTATION_DOWNLOAD_REQUIRED') {
+                    await window.electronAPI.markNodeDirty(originalMrid, 'substation')
+                    this.updateTreeNodeSyncState(node, 'dirty')
+                } else {
+                    await window.electronAPI.markNodeSyncFailed(originalMrid, 'substation', error)
+                    this.updateTreeNodeSyncState(node, 'failed', { error: error.message })
+                }
+                await this.writeSyncLog('UPLOAD', node, false, error.message)
+                window.dispatchEvent(new Event('pending-upload-changed'))
+                throw error
+            }
+        },
         /**
          * Chạy 1 handler upload rồi ghi log kết quả.
          * processUpload* tự nuốt lỗi và chỉ gọi $message.error, nên phải chặn message

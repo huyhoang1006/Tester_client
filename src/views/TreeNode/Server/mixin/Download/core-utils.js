@@ -240,7 +240,7 @@ export async function downloadChainInfo(chainInfo, ctx) {
             strategy = strategies[node._type];
         }
         if (strategy) {
-            await strategy(node, ctx)
+            const downloadResult = await strategy(node, ctx)
             if (ctx && ctx.$store && ctx.$store.state && ctx.$store.state.user
                 && window.electronAPI && window.electronAPI.ensureUserOwnership) {
                 const syncNode = extractDownloadedSyncNode(node)
@@ -248,7 +248,15 @@ export async function downloadChainInfo(chainInfo, ctx) {
                     await window.electronAPI.ensureUserOwnership(ctx.$store.state.user.user_id, syncNode.mrid)
                 }
             }
-            if (ctx && ctx.markDownloadedNodeSynced) {
+            if (downloadResult && downloadResult.localChangesAfterDownload) {
+                const syncNode = extractDownloadedSyncNode(node)
+                if (syncNode && window.electronAPI && window.electronAPI.markNodeDirty) {
+                    if (ctx.markDownloadedNodeSynced) await ctx.markDownloadedNodeSynced(syncNode)
+                    await window.electronAPI.markNodeDirty(syncNode.mrid, syncNode.mode)
+                    if (ctx.updateTreeNodeSyncState) ctx.updateTreeNodeSyncState(syncNode.mrid, 'dirty')
+                    window.dispatchEvent(new Event('pending-upload-changed'))
+                }
+            } else if (ctx && ctx.markDownloadedNodeSynced) {
                 const syncNode = extractDownloadedSyncNode(node)
                 if (syncNode) await ctx.markDownloadedNodeSynced(syncNode)
             }

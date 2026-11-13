@@ -55,6 +55,8 @@ import * as PowerCableServerMapper          from '@/views/Mapping/ServerToDTO/Po
 
 // ─── Entity → Server (luồng cũ: Substation/VoltageLevel/Bay) ──────────────────
 import { mapSubstationEntityToServer }   from '@/utils/MapperClient/mapSubstationToServer.js'
+import { mapServerToDto as mapServerSubstationToDto } from '@/views/Mapping/ServerToDTO/Substation/index.js'
+import { detectConflicts, SUBSTATION_FIELD_DEFS } from '@/utils/conflictUtils.js'
 import { mapVoltageLevelEntityToServer } from '@/utils/MapperClient/mapVoltageLevelToServer.js'
 import { mapBayEntityToServer }          from '@/utils/MapperClient/mapBayToServer.js'
 import { uploadAssetMediaFromAttachmentData } from '@/utils/assetMedia.js'
@@ -109,7 +111,7 @@ export default {
         //  CONTAINER: Substation / VoltageLevel / Bay
         // ═══════════════════════════════════════════════════════════════════════
 
-        async processUploadSubstation(node) {
+        async processUploadSubstation(node, rethrow = false) {
             try {
                 const userId = this.$store.state.user.user_id
                 const entityRes = await window.electronAPI.getSubstationEntityByMrid(node.mrid, userId, node.parentId)
@@ -117,10 +119,35 @@ export default {
                 if (!node.parentId) throw new Error('Cannot upload substation without parent organisation.')
 
                 const parentNode = this.findUploadParentNode(node)
+                if (/^\d+$/.test(String(toServerId(node.mrid)))) {
+                    const snapshot = await window.electronAPI.getEntitySnapshotByMrid(node.mrid, 'substation')
+                    if (!snapshot.success || !snapshot.data) {
+                        const error = new Error('Download this Substation before syncing so changes can be checked safely.')
+                        error.code = 'SUBSTATION_DOWNLOAD_REQUIRED'
+                        throw error
+                    }
+                    const latest = await demoAPI.getSubstationById(node.mrid)
+                    const serverDto = mapServerSubstationToDto(latest)
+                    const serverChanged = detectConflicts(snapshot.data, snapshot.data, serverDto, SUBSTATION_FIELD_DEFS)
+                        .some(field => field.status !== 'unchanged')
+                    if (serverChanged) {
+                        const error = new Error('This Substation has a newer server version. Download and merge it before syncing.')
+                        error.code = 'SUBSTATION_DOWNLOAD_REQUIRED'
+                        throw error
+                    }
+                }
                 const serverPayload = mapSubstationEntityToServer(entityRes.data, parentNode)
                 const response = await demoAPI.createSubstation(serverPayload, node.parentId)
 
                 const serverId = await this.syncUploadedNodeServerId(node, response)
+                const syncedId = serverId || this.extractUploadedServerId(response)
+                if (!syncedId) throw new Error('Server did not return a Substation ID')
+                const latest = await demoAPI.getSubstationById(syncedId)
+                const snapshotResult = await window.electronAPI.insertEntitySnapshot({
+                    mrid: node.mrid, type: 'substation',
+                    snapshot: mapServerSubstationToDto({ ...latest, mRID: node.mrid })
+                })
+                if (!snapshotResult.success) throw new Error(snapshotResult.message || 'Could not save Substation sync base')
                 await this.uploadAssetMedia(
                     'Substation',
                     entityRes.data,
@@ -129,7 +156,9 @@ export default {
                 this.$message.success(`Upload Substation "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
-                this._handleUploadError(error, 'Substation')
+                if (rethrow) throw error
+                if (error.code === 'SUBSTATION_DOWNLOAD_REQUIRED') this.$message.warning(error.message)
+                else this._handleUploadError(error, 'Substation')
             }
         },
 
@@ -223,7 +252,7 @@ export default {
         //  ASSET: PowerCable / Transformer
         // ═══════════════════════════════════════════════════════════════════════
 
-        async processUploadPowerCable(node) {
+        async processUploadPowerCable(node, rethrow = false) {
             try {
                 const entityRes = await window.electronAPI.getPowerCableEntityByMrid(node.mrid, node.parentId)
                 if (!entityRes.success || !entityRes.data) throw new Error('Local power cable data not found.')
@@ -232,7 +261,10 @@ export default {
                 const parentNode = this.findUploadParentNode(node)
                 if (!parentNode) throw new Error('Parent node not found in Client Tree')
                 const signParent = await this.checkParentBeforUpload(node.parentId, parentNode?.mode)
-                if (!signParent) return
+                if (!signParent) {
+                    if (rethrow) throw new Error('Parent node does not exist on the server.')
+                    return
+                }
                 const ownerType = this._resolveOwnerType(parentNode)
 
                 const dto = PowerCableMapping.mapEntityToDto(entityRes.data)
@@ -251,11 +283,12 @@ export default {
                 this.$message.success(`Upload PowerCable "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
+                if (rethrow) throw error
                 this._handleUploadError(error, 'PowerCable')
             }
         },
 
-        async processUploadTransformer(node) {
+        async processUploadTransformer(node, rethrow = false) {
             try {
                 const entityRes = await window.electronAPI.getTransformerEntityByMrid(node.mrid, node.parentId)
                 if (!entityRes.success || !entityRes.data) throw new Error('Local transformer data not found.')
@@ -264,7 +297,10 @@ export default {
                 const parentNode = this.findUploadParentNode(node)
                 if (!parentNode) throw new Error('Parent node not found in Client Tree')
                 const signParent = await this.checkParentBeforUpload(node.parentId, parentNode?.mode)
-                if (!signParent) return
+                if (!signParent) {
+                    if (rethrow) throw new Error('Parent node does not exist on the server.')
+                    return
+                }
                 const ownerType = this._resolveOwnerType(parentNode)
 
                 const dto = transformerMapping.transformerEntityToDto(entityRes.data)
@@ -275,6 +311,7 @@ export default {
                 this.$message.success(`Upload Transformer "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
+                if (rethrow) throw error
                 this._handleUploadError(error, 'Transformer')
             }
         },
@@ -283,7 +320,7 @@ export default {
         //  ASSET thiết bị (gửi node.parentId trực tiếp + ownerType trong body)
         // ═══════════════════════════════════════════════════════════════════════
 
-        async processUploadVoltageTransformer(node) {
+        async processUploadVoltageTransformer(node, rethrow = false) {
             try {
                 const entityRes = await window.electronAPI.getVoltageTransformerEntityByMrid(node.mrid, node.parentId)
                 if (!entityRes.success || !entityRes.data) throw new Error('Voltage transformer data not found.')
@@ -292,7 +329,10 @@ export default {
                 const parentNode = this.findUploadParentNode(node)
                 if (!parentNode) throw new Error('Parent node not found in Client Tree')
                 const signParent = await this.checkParentBeforUpload(node.parentId, parentNode?.mode)
-                if (!signParent) return
+                if (!signParent) {
+                    if (rethrow) throw new Error('Parent node does not exist on the server.')
+                    return
+                }
                 const ownerType = this._resolveOwnerType(parentNode)
                 if (!ownerType) throw new Error(`Cannot resolve ownerType for parent node with mode: ${parentNode?.mode}`)
 
@@ -304,11 +344,12 @@ export default {
                 this.$message.success(`Upload Voltage Transformer "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
+                if (rethrow) throw error
                 this._handleUploadError(error, 'Voltage Transformer')
             }
         },
 
-        async processUploadCurrentTransformer(node) {
+        async processUploadCurrentTransformer(node, rethrow = false) {
             try {
                 const entityRes = await window.electronAPI.getCurrentTransformerEntityByMrid(node.mrid, node.parentId)
                 if (!entityRes.success || !entityRes.data) throw new Error('Current transformer data not found.')
@@ -317,7 +358,10 @@ export default {
                 const parentNode = this.findUploadParentNode(node)
                 if (!parentNode) throw new Error('Parent node not found in Client Tree')
                 const signParent = await this.checkParentBeforUpload(node.parentId, parentNode?.mode)
-                if (!signParent) return
+                if (!signParent) {
+                    if (rethrow) throw new Error('Parent node does not exist on the server.')
+                    return
+                }
                 const ownerType = this._resolveOwnerType(parentNode)
                 if (!ownerType) throw new Error(`Cannot resolve ownerType for parent node with mode: ${parentNode?.mode}`)
 
@@ -328,11 +372,12 @@ export default {
                 this.$message.success(`Upload Current Transformer "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
+                if (rethrow) throw error
                 this._handleUploadError(error, 'Current Transformer')
             }
         },
 
-        async processUploadCircuitBreaker(node) {
+        async processUploadCircuitBreaker(node, rethrow = false) {
             try {
                 const entityRes = await window.electronAPI.getBreakerEntityByMrid(node.mrid, node.parentId)
                 if (!entityRes.success || !entityRes.data) throw new Error('Circuit breaker data not found.')
@@ -341,7 +386,10 @@ export default {
                 const parentNode = this.findUploadParentNode(node)
                 if (!parentNode) throw new Error('Parent node not found in Client Tree')
                 const signParent = await this.checkParentBeforUpload(node.parentId, parentNode?.mode)
-                if (!signParent) return
+                if (!signParent) {
+                    if (rethrow) throw new Error('Parent node does not exist on the server.')
+                    return
+                }
                 const ownerType = this._resolveOwnerType(parentNode)
                 if (!ownerType) throw new Error(`Cannot resolve ownerType for parent node with mode: ${parentNode?.mode}`)
 
@@ -353,11 +401,12 @@ export default {
                 this.$message.success(`Upload Circuit Breaker "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
+                if (rethrow) throw error
                 this._handleUploadError(error, 'Circuit Breaker')
             }
         },
 
-        async processUploadDisconnector(node) {
+        async processUploadDisconnector(node, rethrow = false) {
             try {
                 const entityRes = await window.electronAPI.getDisconnectorEntityByMrid(node.mrid, node.parentId)
                 if (!entityRes.success || !entityRes.data) throw new Error('Disconnector data not found.')
@@ -366,7 +415,10 @@ export default {
                 const parentNode = this.findUploadParentNode(node)
                 if (!parentNode) throw new Error('Parent node not found in Client Tree')
                 const signParent = await this.checkParentBeforUpload(node.parentId, parentNode?.mode)
-                if (!signParent) return
+                if (!signParent) {
+                    if (rethrow) throw new Error('Parent node does not exist on the server.')
+                    return
+                }
                 const ownerType = this._resolveOwnerType(parentNode)
 
                 const dto = disconnectorMapping.disconnectorEntityToDto(entityRes.data)
@@ -377,11 +429,12 @@ export default {
                 this.$message.success(`Upload Disconnector "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
+                if (rethrow) throw error
                 this._handleUploadError(error, 'Disconnector')
             }
         },
 
-        async processUploadSurgeArrester(node) {
+        async processUploadSurgeArrester(node, rethrow = false) {
             try {
                 const entityRes = await window.electronAPI.getSurgeArresterEntityByMrid(node.mrid, node.parentId)
                 if (!entityRes.success || !entityRes.data) throw new Error('Surge arrester data not found.')
@@ -390,7 +443,10 @@ export default {
                 const parentNode = this.findUploadParentNode(node)
                 if (!parentNode) throw new Error('Parent node not found in Client Tree')
                 const signParent = await this.checkParentBeforUpload(node.parentId, parentNode?.mode)
-                if (!signParent) return
+                if (!signParent) {
+                    if (rethrow) throw new Error('Parent node does not exist on the server.')
+                    return
+                }
                 const ownerType = this._resolveOwnerType(parentNode)
 
                 const dto = surgeArresterMapping.surgeArresterEntityToDto(entityRes.data)
@@ -401,11 +457,12 @@ export default {
                 this.$message.success(`Upload Surge Arrester "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
+                if (rethrow) throw error
                 this._handleUploadError(error, 'Surge Arrester')
             }
         },
 
-        async processUploadBushing(node) {
+        async processUploadBushing(node, rethrow = false) {
             try {
                 const entityRes = await window.electronAPI.getBushingEntityByMrid(node.mrid, node.parentId)
                 if (!entityRes.success || !entityRes.data) throw new Error('Local bushing data not found.')
@@ -415,7 +472,10 @@ export default {
                 if (!parentNode) throw new Error('Parent node not found in Client Tree')
 
                 const signParent = await this.checkParentBeforUpload(node.parentId, parentNode?.mode)
-                if (!signParent) return
+                if (!signParent) {
+                    if (rethrow) throw new Error('Parent node does not exist on the server.')
+                    return
+                }
 
                 const ownerType = this.normalizeOwnerTypeCode(parentNode?.mode)
                 if (!ownerType) {
@@ -432,6 +492,7 @@ export default {
                 this.$message.success(`Upload Bushing "${this.getUploadNodeName(node)}" successfully!`)
                 return response
             } catch (error) {
+                if (rethrow) throw error
                 this._handleUploadError(error, 'Bushing')
             }
         },

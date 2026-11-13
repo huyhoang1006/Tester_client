@@ -1,6 +1,6 @@
 <template>
   <el-dialog
-    title="Conflict Resolution"
+    :title="`Resolve changes - ${name || 'Substation'}`"
     :visible="visible"
     width="860px"
     :close-on-click-modal="false"
@@ -12,7 +12,7 @@
       <div class="conflict-stats">
         <span class="stat auto">
           <i class="el-icon-check" />
-          {{ autoCount }} feature merged automatically
+          {{ autoCount }} field(s) merged automatically
         </span>
         <span class="stat conflict">
           <i class="el-icon-warning-outline" />
@@ -43,18 +43,18 @@
           <div class="field-label">{{ field.label }}</div>
 
           <template v-if="field.status === 'unchanged'">
-            <div class="field-value unchanged-value">{{ field.client || '—' }}</div>
+            <div class="field-value unchanged-value">{{ displayValue(field.client) }}</div>
             <div class="field-badge unchanged">Không đổi</div>
           </template>
 
           <template v-else-if="field.status === 'auto'">
             <div class="diff-cols">
-              <div class="diff-cell base">{{ field.base || '—' }}</div>
+              <div class="diff-cell base" :title="displayValue(field.base)">{{ displayValue(field.base) }}</div>
               <div class="diff-cell client" :class="{ changed: field.autoResolved === 'client' || field.autoResolved === 'both' }">
-                {{ field.client || '—' }}
+                {{ displayValue(field.client) }}
               </div>
               <div class="diff-cell server" :class="{ changed: field.autoResolved === 'server' || field.autoResolved === 'both' }">
-                {{ field.server || '—' }}
+                {{ displayValue(field.server) }}
               </div>
             </div>
             <div class="field-badge auto">
@@ -65,14 +65,14 @@
 
           <template v-else-if="field.status === 'conflict'">
             <div class="diff-cols">
-              <div class="diff-cell base">{{ field.base || '—' }}</div>
-              <div class="diff-cell client conflict-val">{{ field.client || '—' }}</div>
-              <div class="diff-cell server conflict-val">{{ field.server || '—' }}</div>
+              <div class="diff-cell base" :title="displayValue(field.base)">{{ displayValue(field.base) }}</div>
+              <div class="diff-cell client conflict-val" :title="displayValue(field.client)">{{ displayValue(field.client) }}</div>
+              <div class="diff-cell server conflict-val" :title="displayValue(field.server)">{{ displayValue(field.server) }}</div>
             </div>
             <div class="conflict-actions">
-              <el-radio-group v-model="field.resolved" size="mini">
-                <el-radio-button :label="field.client">Client</el-radio-button>
-                <el-radio-button :label="field.server">Server</el-radio-button>
+              <el-radio-group v-model="field.selectedSide" size="mini">
+                <el-radio-button label="client">Client</el-radio-button>
+                <el-radio-button label="server">Server</el-radio-button>
               </el-radio-group>
             </div>
           </template>
@@ -101,48 +101,12 @@
 </template>
 
 <script>
-const FIELD_GROUPS = [
-  {
-    label: 'Thông tin trạm',
-    fields: [
-      { key: 'name',       label: 'Tên trạm' },
-      { key: 'aliasName',  label: 'Tên khác' },
-      { key: 'type',       label: 'Loại PSR' },
-      { key: 'generation', label: 'Generation' },
-      { key: 'industry',   label: 'Ngành' },
-      { key: 'comment',    label: 'Mô tả' },
-    ],
-  },
-  {
-    label: 'Địa chỉ',
-    fields: [
-      { key: 'locationName',     label: 'Tên địa điểm' },
-      { key: 'street',           label: 'Đường' },
-      { key: 'ward_or_commune',  label: 'Phường / Xã' },
-      { key: 'district_or_town', label: 'Quận / Huyện' },
-      { key: 'city',             label: 'Thành phố' },
-      { key: 'state_or_province','label': 'Tỉnh' },
-      { key: 'country',          label: 'Quốc gia' },
-    ],
-  },
-  {
-    label: 'Người liên hệ',
-    fields: [
-      { key: 'personName',  label: 'Tên liên hệ' },
-      { key: 'department',  label: 'Phòng ban' },
-      { key: 'position',    label: 'Chức vụ' },
-      { key: 'phoneNumber', label: 'Số điện thoại' },
-      { key: 'email',       label: 'Email' },
-      { key: 'fax',         label: 'Fax' },
-    ],
-  },
-]
-
 export default {
   name: 'SubstationConflictDialog',
 
   props: {
     visible: { type: Boolean, default: false },
+    name: { type: String, default: '' },
     // Kết quả từ detectConflicts()
     // [{ key, label, base, client, server, status, autoResolved, resolved }]
     diffFields: { type: Array, default: () => [] },
@@ -157,9 +121,9 @@ export default {
   computed: {
     autoCount()      { return this.allFields.filter(f => f.status === 'auto').length },
     conflictCount()  { return this.allFields.filter(f => f.status === 'conflict').length },
-    unchangedCount() { return this.allFields.filter(f => f.status === 'unchanged').length },
+    unchangedCount() { return this.diffFields.filter(f => f.status === 'unchanged').length },
     allFields()      { return this.fieldGroups.flatMap(g => g.fields) },
-    unresolvedCount(){ return this.allFields.filter(f => f.status === 'conflict' && !f.resolved).length },
+    unresolvedCount(){ return this.allFields.filter(f => f.status === 'conflict' && !f.selectedSide).length },
     hasUnresolved()  { return this.unresolvedCount > 0 },
   },
 
@@ -169,43 +133,42 @@ export default {
     },
   },
 
-  methods: {
-    buildFieldGroups() {
-      const diffMap = {}
-      for (const f of this.diffFields) diffMap[f.key] = f
+  mounted() {
+    if (this.visible) this.buildFieldGroups()
+  },
 
-      this.fieldGroups = FIELD_GROUPS.map(group => ({
-        label: group.label,
-        fields: group.fields.map(f => {
-          const diff = diffMap[f.key] || {}
-          return {
-            ...f,
-            base:         diff.base         ?? null,
-            client:       diff.client       ?? null,
-            server:       diff.server       ?? null,
-            status:       diff.status       || 'unchanged',
-            autoResolved: diff.autoResolved || null,
-            resolved:     diff.resolved     ?? null,
-          }
-        }),
-      }))
+  methods: {
+    displayValue(value) {
+      return value === null || value === undefined || value === '' ? '—' : String(value)
+    },
+    buildFieldGroups() {
+      const groups = new Map()
+      this.diffFields.filter(field => field.status !== 'unchanged').forEach(field => {
+        const label = field.group || 'Other'
+        if (!groups.has(label)) groups.set(label, [])
+        groups.get(label).push({ ...field, selectedSide: '' })
+      })
+      this.fieldGroups = Array.from(groups, ([label, fields]) => ({ label, fields }))
     },
 
     onKeepClient() {
       this.allFields.forEach(f => {
-        if (f.status === 'conflict') f.resolved = f.client
+        if (f.status === 'conflict') f.selectedSide = 'client'
       })
     },
 
     onTakeServer() {
       this.allFields.forEach(f => {
-        if (f.status === 'conflict') f.resolved = f.server
+        if (f.status === 'conflict') f.selectedSide = 'server'
       })
     },
 
     onConfirm() {
       if (this.hasUnresolved) return
-      const resolvedFields = this.allFields.map(f => ({ ...f }))
+      const resolvedFields = this.allFields.map(f => ({
+        ...f,
+        resolved: f.status === 'conflict' ? f[f.selectedSide] : f.resolved
+      }))
       this.$emit('resolve', resolvedFields)
       this.$emit('update:visible', false)
     },
